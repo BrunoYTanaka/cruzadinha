@@ -11,6 +11,8 @@ dist/
 build/
 coverage/
 *.log
+*.tsbuildinfo
+.vite/
 
 # Sistema e editores
 .DS_Store

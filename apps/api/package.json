@@ -1,0 +1,24 @@
+{
+  "name": "@cruzadinha/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsdown",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cruzadinha/shared": "*",
+    "fastify": "5.12",
+    "postgres": "3.4",
+    "zod": "4.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsdown": "^0.23.1",
+    "tsx": "4.23",
+    "vitest": "5.0"
+  }
+}
