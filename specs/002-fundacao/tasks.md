@@ -109,7 +109,7 @@ Monorepo npm workspaces na raiz do repositório: `apps/api`, `apps/web`, `packag
 - [X] T028 [P] [US2] Criar `apps/api/Dockerfile` multi-stage com contexto na raiz (research.md, item 12): estágio `build` em `node:24-alpine` copiando os `package.json`, o `package-lock.json` e o código, com `npm ci --ignore-scripts` e `npm run build -w @cruzadinha/api`; estágio final `node:24-alpine` com `NODE_ENV=production`, `npm ci --omit=dev --ignore-scripts -w @cruzadinha/api` (sem `--ignore-scripts`, o `prepare` chamaria o `husky`, que não existe sem as dev dependencies), cópia de `apps/api/dist`, `USER node`, `EXPOSE 3000` e `CMD ["node", "apps/api/dist/server.mjs"]`. Nenhuma variável de configuração com valor na imagem
 - [X] T029 [P] [US2] Criar `.dockerignore` excluindo `node_modules`, `**/node_modules`, `**/dist`, `.git`, `.env`, `.env.*` (mantendo `!.env.example`), `specs/`, `.specify/` e `.claude/`
 - [X] T030 [US2] Criar `.github/workflows/ci.yml` (contrato `contracts/root-scripts.md`, seção CI): gatilhos `push` e `pull_request`; `env: HUSKY: 0`; job `quality` com `timeout-minutes: 10`, `actions/checkout@v7`, `actions/setup-node@v7` (`node-version-file: .nvmrc`, `cache: npm`), `npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test` e `npm run build`; job `image` com `timeout-minutes: 10`, `actions/checkout@v7` e `docker build -f apps/api/Dockerfile .`. Sem segredos no workflow
-- [ ] T031 [US2] Depois de o autor criar o repositório público no GitHub e o remote: enviar a branch e validar os cenários da história 2 em `specs/002-fundacao/quickstart.md` (verde; vermelho com teste, lint e tipo quebrados via `--no-verify` em commits descartáveis; lockfile desatualizado falhando no `npm ci`), conferindo o tempo de menos de 10 minutos (SC-004). Desfazer os commits de teste
+- [X] T031 [US2] Depois de o autor criar o repositório público no GitHub e o remote: enviar a branch e validar os cenários da história 2 em `specs/002-fundacao/quickstart.md` (verde; vermelho com teste, lint e tipo quebrados via `--no-verify` em commits descartáveis; lockfile desatualizado falhando no `npm ci`), conferindo o tempo de menos de 10 minutos (SC-004). Desfazer os commits de teste
 
 **Checkpoint**: histórias 1 e 2 funcionam de forma independente.
 
@@ -153,7 +153,7 @@ Monorepo npm workspaces na raiz do repositório: `apps/api`, `apps/web`, `packag
 - [X] T039 Atualizar `CLAUDE.md` (FR-017): trocar a seção "Current state" pela situação nova; acrescentar a estrutura do monorepo (`apps/api`, `apps/web`, `packages/shared`) e os comandos de `contracts/root-scripts.md`, inclusive teste único (`npx vitest run <arquivo>` dentro do workspace), ambiente local e pré-requisitos (Node 24, Docker)
 - [X] T040 Num clone limpo (`git clone` local para uma pasta temporária), seguir só o `CLAUDE.md` e confirmar que o autor fica pronto em no máximo 3 comandos e menos de 10 minutos (SC-001)
 - [X] T041 Procurar segredos no repositório e no histórico (`specs/002-fundacao/quickstart.md`, seção Segredos) e confirmar que só aparecem os valores fictícios (SC-007)
-- [ ] T042 Rodar toda a validação de `specs/002-fundacao/quickstart.md` de ponta a ponta e marcar o checklist da feature
+- [X] T042 Rodar toda a validação de `specs/002-fundacao/quickstart.md` de ponta a ponta e marcar o checklist da feature
 
 ---
 
