@@ -79,7 +79,12 @@ describe('createOgloboSource', () => {
     ['falha de rede', new TypeError('fetch failed'), 'source-down'],
     ['tempo limite', new DOMException('timeout', 'TimeoutError'), 'source-down'],
     ['HTTP 404', json({}, 404), 'unavailable'],
-    ['corpo NOT-AVAILABLE com a resposta completa', json(unavailable), 'unavailable'],
+    ['corpo NOT-AVAILABLE só com dates', json(unavailable), 'unavailable'],
+    [
+      'corpo NOT-AVAILABLE com a resposta completa',
+      json({ ...dailyValid, error: 'NOT-AVAILABLE' }),
+      'unavailable',
+    ],
     ['corpo não-JSON', new Response('<html>', { status: 200 }), 'unexpected-format'],
     ['outro valor em error', json({ error: 'OUTRO' }), 'unexpected-format'],
     ['HTTP 400', json({}, 400), 'unexpected-format'],

@@ -1,41 +1,31 @@
 {
-  "id": "fixture-daily",
+  "id": "00000000-0000-4000-8000-000000000000",
   "dates": [
     {
       "date": "2026-10-11",
-      "fomattedDate": "11/10/2026",
-      "day": "Domingo",
+      "fomattedDate": "11/10/26",
+      "day": "domingo",
       "inTheFuture": false,
       "status": "NOT-PLAYED"
     },
     {
       "date": "2026-10-12",
-      "fomattedDate": "12/10/2026",
-      "day": "Segunda",
+      "fomattedDate": "12/10/26",
+      "day": "lunes",
       "inTheFuture": false,
       "status": "NOT-PLAYED"
     },
     {
       "date": "2026-10-13",
-      "fomattedDate": "13/10/2026",
-      "day": "Terça",
+      "fomattedDate": "13/10/26",
+      "day": "martes",
       "inTheFuture": true,
       "status": "NOT-PLAYED"
     }
   ],
   "ipuzData": {
-    "version": "http://ipuz.org/v2",
-    "kind": ["http://ipuz.org/crossword#1"],
-    "title": "Cruzada de teste",
-    "author": "Autor fictício",
-    "copyright": "Fixture reduzida, conteúdo inventado",
-    "intro": "",
+    "showenumerations": false,
     "notes": "",
-    "empty": ":",
-    "dimensions": {
-      "width": 5,
-      "height": 5
-    },
     "puzzle": [
       [
         {
@@ -54,13 +44,13 @@
       [":", "#", ":", "#", ":"],
       ["#", 5, ":", ":", ":"]
     ],
-    "solution": [
-      ["a", "B", "C", "D", "#"],
-      ["E", "#", "F", "#", "G"],
-      ["H", "I", "J", "K", "L"],
-      ["M", "#", "N", "#", "O"],
-      ["#", "P", "Q", "R", "S"]
-    ],
+    "copyright": "Fixture reduzida, conteúdo inventado",
+    "intro": "",
+    "version": "http://ipuz.org/v2",
+    "origin": "Crossword Compiler 11.41",
+    "empty": ":",
+    "title": "Cruzada de teste",
+    "kind": ["http://ipuz.org/crossword#1"],
     "clues": {
       "Across": [
         [1, "Dica inventada 1 horizontal"],
@@ -72,7 +62,19 @@
         [2, "Dica inventada 2 vertical"],
         [3, "Dica inventada 3 vertical"]
       ]
-    }
+    },
+    "dimensions": {
+      "width": 5,
+      "height": 5
+    },
+    "author": "Autor fictício",
+    "solution": [
+      ["a", "B", "C", "D", "#"],
+      ["E", "#", "F", "#", "G"],
+      ["H", "I", "Ã", "K", "L"],
+      ["M", "#", "N", "#", "O"],
+      ["#", "P", "Q", "R", "S"]
+    ]
   },
   "fromIpuz": {
     "across": {
@@ -84,7 +86,7 @@
       },
       "4": {
         "clue": "Ação de <i>teste</i> &amp; mais",
-        "answer": "HIJKL",
+        "answer": "HIÃKL",
         "row": 2,
         "col": 0
       },
@@ -104,7 +106,7 @@
       },
       "2": {
         "clue": "Dica inventada 2 vertical",
-        "answer": "CFJNQ",
+        "answer": "CFÃNQ",
         "row": 0,
         "col": 2
       },

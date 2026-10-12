@@ -93,6 +93,7 @@ describe('convertAgilmenteResponse com a fixture válida', () => {
       },
     ])
     expect(solution.cells[0]).toEqual(['A', 'B', 'C', 'D', null])
+    expect(solution.cells[2]).toEqual(['H', 'I', 'Ã', 'K', 'L'])
     expect(solution.cells[4]).toEqual([null, 'P', 'Q', 'R', 'S'])
     expect(dates).toEqual([
       { date: '2026-10-11', inTheFuture: false },
