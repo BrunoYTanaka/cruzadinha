@@ -20,3 +20,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# Respostas brutas da fonte (verificação sob demanda)
+apps/api/.source-samples/

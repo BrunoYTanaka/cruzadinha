@@ -8,3 +8,4 @@ node_modules
 specs/
 .specify/
 .claude/
+**/.source-samples
