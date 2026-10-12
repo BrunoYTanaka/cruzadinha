@@ -60,7 +60,7 @@ Work is meant to flow through the Spec Kit skills in `.claude/skills/`, in rough
 - Commit messages and PR descriptions must NOT include a `Co-Authored-By` trailer or any other Claude/AI attribution line (this overrides the default attribution).
 - Branches are `<type>/<kebab-description>` with the same types; Spec Kit feature branches include the number and slug, e.g. `feat/001-viabilidade-fonte`.
 - Work type decides the flow: new behavior → full Spec Kit cycle on `feat/NNN-slug`; bug fix → `fix/<slug>` without the full cycle, starting with a failing regression test (committed with the fix); a fix that changes a documented rule → update that feature's `spec.md` first and treat it as a feature; chores/docs/ci → direct, no spec.
-- The design source is `/home/bruno/Desktop/2026-10-12-cruzadas-design.md` (the app is named Cruzadinha).
+- The design source is `docs/design.md` (the app is named Cruzadinha).
 
 ## Layout of `.specify/`
 
