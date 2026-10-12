@@ -13,7 +13,7 @@ const block = { kind: 'block' as const }
 function ring(): Puzzle {
   return {
     source: 'oglobo',
-    level: 'mini',
+    level: 'daily',
     date: '2026-10-12',
     attribution: { sourceName: 'O Globo', title: null, author: null, copyright: null },
     grid: {

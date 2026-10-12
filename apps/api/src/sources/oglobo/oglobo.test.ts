@@ -107,6 +107,7 @@ describe('createOgloboSource', () => {
   it('lança TypeError para nível ou data inválidos, sem pedir à fonte', async () => {
     const { source, fetch } = setup()
     await expect(source.fetchPuzzle('weekly' as Level, '2026-10-12')).rejects.toThrow(TypeError)
+    await expect(source.fetchPuzzle('mini' as Level, '2026-10-12')).rejects.toThrow(TypeError)
     await expect(source.fetchPuzzle('daily', '2026-13-01')).rejects.toThrow(TypeError)
     expect(fetch).not.toHaveBeenCalled()
   })

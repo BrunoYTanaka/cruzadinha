@@ -3,7 +3,7 @@ import { availableDateSchema, levelSchema, puzzleSchema, solutionSchema } from '
 
 const example = {
   source: 'oglobo',
-  level: 'mini',
+  level: 'daily',
   date: '2026-10-12',
   attribution: { sourceName: 'O Globo', title: null, author: null, copyright: null },
   grid: {
@@ -66,11 +66,11 @@ describe('puzzleSchema', () => {
 })
 
 describe('levelSchema', () => {
-  it('aceita os cinco níveis e recusa outros', () => {
-    for (const level of ['daily', 'mini', 'express', 'expert', 'thematic']) {
-      expect(levelSchema.safeParse(level).success).toBe(true)
+  it('aceita só o nível diário', () => {
+    expect(levelSchema.safeParse('daily').success).toBe(true)
+    for (const level of ['mini', 'express', 'expert', 'thematic', 'weekly']) {
+      expect(levelSchema.safeParse(level).success).toBe(false)
     }
-    expect(levelSchema.safeParse('weekly').success).toBe(false)
   })
 })
 

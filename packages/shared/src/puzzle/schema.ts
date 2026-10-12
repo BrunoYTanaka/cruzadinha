@@ -12,9 +12,8 @@ const dimension = z
   .min(1, { error: 'deve estar entre 1 e 30' })
   .max(30, { error: 'deve estar entre 1 e 30' })
 
-export const levelSchema = z.enum(['daily', 'mini', 'express', 'expert', 'thematic'], {
-  error: 'deve ser daily, mini, express, expert ou thematic',
-})
+// A fonte só publica o nível diário; novos níveis entram aqui quando houver fonte para eles.
+export const levelSchema = z.enum(['daily'], { error: 'deve ser daily' })
 
 export const puzzleSourceIdSchema = z.enum(['oglobo'])
 
