@@ -1,0 +1,28 @@
+{
+  "name": "@cruzadinha/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cruzadinha/shared": "*",
+    "@tanstack/react-query": "^5.104.2",
+    "react": "19.3",
+    "react-dom": "19.3"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "19.3",
+    "@types/react-dom": "19.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^30.1.2",
+    "vite": "8.3",
+    "vitest": "5.0"
+  }
+}
