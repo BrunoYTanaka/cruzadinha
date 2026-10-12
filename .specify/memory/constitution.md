@@ -1,15 +1,3 @@
-<!--
-Sync Impact Report
-- Version change: 1.0.0 → 1.3.0
-- Modified principles: I (código de aplicação), II (CI como portão, lockfile, pré-push definido),
-  V (estado de servidor), VI (segredos, solução do puzzle, cookies e limites de tentativas),
-  VII (caminhos ponta a ponta)
-- Added sections: VIII (conteúdo de terceiros e uso privado), IX (mudanças de schema por migração),
-  uso obrigatório do Context7 MCP e convenção de feature/correção/manutenção em Fluxo de
-  Desenvolvimento
-- Removed sections: none (convenções de formatação e de git ficam em CLAUDE.md)
-- Deferred TODOs: none
--->
 # Cruzadinha Constitution
 
 ## Core Principles
@@ -18,7 +6,13 @@ Sync Impact Report
 Todo código de aplicação MUST ser TypeScript em um monorepo npm workspaces (`apps/api`, `apps/web`,
 `packages/shared`). `tsconfig.base.json` MUST usar `strict: true` e cada pacote o estende.
 Tipos e schemas Zod compartilhados entre front e back MUST viver em `packages/shared`.
-Rationale: um único contrato tipado evita divergência entre cliente e servidor.
+O código MUST NOT escrever o tipo `any` (`: any`, `as any`, `<any>`); o ESLint MUST tratar isso
+como erro (`@typescript-eslint/no-explicit-any`) e o `strict` barra o `any` implícito. Quando não
+houver tipo conhecido, usar `unknown`, genéricos ou uniões. Dados externos (respostas HTTP,
+`JSON.parse`, corpo de requisição, variáveis de ambiente) SHOULD entrar como `unknown` e ser
+validados com Zod antes de usados, porque o `any` vindo de bibliotecas não é barrado pelo lint.
+Rationale: um único contrato tipado evita divergência entre cliente e servidor, e um `any` desliga
+a checagem de tipos justamente onde ela protege.
 
 ### II. Qualidade automatizada obrigatória
 Prettier, ESLint (flat config, `typescript-eslint`, `eslint-config-prettier`; no front também
@@ -121,4 +115,4 @@ novo princípio ou expansão material, PATCH para esclarecimentos. Revisões e p
 conformidade; desvios MUST ser justificados por escrito. Convenções de formatação e de git ficam
 em `CLAUDE.md`.
 
-**Version**: 1.3.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-12
+**Version**: 1.4.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-12
