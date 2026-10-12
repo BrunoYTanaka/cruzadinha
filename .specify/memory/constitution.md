@@ -65,11 +65,11 @@ fluxo principal.
 
 ### VIII. Conteúdo de terceiros e uso privado
 Os puzzles pertencem às fontes. O site MUST permanecer privado, restrito a convidados, e MUST NOT
-redistribuir o conteúdo publicamente. Cada puzzle MUST exibir a atribuição à sua fonte, e o projeto
-MUST respeitar os termos de uso da fonte e interromper o uso se ela o proibir. O cache MUST guardar
-apenas o necessário para jogar.
+redistribuir o conteúdo publicamente. Cada puzzle MUST exibir a atribuição à sua fonte. O cache
+MUST guardar apenas o necessário para jogar.
 Rationale: o projeto é de portfólio e usa uma API não oficial; o risco de direitos fica restrito
-ao uso privado e atribuído.
+ao uso privado e atribuído. A leitura dos termos de uso das fontes não é condição de nenhuma
+feature (emenda 2.0.0).
 
 ### IX. Mudanças de schema por migração
 Toda mudança no schema do banco MUST ser uma migração Drizzle versionada no repositório. O banco
@@ -115,4 +115,4 @@ novo princípio ou expansão material, PATCH para esclarecimentos. Revisões e p
 conformidade; desvios MUST ser justificados por escrito. Convenções de formatação e de git ficam
 em `CLAUDE.md`.
 
-**Version**: 1.4.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-12
+**Version**: 2.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-12
