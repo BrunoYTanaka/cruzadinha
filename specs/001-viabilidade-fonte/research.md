@@ -45,3 +45,7 @@ Um pedido manual ao endpoint do puzzle diário funcionou só com o cabeçalho `x
 
 ## Pontos em aberto
 Nenhum bloqueia o plano. A forma exata de obter o acesso anônimo será conhecida na execução da ferramenta, que é o objetivo da feature.
+
+## Resultado da execução real
+
+Confirmado na T029 (ver `decision.md`): o token anônimo gerado localmente bastou, a `x-key` não foi necessária e nenhum pedido foi gasto para obter credencial de visitante. A verificação usou 2 dos 6 pedidos.

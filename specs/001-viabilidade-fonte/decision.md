@@ -5,7 +5,7 @@
 
 ## Termos de uso (T028)
 
-**Não lidos.** O autor decidiu executar a verificação real sem passar pelo gate de conformidade (princípio VIII). A leitura dos termos de uso do O Globo e da Agilmente continua pendente e deve acontecer antes de automatizar o acesso no site (feature 004). Se os termos proibirem acesso automatizado, esta decisão deve ser revista.
+**Não lidos.** O autor decidiu executar a verificação real sem passar pelo gate de conformidade (princípio VIII). A leitura dos termos de uso do O Globo e da Agilmente continua pendente e deve acontecer antes de automatizar o acesso no site (feature 003, adaptador `oglobo`). Se os termos proibirem acesso automatizado, esta decisão deve ser revista.
 
 ## Veredito (T029)
 
@@ -24,7 +24,7 @@ A primeira execução terminou como `inconclusive/unexpected-format`, porque o s
 - O servidor aceita qualquer token no formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`; ele identifica o visitante, não o autentica.
 - A resposta inclui a solução (`ipuzData.solution`), as dicas (`ipuzData.clues.Across` e `Down`, como `[número, texto]`) e as respostas por palavra (`fromIpuz`).
 - A `x-key` estava definida no ambiente nas duas execuções; um pedido manual do autor sem ela também funcionou, então ela não parece necessária.
-- O formato ipuz é um padrão aberto, o que simplifica o adaptador da feature 004 e a eventual entrada de outras fontes.
+- O formato ipuz é um padrão aberto, o que simplifica o adaptador da feature 003 e a eventual entrada de outras fontes.
 
 ## Amostra (T031)
 
@@ -32,9 +32,9 @@ A amostra gravada pela ferramenta foi revisada: a verificação automática de v
 
 ## Código da verificação
 
-Por decisão do autor, o código da ferramenta (`tools/source-probe/`) e a amostra **não foram versionados**: esta feature respondia a uma pergunta, e a resposta está neste documento. A feature 004 escreve o adaptador definitivo a partir dos dados abaixo e grava as próprias fixtures, reduzidas ao mínimo necessário (princípio VIII).
+Por decisão do autor, o código da ferramenta (`tools/source-probe/`) e a amostra **não foram versionados**: esta feature respondia a uma pergunta, e a resposta está neste documento. A feature 003 escreve o adaptador definitivo a partir dos dados abaixo e grava as próprias fixtures, reduzidas ao mínimo necessário (princípio VIII).
 
-### Dados técnicos para a feature 004
+### Dados técnicos para a feature 003
 
 - **Endpoint**: `GET https://oglobo-api.agilmenteapp.com/api/games/crossword/daily/{AAAA-MM-DD}`.
 - **Acesso**: cabeçalho `x-access-token: ANONYMOUS-<32 hexadecimais>-ANONYMOUS`, gerado localmente com valor aleatório. A `x-key` não foi necessária.
@@ -49,5 +49,5 @@ Por decisão do autor, o código da ferramenta (`tools/source-probe/`) e a amost
 
 **proceed**: seguir com o O Globo como fonte e avançar para a feature `002-fundacao`, com duas pendências:
 
-1. Ler os termos de uso antes da feature 004 (ver acima).
-2. Confirmar na feature 004 os demais níveis (mini, express, expert, temático), que esta verificação não consultou.
+1. Ler os termos de uso antes da feature 003 (ver acima).
+2. Confirmar na feature 003 os demais níveis (mini, express, expert, temático), que esta verificação não consultou.

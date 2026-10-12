@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-12
 
-**Status**: Draft
+**Status**: Concluída (veredito viável, ver [decision.md](./decision.md))
 
 **Input**: User description: "001-viabilidade-fonte" (primeira tarefa do documento de design `2026-10-12-cruzadas-design.md`, seção 2 "Risco principal" e seção 10, item 1)
 
@@ -15,7 +15,7 @@
 - Q: A verificação pode usar as credenciais de visitante que a página pública do jogo entrega a qualquer leitor sem login, ou só pedidos totalmente sem credencial? → A: Pode usar credenciais de visitante obtidas da página pública, sem login nem conta de ninguém.
 - Q: A verificação deve buscar um puzzle completo de cada nível ou só de um? → A: Apenas o nível diário; os outros níveis não são consultados nesta feature.
 - Q: Se a fonte entregar o puzzle sem a solução (ou sem as dicas), qual deve ser o veredito? → A: A API do O Globo sempre entrega a solução junto do puzzle (informação do autor, a ser confirmada pela verificação). Puzzle sem solução ou sem dicas é tratado como mudança de formato: "inconclusivo (formato inesperado)".
-- Q: A verificação pode gerar ela mesma o token anônimo de visitante, em vez de usar o que a página entrega? → A: Sim. O token do widget tem o formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`, aparentemente criado no navegador para qualquer visitante; a verificação gera um nesse formato. A chave de cliente (`x-key`) continua vindo da página pública, pelo ambiente. Se a fonte recusar o token gerado sem `x-key` disponível, o resultado é "inconclusivo", não "não viável".
+- Q: A verificação pode gerar ela mesma o token anônimo de visitante, em vez de usar o que a página entrega? → A: Sim. O token do widget tem o formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`, aparentemente criado no navegador para qualquer visitante; a verificação gera um nesse formato. A chave de cliente (`x-key`) continua vindo da página pública, pelo ambiente. Se a fonte recusar o token gerado sem `x-key` disponível, o resultado é "inconclusivo", não "não viável". (Resultado: a `x-key` não foi necessária; ver `decision.md`.)
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -113,6 +113,6 @@ O autor quer que o resultado da verificação deixe uma amostra de resposta real
 - A fonte é o jogo de palavras cruzadas do O Globo, conforme o documento de design; outras fontes só entram se o veredito for "não viável".
 - Segundo o autor, a resposta da fonte sempre inclui a solução do puzzle; a verificação confirma isso em vez de presumir.
 - A forma de listar datas descrita no documento de design é uma hipótese a confirmar, não uma garantia.
-- Os demais níveis (mini, express, expert, temático) e seus formatos de grade só serão verificados na feature de puzzles e biblioteca (`004`); um veredito "viável" aqui vale apenas para o nível diário.
+- Os demais níveis (mini, express, expert, temático) e seus formatos de grade só serão verificados na feature do adaptador (`003`); um veredito "viável" aqui vale apenas para o nível diário.
 - Esta feature não entrega nenhuma interface de jogo, conta de usuário ou banco de dados.
 - Se o veredito for "não viável", a decisão sobre fonte alternativa (por exemplo outra fonte ou puzzles cadastrados manualmente) será tratada em nova rodada de design, fora desta feature.

@@ -37,7 +37,7 @@ Pacote isolado em `tools/source-probe/` (ver Structure Decision em plan.md). Tod
 - [X] T001 Criar a estrutura de pastas `tools/source-probe/{src,tests,fixtures}` conforme plan.md
 - [X] T002 Criar `tools/source-probe/package.json` (`"type": "module"`, `"private": true`, engine Node `>=22`) com dependência `zod` e dev dependencies `tsx`, `vitest`, `typescript`, e scripts `probe` (`tsx ./src/cli.ts`), `test` (`vitest run`) e `typecheck` (`tsc --noEmit`); gerar `package-lock.json` com `npm install` (versão de cada biblioteca confirmada no Context7)
 - [X] T003 [P] Criar `tools/source-probe/tsconfig.json` com `strict: true`, módulos ES e inclusão de `src` e `tests`
-- [ ] T004 [P] Criar `tools/source-probe/.env.example` apenas com nomes de variáveis e valores fictícios, sem nenhum valor real
+- [ ] T004 [P] Criar `tools/source-probe/.env.example` apenas com nomes de variáveis e valores fictícios, sem nenhum valor real — **dispensada**: o código não foi versionado (ver `decision.md`)
 - [X] T005 [P] Criar `tools/source-probe/.prettierrc.json` com as opções de formatação do projeto
 - [X] T006 [P] Acrescentar `node_modules/` e `tools/source-probe/.env` ao `.gitignore` da raiz (os padrões `.env*` já existem)
 
@@ -128,10 +128,10 @@ Pacote isolado em `tools/source-probe/` (ver Structure Decision em plan.md). Tod
 
 - [X] T027 Rodar `npm test` e `npm run typecheck` em `tools/source-probe/` e corrigir o que falhar. Confirmar também que nenhum arquivo em `tools/source-probe/tests/` importa `src/cli.ts` nem chama a rede de verdade (`npm test` com a rede desligada deve passar), em atendimento a FR-001 e ao princípio VII
 - [ ] T028 **Gate de conformidade (princípio VIII)**: antes de qualquer pedido real, ler os termos de uso do O Globo e da fornecedora do jogo (e o `robots.txt` do host da API, se existir) e registrar em `specs/001-viabilidade-fonte/decision.md` a conclusão: "permitido", "proibido" ou "não esclarecido", com a data e o link das páginas consultadas, sem copiar trechos longos. Se for "proibido", NÃO executar T029: registrar `back-to-design` em T030 e encerrar a feature. Se for "não esclarecido", decidir com o autor antes de seguir
-- [X] T029 Executar a verificação real uma vez, com `npm run probe -- --save-sample`, conforme `specs/001-viabilidade-fonte/quickstart.md`, sem expor credenciais na saída. Só rodar depois de T028 concluída como "permitido" (ou decidida pelo autor). A execução grava a amostra sanitizada em `tools/source-probe/fixtures/` para os testes de contrato da feature 004 (US3)
+- [X] T029 Executar a verificação real uma vez, com `npm run probe -- --save-sample`, conforme `specs/001-viabilidade-fonte/quickstart.md`, sem expor credenciais na saída. Só rodar depois de T028 concluída como "permitido" (ou decidida pelo autor). A execução grava a amostra sanitizada em `tools/source-probe/fixtures/` para os testes de contrato da feature 003 (US3)
 - [X] T030 Registrar o veredito, a data e a decisão (`proceed` ou `back-to-design`) em `specs/001-viabilidade-fonte/decision.md` (FR-011), sem nenhum valor sensível
 - [X] T031 Revisar manualmente o arquivo gravado em `tools/source-probe/fixtures/` por T029 e confirmar a ausência de credenciais, tokens, cookies e dados pessoais antes de qualquer commit (SC-004). Se a amostra não foi gerada (veredito diferente de `viable`), registrar isso em `decision.md`
-- [X] T032 Atualizar `CLAUDE.md` com os comandos reais da ferramenta (`npm run probe`, `npm test`, `npm run typecheck`, teste único com `npx vitest run <arquivo>`)
+- [X] T032 Atualizar `CLAUDE.md` com os comandos reais da ferramenta (`npm run probe`, `npm test`, `npm run typecheck`, teste único com `npx vitest run <arquivo>`) — **revertida**: o código não foi versionado, e o `CLAUDE.md` aponta para `decision.md`
 
 ---
 
@@ -189,7 +189,7 @@ Task: "Criar tools/source-probe/src/report.ts"           (T019)
 1. Fundação pronta
 2. US1: veredito e resumo (MVP)
 3. US2: datas do nível diário
-4. US3: amostra sanitizada para os testes de contrato da feature 004
+4. US3: amostra sanitizada para os testes de contrato da feature 003
 
 ---
 

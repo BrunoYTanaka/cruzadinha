@@ -15,7 +15,7 @@ Guia para provar a feature de ponta a ponta. Detalhes de interface em [contracts
 3. Antes do primeiro pedido real, ler os termos de uso da fonte e registrar a conclusão em `decision.md` (tarefa T028). Só seguir se não for "proibido".
 4. Rodar a verificação real: `npm run probe -- --save-sample`. Esperado: relatório com veredito e motivo em menos de 2 minutos e, se viável, a amostra sanitizada em `fixtures/`.
 5. Consultar uma data específica do nível diário: `npm run probe -- --date 2026-10-01`.
-6. Revisar o arquivo em `fixtures/` antes de qualquer commit. Esperado: nenhum token, cookie ou dado pessoal.
+6. Revisar o arquivo em `fixtures/` antes de qualquer commit. Esperado: nenhum token, cookie ou dado pessoal. (Na conclusão, a amostra não foi versionada.)
 
 ## Cenários de validação
 

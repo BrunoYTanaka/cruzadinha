@@ -14,7 +14,7 @@ Uma ferramenta de linha de comando, usada só pelo autor e sob demanda, que tent
 
 **Primary Dependencies**: `zod` (validação do formato recebido), `tsx` (execução direta de TypeScript, dev), `vitest` (testes, dev)
 
-**Storage**: Arquivos locais apenas. A amostra sanitizada é gravada em `tools/source-probe/fixtures/`; nada vai a banco
+**Storage**: Arquivos locais apenas. A amostra sanitizada é gravada em `tools/source-probe/fixtures/`; nada vai a banco. Na conclusão, nem a amostra nem o código foram versionados (ver `decision.md`).
 
 **Testing**: Vitest, com `fetch` simulado e respostas gravadas à mão. Sem rede na suíte
 
@@ -37,7 +37,7 @@ Uma ferramenta de linha de comando, usada só pelo autor e sob demanda, que tent
 | I. TypeScript estrito em monorepo | Passa, com ressalva: usa TypeScript `strict`, mas o monorepo é criado na feature 002. O pacote nasce autônomo e entra como workspace depois, sem mudança de código (ver Complexity Tracking) |
 | II. Qualidade automatizada | Adiado: Prettier, ESLint, Husky e CI são entregues na feature 002. O pacote já segue o padrão de formatação do `CLAUDE.md` |
 | III. Camadas no back | Não se aplica (não há API) |
-| IV. Adaptador isolado | Passa: o acesso à fonte fica em um único módulo, com fixtures sanitizadas que viram base dos testes de contrato da feature 004 |
+| IV. Adaptador isolado | Passa: o acesso à fonte fica em um único módulo, com fixtures sanitizadas que viram base dos testes de contrato da feature 003 |
 | V. Lógica de jogo pura | Não se aplica |
 | VI. Segurança e segredos | Passa: credenciais só por variável de ambiente, sanitização obrigatória antes de gravar amostras, `.gitignore` já cobre `.env*` |
 | VII. Testes sem internet | Passa: a suíte usa respostas simuladas; a execução real é manual e sob demanda |
@@ -83,7 +83,7 @@ tools/
     │   ├── sample.ts         # montagem e gravação da amostra sanitizada
     │   ├── sanitize.ts       # remoção pura de credenciais e dados pessoais
     │   └── report.ts         # formata o relatório legível
-    ├── fixtures/             # amostras sanitizadas (versionadas)
+    ├── fixtures/             # amostras sanitizadas (não versionadas; ver decision.md)
     └── tests/                # todos com fetch simulado, sem rede
         ├── verdict.test.ts
         ├── summary.test.ts
