@@ -43,7 +43,7 @@ Tooling notes: ESLint 10 with a `package.json` `overrides` entry so `eslint-plug
 
 Work is meant to flow through the Spec Kit skills in `.claude/skills/`, in roughly this order:
 
-1. `/speckit-constitution`: project principles live in `.specify/memory/constitution.md` (v1.4.0). Plans must pass a Constitution Check against it.
+1. `/speckit-constitution`: project principles live in `.specify/memory/constitution.md` (v2.0.0). Plans must pass a Constitution Check against it.
 2. `/speckit-specify`: create a feature spec (`spec.md`).
 3. `/speckit-clarify`: resolve underspecified areas in the spec.
 4. `/speckit-plan`: generate `plan.md` and design artifacts.
