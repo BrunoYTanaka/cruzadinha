@@ -1,0 +1,6 @@
+# Segredos e informações sensíveis
+.env
+.env.*
+!.env.example
+*.pem
+*.key
