@@ -9,7 +9,7 @@ Um site de palavras cruzadas que reúne puzzles de sites existentes numa interfa
 
 - **Uso:** projeto de portfólio, site pequeno e privado, para o autor e amigos.
 - **Foco:** a experiência de jogar (tabuleiro, teclado, dicas, navegação) e a qualidade do código.
-- **Sucesso:** o usuário entra, escolhe um nível e uma data do O Globo, joga numa interface agradável em claro ou escuro, e o progresso fica salvo entre dispositivos.
+- **Sucesso:** o usuário entra, escolhe uma data do O Globo, joga numa interface agradável em claro ou escuro, e o progresso fica salvo entre dispositivos.
 
 ### Fora do escopo da v1
 
@@ -21,18 +21,18 @@ A v1 usa só o **O Globo**. O jogo do O Globo é um widget da fornecedora **Agil
 
 - Base: `https://oglobo-api.agilmenteapp.com/api/`
 - Rota: `games/crossword/{nível}/{YYYY-MM-DD}`
-- Níveis vistos no código do widget: `daily`, `mini`, `express`, `expert`, `thematic`.
+- Nível: só `daily`. O código do widget também cita `mini`, `express`, `expert` e `thematic`, mas a fonte não os publica (respondem `NOT-AVAILABLE`).
 - A resposta lista também as datas disponíveis (`dates`, cada uma com `inTheFuture` e `status`), o que permite navegar pelo histórico.
 - Formato: o puzzle vem no padrão aberto **ipuz v2** (`ipuzData`: grade, solução e dicas `Across`/`Down`), mais `fromIpuz` com a resposta e a posição de cada palavra.
 - Autenticação: header `x-access-token` com um token anônimo no formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`. O servidor aceita qualquer valor nesse formato, então o token é gerado localmente; ele identifica o visitante, não o autentica. A `x-key` não foi necessária. Sem o token a API responde HTTP 200 com `{"error":"NO-USER"}`, por isso a recusa é detectada pelo corpo, não pelo status.
 
 ### Viabilidade (resolvida)
 
-A feature 001 confirmou o acesso sem login: veredito **viável** em 2026-10-12, com o puzzle diário completo (grade, dicas e solução). Detalhes em `specs/001-viabilidade-fonte/decision.md`. Ainda falta confirmar os níveis `mini`, `express`, `expert` e `thematic`, que a verificação não consultou.
+A feature 001 confirmou o acesso sem login: veredito **viável** em 2026-10-12, com o puzzle diário completo (grade, dicas e solução). Detalhes em `specs/001-viabilidade-fonte/decision.md`.
 
-### Janela de histórico (a confirmar)
+### Janela de histórico
 
-Na verificação, a fonte listou só **31 datas** (de 2026-09-12 a 2026-10-12), além das futuras. Se a fonte só mantiver cerca de 30 dias, datas mais antigas existem apenas no banco do site, o que motiva a coleta diária (seção 4, Cache). A feature de puzzles confirma se uma data fora da lista ainda responde.
+A resposta lista só **31 datas passadas** em `dates`, mais 6 futuras. Mesmo assim, a feature 003 confirmou que uma data fora da lista ainda responde: 2026-09-01 veio completa (`specs/003-adaptador-oglobo/findings.md`). Então `dates` é só a janela que o widget mostra. O limite real do histórico ainda não é conhecido, e a coleta diária (seção 4, Cache) continua sendo a garantia de que nenhum puzzle se perde.
 
 A API é não oficial e de terceiros, e pode mudar sem aviso. Por isso toda a integração fica isolada em um adaptador (seção 4) e coberta por testes de contrato.
 
@@ -80,11 +80,12 @@ apps/api/src/
   modules/
     auth/            cadastro, login, logout, sessão, limite de tentativas
     invites/         geração, cota, validação, revogação
-    puzzles/         rotas, cache, formato interno
+    puzzles/         rotas e cache (o formato interno fica em packages/shared)
     progress/        salvar e ler o progresso
   sources/
     types.ts         interface PuzzleSource
-    oglobo.ts        única parte que conhece a Agilmente
+    oglobo/          única parte que conhece a Agilmente: pedido, token,
+                     schema da resposta, conversão ipuz, fixtures e source:check
   cli.ts             invites create | list | revoke; puzzles collect
 ```
 
@@ -118,7 +119,7 @@ Preferência do usuário (tema claro, escuro ou automático) fica numa coluna de
 
 O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, compartilhada; só o `progress` é por usuário. Um puzzle guardado não é buscado de novo.
 
-**Coleta diária:** um comando da API (`cli.ts puzzles collect`) busca o puzzle do dia de cada nível e grava no banco. Ele roda por agendamento (seção 9), sem depender de a API estar acordada.
+**Coleta diária:** um comando da API (`cli.ts puzzles collect`) busca o puzzle do dia (nível `daily`, o único publicado) e grava no banco. Ele roda por agendamento (seção 9), sem depender de a API estar acordada.
 
 - Grava com upsert em `(source, level, date)`, então rodar duas vezes não muda nada.
 - Roda duas vezes por dia, para tolerar atraso ou falha do agendamento.
@@ -133,7 +134,7 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - `POST /api/invites`, `GET /api/invites` (os do próprio usuário)
 - `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
-- `GET /api/library` (níveis e datas, com o status do usuário)
+- `GET /api/library` (datas disponíveis, com o status do usuário)
 - `PUT /api/progress/:puzzleId`, `GET /api/progress/:puzzleId`
 - `PATCH /api/me/preferences` (tema)
 

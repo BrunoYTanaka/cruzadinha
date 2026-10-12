@@ -1,0 +1,110 @@
+{
+  "id": "00000000-0000-4000-8000-000000000000",
+  "dates": [
+    {
+      "date": "2026-10-11",
+      "fomattedDate": "11/10/26",
+      "day": "domingo",
+      "inTheFuture": false,
+      "status": "NOT-PLAYED"
+    },
+    {
+      "date": "2026-10-12",
+      "fomattedDate": "12/10/26",
+      "day": "lunes",
+      "inTheFuture": false,
+      "status": "NOT-PLAYED"
+    },
+    {
+      "date": "2026-10-13",
+      "fomattedDate": "13/10/26",
+      "day": "martes",
+      "inTheFuture": true,
+      "status": "NOT-PLAYED"
+    }
+  ],
+  "ipuzData": {
+    "showenumerations": false,
+    "notes": "",
+    "puzzle": [
+      [1, ":", 2, ":", "#"],
+      [":", "#", ":", "#", 3],
+      [4, ":", ":", ":", ":"],
+      [":", "#", ":", "#", ":"],
+      ["#", 5, ":", ":", ":"]
+    ],
+    "copyright": "Fixture reduzida, conteúdo inventado",
+    "intro": "",
+    "version": "http://ipuz.org/v2",
+    "origin": "Crossword Compiler 11.41",
+    "empty": ":",
+    "title": "Cruzada de teste",
+    "kind": ["http://ipuz.org/crossword#1"],
+    "clues": {
+      "Across": [
+        [1, "Dica inventada 1 horizontal"],
+        [4, "Ação de <i>teste</i> &amp; mais"],
+        [5, "Dica inventada 5 horizontal"]
+      ],
+      "Down": [
+        [1, "Dica inventada 1 vertical"],
+        [2, "Dica inventada 2 vertical"],
+        [3, "Dica inventada 3 vertical"]
+      ]
+    },
+    "dimensions": {
+      "width": 5,
+      "height": 5
+    },
+    "author": "Autor fictício",
+    "solutions": [
+      ["a", "B", "C", "D", "#"],
+      ["E", "#", "F", "#", "G"],
+      ["H", "I", "J", "K", "L"],
+      ["M", "#", "N", "#", "O"],
+      ["#", "P", "Q", "R", "S"]
+    ]
+  },
+  "fromIpuz": {
+    "across": {
+      "1": {
+        "clue": "Dica inventada 1 horizontal",
+        "answer": "ABCD",
+        "row": 0,
+        "col": 0
+      },
+      "4": {
+        "clue": "Ação de <i>teste</i> &amp; mais",
+        "answer": "HIÃKL",
+        "row": 2,
+        "col": 0
+      },
+      "5": {
+        "clue": "Dica inventada 5 horizontal",
+        "answer": "PQRS",
+        "row": 4,
+        "col": 1
+      }
+    },
+    "down": {
+      "1": {
+        "clue": "Dica inventada 1 vertical",
+        "answer": "AEHM",
+        "row": 0,
+        "col": 0
+      },
+      "2": {
+        "clue": "Dica inventada 2 vertical",
+        "answer": "CFÃNQ",
+        "row": 0,
+        "col": 2
+      },
+      "3": {
+        "clue": "Dica inventada 3 vertical",
+        "answer": "GLOS",
+        "row": 1,
+        "col": 4
+      }
+    }
+  }
+}

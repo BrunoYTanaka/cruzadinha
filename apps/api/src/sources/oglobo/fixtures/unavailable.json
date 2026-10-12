@@ -1,0 +1,26 @@
+{
+  "error": "NOT-AVAILABLE",
+  "dates": [
+    {
+      "date": "2026-10-11",
+      "fomattedDate": "11/10/26",
+      "day": "domingo",
+      "inTheFuture": false,
+      "status": "NOT-PLAYED"
+    },
+    {
+      "date": "2026-10-12",
+      "fomattedDate": "12/10/26",
+      "day": "lunes",
+      "inTheFuture": false,
+      "status": "NOT-PLAYED"
+    },
+    {
+      "date": "2026-10-13",
+      "fomattedDate": "13/10/26",
+      "day": "martes",
+      "inTheFuture": true,
+      "status": "NOT-PLAYED"
+    }
+  ]
+}

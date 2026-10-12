@@ -8,6 +8,7 @@ This repository ("cruzadinha") is driven by a [GitHub Spec Kit](https://github.c
 
 - Feature 001 (source feasibility) is concluded: the verdict was **viable**, and its probe code was intentionally not versioned. The O Globo API details the puzzle adapter needs (endpoint, anonymous token, ipuz response format) are in `specs/001-viabilidade-fonte/decision.md`. The adapter is feature 003.
 - Feature 002 (foundation) set up the monorepo, quality tooling, CI and local environment. Application code is only the minimum that proves the structure: `GET /api/health` and a status page. No product features yet.
+- Feature 003 (O Globo adapter) added the internal puzzle format in `shared` and the `oglobo` puzzle source in the API, with fixtures reduced from real responses. Findings from the real-source checks are in `specs/003-adaptador-oglobo/findings.md`. The source only publishes the `daily` level, so that is the only level accepted.
 
 ## Commands
 
@@ -20,6 +21,7 @@ Run everything from the repository root:
 - `npm run lint`: ESLint with the single root `eslint.config.mjs`.
 - `npm run typecheck`, `npm test`, `npm run build`: run in every workspace (`--workspaces --if-present`).
 - Single test: `npx vitest run <file>` inside the workspace, e.g. `cd apps/api && npx vitest run src/config.test.ts`.
+- `npm run source:check -w @cruzadinha/api -- [YYYY-MM-DD] [--save]`: fetches the puzzle from the real source (real requests, never run by the test suite or CI); `--save` writes the raw bodies to the git-ignored `apps/api/.source-samples/`.
 - `npm run dev -w @cruzadinha/api`: API with reload (`tsx watch`), reading `.env` from the root.
 - `npm run dev -w @cruzadinha/web`: site with Vite; `/api` is proxied to `API_PROXY_TARGET` (default `http://localhost:3000`).
 - Local environment: `cp .env.example .env`, then `docker compose up -d` (Postgres 17 and the API image). Health: `curl localhost:3000/api/health`.
@@ -30,8 +32,8 @@ Hooks: pre-commit runs `lint-staged` (ESLint `--fix` and Prettier on staged file
 
 npm workspaces monorepo, TypeScript 6 strict everywhere (`tsconfig.base.json`, extended per package):
 
-- `packages/shared` (`@cruzadinha/shared`): Zod schemas and types shared by API and web. No build step: it exports its TypeScript source (`./src/index.ts`).
-- `apps/api` (`@cruzadinha/api`): Fastify 5. `src/app.ts` builds the app without listening (tested with `app.inject()`); `src/server.ts` is the entry point. Layers per module: route → service → repository (`src/modules/<name>/`, database access in `src/db/`). Configuration comes only from environment variables validated by `src/config.ts`; no other module reads `process.env`. Built with tsdown into a single `dist/server.mjs` that inlines `shared`.
+- `packages/shared` (`@cruzadinha/shared`): Zod schemas and types shared by API and web. No build step: it exports its TypeScript source (`./src/index.ts`). `src/puzzle/` holds the internal puzzle format: the public part (`puzzleSchema`, with the consistency rules applied in `safeParse`) and the solution (`solutionSchema`) are separate, so the public part has no field for answer letters.
+- `apps/api` (`@cruzadinha/api`): Fastify 5. `src/app.ts` builds the app without listening (tested with `app.inject()`); `src/server.ts` is the entry point. Layers per module: route → service → repository (`src/modules/<name>/`, database access in `src/db/`). Configuration comes only from environment variables validated by `src/config.ts`; no other module reads `process.env`. Built with tsdown into a single `dist/server.mjs` that inlines `shared`. `src/sources/` holds the `PuzzleSource` interface (`types.ts`) and one folder per adapter; `oglobo/` is the only code that knows the Agilmente API (request, anonymous token, response schema, pure ipuz → internal conversion). Its tests use an injected `fetch` and reduced 5 x 5 fixtures with invented content, never full puzzles from the source.
 - `apps/web` (`@cruzadinha/web`): React 19 + Vite 8; server state through TanStack Query. The board logic will live in `src/game-logic/` (not a separate package).
 - The API and the web app never import each other; anything both need goes in `shared`.
 
