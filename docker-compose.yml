@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: cruzadinha
+      POSTGRES_PASSWORD: cruzadinha
+      POSTGRES_DB: cruzadinha
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cruzadinha -d cruzadinha']
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://cruzadinha:cruzadinha@db:5432/cruzadinha
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
