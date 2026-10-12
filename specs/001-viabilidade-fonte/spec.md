@@ -15,6 +15,7 @@
 - Q: A verificação pode usar as credenciais de visitante que a página pública do jogo entrega a qualquer leitor sem login, ou só pedidos totalmente sem credencial? → A: Pode usar credenciais de visitante obtidas da página pública, sem login nem conta de ninguém.
 - Q: A verificação deve buscar um puzzle completo de cada nível ou só de um? → A: Apenas o nível diário; os outros níveis não são consultados nesta feature.
 - Q: Se a fonte entregar o puzzle sem a solução (ou sem as dicas), qual deve ser o veredito? → A: A API do O Globo sempre entrega a solução junto do puzzle (informação do autor, a ser confirmada pela verificação). Puzzle sem solução ou sem dicas é tratado como mudança de formato: "inconclusivo (formato inesperado)".
+- Q: A verificação pode gerar ela mesma o token anônimo de visitante, em vez de usar o que a página entrega? → A: Sim. O token do widget tem o formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`, aparentemente criado no navegador para qualquer visitante; a verificação gera um nesse formato. A chave de cliente (`x-key`) continua vindo da página pública, pelo ambiente. Se a fonte recusar o token gerado sem `x-key` disponível, o resultado é "inconclusivo", não "não viável".
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -77,7 +78,7 @@ O autor quer que o resultado da verificação deixe uma amostra de resposta real
 ### Functional Requirements
 
 - **FR-001**: O sistema MUST permitir ao autor executar, sob demanda e fora da rotina automática de testes, uma verificação de acesso à fonte de puzzles.
-- **FR-002**: A verificação MUST tentar obter um puzzle real do O Globo sem usar a conta pessoal do autor nem credenciais de terceiros. Ela PODE usar credenciais de visitante que a página pública do jogo entrega a qualquer leitor sem login; MUST NOT usar login, conta de ninguém nem credenciais obtidas por outro meio.
+- **FR-002**: A verificação MUST tentar obter um puzzle real do O Globo sem usar a conta pessoal do autor nem credenciais de terceiros. Ela PODE usar credenciais de visitante que a página pública do jogo entrega a qualquer leitor sem login, e PODE gerar o token anônimo de visitante no mesmo formato que o widget cria; MUST NOT usar login, conta de ninguém nem credenciais obtidas por outro meio.
 - **FR-003**: A verificação MUST terminar com um dos vereditos: "viável", "não viável (exige login)" ou "inconclusivo (fonte indisponível, formato inesperado ou limite de uso atingido)", sempre com o motivo.
 - **FR-004**: Em caso viável, a verificação MUST apresentar um resumo de um puzzle completo do nível diário: data, dimensões da grade, quantidade de palavras e de dicas, e confirmar que a solução veio incluída. Puzzle sem solução ou sem dicas MUST resultar em "inconclusivo (formato inesperado)", nunca em "viável".
 - **FR-005**: A verificação MUST informar as datas com puzzle do nível diário, ou declarar que a fonte não fornece essa listagem. Os demais níveis MUST NOT ser consultados nesta feature.

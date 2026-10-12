@@ -4,3 +4,17 @@
 !.env.example
 *.pem
 *.key
+
+# Dependências e artefatos
+node_modules/
+dist/
+build/
+coverage/
+*.log
+
+# Sistema e editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

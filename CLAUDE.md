@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-This repository ("cruzadinha") has no application source code, build system, tests, or README yet. It contains only a freshly initialized [GitHub Spec Kit](https://github.com/github/spec-kit) scaffold (v1.0.13, Claude integration, `sh` scripts, sequential feature numbering). Git is initialized with no commits yet. Once real code lands, update this file with build/lint/test commands and architecture.
+This repository ("cruzadinha") is driven by a [GitHub Spec Kit](https://github.com/github/spec-kit) scaffold (v1.0.13, Claude integration, `sh` scripts, sequential feature numbering). It has no application code yet; the monorepo (`apps/`, `packages/`) arrives with feature 002. Once real code lands, add build/lint/test commands and architecture here.
+
+Feature 001 (source feasibility) is concluded: the verdict was **viable**, and its probe code was intentionally not versioned. The O Globo API details the puzzle adapter needs (endpoint, anonymous token, ipuz response format) are in `specs/001-viabilidade-fonte/decision.md`.
 
 ## Spec-driven workflow
 

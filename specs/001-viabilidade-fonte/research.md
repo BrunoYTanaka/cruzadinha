@@ -30,7 +30,7 @@ Documentação das bibliotecas consultada via Context7 em 2026-10-12.
 - **Alternatives considered**: argumentos de linha de comando (aparecem no histórico do shell); arquivo de configuração versionado (proibido).
 
 ### 6. Descoberta do acesso anônimo
-- **Decision**: a ferramenta executa a descoberta em etapas e registra cada uma no relatório: (a) tentar o pedido sem nada; (b) tentar obter as credenciais de visitante que a própria página pública do jogo entrega a qualquer leitor (permitido pela clarificação de 2026-10-12; login e contas de terceiros continuam proibidos); (c) repetir o pedido com elas. O veredito decide pela etapa em que o acesso passa ou falha.
+- **Decision**: a ferramenta executa a descoberta em etapas e registra cada uma no relatório: (a) tentar o pedido sem nada; (b) usar credenciais de visitante (permitido pela clarificação de 2026-10-12; login e contas de terceiros continuam proibidos): o token anônimo é gerado no formato do widget, `ANONYMOUS-<32 hex>-ANONYMOUS`, ou lido de `OGLOBO_VISITOR_TOKEN` se definido; a `x-key` vem de `OGLOBO_CLIENT_KEY`, copiada da página pública; (c) repetir o pedido com elas. O veredito decide pela etapa em que o acesso passa ou falha.
 - **Rationale**: o desenho já registra que a API recusa pedidos sem credenciais, e a pergunta da feature é justamente se existe um caminho anônimo. Isso só se confirma observando o comportamento real, por isso é o que o spike entrega, e não uma pergunta de pesquisa em escritório.
 - **Alternatives considered**: concluir "não viável" sem tentar (descartaria a hipótese central); usar uma conta pessoal (proibido por FR-002).
 
@@ -38,6 +38,10 @@ Documentação das bibliotecas consultada via Context7 em 2026-10-12.
 - **Decision**: no máximo 6 pedidos por execução, com pausa de 1 segundo entre eles, e parada imediata ao receber sinal de limite de uso ou bloqueio. Orçamento previsto: 1 pedido sem credencial, 1 para obter a credencial de visitante, 1 repetição com credencial, até 2 datas anteriores e 1 listagem de datas. Esgotar o orçamento termina como `inconclusive` (`rate-limited`).
 - **Rationale**: atende a FR-007 e ao princípio VIII (baixa frequência, respeito à fonte).
 - **Alternatives considered**: sem limite (arrisca bloqueio e abuso da fonte).
+
+## Observação manual do autor (2026-10-12)
+
+Um pedido manual ao endpoint do puzzle diário funcionou só com o cabeçalho `x-access-token` no formato `ANONYMOUS-<32 hex>-ANONYMOUS`, sem `x-key`. Trocar os 32 hexadecimais por qualquer valor também funcionou. Conclusões provisórias, a confirmar pela T029: o token anônimo não é validado pelo servidor além do formato, gerá-lo localmente é suficiente e a `x-key` não é necessária para o puzzle diário. O formato da resposta (`schema.ts`) continua sem confirmação.
 
 ## Pontos em aberto
 Nenhum bloqueia o plano. A forma exata de obter o acesso anônimo será conhecida na execução da ferramenta, que é o objetivo da feature.
