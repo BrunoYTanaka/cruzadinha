@@ -31,7 +31,7 @@ Esperado: tudo verde; o bundle `apps/api/dist/server.mjs` não inclui `check.ts`
 
 ## 4. Verificação sob demanda contra a fonte real (história 3)
 
-Faz até cinco pedidos reais (mais as novas tentativas por recusa). Rodar com moderação.
+Faz um pedido real por nível aceito, hoje só `daily` (mais a nova tentativa por recusa). Rodar com moderação.
 
 ```sh
 npm run source:check -w @cruzadinha/api
@@ -42,8 +42,7 @@ Esperado: uma linha por nível, no formato de [contracts/source-check.md](./cont
 
 Usar o resultado para:
 
-- criar uma fixture válida reduzida para cada nível que deu `ok` (FR-016);
-- registrar como pendência os níveis que falharam;
+- alinhar a fixture válida reduzida com a resposta real (FR-016);
 - descobrir como a fonte responde a uma data sem puzzle e ajustar o mapeamento, se preciso.
 
 ## 5. Conferências finais

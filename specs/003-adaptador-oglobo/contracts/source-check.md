@@ -14,17 +14,13 @@ npm run source:check -w @cruzadinha/api -- [AAAA-MM-DD] [--save]
 
 ## Comportamento
 
-- Níveis na ordem `daily`, `mini`, `express`, `expert`, `thematic`, um pedido por nível pelo adaptador (mais a nova tentativa por recusa), com 2 s de pausa entre níveis.
+- Níveis na ordem de `levelSchema.options` (hoje só `daily`), um pedido por nível pelo adaptador (mais a nova tentativa por recusa), com 2 s de pausa entre níveis.
 - Ao primeiro `rate-limited`, para e lista os níveis não consultados.
 
 ## Saída (uma linha por nível, SC-006)
 
 ```text
 daily     ok                 11x11  32 palavras
-mini      ok                 5x5    10 palavras
-express   unavailable
-expert    unexpected-format  ipuzData.clues.Across.3: esperado par [número, texto]
-thematic  não consultado (limite de uso)
 ```
 
 - Nunca imprime o token, cabeçalhos ou conteúdo das respostas (dicas, letras).

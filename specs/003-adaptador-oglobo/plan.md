@@ -6,7 +6,7 @@
 
 ## Summary
 
-Definir em `packages/shared` o formato interno de puzzle: schemas Zod estritos para a parte pública (grade, palavras, dicas, metadados e atribuição) e para a solução, separadas, com as regras de consistência aplicadas no próprio `safeParse`. Em `apps/api/src/sources/`, criar a interface `PuzzleSource` e o adaptador O Globo, que faz o pedido à Agilmente com token anônimo gerado localmente, valida a resposta como `unknown`, converte o ipuz v2 para o formato interno por uma função pura e devolve um resultado explícito (sucesso ou um de seis motivos de falha). Os testes usam fixtures reduzidas e um `fetch` injetado, sem rede. Uma verificação sob demanda (`npm run source:check`) consulta os cinco níveis na fonte real, confirma os níveis que a 001 não viu e alimenta as fixtures.
+Definir em `packages/shared` o formato interno de puzzle: schemas Zod estritos para a parte pública (grade, palavras, dicas, metadados e atribuição) e para a solução, separadas, com as regras de consistência aplicadas no próprio `safeParse`. Em `apps/api/src/sources/`, criar a interface `PuzzleSource` e o adaptador O Globo, que faz o pedido à Agilmente com token anônimo gerado localmente, valida a resposta como `unknown`, converte o ipuz v2 para o formato interno por uma função pura e devolve um resultado explícito (sucesso ou um de seis motivos de falha). Os testes usam fixtures reduzidas e um `fetch` injetado, sem rede. Uma verificação sob demanda (`npm run source:check`) consulta os níveis aceitos na fonte real e alimenta as fixtures. A verificação mostrou que a fonte só publica `daily`, que passou a ser o único nível aceito.
 
 ## Technical Context
 
@@ -26,7 +26,7 @@ Definir em `packages/shared` o formato interno de puzzle: schemas Zod estritos p
 
 **Constraints**: no máximo 2 pedidos por chamada e 1 por nível na verificação (FR-012, SC-006); token só em memória e fora de qualquer saída (FR-013); fixtures reduzidas e sanitizadas num repositório público (FR-015, SC-007)
 
-**Scale/Scope**: 1 fonte, 5 níveis, grades de até 30 x 30; cerca de 8 arquivos de código, 6 fixtures e 40 casos de teste
+**Scale/Scope**: 1 fonte, 1 nível (`daily`), grades de até 30 x 30; cerca de 8 arquivos de código, 6 fixtures e 40 casos de teste
 
 ## Constitution Check
 
@@ -103,8 +103,7 @@ specs/003-adaptador-oglobo/
                         ├── changed-shape.json
                         ├── unsupported-cell-style.json
                         ├── unsupported-rebus.json
-                        ├── unavailable.json
-                        └── <level>-valid.json   # um por nível confirmado
+                        └── unavailable.json
 ```
 
 **Structure Decision**: o formato interno vai para `packages/shared/src/puzzle/`, porque o site vai consumir o tipo público na feature do jogo. A interface de fonte e o adaptador ficam em `apps/api/src/sources/`, como no design; o O Globo ganha uma pasta em vez do arquivo único previsto, para separar conversão pura, acesso HTTP, schema da resposta e fixtures. Nenhum módulo em `modules/` nem rota nova nesta feature.

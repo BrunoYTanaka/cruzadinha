@@ -33,5 +33,5 @@
 
 - O "usuário" desta feature é o autor como desenvolvedor e as features seguintes. Por isso a spec cita a fonte (O Globo/Agilmente), o padrão aberto ipuz, a recusa `NO-USER` e as fixtures: são o domínio da feature, não escolhas de implementação. Bibliotecas, linguagem e estrutura de pastas ficam para o `/speckit-plan`.
 - Os códigos de motivo de FR-010 (`unavailable`, `refused` etc.) são nomes de resultado, não de implementação; o plano pode ajustá-los.
-- Pendências herdadas da feature 001: confirmação dos níveis além do diário (história 3).
+- Pendência herdada da feature 001 resolvida: a fonte só publica o nível `daily` (`findings.md`).
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`

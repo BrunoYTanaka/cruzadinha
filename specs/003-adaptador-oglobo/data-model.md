@@ -6,7 +6,7 @@ Convenções: linhas e colunas começam em 0, a partir do canto superior esquerd
 
 ## Level
 
-Enum: `daily`, `mini`, `express`, `expert`, `thematic` (FR-005).
+Enum: `daily` (FR-005). A fonte não publica outros níveis.
 
 ## Puzzle (parte pública)
 

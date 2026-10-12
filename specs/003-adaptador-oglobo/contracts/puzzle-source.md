@@ -46,7 +46,7 @@ createOgloboSource(options?: {
 | Corpo válido com recurso fora do suporte | | `unsupported` |
 | Corpo válido, conversão consistente | | `ok: true` |
 
-Observado pelo autor em 2026-10-12: data mal formada (por exemplo `2026-13-01`) recebe o corpo completo (`dates`, `ipuzData` etc.) acrescido de `"error": "NOT-AVAILABLE"`, e pedido sem data recebe HTTP 502. Como o corpo com `NOT-AVAILABLE` traz um `ipuzData` que não é da data pedida, o campo `error` é conferido antes de qualquer conversão. O adaptador valida a data antes do pedido, então nunca envia data mal formada nem ausente; o comportamento para data bem formada sem puzzle é confirmado na T020.
+Observado pelo autor em 2026-10-12: data mal formada (por exemplo `2026-13-01`) recebe o corpo completo (`dates`, `ipuzData` etc.) acrescido de `"error": "NOT-AVAILABLE"`, e pedido sem data recebe HTTP 502. Como o corpo com `NOT-AVAILABLE` traz um `ipuzData` que não é da data pedida, o campo `error` é conferido antes de qualquer conversão. O adaptador valida a data antes do pedido, então nunca envia data mal formada nem ausente; uma data bem formada sem puzzle também responde `NOT-AVAILABLE`, só com `error` e `dates` (`findings.md`, execução 4).
 
 ## Conversão ipuz → formato interno (`convert.ts`, função pura)
 

@@ -14,6 +14,7 @@
 
 - Q: Quando a leitura dos termos de uso do O Globo e da Agilmente precisa acontecer nesta feature? → A: Só antes de concluir a feature; pedidos reais (verificação sob demanda e gravação de fixtures) podem acontecer durante o desenvolvimento. Superada pela emenda 2.0.0 da constitution, que retirou a exigência de ler os termos; o FR-018 foi removido.
 - Q: O que fazer quando o texto de uma dica vier com marcação HTML ou códigos de caracteres? → A: Manter o texto da dica exatamente como veio da fonte, sem conversão nem verificação.
+- Q: Quais níveis a fonte realmente oferece? → A: Só `daily`. Os níveis `mini`, `express`, `expert` e `thematic` aparecem no código do widget, mas a fonte não os publica (confirmado pelo autor e pelas execuções de `findings.md`). O FR-005 passa a aceitar só `daily`; o campo `level` continua no formato para que novos níveis entrem sem mudar sua forma.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -65,7 +66,7 @@ O autor roda, quando quiser e fora da suíte automática, uma verificação cont
 
 **Acceptance Scenarios**:
 
-1. **Given** a fonte no ar, **When** o autor roda a verificação para uma data, **Then** ela informa, para cada um dos cinco níveis, sucesso (com as dimensões e a contagem de palavras) ou o motivo da falha.
+1. **Given** a fonte no ar, **When** o autor roda a verificação para uma data, **Then** ela informa, para cada nível aceito (hoje só `daily`), sucesso (com as dimensões e a contagem de palavras) ou o motivo da falha.
 2. **Given** um sinal de limite de uso no meio da verificação, **When** ele é recebido, **Then** a verificação para imediatamente e informa os níveis que não foram consultados.
 3. **Given** a suíte automática de testes, **When** ela roda, **Then** a verificação contra a fonte real não é executada.
 
@@ -96,7 +97,7 @@ O autor roda, quando quiser e fora da suíte automática, uma verificação cont
 - **FR-002**: O sistema MUST definir a solução como estrutura separada da parte pública do puzzle, com a letra esperada de cada célula aberta, de forma que a parte pública nunca contenha letras da resposta.
 - **FR-003**: O sistema MUST validar um puzzle e recusá-lo, indicando o motivo, quando: uma palavra sai da grade ou passa por um bloco; o tamanho declarado de uma palavra não corresponde à sequência de células abertas; uma palavra não tem dica ou a dica é vazia; dois números iguais aparecem na mesma direção; uma célula aberta não pertence a nenhuma palavra; a célula onde a palavra começa não tem o número da palavra; uma célula numerada não inicia nenhuma palavra.
 - **FR-004**: O sistema MUST validar o par puzzle e solução e recusá-lo quando as dimensões diferem ou quando uma célula aberta não tem exatamente uma letra na solução.
-- **FR-005**: Os níveis aceitos MUST ser `daily`, `mini`, `express`, `expert` e `thematic`; as datas MUST ser dias do calendário no formato ano-mês-dia.
+- **FR-005**: O único nível aceito MUST ser `daily` (a fonte não publica outros); as datas MUST ser dias do calendário no formato ano-mês-dia.
 
 **Adaptador O Globo**
 
@@ -135,13 +136,13 @@ O autor roda, quando quiser e fora da suíte automática, uma verificação cont
 - **SC-003**: A suíte automática da feature roda completa sem conexão com a internet, em menos de 10 segundos numa máquina de desenvolvimento comum.
 - **SC-004**: Nenhuma parte pública de puzzle produzida pela feature contém letra da resposta (verificado em todas as fixtures).
 - **SC-005**: Uma mudança na estrutura da resposta da fonte (campo renomeado, removido ou com outro tipo) faz pelo menos um teste de contrato falhar.
-- **SC-006**: A verificação sob demanda faz no máximo um pedido por nível (cinco no total por execução, mais as novas tentativas por recusa) e informa o resultado de cada nível em uma linha.
+- **SC-006**: A verificação sob demanda faz no máximo um pedido por nível (hoje um por execução, já que só `daily` é aceito, mais a nova tentativa por recusa) e informa o resultado de cada nível em uma linha.
 - **SC-007**: Nenhum arquivo versionado pela feature contém uma identificação de visitante real ou um puzzle completo da fonte.
 
 ## Assumptions
 
 - O formato da resposta é o descrito em `specs/001-viabilidade-fonte/decision.md` (ipuz v2 em `ipuzData`, mais `fromIpuz` e `dates`); se a verificação real mostrar outro formato em algum nível, esse nível fica como `unsupported` até uma feature própria.
-- Os cinco níveis usam o mesmo endereço e formato, mudando só o nome do nível; isso é confirmado pela verificação sob demanda (história 3). Níveis que falharem nela continuam aceitos pelo formato interno, mas ficam sem fixture válida e registrados como pendência.
+- A fonte só publica o nível `daily`. Os demais nomes vistos no código do widget (`mini`, `express`, `expert`, `thematic`) respondem `NOT-AVAILABLE` e ficam fora do formato interno até haver uma fonte para eles.
 - O sinal de limite de uso é o status de transporte de "muitos pedidos"; outros sinais descobertos na verificação real são acrescentados como `rate-limited`.
 - O tempo limite de um pedido é de 10 segundos.
 - O puzzle "indisponível" cobre datas futuras e datas sem puzzle; confirmar se datas fora da lista da fonte (mais de cerca de 30 dias) ainda respondem fica para a feature de puzzles, que define a coleta diária.

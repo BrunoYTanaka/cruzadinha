@@ -6,7 +6,7 @@ O que `packages/shared/src/index.ts` passa a exportar. Campos e regras em [data-
 
 | Nome | Tipo | Uso |
 |---|---|---|
-| `levelSchema`, `Level` | schema e tipo | os cinco níveis |
+| `levelSchema`, `Level` | schema e tipo | só `daily` |
 | `puzzleSourceIdSchema`, `PuzzleSourceId` | schema e tipo | `'oglobo'` |
 | `puzzleSchema`, `Puzzle` | schema e tipo | parte pública; o `safeParse` aplica as regras de FR-003 |
 | `solutionSchema`, `Solution` | schema e tipo | letras por célula |
@@ -25,7 +25,7 @@ O que `packages/shared/src/index.ts` passa a exportar. Campos e regras em [data-
 ```json
 {
   "source": "oglobo",
-  "level": "mini",
+  "level": "daily",
   "date": "2026-10-12",
   "attribution": { "sourceName": "O Globo", "title": null, "author": null, "copyright": null },
   "grid": {
