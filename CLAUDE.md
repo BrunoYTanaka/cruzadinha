@@ -9,6 +9,7 @@ This repository ("cruzadinha") is driven by a [GitHub Spec Kit](https://github.c
 - Feature 001 (source feasibility) is concluded: the verdict was **viable**, and its probe code was intentionally not versioned. The O Globo API details the puzzle adapter needs (endpoint, anonymous token, ipuz response format) are in `specs/001-viabilidade-fonte/decision.md`. The adapter is feature 003.
 - Feature 002 (foundation) set up the monorepo, quality tooling, CI and local environment. Application code is only the minimum that proves the structure: `GET /api/health` and a status page. No product features yet.
 - Feature 003 (O Globo adapter) added the internal puzzle format in `shared` and the `oglobo` puzzle source in the API, with fixtures reduced from real responses. Findings from the real-source checks are in `specs/003-adaptador-oglobo/findings.md`. The source only publishes the `daily` level, so that is the only level accepted.
+- Feature 004 (database, auth and invites) added Drizzle with versioned migrations (`users`, `sessions`, `invites`, `rate_limit_attempts`), invite-only registration, login/logout/`me` with a server-side session (sliding 30-day expiry, 1-year absolute limit), per-user invites with a quota of 3, persisted rate limits, the author CLI and a development-only seed. Password recovery and "log out everywhere" are deferred to a future feature.
 
 ## Commands
 
@@ -20,24 +21,32 @@ Run everything from the repository root:
 - `npm run format` / `npm run format:check`: Prettier on the whole repo (`specs/`, `.specify/`, `.claude/` and this file are ignored).
 - `npm run lint`: ESLint with the single root `eslint.config.mjs`.
 - `npm run typecheck`, `npm test`, `npm run build`: run in every workspace (`--workspaces --if-present`).
+- `npm run test:int`: integration tests (`*.int.test.ts`) against a real Postgres 17 started by Testcontainers; needs Docker. Not run by the pre-push hook.
 - Single test: `npx vitest run <file>` inside the workspace, e.g. `cd apps/api && npx vitest run src/config.test.ts`.
 - `npm run source:check -w @cruzadinha/api -- [YYYY-MM-DD] [--save]`: fetches the puzzle from the real source (real requests, never run by the test suite or CI); `--save` writes the raw bodies to the git-ignored `apps/api/.source-samples/`.
+- `npm run db:generate -w @cruzadinha/api` (add `-- --name <name>`, or `-- --custom --name <name>` for hand-written SQL such as triggers): generate a migration from `src/db/schema.ts` into `apps/api/drizzle/`. Never use `drizzle-kit push`.
+- `npm run db:migrate -w @cruzadinha/api`: apply pending migrations to `DATABASE_URL` (idempotent). The API also applies them on startup; in the image it is `node apps/api/dist/migrate.mjs`.
+- `npm run db:seed -w @cruzadinha/api`: development only; creates the test account from `SEED_USER_EMAIL`/`SEED_USER_PASSWORD` (fictitious values in `.env.example`) without an invite, never changes an existing account, refuses `NODE_ENV=production` and is not in the image.
+- `npm run cli -w @cruzadinha/api -- invites create [--days N] | list | revoke <invite_id>`: author CLI (no quota); in the image it is `node apps/api/dist/cli.mjs`.
 - `npm run dev -w @cruzadinha/api`: API with reload (`tsx watch`), reading `.env` from the root.
 - `npm run dev -w @cruzadinha/web`: site with Vite; `/api` is proxied to `API_PROXY_TARGET` (default `http://localhost:3000`).
 - Local environment: `cp .env.example .env`, then `docker compose up -d` (Postgres 17 and the API image). Health: `curl localhost:3000/api/health`.
 
-Hooks: pre-commit runs `lint-staged` (ESLint `--fix` and Prettier on staged files); pre-push runs `typecheck` and the unit tests. CI (`.github/workflows/ci.yml`) runs `npm ci`, `format:check`, `lint`, `typecheck`, `test` and `build` on every push, plus a job that builds `apps/api/Dockerfile`.
+Hooks: pre-commit runs `lint-staged` (ESLint `--fix` and Prettier on staged files); pre-push runs `typecheck` and the unit tests. CI (`.github/workflows/ci.yml`) runs `npm ci`, `format:check`, `lint`, `typecheck`, `test` and `build` on every push, plus a job that runs `test:int` and one that builds `apps/api/Dockerfile`.
 
 ## Architecture
 
 npm workspaces monorepo, TypeScript 6 strict everywhere (`tsconfig.base.json`, extended per package):
 
 - `packages/shared` (`@cruzadinha/shared`): Zod schemas and types shared by API and web. No build step: it exports its TypeScript source (`./src/index.ts`). `src/puzzle/` holds the internal puzzle format: the public part (`puzzleSchema`, with the consistency rules applied in `safeParse`) and the solution (`solutionSchema`) are separate, so the public part has no field for answer letters.
-- `apps/api` (`@cruzadinha/api`): Fastify 5. `src/app.ts` builds the app without listening (tested with `app.inject()`); `src/server.ts` is the entry point. Layers per module: route → service → repository (`src/modules/<name>/`, database access in `src/db/`). Configuration comes only from environment variables validated by `src/config.ts`; no other module reads `process.env`. Built with tsdown into a single `dist/server.mjs` that inlines `shared`. `src/sources/` holds the `PuzzleSource` interface (`types.ts`) and one folder per adapter; `oglobo/` is the only code that knows the Agilmente API (request, anonymous token, response schema, pure ipuz → internal conversion). Its tests use an injected `fetch` and reduced 5 x 5 fixtures with invented content, never full puzzles from the source.
+- `apps/api` (`@cruzadinha/api`): Fastify 5. `src/app.ts` builds the app without listening (tested with `app.inject()`); `src/server.ts` is the entry point. Layers per module: route → service → repository (`src/modules/<name>/`, database access in `src/db/`). Configuration comes only from environment variables validated by `src/config.ts`; no other module reads `process.env`. Built with tsdown into `dist/server.mjs`, `dist/migrate.mjs` and `dist/cli.mjs` (plus a shared chunk), inlining `shared`; the Dockerfile also copies `apps/api/drizzle/`.
+  - `src/db/`: postgres.js + Drizzle client (`client.ts`), schema (`schema.ts`), the shared `timestamps` columns (`columns.ts`; every table must spread them and get a `<table>_set_updated_at` trigger in its migration, enforced by `conventions.int.test.ts`), `migrations.ts` and error helpers. Drizzle's `DrizzleQueryError` message embeds query parameters (hashes, e-mails), so logs use `describeError` (names and codes only).
+  - `src/modules/auth` (register, login, logout, `me`, session `preHandler` with sliding renewal), `src/modules/invites` (CLI and per-user invites, quota of 3 with a row lock) and `src/modules/rate-limit` (attempts stored in the database). Passwords use argon2id; session tokens and invite codes are stored only as SHA-256. Services take an injectable `Clock`.
+  - `src/cli.ts` / `src/cli/run-cli.ts`: author CLI that calls the invites service directly. `src/sources/` holds the `PuzzleSource` interface (`types.ts`) and one folder per adapter; `oglobo/` is the only code that knows the Agilmente API (request, anonymous token, response schema, pure ipuz → internal conversion). Its tests use an injected `fetch` and reduced 5 x 5 fixtures with invented content, never full puzzles from the source.
 - `apps/web` (`@cruzadinha/web`): React 19 + Vite 8; server state through TanStack Query. The board logic will live in `src/game-logic/` (not a separate package).
 - The API and the web app never import each other; anything both need goes in `shared`.
 
-Tests use Vitest 5 per workspace (`jsdom` + Testing Library in web) and never touch the network, a database or a browser. Future integration tests with Postgres go in `*.int.test.ts` with a separate script.
+Unit tests use Vitest 5 per workspace (`jsdom` + Testing Library in web) and never touch the network, a database or a browser. Integration tests live in `apps/api/src/test/*.int.test.ts`, run by `vitest.int.config.ts` (`npm run test:int`): the global setup starts `postgres:17-alpine` with Testcontainers and applies the migrations, files run serially and tables are truncated before each test.
 
 Tooling notes: ESLint 10 with a `package.json` `overrides` entry so `eslint-plugin-jsx-a11y` (peer range stops at ESLint 9) accepts it; TypeScript stays on 6.0 because `typescript-eslint` does not support 7 yet. Writing `any` is a lint error (`@typescript-eslint/no-explicit-any`, constitution principle I); external data enters as `unknown` and goes through Zod.
 

@@ -8,16 +8,26 @@
     "start": "node dist/server.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:int": "vitest run --config vitest.int.config.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
+    "cli": "tsx src/cli.ts",
     "source:check": "tsx src/sources/oglobo/check.ts"
   },
   "dependencies": {
     "@cruzadinha/shared": "*",
+    "@fastify/cookie": "11.1",
+    "@node-rs/argon2": "2.2",
+    "drizzle-orm": "0.45",
     "fastify": "5.12",
     "postgres": "3.4",
     "zod": "4.6"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "12.2",
     "@types/node": "^24.19.2",
+    "drizzle-kit": "0.31",
     "tsdown": "^0.23.1",
     "tsx": "4.23",
     "vitest": "5.0"

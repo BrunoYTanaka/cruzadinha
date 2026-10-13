@@ -24,6 +24,19 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Testes com Postgres real em container (Testcontainers usa o Docker do runner).
+      - run: npm run test:int
+
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 10

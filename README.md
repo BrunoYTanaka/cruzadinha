@@ -58,20 +58,24 @@ O Vite encaminha `/api` para `API_PROXY_TARGET` (padrão `http://localhost:3000`
 
 Rode a partir da raiz do repositório:
 
-| Comando                                   | O que faz                                              |
-| ----------------------------------------- | ------------------------------------------------------ |
-| `npm ci`                                  | Instala as dependências de todos os workspaces.        |
-| `npm run dev -w @cruzadinha/api`          | Sobe a API em modo watch.                              |
-| `npm run dev -w @cruzadinha/web`          | Sobe o site com o servidor de desenvolvimento do Vite. |
-| `npm run format` / `npm run format:check` | Formata ou verifica a formatação com Prettier.         |
-| `npm run lint`                            | Roda o ESLint.                                         |
-| `npm run typecheck`                       | Verifica os tipos em todos os workspaces.              |
-| `npm test`                                | Roda os testes unitários em todos os workspaces.       |
-| `npm run build`                           | Gera o build de todos os workspaces.                   |
+| Comando                                            | O que faz                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------- |
+| `npm ci`                                           | Instala as dependências de todos os workspaces.                        |
+| `npm run dev -w @cruzadinha/api`                   | Sobe a API em modo watch.                                              |
+| `npm run dev -w @cruzadinha/web`                   | Sobe o site com o servidor de desenvolvimento do Vite.                 |
+| `npm run format` / `npm run format:check`          | Formata ou verifica a formatação com Prettier.                         |
+| `npm run lint`                                     | Roda o ESLint.                                                         |
+| `npm run typecheck`                                | Verifica os tipos em todos os workspaces.                              |
+| `npm test`                                         | Roda os testes unitários em todos os workspaces.                       |
+| `npm run test:int`                                 | Roda os testes de integração com Postgres em container (exige Docker). |
+| `npm run db:migrate -w @cruzadinha/api`            | Aplica as migrações do banco.                                          |
+| `npm run db:seed -w @cruzadinha/api`               | Cria o usuário de teste do `.env` (só em desenvolvimento).             |
+| `npm run cli -w @cruzadinha/api -- invites create` | Cria um convite (também `list` e `revoke <id>`).                       |
+| `npm run build`                                    | Gera o build de todos os workspaces.                                   |
 
 Para rodar um único arquivo de teste, entre no workspace: `cd apps/api && npx vitest run src/config.test.ts`.
 
-Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, e também gera a imagem Docker da API.
+Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
 
 ## Contribuindo
 

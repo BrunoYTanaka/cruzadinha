@@ -1,0 +1,20 @@
+import { describe, expect, it } from 'vitest'
+import { apiErrorCodeSchema, apiErrorSchema } from './api-error'
+
+describe('apiErrorSchema', () => {
+  it.each(apiErrorCodeSchema.options)('accepts the %s code', (code) => {
+    expect(apiErrorSchema.safeParse({ error: code, message: 'Mensagem.' }).success).toBe(true)
+  })
+
+  it('accepts the field list of invalid-input', () => {
+    const error = { error: 'invalid-input', message: 'Dados inválidos.', fields: ['email'] }
+    expect(apiErrorSchema.parse(error)).toEqual(error)
+  })
+
+  it('rejects unknown codes and extra properties', () => {
+    expect(apiErrorSchema.safeParse({ error: 'teapot', message: 'x' }).success).toBe(false)
+    expect(
+      apiErrorSchema.safeParse({ error: 'internal-error', message: 'x', stack: 'y' }).success,
+    ).toBe(false)
+  })
+})
