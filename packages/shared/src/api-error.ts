@@ -8,6 +8,8 @@ export const apiErrorCodeSchema = z.enum([
   'unauthenticated',
   'invite-quota-reached',
   'too-many-attempts',
+  'puzzle-unavailable',
+  'puzzle-source-failed',
   'service-unavailable',
   'internal-error',
 ])

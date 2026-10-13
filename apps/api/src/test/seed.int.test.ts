@@ -1,9 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
-import { invites, users } from '../db/schema'
+import { invites, puzzles, users } from '../db/schema'
 import { createDatabase } from '../db/client'
 import { runSeed } from '../db/seed-user'
+import { validatePuzzleWithSolution, puzzleSchema, solutionSchema } from '@cruzadinha/shared'
+import { todayInSaoPaulo } from '../lib/dates'
 import { buildTestApp } from './app'
+import { fakeSource, okResult } from './fake-source'
 import { openTestDatabase, testClock, truncateAll } from './database'
 
 const handle = openTestDatabase()
@@ -14,16 +17,20 @@ let err: string
 
 beforeEach(async () => {
   await truncateAll(db)
+  clock = testClock()
   out = ''
   err = ''
 })
 afterAll(() => handle.close())
+
+let clock = testClock()
 
 function seed(env: Record<string, string | undefined>): Promise<number> {
   return runSeed(
     { DATABASE_URL: inject('databaseUrl'), NODE_ENV: 'development', ...env },
     {
       openDatabase: createDatabase,
+      clock: clock.now,
       stdout: (text) => {
         out += text
       },
@@ -50,7 +57,7 @@ async function login(password: string) {
 describe('db:seed', () => {
   it('creates the test account without an invite', async () => {
     expect(await seed(DEV)).toBe(0)
-    expect(out).toBe('Usuário de teste criado: dev@cruzadinha.local\n')
+    expect(out).toContain('Usuário de teste criado: dev@cruzadinha.local\n')
 
     const [user] = await db.select().from(users)
     expect(user?.email).toBe('dev@cruzadinha.local')
@@ -65,7 +72,7 @@ describe('db:seed', () => {
 
     out = ''
     expect(await seed({ ...DEV, SEED_USER_PASSWORD: 'outra-senha-456' })).toBe(0)
-    expect(out).toBe('Usuário de teste já existe: dev@cruzadinha.local\n')
+    expect(out).toContain('Usuário de teste já existe: dev@cruzadinha.local\n')
 
     const [after] = await db.select().from(users)
     expect(after?.passwordHash).toBe(before?.passwordHash)
@@ -94,5 +101,87 @@ describe('db:seed', () => {
     await seed({ ...DEV, SEED_USER_PASSWORD: '1234567' })
     expect(out + err).not.toContain('senha-de-teste-123')
     expect(out + err).not.toContain('1234567')
+  })
+})
+
+describe('db:seed (puzzle de exemplo)', () => {
+  const today = () => todayInSaoPaulo(clock.now)
+
+  it('grava o exemplo na data de hoje, com atribuição própria e sem rede', async () => {
+    expect(await seed(DEV)).toBe(0)
+    expect(out).toContain(`Puzzle de exemplo gravado: ${today()}`)
+
+    const [row] = await db.select().from(puzzles)
+    expect(row?.date).toBe(today())
+    const puzzle = puzzleSchema.parse(row?.data)
+    expect(puzzle.attribution).toEqual({
+      sourceName: 'Exemplo de desenvolvimento (seed)',
+      title: 'Exemplo de desenvolvimento (seed)',
+      author: null,
+      copyright: null,
+    })
+    expect(validatePuzzleWithSolution(puzzle, solutionSchema.parse(row?.solution)).success).toBe(
+      true,
+    )
+  })
+
+  it('é entregue pela API como qualquer puzzle, sem consultar a fonte', async () => {
+    await seed(DEV)
+    const source = fakeSource()
+    const app: FastifyInstance = buildTestApp({
+      database: db,
+      clock: clock.now,
+      puzzleSource: source,
+    })
+    const logged = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: 'dev@cruzadinha.local', password: 'senha-de-teste-123' },
+    })
+    const sid = /sid=([^;]*)/.exec(String(logged.headers['set-cookie']))?.[1]
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/puzzles?date=${today()}`,
+      headers: { cookie: `sid=${sid}` },
+    })
+    await app.close()
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).not.toContain('"solution"')
+    expect(source.calls).toEqual([])
+  })
+
+  it('não altera o exemplo ao rodar de novo', async () => {
+    await seed(DEV)
+    const [before] = await db.select().from(puzzles)
+
+    out = ''
+    expect(await seed(DEV)).toBe(0)
+    expect(out).toContain(`Já existe puzzle em ${today()}; exemplo não gravado.`)
+    const rows = await db.select().from(puzzles)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.puzzleId).toBe(before?.puzzleId)
+    expect(rows[0]?.updatedAt.getTime()).toBe(before?.updatedAt.getTime())
+  })
+
+  it('não substitui o puzzle real já guardado para hoje', async () => {
+    const real = okResult(today())
+    await db.insert(puzzles).values({
+      source: 'oglobo',
+      level: 'daily',
+      date: today(),
+      data: { ...real.puzzle, attribution: { ...real.puzzle.attribution, title: 'Real' } },
+      solution: real.solution,
+    })
+
+    expect(await seed(DEV)).toBe(0)
+    expect(out).toContain(`Já existe puzzle em ${today()}; exemplo não gravado.`)
+    const [row] = await db.select().from(puzzles)
+    expect(puzzleSchema.parse(row?.data).attribution.title).toBe('Real')
+  })
+
+  it('em produção recusa antes de abrir o banco e não grava nada', async () => {
+    expect(await seed({ ...DEV, NODE_ENV: 'production', DATABASE_URL: undefined })).toBe(1)
+    expect(await db.select().from(puzzles)).toHaveLength(0)
   })
 })

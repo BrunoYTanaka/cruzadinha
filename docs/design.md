@@ -123,11 +123,11 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 
 - Grava com upsert em `(source, level, date)`, então rodar duas vezes não muda nada.
 - Roda duas vezes por dia, para tolerar atraso ou falha do agendamento.
-- Na primeira execução, busca as datas que a fonte ainda lista, com pausa entre os pedidos.
+- Além do dia, busca as datas passadas que faltam dentro de uma janela de dias configurável (`COLLECT_HISTORY_DAYS`, padrão 31, máximo 365), com pausa entre os pedidos. O limite real de histórico da fonte é desconhecido, então a janela se ajusta sem mudar código.
 - Pede no máximo um puzzle por nível e data, com pausa entre pedidos, e para ao receber sinal de limite de uso.
 - Grava só o formato interno (dados e solução), não a resposta bruta da fonte, para guardar apenas o necessário para jogar.
 
-**Busca sob demanda:** se alguém pedir uma data que não está no banco e a fonte ainda tiver, a API busca na hora e grava, como fallback da coleta.
+**Busca sob demanda:** se alguém pedir uma data que não está no banco, não é futura e a fonte ainda tiver, a API busca na hora e grava, como fallback da coleta. Cada ida à fonte conta num limite persistido por endereço (30 por hora), para um usuário logado não martelar a fonte.
 
 ### Endpoints (visão geral)
 
@@ -246,7 +246,7 @@ Meta: custo zero, sem prazo de expiração.
 - **Desenvolvimento local:** `docker compose` para Postgres e API, mais o Vite.
 - **Portabilidade para AWS:** a API roda num Dockerfile, a configuração é só por variáveis de ambiente, o Postgres é padrão (migrações Drizzle) e o front é estático (S3 + CloudFront). A migração é troca de deploy, sem mudar código de aplicação. A AWS não foi escolhida porque o plano grátis dura 6 meses.
 - **Cold start:** a primeira tela mostra "acordando o servidor" enquanto a API acorda.
-- **Coleta diária:** um workflow agendado do GitHub Actions roda `puzzles collect` duas vezes por dia e grava direto no Neon, com a `DATABASE_URL` guardada nos segredos da CI. Não depende do Render acordado e reusa o adaptador e o repositório da API. O workflow avisa quando falha. Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem commits, o que precisa ser acompanhado. O cron do Render foi descartado por ser pago.
+- **Coleta diária:** um workflow agendado do GitHub Actions roda `puzzles collect` duas vezes por dia e grava direto no Neon, com a `DATABASE_URL` guardada nos segredos da CI. Não depende do Render acordado e reusa o adaptador e o repositório da API. O workflow roda às 00:01 e às 08:00 de Brasília, não aplica migrações (a API as aplica ao subir) e é ignorado, com um aviso, enquanto o segredo não existe; avisa quando falha. Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem commits, o que precisa ser acompanhado. O cron do Render foi descartado por ser pago.
 
 ## 10. Ordem sugerida da implementação (para o plano)
 

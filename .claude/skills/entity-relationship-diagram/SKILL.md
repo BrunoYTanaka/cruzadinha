@@ -1,7 +1,6 @@
 ---
 name: entity-relationship-diagram
 description: Cria um Diagrama Entidade-Relacionamento (ERD-NNN) em sintaxe Mermaid erDiagram. Use quando o usuário pedir explicitamente um ERD e fornecer entidades ou um modelo de dados, ou quando a skill data-definition o acionar.
-disable-model-invocation: true
 ---
 
 # Skill: Entity Relationship Diagram (ERD)

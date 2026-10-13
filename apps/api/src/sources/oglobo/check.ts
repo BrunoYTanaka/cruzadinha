@@ -3,15 +3,13 @@
 import { isoDateSchema, levelSchema, type Level } from '@cruzadinha/shared'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { setTimeout as sleep } from 'node:timers/promises'
+import { systemClock } from '../../lib/clock'
+import { todayInSaoPaulo } from '../../lib/dates'
 import { createOgloboSource } from './oglobo'
 
 const PAUSE_MS = 2_000
 const SAMPLES_DIR = new URL('../../../.source-samples/', import.meta.url)
 const USAGE = 'uso: npm run source:check -w @cruzadinha/api -- [AAAA-MM-DD] [--save]'
-
-function today(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
-}
 
 function hasMarkup(body: string): boolean {
   try {
@@ -29,7 +27,7 @@ async function main(): Promise<number> {
   const args = process.argv.slice(2)
   const save = args.includes('--save')
   const positional = args.filter((arg) => arg !== '--save')
-  const date = positional[0] ?? today()
+  const date = positional[0] ?? todayInSaoPaulo(systemClock)
   if (positional.length > 1 || !isoDateSchema.safeParse(date).success) {
     console.error(USAGE)
     return 2

@@ -5,6 +5,7 @@ export type RateLimits = {
   loginAddress: RateWindow
   register: RateWindow
   inviteCreate: RateWindow
+  puzzleFetch: RateWindow
 }
 
 // Valores de FR-027 e FR-028; os testes injetam outros quando precisam.
@@ -13,4 +14,5 @@ export const defaultRateLimits: RateLimits = {
   loginAddress: { max: 20, windowMinutes: 15 },
   register: { max: 10, windowMinutes: 60 },
   inviteCreate: { max: 10, windowMinutes: 60 },
+  puzzleFetch: { max: 30, windowMinutes: 60 },
 }

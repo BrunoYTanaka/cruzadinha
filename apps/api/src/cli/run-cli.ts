@@ -3,6 +3,11 @@ import { z } from 'zod'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
 import type { InviteStatus } from '@cruzadinha/shared'
+import { defaultRateLimits } from '../modules/rate-limit/limits'
+import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
+import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
+import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
+import type { PuzzleSource } from '../sources/types'
 import {
   createInvitesService,
   DEFAULT_INVITE_DAYS,
@@ -12,6 +17,10 @@ import {
 export type CliDeps = {
   db: Database
   clock: Clock
+  /** Fonte dos puzzles usada por `puzzles collect`. */
+  source: PuzzleSource
+  /** Dias anteriores a hoje que a coleta também busca (0 = só hoje). */
+  historyDays: number
   stdout: (text: string) => void
   stderr: (text: string) => void
 }
@@ -21,6 +30,7 @@ const USAGE = [
   '  invites create [--days N]   cria um convite (N inteiro positivo, padrão 7)',
   '  invites list                lista todos os convites',
   '  invites revoke <invite_id>  revoga um convite não usado',
+  '  puzzles collect             guarda o puzzle do dia (e o histórico que faltar)',
 ].join('\n')
 
 const daysSchema = z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().min(1))
@@ -107,12 +117,39 @@ async function revokeInvite(args: string[], deps: CliDeps): Promise<number> {
   return 1
 }
 
+async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
+  parseArgs({ args, options: {}, allowPositionals: false })
+  const puzzles = createPuzzlesService({
+    db: deps.db,
+    clock: deps.clock,
+    source: deps.source,
+    rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
+    limits: defaultRateLimits,
+    historyDays: deps.historyDays,
+  })
+  const report = await puzzles.collect()
+
+  deps.stdout(
+    `Coleta de puzzles: ${report.saved.length} gravados, ${report.skipped.length} já existentes, ` +
+      `${report.unavailable.length} indisponíveis, ${report.failed.length} falhas.\n`,
+  )
+  if (report.saved.length > 0) deps.stdout(`Gravados: ${report.saved.join(', ')}\n`)
+  for (const { date, reason } of report.failed) deps.stderr(`Falhou em ${date}: ${reason}\n`)
+  if (report.stoppedBy) {
+    deps.stderr(
+      `Interrompido por limite de uso da fonte; pendentes: ${report.pending.join(', ')}\n`,
+    )
+  }
+  return report.failed.length > 0 || report.stoppedBy ? 1 : 0
+}
+
 export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
   const [group, command, ...rest] = argv
   try {
     if (group === 'invites' && command === 'create') return await createInvite(rest, deps)
     if (group === 'invites' && command === 'list') return await listInvites(rest, deps)
     if (group === 'invites' && command === 'revoke') return await revokeInvite(rest, deps)
+    if (group === 'puzzles' && command === 'collect') return await collectPuzzles(rest, deps)
     return usageError(deps.stderr, 'Comando desconhecido.')
   } catch (error) {
     // parseArgs lança TypeError com code ERR_PARSE_ARGS_* para opção desconhecida ou sem valor.

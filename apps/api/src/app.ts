@@ -15,6 +15,10 @@ import { createInvitesService } from './modules/invites/invites.service'
 import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
 import { createRateLimitRepository } from './modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from './modules/rate-limit/rate-limit.service'
+import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
+import { createPuzzlesService } from './modules/puzzles/puzzles.service'
+import { createOgloboSource } from './sources/oglobo/oglobo'
+import type { PuzzleSource } from './sources/types'
 
 export type AppDeps = {
   config: ServerConfig
@@ -22,6 +26,7 @@ export type AppDeps = {
   database: Database
   clock?: Clock
   rateLimits?: RateLimits
+  puzzleSource?: PuzzleSource
 }
 
 export function buildApp({
@@ -30,6 +35,7 @@ export function buildApp({
   database,
   clock = systemClock,
   rateLimits = defaultRateLimits,
+  puzzleSource = createOgloboSource(),
 }: AppDeps): FastifyInstance {
   const app = Fastify({
     logger: { level: config.logLevel },
@@ -77,5 +83,13 @@ export function buildApp({
 
   app.register(authRoutes, { auth, config, clock, requireSession })
   app.register(invitesRoutes, { invites, requireSession })
+  const puzzles = createPuzzlesService({
+    db: database,
+    clock,
+    source: puzzleSource,
+    rateLimiter,
+    limits: rateLimits,
+  })
+  app.register(puzzlesRoutes, { puzzles, requireSession })
   return app
 }

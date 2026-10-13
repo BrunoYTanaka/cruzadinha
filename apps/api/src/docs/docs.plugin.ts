@@ -25,6 +25,10 @@ export default fp(async (app) => {
         { name: 'health', description: 'Saúde da API e do banco de dados' },
         { name: 'auth', description: 'Cadastro por convite, login, logout e sessão' },
         { name: 'invites', description: 'Convites gerados pela conta autenticada' },
+        {
+          name: 'puzzles',
+          description: 'Puzzles guardados, buscados na fonte quando faltam (sem as respostas)',
+        },
       ],
       components: {
         securitySchemes: {

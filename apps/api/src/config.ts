@@ -30,6 +30,18 @@ const envSchema = z.object({
     .min(0, { error: 'deve ser um inteiro de 0 a 10' })
     .max(10, { error: 'deve ser um inteiro de 0 a 10' })
     .default(0),
+  // Dias anteriores a hoje que `puzzles collect` também busca. O limite real de histórico da
+  // fonte é desconhecido. Texto vazio vale como ausente (o GitHub Actions passa '' para uma
+  // variável que não existe, e z.coerce.number() o converteria em 0).
+  COLLECT_HISTORY_DAYS: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.coerce
+      .number({ error: 'deve ser um inteiro de 0 a 365' })
+      .int({ error: 'deve ser um inteiro de 0 a 365' })
+      .min(0, { error: 'deve ser um inteiro de 0 a 365' })
+      .max(365, { error: 'deve ser um inteiro de 0 a 365' })
+      .default(31),
+  ),
   DATABASE_URL: z
     .string({ error: 'obrigatória' })
     .refine((value) => postgresUrl.test(value) && URL.canParse(value), {
@@ -44,6 +56,7 @@ export type ServerConfig = Readonly<{
   logLevel: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
   databaseUrl: string
   trustProxyHops: number
+  collectHistoryDays: number
 }>
 
 export function loadConfig(env: Record<string, string | undefined>): ServerConfig {
@@ -52,7 +65,8 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     const lines = result.error.issues.map((issue) => `${String(issue.path[0])}: ${issue.message}`)
     throw new Error(`Configuração inválida:\n${lines.join('\n')}`)
   }
-  const { NODE_ENV, HOST, PORT, LOG_LEVEL, DATABASE_URL, TRUST_PROXY_HOPS } = result.data
+  const { NODE_ENV, HOST, PORT, LOG_LEVEL, DATABASE_URL, TRUST_PROXY_HOPS, COLLECT_HISTORY_DAYS } =
+    result.data
   return Object.freeze({
     nodeEnv: NODE_ENV,
     host: HOST,
@@ -60,6 +74,7 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     logLevel: LOG_LEVEL,
     databaseUrl: DATABASE_URL,
     trustProxyHops: TRUST_PROXY_HOPS,
+    collectHistoryDays: COLLECT_HISTORY_DAYS,
   })
 }
 
