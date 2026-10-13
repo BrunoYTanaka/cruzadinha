@@ -3,6 +3,9 @@ import { eq } from 'drizzle-orm'
 import { invites, users } from '../db/schema'
 import { runCli } from '../cli/run-cli'
 import { buildTestApp } from './app'
+import { fakeSource, okResult, type FakeSource } from './fake-source'
+import type { FetchPuzzleResult } from '../sources/types'
+import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { DAY, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
@@ -17,13 +20,18 @@ beforeEach(async () => {
   clock = testClock()
   out = ''
   err = ''
+  source = fakeSource()
 })
 afterAll(() => handle.close())
+
+let source: FakeSource
 
 function cli(...argv: string[]): Promise<number> {
   return runCli(argv, {
     db,
     clock: clock.now,
+    source,
+    historyDays: 0,
     stdout: (text) => {
       out += text
     },
@@ -219,5 +227,80 @@ describe('usage errors', () => {
   it('rejects an unknown command with exit code 2', async () => {
     expect(await cli('invites', 'explode')).toBe(2)
     expect(err).toContain('Uso:')
+  })
+})
+
+describe('puzzles collect', () => {
+  const today = () => todayInSaoPaulo(clock.now)
+  const withSource = (responses: Map<string, FetchPuzzleResult>) => {
+    source = fakeSource(responses)
+  }
+
+  it('grava o puzzle de hoje e resume o resultado', async () => {
+    withSource(new Map([[today(), okResult(today())]]))
+
+    expect(await cli('puzzles', 'collect')).toBe(0)
+    expect(out).toContain(
+      'Coleta de puzzles: 1 gravados, 0 já existentes, 0 indisponíveis, 0 falhas.',
+    )
+    expect(out).toContain(`Gravados: ${today()}`)
+    expect(err).toBe('')
+  })
+
+  it('é idempotente: a segunda execução sai com 0 e não consulta a fonte', async () => {
+    withSource(new Map([[today(), okResult(today())]]))
+    await cli('puzzles', 'collect')
+    source.calls.length = 0
+    out = ''
+
+    expect(await cli('puzzles', 'collect')).toBe(0)
+    expect(out).toContain('0 gravados, 1 já existentes')
+    expect(source.calls).toEqual([])
+  })
+
+  it('sai com 1 e escreve a falha no stderr quando a fonte cai', async () => {
+    withSource(new Map([[today(), { ok: false, reason: 'source-down', detail: 'corpo-bruto' }]]))
+
+    expect(await cli('puzzles', 'collect')).toBe(1)
+    expect(err).toContain(`Falhou em ${today()}: source-down`)
+    expect(out + err).not.toContain('corpo-bruto')
+  })
+
+  it('sai com 1 e lista as datas pendentes quando a fonte limita o uso', async () => {
+    const yesterday = addDaysToIsoDate(today(), -1)
+    withSource(
+      new Map<string, FetchPuzzleResult>([
+        [today(), okResult(today())],
+        [yesterday, { ok: false, reason: 'rate-limited' }],
+      ]),
+    )
+
+    const code = await runCli(['puzzles', 'collect'], {
+      db,
+      clock: clock.now,
+      source,
+      historyDays: 1,
+      stdout: (text) => {
+        out += text
+      },
+      stderr: (text) => {
+        err += text
+      },
+    })
+
+    expect(code).toBe(1)
+    expect(err).toContain(`Interrompido por limite de uso da fonte; pendentes: ${yesterday}`)
+  })
+
+  it('recusa argumento inesperado com o uso', async () => {
+    expect(await cli('puzzles', 'collect', 'foo')).toBe(2)
+    expect(err).toContain('Uso:')
+    expect(source.calls).toEqual([])
+  })
+
+  it('não imprime a URL do banco', async () => {
+    withSource(new Map([[today(), okResult(today())]]))
+    await cli('puzzles', 'collect')
+    expect(out + err).not.toMatch(/postgres(ql)?:\/\//)
   })
 })

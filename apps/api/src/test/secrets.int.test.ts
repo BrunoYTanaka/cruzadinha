@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { runCli } from '../cli/run-cli'
 import { normalizeInviteCode } from '../lib/tokens'
 import { buildTestApp, sessionCookieFrom } from './app'
+import { fakeSource } from './fake-source'
 import { openTestDatabase, tableNames, testClock, truncateAll } from './database'
 
 const handle = openTestDatabase()
@@ -23,6 +24,8 @@ describe('stored secrets', () => {
     await runCli(['invites', 'create'], {
       db,
       clock: clock.now,
+      source: fakeSource(),
+      historyDays: 0,
       stdout: (text) => {
         out += text
       },

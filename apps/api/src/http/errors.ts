@@ -9,6 +9,8 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   unauthenticated: 'Não autenticado.',
   'invite-quota-reached': 'Você já tem 3 convites ativos.',
   'too-many-attempts': 'Muitas tentativas, tente mais tarde.',
+  'puzzle-unavailable': 'Puzzle indisponível.',
+  'puzzle-source-failed': 'Não foi possível buscar o puzzle agora, tente mais tarde.',
   'service-unavailable': 'Serviço indisponível, tente mais tarde.',
   'internal-error': 'Erro interno.',
 }

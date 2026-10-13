@@ -1,0 +1,68 @@
+import { isoDateSchema, levelSchema, type PuzzleResponse } from '@cruzadinha/shared'
+import type { FastifyPluginAsync } from 'fastify'
+import { z } from 'zod'
+import { sendError, sendTooManyAttempts } from '../../http/errors'
+import type { RequireSession } from '../auth/session.plugin'
+import { getPuzzleByDateSchema, getPuzzleByIdSchema } from './puzzles.schemas'
+import type { GetPuzzleResult, PuzzlesService } from './puzzles.service'
+
+export type PuzzlesRoutesOptions = {
+  puzzles: PuzzlesService
+  requireSession: RequireSession
+}
+
+const querySchema = z.object({
+  level: levelSchema.default('daily'),
+  date: isoDateSchema,
+})
+
+export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
+  app,
+  { puzzles, requireSession },
+) => {
+  function sendPuzzleFailure(
+    result: Extract<GetPuzzleResult, { ok: false }>,
+    request: { log: { warn: (data: object, message: string) => void } },
+    reply: Parameters<typeof sendError>[0],
+  ) {
+    if (result.reason === 'too-many-attempts')
+      return sendTooManyAttempts(reply, result.retryAfterSeconds)
+    if (result.reason === 'source-failed') {
+      // Só o motivo curto vai ao log: nunca token nem corpo da fonte.
+      request.log.warn({ reason: result.sourceReason }, 'falha ao buscar o puzzle na fonte')
+      return sendError(reply, 502, 'puzzle-source-failed')
+    }
+    return sendError(reply, 404, 'puzzle-unavailable')
+  }
+
+  app.get(
+    '/api/puzzles',
+    { schema: getPuzzleByDateSchema, preHandler: requireSession },
+    async (request, reply) => {
+      if (!request.user) return sendError(reply, 401, 'unauthenticated')
+      const query = querySchema.safeParse(request.query)
+      if (!query.success) {
+        const fields = [...new Set(query.error.issues.map((issue) => String(issue.path[0])))]
+        return sendError(reply, 400, 'invalid-input', fields)
+      }
+      const result = await puzzles.getByDate(query.data.level, query.data.date, request.ip)
+      if (!result.ok) return sendPuzzleFailure(result, request, reply)
+      const body: PuzzleResponse = { puzzleId: result.puzzleId, puzzle: result.puzzle }
+      return body
+    },
+  )
+
+  app.get(
+    '/api/puzzles/:id',
+    { schema: getPuzzleByIdSchema, preHandler: requireSession },
+    async (request, reply) => {
+      if (!request.user) return sendError(reply, 401, 'unauthenticated')
+      const id = z.uuid().safeParse((request.params as { id?: unknown }).id)
+      if (!id.success) return sendError(reply, 404, 'puzzle-unavailable')
+      const result = await puzzles.getById(id.data)
+      if (!result.ok) return sendPuzzleFailure(result, request, reply)
+      const body: PuzzleResponse = { puzzleId: result.puzzleId, puzzle: result.puzzle }
+      return body
+    },
+  )
+}

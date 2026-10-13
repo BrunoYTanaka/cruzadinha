@@ -4,11 +4,13 @@ import { loadConfig } from '../config'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
 import type { RateLimits } from '../modules/rate-limit/limits'
+import type { PuzzleSource } from '../sources/types'
 
 export function buildTestApp(options: {
   database: Database
   clock: Clock
   rateLimits?: RateLimits
+  puzzleSource?: PuzzleSource
 }): FastifyInstance {
   const config = loadConfig({
     DATABASE_URL: 'postgres://nao-usado@localhost:1/db',

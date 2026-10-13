@@ -22,6 +22,7 @@ describe('loadConfig', () => {
       logLevel: 'info',
       databaseUrl,
       trustProxyHops: 0,
+      collectHistoryDays: 31,
     })
   })
 
@@ -33,6 +34,7 @@ describe('loadConfig', () => {
       PORT: '8080',
       LOG_LEVEL: 'debug',
       TRUST_PROXY_HOPS: '2',
+      COLLECT_HISTORY_DAYS: '7',
     })
     expect(config).toEqual({
       nodeEnv: 'production',
@@ -41,7 +43,23 @@ describe('loadConfig', () => {
       logLevel: 'debug',
       databaseUrl: 'postgresql://user:pass@db:5432/app',
       trustProxyHops: 2,
+      collectHistoryDays: 7,
     })
+  })
+
+  it.each([undefined, ''])('uses 31 days of history when COLLECT_HISTORY_DAYS is %j', (value) => {
+    const config = loadConfig({ DATABASE_URL: databaseUrl, COLLECT_HISTORY_DAYS: value })
+    expect(config.collectHistoryDays).toBe(31)
+  })
+
+  it.each(['0', '1', '365'])('accepts COLLECT_HISTORY_DAYS=%s', (days) => {
+    const config = loadConfig({ DATABASE_URL: databaseUrl, COLLECT_HISTORY_DAYS: days })
+    expect(config.collectHistoryDays).toBe(Number(days))
+  })
+
+  it.each(['-1', '366', '1.5', 'abc'])('fails when COLLECT_HISTORY_DAYS is %s', (days) => {
+    const message = errorMessage({ DATABASE_URL: databaseUrl, COLLECT_HISTORY_DAYS: days })
+    expect(message).toContain('COLLECT_HISTORY_DAYS: deve ser um inteiro de 0 a 365')
   })
 
   it('returns a frozen object', () => {

@@ -2,6 +2,7 @@ import SwaggerParser from '@apidevtools/swagger-parser'
 import {
   authResponseSchema,
   createdInviteSchema,
+  puzzleResponseSchema,
   inviteListSchema,
   loginRequestSchema,
   registerRequestSchema,
@@ -83,6 +84,8 @@ const catalog = [
   'GET /api/auth/me',
   'GET /api/health',
   'GET /api/invites',
+  'GET /api/puzzles',
+  'GET /api/puzzles/{id}',
   'POST /api/auth/login',
   'POST /api/auth/logout',
   'POST /api/auth/register',
@@ -157,7 +160,7 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'invites']).toContain(op.tags?.[0])
+      expect(['health', 'auth', 'invites', 'puzzles']).toContain(op.tags?.[0])
       expect(op.summary).toBeTruthy()
     }
   })
@@ -186,6 +189,7 @@ describe('documento OpenAPI', () => {
     ]) {
       expect(serialized).not.toContain(secret)
     }
+    expect(serialized).not.toContain('solution')
     for (const forbidden of ['passwordHash', 'hash', 'tokenHash']) {
       expect(propertyNames(doc)).not.toContain(forbidden)
     }
@@ -222,7 +226,13 @@ describe('documento para ferramentas', () => {
 })
 
 describe('sessão', () => {
-  const protectedOperations = ['GET /api/auth/me', 'POST /api/invites', 'GET /api/invites']
+  const protectedOperations = [
+    'GET /api/auth/me',
+    'POST /api/invites',
+    'GET /api/invites',
+    'GET /api/puzzles',
+    'GET /api/puzzles/{id}',
+  ]
 
   it('declara o cookie de sessão como esquema de segurança', async () => {
     app = build()
@@ -261,7 +271,8 @@ function collectRoutes(instance: FastifyInstance): CollectedRoute[] {
     for (const verb of [method].flat()) {
       if (verb === 'HEAD') continue
       routes.push({
-        key: `${verb} ${url}`,
+        // O Fastify escreve parâmetros como `:id`; o OpenAPI, como `{id}`.
+        key: `${verb} ${url.replace(/:(\w+)/g, '{$1}')}`,
         documented: Boolean(schema?.tags && schema.summary && schema.response),
       })
     }
@@ -325,6 +336,8 @@ describe('documentação vinda das regras de validação', () => {
     ['get', '/api/auth/me', '200', authResponseSchema],
     ['post', '/api/invites', '201', createdInviteSchema],
     ['get', '/api/invites', '200', inviteListSchema],
+    ['get', '/api/puzzles', '200', puzzleResponseSchema],
+    ['get', '/api/puzzles/{id}', '200', puzzleResponseSchema],
   ] as const)('a resposta de %s %s é a do schema Zod', async (method, path, status, schema) => {
     app = build()
     const doc = await documentOf(app)

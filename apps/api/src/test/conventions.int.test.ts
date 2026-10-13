@@ -13,7 +13,13 @@ afterAll(() => handle.close())
 
 describe('schema', () => {
   it('has exactly the tables of this feature', async () => {
-    expect(await tableNames(db)).toEqual(['invites', 'rate_limit_attempts', 'sessions', 'users'])
+    expect(await tableNames(db)).toEqual([
+      'invites',
+      'puzzles',
+      'rate_limit_attempts',
+      'sessions',
+      'users',
+    ])
   })
 
   // Guarda das tabelas futuras (FR-003): toda tabela tem as duas datas e o trigger.
@@ -90,6 +96,6 @@ describe('migrations', () => {
     const before = await count()
     await runMigrations(inject('databaseUrl'))
     expect(await count()).toBe(before)
-    expect(before).toBe(2)
+    expect(before).toBe(3)
   })
 })
