@@ -27,6 +27,8 @@ export type AppDeps = {
   clock?: Clock
   rateLimits?: RateLimits
   puzzleSource?: PuzzleSource
+  /** Destino do log; só os testes trocam (para conferir o que é registrado). */
+  logStream?: NodeJS.WritableStream
 }
 
 export function buildApp({
@@ -36,9 +38,10 @@ export function buildApp({
   clock = systemClock,
   rateLimits = defaultRateLimits,
   puzzleSource = createOgloboSource(),
+  logStream,
 }: AppDeps): FastifyInstance {
   const app = Fastify({
-    logger: { level: config.logLevel },
+    logger: logStream ? { level: config.logLevel, stream: logStream } : { level: config.logLevel },
     // Confia só nos N saltos de proxy configurados; com 0, o X-Forwarded-For é ignorado.
     trustProxy: (_address: string, hop: number) => hop < config.trustProxyHops,
   })

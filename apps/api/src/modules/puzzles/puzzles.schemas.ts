@@ -13,7 +13,7 @@ export const getPuzzleByDateSchema = {
   summary: 'Busca o puzzle de uma data',
   description:
     'Devolve o puzzle guardado ou, se faltar e a data não for futura, busca na fonte, guarda e devolve. ' +
-    'A resposta nunca traz as letras de resposta. Buscas à fonte contam no limite de tentativas.',
+    'A resposta traz também a `solution` (uma letra por célula aberta, `null` nos blocos), só para quem tem sessão. Buscas à fonte contam no limite de tentativas.',
   querystring: {
     type: 'object',
     properties: {
@@ -33,7 +33,7 @@ export const getPuzzleByDateSchema = {
     required: ['date'],
   },
   response: {
-    200: { description: 'Puzzle sem a solução', ...toDocSchema(puzzleResponseSchema) },
+    200: { description: 'Puzzle com a solução', ...toDocSchema(puzzleResponseSchema) },
     400: errorResponse('`invalid-input`: `level` ou `date` inválidos.'),
     401: unauthenticated,
     404: unavailable,
@@ -50,7 +50,8 @@ export const getPuzzleByIdSchema = {
   tags: ['puzzles'],
   security: [{ session: [] }],
   summary: 'Busca um puzzle guardado pelo identificador',
-  description: 'Só lê o que já está guardado; nunca consulta a fonte. Sem as letras de resposta.',
+  description:
+    'Só lê o que já está guardado; nunca consulta a fonte. A resposta traz a `solution`, só para quem tem sessão.',
   params: {
     type: 'object',
     properties: {
@@ -59,7 +60,7 @@ export const getPuzzleByIdSchema = {
     required: ['id'],
   },
   response: {
-    200: { description: 'Puzzle sem a solução', ...toDocSchema(puzzleResponseSchema) },
+    200: { description: 'Puzzle com a solução', ...toDocSchema(puzzleResponseSchema) },
     401: unauthenticated,
     404: errorResponse('`puzzle-unavailable`: identificador inexistente ou inválido.'),
     ...commonErrors,

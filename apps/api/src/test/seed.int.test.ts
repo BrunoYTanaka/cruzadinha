@@ -3,7 +3,12 @@ import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
 import { invites, puzzles, users } from '../db/schema'
 import { createDatabase } from '../db/client'
 import { runSeed } from '../db/seed-user'
-import { validatePuzzleWithSolution, puzzleSchema, solutionSchema } from '@cruzadinha/shared'
+import {
+  validatePuzzleWithSolution,
+  puzzleResponseSchema,
+  puzzleSchema,
+  solutionSchema,
+} from '@cruzadinha/shared'
 import { todayInSaoPaulo } from '../lib/dates'
 import { buildTestApp } from './app'
 import { fakeSource, okResult } from './fake-source'
@@ -147,7 +152,10 @@ describe('db:seed (puzzle de exemplo)', () => {
     await app.close()
 
     expect(response.statusCode).toBe(200)
-    expect(response.body).not.toContain('"solution"')
+    const body = puzzleResponseSchema.parse(response.json())
+    expect(body.solution).toEqual(
+      solutionSchema.parse((await db.select().from(puzzles))[0]?.solution),
+    )
     expect(source.calls).toEqual([])
   })
 

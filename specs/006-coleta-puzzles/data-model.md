@@ -11,7 +11,7 @@
 | `level` | `text` | não nulo; `check` em `('daily')` |
 | `date` | `date` (modo string, `AAAA-MM-DD`) | não nulo |
 | `data` | `jsonb` | não nulo; `Puzzle` de `@cruzadinha/shared` (parte pública) |
-| `solution` | `jsonb` | não nulo; `Solution` de `@cruzadinha/shared` (só no servidor) |
+| `solution` | `jsonb` | não nulo; `Solution` de `@cruzadinha/shared` (guardada à parte; entregue só a sessão válida, feature 007) |
 | `created_at`, `updated_at` | `timestamptz` | spread de `timestamps`, não nulos, `default now()` |
 
 Índices e gatilhos:

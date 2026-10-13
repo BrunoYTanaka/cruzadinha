@@ -1,4 +1,9 @@
-import { validatePuzzleWithSolution, type Level, type Puzzle } from '@cruzadinha/shared'
+import {
+  validatePuzzleWithSolution,
+  type Level,
+  type Puzzle,
+  type Solution,
+} from '@cruzadinha/shared'
 import { setTimeout as delay } from 'node:timers/promises'
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
@@ -11,10 +16,11 @@ import {
   findPuzzle,
   findPuzzleById,
   insertPuzzleIfAbsent,
+  type StoredPuzzle,
 } from './puzzles.repository'
 
 export type GetPuzzleResult =
-  | { ok: true; puzzleId: string; puzzle: Puzzle }
+  | { ok: true; puzzleId: string; puzzle: Puzzle; solution: Solution }
   | { ok: false; reason: 'unavailable' }
   // `sourceReason` serve só para o log: nunca vai no corpo da resposta.
   | { ok: false; reason: 'source-failed'; sourceReason: FetchFailureReason | 'inconsistent' }
@@ -57,6 +63,15 @@ export type PuzzlesDeps = {
 // Defesa em profundidade (FR-006): o adaptador já valida o par, mas só grava o que passa aqui.
 export function isConsistent(result: FetchPuzzleSuccess): boolean {
   return validatePuzzleWithSolution(result.puzzle, result.solution).success
+}
+
+// A solução vai ao navegador (feature 007): só sai se o par for coerente. A mensagem não
+// carrega o conteúdo, e o manipulador de erros da app responde 500 genérico.
+function deliver(stored: StoredPuzzle): GetPuzzleResult {
+  if (!validatePuzzleWithSolution(stored.puzzle, stored.solution).success) {
+    throw new Error('puzzle guardado inconsistente')
+  }
+  return { ok: true, ...stored }
 }
 
 export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
@@ -108,7 +123,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
 
     async getByDate(level, date, address) {
       const stored = await findPuzzle(db, { source: source.id, level, date })
-      if (stored) return { ok: true, puzzleId: stored.puzzleId, puzzle: stored.puzzle }
+      if (stored) return deliver(stored)
 
       if (date > todayInSaoPaulo(clock)) return { ok: false, reason: 'unavailable' }
 
@@ -139,14 +154,17 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
         puzzle: fetched.puzzle,
         solution: fetched.solution,
       })
-      return { ok: true, puzzleId: saved.puzzleId, puzzle: fetched.puzzle }
+      return {
+        ok: true,
+        puzzleId: saved.puzzleId,
+        puzzle: fetched.puzzle,
+        solution: fetched.solution,
+      }
     },
 
     async getById(puzzleId) {
       const stored = await findPuzzleById(db, puzzleId)
-      return stored
-        ? { ok: true, puzzleId: stored.puzzleId, puzzle: stored.puzzle }
-        : { ok: false, reason: 'unavailable' }
+      return stored ? deliver(stored) : { ok: false, reason: 'unavailable' }
     },
   }
 }

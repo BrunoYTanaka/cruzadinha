@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { Writable } from 'node:stream'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { puzzles } from '../db/schema'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
@@ -20,12 +21,27 @@ let cookie: string
 const today = () => todayInSaoPaulo(clock.now)
 const daysAgo = (days: number) => addDaysToIsoDate(today(), -days)
 
+let logged: string[]
+
 async function start(
   responses: Map<string, FetchPuzzleResult> = new Map(),
   rateLimits: RateLimits = defaultRateLimits,
 ) {
   source = fakeSource(responses)
-  app = buildTestApp({ database: db, clock: clock.now, puzzleSource: source, rateLimits })
+  logged = []
+  const logStream = new Writable({
+    write(chunk, _encoding, done) {
+      logged.push(String(chunk))
+      done()
+    },
+  })
+  app = buildTestApp({
+    database: db,
+    clock: clock.now,
+    puzzleSource: source,
+    rateLimits,
+    logStream,
+  })
   const { code } = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
   const response = await app.inject({
     method: 'POST',
@@ -57,6 +73,7 @@ describe('GET /api/puzzles', () => {
     const response = await get(`/api/puzzles?date=${today()}`, false)
 
     expect(response.statusCode).toBe(401)
+    expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('unauthenticated')
     expect(source.calls).toEqual([])
   })
@@ -79,14 +96,39 @@ describe('GET /api/puzzles', () => {
     expect(source.calls).toEqual([today()])
   })
 
-  it('nunca devolve a solução nem a grade de respostas', async () => {
+  it('devolve a solução junto do puzzle', async () => {
     const ok = okResult(today())
     await start(new Map([[today(), ok]]))
     const response = await get(`/api/puzzles?date=${today()}`)
 
+    expect(response.statusCode).toBe(200)
+    expect(Object.keys(response.json()).sort()).toEqual(['puzzle', 'puzzleId', 'solution'])
+    expect(response.json().solution).toEqual(ok.solution)
+  })
+
+  it('o puzzle buscado agora e o guardado saem com a mesma solução, sem nova busca', async () => {
+    await start(okFor(today()))
+    const first = await get(`/api/puzzles?date=${today()}`)
+    const second = await get(`/api/puzzles?date=${today()}`)
+
+    expect(second.json().solution).toEqual(first.json().solution)
+    expect(source.calls).toEqual([today()])
+  })
+
+  it('responde 500 genérico, sem letras no corpo nem no log, se o par guardado for inconsistente', async () => {
+    const ok = okResult(today())
+    await start(new Map([[today(), ok]]))
+    await get(`/api/puzzles?date=${today()}`)
+    await db.update(puzzles).set({ solution: { cells: [['Z']] } })
+
+    const response = await get(`/api/puzzles?date=${today()}`)
+    expect(response.statusCode).toBe(500)
+    expect(response.json().error).toBe('internal-error')
     expect(response.body).not.toContain('"solution"')
-    expect(response.body).not.toContain(JSON.stringify(ok.solution.cells))
-    expect(Object.keys(response.json()).sort()).toEqual(['puzzle', 'puzzleId'])
+    expect(response.body).not.toContain('"Z"')
+    expect(logged.length).toBeGreaterThan(0)
+    expect(logged.join('')).not.toContain(JSON.stringify(ok.solution.cells))
+    expect(logged.join('')).not.toContain('"Z"')
   })
 
   it('assume o nível daily quando level é omitido', async () => {
@@ -104,6 +146,7 @@ describe('GET /api/puzzles', () => {
     const response = await get(url(today()))
 
     expect(response.statusCode).toBe(400)
+    expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('invalid-input')
     expect(response.json().fields).toContain(field)
     expect(source.calls).toEqual([])
@@ -114,6 +157,7 @@ describe('GET /api/puzzles', () => {
     const response = await get(`/api/puzzles?date=${addDaysToIsoDate(today(), 1)}`)
 
     expect(response.statusCode).toBe(404)
+    expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('puzzle-unavailable')
     expect(source.calls).toEqual([])
   })
@@ -123,6 +167,7 @@ describe('GET /api/puzzles', () => {
     const response = await get(`/api/puzzles?date=${daysAgo(1)}`)
 
     expect(response.statusCode).toBe(404)
+    expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('puzzle-unavailable')
     expect(await db.select().from(puzzles)).toHaveLength(0)
   })
@@ -133,6 +178,7 @@ describe('GET /api/puzzles', () => {
     const response = await get(`/api/puzzles?date=${today()}`)
 
     expect(response.statusCode).toBe(502)
+    expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('puzzle-source-failed')
     expect(await db.select().from(puzzles)).toHaveLength(0)
   })
@@ -144,6 +190,7 @@ describe('GET /api/puzzles', () => {
       const response = await get(`/api/puzzles?date=${today()}`)
 
       expect(response.statusCode).toBe(502)
+      expect(response.body).not.toContain('solution')
       expect(response.json().error).toBe('puzzle-source-failed')
       expect(response.body).not.toContain('detalhe-secreto-da-fonte')
     },
@@ -183,6 +230,7 @@ describe('GET /api/puzzles', () => {
     expect(a.statusCode).toBe(200)
     expect(b.statusCode).toBe(200)
     expect(a.json().puzzleId).toBe(b.json().puzzleId)
+    expect(a.json().solution).toEqual(b.json().solution)
     expect(await db.select().from(puzzles)).toHaveLength(1)
   })
 })
@@ -196,7 +244,7 @@ describe('GET /api/puzzles/:id', () => {
     const response = await get(`/api/puzzles/${puzzleId}`)
     expect(response.statusCode).toBe(200)
     expect(response.json().puzzleId).toBe(puzzleId)
-    expect(response.body).not.toContain('"solution"')
+    expect(response.json().solution).toEqual(okResult(today()).solution)
     expect(source.calls).toEqual([])
   })
 
@@ -207,6 +255,7 @@ describe('GET /api/puzzles/:id', () => {
       const response = await get(`/api/puzzles/${id}`)
 
       expect(response.statusCode).toBe(404)
+      expect(response.body).not.toContain('solution')
       expect(response.json().error).toBe('puzzle-unavailable')
       expect(source.calls).toEqual([])
     },
@@ -216,5 +265,6 @@ describe('GET /api/puzzles/:id', () => {
     await start()
     const response = await get('/api/puzzles/0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a', false)
     expect(response.statusCode).toBe(401)
+    expect(response.body).not.toContain('solution')
   })
 })

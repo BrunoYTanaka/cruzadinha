@@ -101,7 +101,7 @@ Próximo do ipuz, mas só com o que o jogo usa:
 - **Palavras:** posição inicial, direção, número e tamanho.
 - **Dicas:** texto associado a cada palavra.
 - **Metadados:** fonte, nível e data.
-- A resposta correta fica em campo separado, **só no servidor**. Na v1 ela não vai ao navegador.
+- A resposta correta fica em campo separado e vai ao navegador junto do puzzle, só para usuário logado, para o front controlar as dicas (feature 007, constituição 3.0.0).
 
 ### Modelo de dados (Postgres)
 
@@ -210,7 +210,7 @@ apps/web/src/
 
 28. Datas futuras, ou sem puzzle na fonte, aparecem como indisponíveis.
 29. Se a fonte estiver fora do ar, o site continua mostrando o que já está em cache e avisa que não consegue buscar novos.
-30. A resposta correta nunca vai ao navegador na v1.
+30. A resposta correta vai ao navegador junto do puzzle, só para usuário logado; o front controla as dicas (feature 007).
 
 ## 7. Tratamento de erros
 
