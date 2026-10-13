@@ -22,6 +22,7 @@ COPY packages/shared/package.json packages/shared/
 # --ignore-scripts: sem as dev dependencies, o prepare chamaria o husky, que não está instalado
 RUN npm ci --omit=dev --ignore-scripts -w @cruzadinha/api && npm cache clean --force
 COPY --from=build /app/apps/api/dist apps/api/dist
+COPY apps/api/drizzle apps/api/drizzle
 USER node
 EXPOSE 3000
 CMD ["node", "apps/api/dist/server.mjs"]

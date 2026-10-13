@@ -5,3 +5,4 @@ package-lock.json
 .claude/
 specs/
 CLAUDE.md
+apps/api/drizzle/

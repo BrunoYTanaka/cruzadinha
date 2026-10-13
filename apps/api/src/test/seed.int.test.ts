@@ -1,0 +1,98 @@
+import type { FastifyInstance } from 'fastify'
+import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
+import { invites, users } from '../db/schema'
+import { createDatabase } from '../db/client'
+import { runSeed } from '../db/seed-user'
+import { buildTestApp } from './app'
+import { openTestDatabase, testClock, truncateAll } from './database'
+
+const handle = openTestDatabase()
+const { db } = handle
+
+let out: string
+let err: string
+
+beforeEach(async () => {
+  await truncateAll(db)
+  out = ''
+  err = ''
+})
+afterAll(() => handle.close())
+
+function seed(env: Record<string, string | undefined>): Promise<number> {
+  return runSeed(
+    { DATABASE_URL: inject('databaseUrl'), NODE_ENV: 'development', ...env },
+    {
+      openDatabase: createDatabase,
+      stdout: (text) => {
+        out += text
+      },
+      stderr: (text) => {
+        err += text
+      },
+    },
+  )
+}
+
+const DEV = { SEED_USER_EMAIL: ' Dev@Cruzadinha.local ', SEED_USER_PASSWORD: 'senha-de-teste-123' }
+
+async function login(password: string) {
+  const app: FastifyInstance = buildTestApp({ database: db, clock: testClock().now })
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { email: 'dev@cruzadinha.local', password },
+  })
+  await app.close()
+  return response.statusCode
+}
+
+describe('db:seed', () => {
+  it('creates the test account without an invite', async () => {
+    expect(await seed(DEV)).toBe(0)
+    expect(out).toBe('Usuário de teste criado: dev@cruzadinha.local\n')
+
+    const [user] = await db.select().from(users)
+    expect(user?.email).toBe('dev@cruzadinha.local')
+    expect(user?.passwordHash.startsWith('$argon2id$')).toBe(true)
+    expect(await db.select().from(invites)).toHaveLength(0)
+    expect(await login('senha-de-teste-123')).toBe(200)
+  })
+
+  it('changes nothing when the account already exists', async () => {
+    await seed(DEV)
+    const [before] = await db.select().from(users)
+
+    out = ''
+    expect(await seed({ ...DEV, SEED_USER_PASSWORD: 'outra-senha-456' })).toBe(0)
+    expect(out).toBe('Usuário de teste já existe: dev@cruzadinha.local\n')
+
+    const [after] = await db.select().from(users)
+    expect(after?.passwordHash).toBe(before?.passwordHash)
+    expect(after?.updatedAt.getTime()).toBe(before?.updatedAt.getTime())
+    expect(await login('senha-de-teste-123')).toBe(200)
+  })
+
+  it('refuses to run in production, before touching the database', async () => {
+    expect(await seed({ ...DEV, NODE_ENV: 'production', DATABASE_URL: undefined })).toBe(1)
+    expect(err).toBe('O seed só roda em desenvolvimento.\n')
+    expect(await db.select().from(users)).toHaveLength(0)
+  })
+
+  it.each([
+    [{ SEED_USER_EMAIL: undefined }, 'SEED_USER_EMAIL'],
+    [{ SEED_USER_EMAIL: 'dev' }, 'SEED_USER_EMAIL'],
+    [{ SEED_USER_PASSWORD: '1234567' }, 'SEED_USER_PASSWORD'],
+  ])('fails without writing for %o', async (override, variable) => {
+    expect(await seed({ ...DEV, ...override })).toBe(1)
+    expect(err).toContain(variable)
+    expect(await db.select().from(users)).toHaveLength(0)
+  })
+
+  it('never prints the password', async () => {
+    await seed(DEV)
+    await seed({ ...DEV, SEED_USER_PASSWORD: '1234567' })
+    expect(out + err).not.toContain('senha-de-teste-123')
+    expect(out + err).not.toContain('1234567')
+  })
+})
