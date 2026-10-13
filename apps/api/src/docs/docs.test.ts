@@ -4,6 +4,7 @@ import {
   createdInviteSchema,
   puzzleResponseSchema,
   inviteListSchema,
+  libraryResponseSchema,
   loginRequestSchema,
   progressEnvelopeSchema,
   registerRequestSchema,
@@ -87,6 +88,7 @@ const catalog = [
   'GET /api/auth/me',
   'GET /api/health',
   'GET /api/invites',
+  'GET /api/library',
   'GET /api/progress/{puzzleId}',
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
@@ -166,7 +168,9 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'invites', 'puzzles', 'progress']).toContain(op.tags?.[0])
+      expect(['health', 'auth', 'invites', 'puzzles', 'progress', 'library']).toContain(
+        op.tags?.[0],
+      )
       expect(op.summary).toBeTruthy()
     }
   })
@@ -253,6 +257,7 @@ describe('sessão', () => {
     'GET /api/progress/{puzzleId}',
     'PUT /api/progress/{puzzleId}',
     'POST /api/progress/{puzzleId}/reset',
+    'GET /api/library',
   ]
 
   it('declara o cookie de sessão como esquema de segurança', async () => {
@@ -366,6 +371,20 @@ describe('documentação vinda das regras de validação', () => {
     ).toBe(true)
   })
 
+  it('a resposta de GET /api/library traz um exemplo válido', async () => {
+    app = build()
+    const doc = await documentOf(app)
+    const media = operation(doc, 'get', '/api/library').responses['200']?.content?.[
+      'application/json'
+    ]
+
+    expect(
+      libraryResponseSchema.safeParse(
+        z.looseObject({ example: z.unknown() }).parse(media?.schema).example,
+      ).success,
+    ).toBe(true)
+  })
+
   it.each([
     ['get', '/api/auth/me', '200', authResponseSchema],
     ['post', '/api/invites', '201', createdInviteSchema],
@@ -375,6 +394,7 @@ describe('documentação vinda das regras de validação', () => {
     ['get', '/api/progress/{puzzleId}', '200', progressEnvelopeSchema],
     ['put', '/api/progress/{puzzleId}', '200', progressEnvelopeSchema],
     ['post', '/api/progress/{puzzleId}/reset', '200', progressEnvelopeSchema],
+    ['get', '/api/library', '200', libraryResponseSchema],
   ] as const)('a resposta de %s %s é a do schema Zod', async (method, path, status, schema) => {
     app = build()
     const doc = await documentOf(app)

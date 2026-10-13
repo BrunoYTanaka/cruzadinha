@@ -15,6 +15,8 @@ import { createInvitesService } from './modules/invites/invites.service'
 import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
 import { createRateLimitRepository } from './modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from './modules/rate-limit/rate-limit.service'
+import { libraryRoutes } from './modules/library/library.routes'
+import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
 import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
@@ -98,5 +100,7 @@ export function buildApp({
   app.register(puzzlesRoutes, { puzzles, requireSession })
   const progress = createProgressService({ db: database, clock })
   app.register(progressRoutes, { progress, requireSession })
+  const library = createLibraryService({ db: database })
+  app.register(libraryRoutes, { library, requireSession })
   return app
 }

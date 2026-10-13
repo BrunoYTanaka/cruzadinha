@@ -31,6 +31,15 @@ export { puzzleResponseSchema, type PuzzleResponse } from './puzzle/response'
 export { validatePuzzleWithSolution, type PairValidation, type RuleIssue } from './puzzle/rules'
 export { wordCells, type CellPosition } from './puzzle/word-cells'
 export {
+  LIBRARY_LIMIT,
+  libraryItemSchema,
+  libraryResponseSchema,
+  libraryStatusSchema,
+  type LibraryItem,
+  type LibraryResponse,
+  type LibraryStatus,
+} from './library/schema'
+export {
   cellsMatchGrid,
   progressCellsSchema,
   progressEnvelopeSchema,

@@ -134,7 +134,7 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - `POST /api/invites`, `GET /api/invites` (os do próprio usuário)
 - `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
-- `GET /api/library` (datas disponíveis, com o status do usuário)
+- `GET /api/library` (até 366 puzzles já guardados, do mais recente ao mais antigo, com a situação do usuário — não iniciado, em andamento ou concluído — e os tempos dele; só lê o que está guardado, nunca consulta a fonte)
 - `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo)
 - `PATCH /api/me/preferences` (tema)
 
