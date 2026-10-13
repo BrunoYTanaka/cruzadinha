@@ -1,11 +1,13 @@
-import type { Puzzle, Solution } from '@cruzadinha/shared'
+import type { Puzzle, ProgressCells, Solution } from '@cruzadinha/shared'
 import { sql } from 'drizzle-orm'
 import {
   check,
   date,
   index,
+  integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -120,5 +122,46 @@ export const puzzles = pgTable(
     uniqueIndex('puzzles_source_level_date_unique').on(table.source, table.level, table.date),
     check('puzzles_source_check', sql`${table.source} IN ('oglobo')`),
     check('puzzles_level_check', sql`${table.level} IN ('daily')`),
+  ],
+)
+
+export const progressStatuses = ['in_progress', 'completed'] as const
+
+// Progresso individual: um registro por usuário e puzzle. `cells` são as letras do jogador
+// (jsonb relido pelo Zod). `completed_at`/`finished_ms` descrevem a partida atual e são limpos no
+// reinício; `best_ms`/`best_at` são o recorde e sobrevivem a ele.
+export const progress = pgTable(
+  'progress',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.userId, { onDelete: 'cascade' }),
+    puzzleId: uuid('puzzle_id')
+      .notNull()
+      .references(() => puzzles.puzzleId, { onDelete: 'restrict' }),
+    cells: jsonb('cells').$type<ProgressCells>().notNull(),
+    elapsedMs: integer('elapsed_ms').notNull(),
+    status: text('status', { enum: progressStatuses }).notNull(),
+    savedAt: instant('saved_at').notNull(),
+    completedAt: instant('completed_at'),
+    finishedMs: integer('finished_ms'),
+    bestMs: integer('best_ms'),
+    bestAt: instant('best_at'),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.puzzleId] }),
+    index('progress_puzzle_id_idx').on(table.puzzleId),
+    check('progress_elapsed_ms_check', sql`${table.elapsedMs} BETWEEN 0 AND 604800000`),
+    check('progress_status_check', sql`${table.status} IN ('in_progress', 'completed')`),
+    check(
+      'progress_completed_pair',
+      sql`(${table.status} = 'completed') = (${table.completedAt} IS NOT NULL AND ${table.finishedMs} IS NOT NULL)`,
+    ),
+    check('progress_best_pair', sql`(${table.bestMs} IS NULL) = (${table.bestAt} IS NULL)`),
+    check(
+      'progress_best_when_finished',
+      sql`${table.finishedMs} IS NULL OR (${table.bestMs} IS NOT NULL AND ${table.bestMs} <= ${table.finishedMs})`,
+    ),
   ],
 )

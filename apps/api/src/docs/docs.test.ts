@@ -5,7 +5,9 @@ import {
   puzzleResponseSchema,
   inviteListSchema,
   loginRequestSchema,
+  progressEnvelopeSchema,
   registerRequestSchema,
+  saveProgressRequestSchema,
 } from '@cruzadinha/shared'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
@@ -85,12 +87,15 @@ const catalog = [
   'GET /api/auth/me',
   'GET /api/health',
   'GET /api/invites',
+  'GET /api/progress/{puzzleId}',
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
   'POST /api/auth/login',
   'POST /api/auth/logout',
   'POST /api/auth/register',
   'POST /api/invites',
+  'POST /api/progress/{puzzleId}/reset',
+  'PUT /api/progress/{puzzleId}',
 ]
 
 let app: FastifyInstance | undefined
@@ -161,7 +166,7 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'invites', 'puzzles']).toContain(op.tags?.[0])
+      expect(['health', 'auth', 'invites', 'puzzles', 'progress']).toContain(op.tags?.[0])
       expect(op.summary).toBeTruthy()
     }
   })
@@ -245,6 +250,9 @@ describe('sessão', () => {
     'GET /api/invites',
     'GET /api/puzzles',
     'GET /api/puzzles/{id}',
+    'GET /api/progress/{puzzleId}',
+    'PUT /api/progress/{puzzleId}',
+    'POST /api/progress/{puzzleId}/reset',
   ]
 
   it('declara o cookie de sessão como esquema de segurança', async () => {
@@ -345,12 +353,28 @@ describe('documentação vinda das regras de validação', () => {
     expect(schema.safeParse(media?.example ?? exampleOf(media?.schema)).success).toBe(true)
   })
 
+  it('o corpo de PUT /api/progress/{puzzleId} é o do schema Zod e traz um exemplo válido', async () => {
+    app = build()
+    const doc = await documentOf(app)
+    const media = operation(doc, 'put', '/api/progress/{puzzleId}').requestBody?.content[
+      'application/json'
+    ]
+
+    expect(normalized(media?.schema)).toEqual(normalized(toDocSchema(saveProgressRequestSchema)))
+    expect(
+      saveProgressRequestSchema.safeParse(media?.example ?? exampleOf(media?.schema)).success,
+    ).toBe(true)
+  })
+
   it.each([
     ['get', '/api/auth/me', '200', authResponseSchema],
     ['post', '/api/invites', '201', createdInviteSchema],
     ['get', '/api/invites', '200', inviteListSchema],
     ['get', '/api/puzzles', '200', puzzleResponseSchema],
     ['get', '/api/puzzles/{id}', '200', puzzleResponseSchema],
+    ['get', '/api/progress/{puzzleId}', '200', progressEnvelopeSchema],
+    ['put', '/api/progress/{puzzleId}', '200', progressEnvelopeSchema],
+    ['post', '/api/progress/{puzzleId}/reset', '200', progressEnvelopeSchema],
   ] as const)('a resposta de %s %s é a do schema Zod', async (method, path, status, schema) => {
     app = build()
     const doc = await documentOf(app)
