@@ -1,0 +1,59 @@
+name: Coleta de puzzles
+
+# 00:01 e 08:00 em Brasília (UTC-3, sem horário de verão). A coleta é idempotente, então uma
+# execução repetida ou atrasada não causa dano. Detalhes em specs/006-coleta-puzzles.
+on:
+  schedule:
+    - cron: '1 3 * * *'
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+env:
+  HUSKY: 0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Só um booleano: o valor do segredo não sai deste passo. Sem o segredo (antes da
+      # implantação), o agendamento é ignorado e o disparo manual falha com erro.
+      - id: guard
+        env:
+          HAS_DATABASE_URL: ${{ secrets.DATABASE_URL != '' }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$HAS_DATABASE_URL" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "::error::segredo DATABASE_URL não cadastrado"
+            exit 1
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::coleta ignorada: segredo DATABASE_URL não cadastrado"
+          fi
+      - if: steps.guard.outputs.enabled == 'true'
+        uses: actions/checkout@v7
+      - if: steps.guard.outputs.enabled == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.guard.outputs.enabled == 'true'
+        run: npm ci
+      - if: steps.guard.outputs.enabled == 'true'
+        run: npm run build -w @cruzadinha/api
+      # Não migra: a API aplica as migrações ao subir. Depois de uma migração nova, a coleta
+      # falha até a API ser publicada; a execução seguinte se recupera.
+      - if: steps.guard.outputs.enabled == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          COLLECT_HISTORY_DAYS: ${{ vars.COLLECT_HISTORY_DAYS }}
+        run: node apps/api/dist/cli.mjs puzzles collect
