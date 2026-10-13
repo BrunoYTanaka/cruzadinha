@@ -31,6 +31,21 @@ export { puzzleResponseSchema, type PuzzleResponse } from './puzzle/response'
 export { validatePuzzleWithSolution, type PairValidation, type RuleIssue } from './puzzle/rules'
 export { wordCells, type CellPosition } from './puzzle/word-cells'
 export {
+  cellsMatchGrid,
+  progressCellsSchema,
+  progressEnvelopeSchema,
+  progressSchema,
+  progressStatusSchema,
+  saveProgressRequestSchema,
+  MAX_ELAPSED_MS,
+  type CellsValidation,
+  type Progress,
+  type ProgressCells,
+  type ProgressEnvelope,
+  type ProgressStatus,
+  type SaveProgressRequest,
+} from './progress/schema'
+export {
   createdInviteSchema,
   inviteCodeSchema,
   inviteListSchema,

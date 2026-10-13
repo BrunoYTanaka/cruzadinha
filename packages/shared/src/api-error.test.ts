@@ -11,6 +11,10 @@ describe('apiErrorSchema', () => {
     expect(apiErrorSchema.parse(error)).toEqual(error)
   })
 
+  it('accepts the progress-completed code', () => {
+    expect(apiErrorCodeSchema.options).toContain('progress-completed')
+  })
+
   it('rejects unknown codes and extra properties', () => {
     expect(apiErrorSchema.safeParse({ error: 'teapot', message: 'x' }).success).toBe(false)
     expect(

@@ -105,13 +105,13 @@ Próximo do ipuz, mas só com o que o jogo usa:
 
 ### Modelo de dados (Postgres)
 
-| Tabela     | Campos                                                                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id`, `email` (único), `password_hash`, `created_at`                                                                                  |
-| `invites`  | `id`, `code_hash`, `created_by` (nulo se criado pela CLI), `created_at`, `expires_at`, `used_by`, `used_at`, `revoked_at`             |
-| `sessions` | `id_hash`, `user_id`, `expires_at`                                                                                                    |
-| `puzzles`  | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                   |
-| `progress` | `user_id`, `puzzle_id`, `cells` (JSON), `elapsed_ms`, `best_ms`, `status`, `updated_at`, `completed_at`; chave `(user_id, puzzle_id)` |
+| Tabela     | Campos                                                                                                                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`    | `id`, `email` (único), `password_hash`, `created_at`                                                                                                                         |
+| `invites`  | `id`, `code_hash`, `created_by` (nulo se criado pela CLI), `created_at`, `expires_at`, `used_by`, `used_at`, `revoked_at`                                                    |
+| `sessions` | `id_hash`, `user_id`, `expires_at`                                                                                                                                           |
+| `puzzles`  | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                                                          |
+| `progress` | `user_id`, `puzzle_id` (chave composta), `cells` (JSON), `elapsed_ms`, `status`, `saved_at`, `completed_at`, `finished_ms`, `best_ms`, `best_at`, `created_at`, `updated_at` |
 
 Preferência do usuário (tema claro, escuro ou automático) fica numa coluna de `users`.
 
@@ -135,7 +135,7 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - `POST /api/invites`, `GET /api/invites` (os do próprio usuário)
 - `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
 - `GET /api/library` (datas disponíveis, com o status do usuário)
-- `PUT /api/progress/:puzzleId`, `GET /api/progress/:puzzleId`
+- `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo)
 - `PATCH /api/me/preferences` (tema)
 
 ## 5. Front (`apps/web`)
