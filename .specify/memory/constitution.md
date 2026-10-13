@@ -40,8 +40,11 @@ unitário. O estado de servidor fora da partida MUST vir do TanStack Query, sem 
 global extra.
 
 ### VI. Segurança e privacidade por padrão
-A solução de um puzzle MUST NOT ser enviada ao navegador no payload do puzzle; qualquer verificação
-futura MUST acontecer no servidor. Senhas MUST usar hash argon2; convites e sessões MUST ser
+A solução de um puzzle MAY ser enviada ao navegador no payload do puzzle, mas somente a usuários
+com sessão válida e nunca em respostas de erro, logs ou mensagens; assim o front controla as
+formas de dica sem depender do servidor. O servidor MUST validar a coerência entre puzzle e
+solução antes de entregá-la. Verificação autoritativa de respostas, se um dia for necessária,
+MUST acontecer no servidor. Senhas MUST usar hash argon2; convites e sessões MUST ser
 guardados apenas como hash. Cookies de sessão MUST ser `HttpOnly` e `SameSite=Lax`. Login, cadastro
 e geração de convites MUST ter limite de tentativas. Mensagens de erro de autenticação e convite
 MUST ser genéricas. Cada usuário MUST acessar somente o próprio progresso.
@@ -56,6 +59,8 @@ de respostas reais MUST ser sanitizadas antes de entrar no repositório. Segredo
 ficar nos cofres dos provedores e da CI. Um segredo exposto MUST ser tratado como comprometido e
 rotacionado.
 Rationale: o histórico do git é permanente, e um segredo publicado deve ser considerado vazado.
+A entrega da solução ao navegador (emenda 3.0.0) é aceita porque o site é privado, a fonte
+original também a entrega e o jogo não tem placar competitivo nem prêmio.
 
 ### VII. Testes determinísticos e sem internet
 A suíte automática MUST NOT depender de serviços externos. Autenticação, convites e progresso MUST
@@ -115,4 +120,13 @@ novo princípio ou expansão material, PATCH para esclarecimentos. Revisões e p
 conformidade; desvios MUST ser justificados por escrito. Convenções de formatação e de git ficam
 em `CLAUDE.md`.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-12
+### Emenda 3.0.0 (2026-10-13)
+
+O princípio VI deixou de proibir o envio da solução ao navegador. Justificativa: o front precisa
+da resposta para controlar as formas de dica (revelar letra ou palavra, destacar erro), e a
+proibição era uma decisão provisória da v1. É MAJOR por redefinir um princípio de forma
+incompatível. Plano de migração, sem alteração de dados nem de schema: a feature 007 muda a
+entrega do puzzle, atualiza o FR-002 e o SC-004 da feature 006 e o item 30 de `docs/design.md`.
+Até a 007 ser implementada, a API continua sem entregar a solução.
+
+**Version**: 3.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-13
