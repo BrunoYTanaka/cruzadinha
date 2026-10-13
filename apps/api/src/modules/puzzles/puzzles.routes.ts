@@ -47,7 +47,11 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
       }
       const result = await puzzles.getByDate(query.data.level, query.data.date, request.ip)
       if (!result.ok) return sendPuzzleFailure(result, request, reply)
-      const body: PuzzleResponse = { puzzleId: result.puzzleId, puzzle: result.puzzle }
+      const body: PuzzleResponse = {
+        puzzleId: result.puzzleId,
+        puzzle: result.puzzle,
+        solution: result.solution,
+      }
       return body
     },
   )
@@ -61,7 +65,11 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
       if (!id.success) return sendError(reply, 404, 'puzzle-unavailable')
       const result = await puzzles.getById(id.data)
       if (!result.ok) return sendPuzzleFailure(result, request, reply)
-      const body: PuzzleResponse = { puzzleId: result.puzzleId, puzzle: result.puzzle }
+      const body: PuzzleResponse = {
+        puzzleId: result.puzzleId,
+        puzzle: result.puzzle,
+        solution: result.solution,
+      }
       return body
     },
   )

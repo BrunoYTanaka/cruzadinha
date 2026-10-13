@@ -11,11 +11,13 @@ export function buildTestApp(options: {
   clock: Clock
   rateLimits?: RateLimits
   puzzleSource?: PuzzleSource
+  /** Com um destino de log, o nível sobe para `error` para o teste ler o que foi registrado. */
+  logStream?: NodeJS.WritableStream
 }): FastifyInstance {
   const config = loadConfig({
     DATABASE_URL: 'postgres://nao-usado@localhost:1/db',
     NODE_ENV: 'test',
-    LOG_LEVEL: 'fatal',
+    LOG_LEVEL: options.logStream ? 'error' : 'fatal',
   })
   return buildApp({
     config,

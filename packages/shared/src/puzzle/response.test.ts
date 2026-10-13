@@ -29,17 +29,49 @@ const puzzle = {
 }
 const puzzleId = '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a'
 
+const solution = {
+  cells: [
+    ['A', 'B'],
+    ['C', 'D'],
+  ],
+}
+
 describe('puzzleResponseSchema', () => {
-  it('aceita puzzleId e puzzle', () => {
-    expect(puzzleResponseSchema.safeParse({ puzzleId, puzzle }).success).toBe(true)
+  it('aceita puzzleId, puzzle e solution coerente', () => {
+    expect(puzzleResponseSchema.safeParse({ puzzleId, puzzle, solution }).success).toBe(true)
   })
 
   it('recusa puzzleId que não é uuid', () => {
-    expect(puzzleResponseSchema.safeParse({ puzzleId: '123', puzzle }).success).toBe(false)
+    expect(puzzleResponseSchema.safeParse({ puzzleId: '123', puzzle, solution }).success).toBe(
+      false,
+    )
   })
 
-  it('recusa campo extra como a solução', () => {
-    const withSolution = { puzzleId, puzzle, solution: { cells: [['A']] } }
-    expect(puzzleResponseSchema.safeParse(withSolution).success).toBe(false)
+  it('recusa resposta sem solution', () => {
+    expect(puzzleResponseSchema.safeParse({ puzzleId, puzzle }).success).toBe(false)
+  })
+
+  it('recusa solution com dimensões diferentes da grade', () => {
+    const wrong = { cells: [['A', 'B']] }
+    expect(puzzleResponseSchema.safeParse({ puzzleId, puzzle, solution: wrong }).success).toBe(
+      false,
+    )
+  })
+
+  it('recusa solution sem letra em célula aberta', () => {
+    const missing = {
+      cells: [
+        ['A', null],
+        ['C', 'D'],
+      ],
+    }
+    expect(puzzleResponseSchema.safeParse({ puzzleId, puzzle, solution: missing }).success).toBe(
+      false,
+    )
+  })
+
+  it('recusa campo extra desconhecido', () => {
+    const extra = { puzzleId, puzzle, solution, answer: 'x' }
+    expect(puzzleResponseSchema.safeParse(extra).success).toBe(false)
   })
 })

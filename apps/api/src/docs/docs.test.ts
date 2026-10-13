@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { buildApp } from '../app'
 import { loadConfig } from '../config'
 import { createDatabase } from '../db/client'
+import { buildSamplePuzzle } from '../db/seed-puzzle'
 import type { DatabaseProbe } from '../db/probe'
 import { toDocSchema } from './doc-schema'
 
@@ -176,6 +177,17 @@ describe('documento OpenAPI', () => {
     },
   )
 
+  it.each([
+    ['/api/puzzles', 'a data'],
+    ['/api/puzzles/{id}', 'o id'],
+  ])('GET %s documenta a solution na resposta 200 (%s)', async (path) => {
+    app = build()
+    const doc = await documentOf(app)
+    const ok = operation(doc, 'get', path).responses['200']
+
+    expect(propertyNames(ok)).toContain('solution')
+  })
+
   it('não contém segredos, credenciais do .env.example nem hash de senha', async () => {
     app = build()
     const doc = await documentOf(app)
@@ -189,7 +201,8 @@ describe('documento OpenAPI', () => {
     ]) {
       expect(serialized).not.toContain(secret)
     }
-    expect(serialized).not.toContain('solution')
+    // Os exemplos do documento nunca trazem as letras de um puzzle (nem do exemplo do seed).
+    expect(serialized).not.toContain(JSON.stringify(buildSamplePuzzle('2026-10-13').solution.cells))
     for (const forbidden of ['passwordHash', 'hash', 'tokenHash']) {
       expect(propertyNames(doc)).not.toContain(forbidden)
     }
