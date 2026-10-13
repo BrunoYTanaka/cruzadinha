@@ -31,7 +31,7 @@ Um jogador logado pede o puzzle de uma data (por exemplo, o de hoje). Se o siste
 1. **Given** um puzzle já guardado para a data, **When** o jogador logado o pede, **Then** recebe o puzzle sem que a fonte seja consultada.
 2. **Given** nenhum puzzle guardado para a data e a fonte com ele disponível, **When** o jogador o pede, **Then** o sistema busca na fonte, guarda e devolve o puzzle.
 3. **Given** o puzzle acabou de ser guardado por um pedido, **When** outro jogador pede a mesma data, **Then** recebe o puzzle guardado sem nova consulta à fonte.
-4. **Given** um puzzle devolvido, **When** o front-end o inspeciona, **Then** ele contém grade, dicas e atribuição à fonte, mas nenhuma letra de resposta.
+4. **Given** um puzzle devolvido, **When** o front-end o inspeciona, **Then** ele contém grade, dicas e atribuição à fonte; a solução também vai junto *(alterado pela feature 007)*.
 5. **Given** um visitante sem sessão, **When** pede um puzzle, **Then** o pedido é recusado como não autenticado e nada é buscado nem devolvido.
 
 ---
@@ -102,7 +102,7 @@ Quem prepara o ambiente local roda o seed de desenvolvimento e, além da conta d
 ### Functional Requirements
 
 - **FR-001**: O sistema MUST permitir que um usuário logado peça o puzzle de uma data (nível diário) e receba grade, dicas e atribuição à fonte.
-- **FR-002**: O puzzle entregue ao navegador MUST NOT conter as letras de resposta; a solução fica guardada apenas no servidor.
+- **FR-002**: ~~O puzzle entregue ao navegador MUST NOT conter as letras de resposta; a solução fica guardada apenas no servidor.~~ Substituído pela feature 007: a solução é entregue junto do puzzle, só a usuário com sessão (constituição 3.0.0); continua guardada à parte da parte pública.
 - **FR-003**: O sistema MUST guardar cada puzzle uma única vez por fonte, nível e data, compartilhado por todos os usuários.
 - **FR-004**: Um puzzle já guardado MUST ser entregue sem consultar a fonte.
 - **FR-005**: Quando o puzzle pedido não estiver guardado, a data não for futura e a fonte o publicar, o sistema MUST buscá-lo, validá-lo, guardá-lo e entregá-lo na mesma resposta.
@@ -122,11 +122,11 @@ Quem prepara o ambiente local roda o seed de desenvolvimento e, além da conta d
 - **FR-019**: Segredos (como a string de conexão do banco usada pela rotina agendada) MUST ficar nos cofres da CI e MUST NOT aparecer em código, logs ou saída da coleta.
 - **FR-020**: O seed de desenvolvimento MUST, além da conta de teste, deixar guardado um puzzle de exemplo (cruzada pequena de conteúdo inventado, nunca um puzzle real da fonte) na data de hoje (fuso de Brasília), sem consultar a fonte.
 - **FR-021**: O seed MUST ser idempotente e MUST NOT alterar nem substituir um puzzle já guardado para a data de hoje; MUST recusar rodar em produção e MUST NOT existir na imagem de produção, como o seed de conta.
-- **FR-022**: O puzzle de exemplo MUST seguir as mesmas regras de qualquer puzzle guardado (consistência da grade e da solução, atribuição à fonte, sem resposta no que vai ao navegador) e MUST identificar-se claramente como exemplo na atribuição, sem aparecer atribuído ao nome da fonte real (nome da fonte, título, autor e direitos próprios do exemplo).
+- **FR-022**: O puzzle de exemplo MUST seguir as mesmas regras de qualquer puzzle guardado (consistência da grade e da solução, atribuição à fonte; a solução sai junto do puzzle, conforme a feature 007) e MUST identificar-se claramente como exemplo na atribuição, sem aparecer atribuído ao nome da fonte real (nome da fonte, título, autor e direitos próprios do exemplo).
 
 ### Key Entities *(include if feature involves data)*
 
-- **Puzzle guardado**: uma cruzada de uma fonte, nível e data. Tem identificador próprio, a parte pública (grade, dicas, atribuição) e a solução (só no servidor). Único por fonte, nível e data; criado uma vez e, em geral, nunca alterado.
+- **Puzzle guardado**: uma cruzada de uma fonte, nível e data. Tem identificador próprio, a parte pública (grade, dicas, atribuição) e a solução (guardada à parte; entregue só a sessão válida, feature 007). Único por fonte, nível e data; criado uma vez e, em geral, nunca alterado.
 - **Execução de coleta**: uma rodada da rotina (agendada ou manual); resulta em quantidades guardadas, puladas e pendentes, e num estado de sucesso ou falha. Não precisa ser persistida; o resultado aparece na saída e no estado da execução agendada.
 - **Fonte de puzzles**: origem externa (hoje, O Globo/Agilmente).
 
@@ -137,7 +137,7 @@ Quem prepara o ambiente local roda o seed de desenvolvimento e, além da conta d
 - **SC-001**: Após a primeira consulta de uma data, 100% das consultas seguintes da mesma data são atendidas sem nova ida à fonte.
 - **SC-002**: Com o puzzle do dia já guardado pela coleta, o jogador o recebe em até 1 segundo em condições normais.
 - **SC-003**: Rodar a coleta N vezes seguidas no mesmo dia resulta em exatamente um puzzle guardado por data e zero consultas à fonte após a primeira execução bem-sucedida.
-- **SC-004**: Em 100% das respostas de puzzle ao navegador, nenhuma letra de resposta está presente.
+- **SC-004**: ~~Em 100% das respostas de puzzle ao navegador, nenhuma letra de resposta está presente.~~ Substituído pela feature 007 (SC-002 de lá): nenhuma letra aparece em respostas de erro nem sem sessão.
 - **SC-005**: Em 100% dos pedidos sem sessão válida, nenhum puzzle é entregue nem consultado na fonte.
 - **SC-006**: Com a fonte fora do ar, 100% dos puzzles já guardados continuam acessíveis e o jogador recebe um aviso claro para os não guardados.
 - **SC-007**: Após uma semana de operação normal, existe um puzzle guardado para cada dia da semana, sem intervenção manual.

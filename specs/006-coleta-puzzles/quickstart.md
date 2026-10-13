@@ -18,7 +18,7 @@ npm run test:int
 Esperado:
 
 - Serviço: puzzle guardado não chama a fonte; ausente é buscado e gravado; data futura não chama a fonte; falha da fonte vira `source-failed`; `collect` pula o que existe, para em `rate-limited` e é idempotente.
-- Rotas: `401` sem sessão; `200` com `puzzleId` e `puzzle` e sem `solution`; `404`, `502`, `429` com `Retry-After`; segunda chamada da mesma data não consulta a fonte; duas chamadas simultâneas deixam uma linha.
+- Rotas: `401` sem sessão; `200` com `puzzleId`, `puzzle` e `solution` (feature 007); `404`, `502`, `429` com `Retry-After`; segunda chamada da mesma data não consulta a fonte; duas chamadas simultâneas deixam uma linha.
 - CLI: saída e códigos 0, 1 e 2.
 - `conventions.int.test.ts` e `docs.test.ts` passam com a tabela, o trigger e as rotas novas.
 
