@@ -29,6 +29,10 @@ export default fp(async (app) => {
           name: 'puzzles',
           description: 'Puzzles guardados, buscados na fonte quando faltam (sem as respostas)',
         },
+        {
+          name: 'library',
+          description: 'Puzzles guardados com a situação do usuário, sem consultar a fonte',
+        },
       ],
       components: {
         securitySchemes: {
