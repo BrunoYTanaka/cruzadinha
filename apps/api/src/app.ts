@@ -37,8 +37,19 @@ export function buildApp({
     trustProxy: (_address: string, hop: number) => hop < config.trustProxyHops,
   })
 
+  // Os `schema` das rotas só documentam: a validação continua nos `safeParse` das rotas e as
+  // respostas saem como estão, sem o Ajv nem o fast-json-stringify mudarem ordem, status ou corpo.
+  app.setValidatorCompiler(() => (data) => ({ value: data }))
+  app.setSerializerCompiler(() => (data) => JSON.stringify(data))
+
   app.register(cookie)
   app.decorateRequest('user', null)
+
+  // Documentação só fora de produção, sem configuração que a ligue; registrada antes das
+  // rotas para que todas entrem no documento.
+  if (config.nodeEnv !== 'production') {
+    app.register(import('./docs/docs.plugin'))
+  }
 
   app.setErrorHandler((error, request, reply) => {
     const statusCode =

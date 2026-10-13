@@ -6,6 +6,7 @@ import type { Clock } from '../../lib/clock'
 import type { AuthService, AuthUser } from './auth.service'
 import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session-cookie'
 import type { RequireSession } from './session.plugin'
+import { loginSchema, logoutSchema, meSchema, registerSchema } from './auth.schemas'
 
 export type AuthRoutesOptions = {
   auth: AuthService
@@ -26,7 +27,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   app,
   { auth, config, clock, requireSession },
 ) => {
-  app.post('/api/auth/register', async (request, reply) => {
+  app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
     const admission = await auth.admitRegistration(request.ip)
     if (!admission.ok) return sendTooManyAttempts(reply, admission.retryAfterSeconds)
 
@@ -46,7 +47,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     return reply.status(201).send(authResponse(result.user))
   })
 
-  app.post('/api/auth/login', async (request, reply) => {
+  app.post('/api/auth/login', { schema: loginSchema }, async (request, reply) => {
     const body: unknown = request.body
     const parsed = loginRequestSchema.safeParse(body)
     if (!parsed.success) {
@@ -64,14 +65,18 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   })
 
   // Idempotente: sem sessão válida também responde 204 e apaga o cookie.
-  app.post('/api/auth/logout', async (request, reply) => {
+  app.post('/api/auth/logout', { schema: logoutSchema }, async (request, reply) => {
     await auth.logout(request.cookies[SESSION_COOKIE])
     clearSessionCookie(reply)
     return reply.status(204).send()
   })
 
-  app.get('/api/auth/me', { preHandler: requireSession }, async (request, reply) => {
-    if (!request.user) return sendError(reply, 401, 'unauthenticated')
-    return authResponse(request.user)
-  })
+  app.get(
+    '/api/auth/me',
+    { schema: meSchema, preHandler: requireSession },
+    async (request, reply) => {
+      if (!request.user) return sendError(reply, 401, 'unauthenticated')
+      return authResponse(request.user)
+    },
+  )
 }
