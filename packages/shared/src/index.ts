@@ -27,6 +27,7 @@ export {
   type Solution,
   type Word,
 } from './puzzle/schema'
+export { puzzleResponseSchema, type PuzzleResponse } from './puzzle/response'
 export { validatePuzzleWithSolution, type PairValidation, type RuleIssue } from './puzzle/rules'
 export { wordCells, type CellPosition } from './puzzle/word-cells'
 export {
