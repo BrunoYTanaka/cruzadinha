@@ -1,0 +1,24 @@
+.loading {
+  margin: 0;
+  padding: 24px var(--gutter);
+  color: var(--mute);
+}
+
+.error {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  max-width: 520px;
+  margin: 24px auto;
+  padding: 20px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.message {
+  margin: 0;
+  color: var(--mute);
+}

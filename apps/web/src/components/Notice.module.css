@@ -1,0 +1,35 @@
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.info {
+  border-color: var(--line);
+}
+
+.warning {
+  border-color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.error {
+  border-color: var(--bad);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.action {
+  flex: none;
+}

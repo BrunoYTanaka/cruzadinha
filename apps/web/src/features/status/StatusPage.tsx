@@ -7,7 +7,7 @@ async function fetchHealth(): Promise<HealthStatus> {
   return healthStatusSchema.parse(body)
 }
 
-export function App() {
+export function StatusPage() {
   const health = useQuery({ queryKey: ['health'], queryFn: fetchHealth })
 
   const server = health.isPending

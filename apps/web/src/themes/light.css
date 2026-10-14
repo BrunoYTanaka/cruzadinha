@@ -1,0 +1,29 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #1c1f24;
+  --mute: #4f5661;
+  --line: #cfd4db;
+
+  --accent: #1a56c4;
+  --accent-ink: #ffffff;
+  --focus: #1a56c4;
+
+  --block: #1f2329;
+  --cell: #ffffff;
+  --cell-line: #aeb4bd;
+  --word: #cfe0ff;
+  --sel: #ffd23f;
+  --sel-ink: #1c1f24;
+
+  --help: #8a2ec4;
+  --bad: #d32f2f;
+
+  --ok: #17693a;
+  --ok-tint: #dff3e6;
+  --warn: #8a5300;
+  --warn-tint: #fdeccd;
+
+  --pill: #e4e7ec;
+}

@@ -1,13 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { App } from './App'
+import { StatusPage } from './StatusPage'
 
 function renderApp() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={queryClient}>
-      <App />
+      <StatusPage />
     </QueryClientProvider>,
   )
 }
@@ -23,7 +23,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('App', () => {
+describe('StatusPage', () => {
   it('shows the project name', () => {
     respondWith({ status: 'ok', database: 'up' })
     renderApp()

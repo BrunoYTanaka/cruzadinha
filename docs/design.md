@@ -13,7 +13,7 @@ Um site de palavras cruzadas que reúne puzzles de sites existentes numa interfa
 
 ### Fora do escopo da v1
 
-Verificar e revelar letras ou palavras, estatísticas, streaks, ranking entre amigos, temas visuais extras e outras fontes (Cruzadas Clube, G1, Coquetel). A arquitetura deixa esses itens como extensões, sem reescrita.
+Estatísticas, streaks, ranking entre amigos, temas visuais extras e outras fontes (Cruzadas Clube, G1, Coquetel). A arquitetura deixa esses itens como extensões, sem reescrita.
 
 ## 2. Fonte de puzzles
 
@@ -113,7 +113,7 @@ Próximo do ipuz, mas só com o que o jogo usa:
 | `puzzles`  | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                                                          |
 | `progress` | `user_id`, `puzzle_id` (chave composta), `cells` (JSON), `elapsed_ms`, `status`, `saved_at`, `completed_at`, `finished_ms`, `best_ms`, `best_at`, `created_at`, `updated_at` |
 
-Preferência do usuário (tema claro, escuro ou automático) fica numa coluna de `users`.
+O tema (claro, escuro ou automático) fica só no aparelho (`localStorage`), sem coluna em `users`.
 
 ### Cache
 
@@ -136,7 +136,6 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
 - `GET /api/library` (até 366 puzzles já guardados, do mais recente ao mais antigo, com a situação do usuário — não iniciado, em andamento ou concluído — e os tempos dele; só lê o que está guardado, nunca consulta a fonte)
 - `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo)
-- `PATCH /api/me/preferences` (tema)
 
 ## 5. Front (`apps/web`)
 
@@ -145,9 +144,9 @@ apps/web/src/
   app/            rotas, layout, guarda de login, provedor de tema
   features/
     auth/         login e cadastro
-    library/      seletor de nível e data
-    game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro
-    invites/      easter egg Konami e modal do convite
+    library/      calendário mensal dos dias (só o nível diário)
+    game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro, ajudas, conclusão
+    invites/      easter egg Konami e janela do convite
   game-logic/     lógica pura do tabuleiro, sem React (reducer testável)
   api/            cliente HTTP único, com tipos de packages/shared
   themes/         tokens claro e escuro
@@ -162,7 +161,7 @@ apps/web/src/
 
 - Padrão: segue `prefers-color-scheme`, sem piscar branco ao carregar.
 - Um botão no cabeçalho alterna entre automático, claro e escuro.
-- A escolha é aplicada na hora, salva no perfil do usuário e, antes do login, em `localStorage`.
+- A escolha é aplicada na hora e guardada só neste aparelho (`localStorage`); um script no `index.html` a aplica antes da primeira pintura.
 - Critério de aceite: nos dois modos, bloco, célula selecionada, palavra ativa e letra preenchida têm contraste claro entre si.
 
 ## 6. Regras
@@ -178,6 +177,8 @@ apps/web/src/
 7. Células de bloco não são selecionáveis.
 8. Ao completar uma palavra, o cursor **fica na última letra**.
 9. Grade completa e correta marca o jogo como concluído. Grade completa e errada não mostra aviso.
+10. **Ajudas (v1 do front):** revelar letra (limite 4 por cruzada), revelar palavra (limite 2) e verificar (sem limite); os limites vêm de `VITE_HELP_LETTER_LIMIT` e `VITE_HELP_WORD_LIMIT` (lidos no build). A célula revelada fica travada e ganha um cantinho roxo; a verificação marca as certas de roxo e as erradas de vermelho. O uso de ajuda e as marcas ficam só no aparelho (`localStorage` por usuário e cruzada), sem enviar ao servidor; o melhor tempo conta normalmente com ajuda.
+11. A solução da fonte pode trazer letras acentuadas (Ã, É). A comparação e as ajudas usam a letra simples, a mesma que o jogador digita.
 
 ### Progresso
 
@@ -201,7 +202,7 @@ apps/web/src/
 21. Convite inexistente, usado, expirado ou revogado dá a mesma mensagem: "convite inválido".
 22. O convite é consumido na mesma transação que cria o usuário. Se o cadastro falhar, ele não é gasto.
 23. O convite não é amarrado a um e-mail.
-24. **Geração pelo easter egg:** um usuário logado digita a sequência Konami (↑ ↑ ↓ ↓ ← → ← → B A). O front chama `POST /api/invites`, e o servidor decide. O código de sequência no front serve só para a descoberta. A proteção está no servidor: exige sessão e aplica a cota.
+24. **Geração pelo easter egg:** um usuário logado digita a sequência Konami (↑ ↑ ↓ ↓ ← → ← → B A) fora do tabuleiro. O front chama `POST /api/invites`, e o servidor decide; a janela mostra o código uma vez e "N convites ativos", sem repetir o número da cota (que é só do servidor). O código de sequência no front serve só para a descoberta. A proteção está no servidor: exige sessão e aplica a cota.
 25. **Cota:** no máximo 3 convites ativos por usuário (não usados, não expirados e não revogados). Usado, expirado ou revogado libera uma vaga.
 26. O cadastro e a geração de convites têm limite de tentativas por IP.
 27. A CLI (`create`, `list`, `revoke`) é do autor e não tem cota.

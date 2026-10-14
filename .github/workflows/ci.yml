@@ -37,6 +37,58 @@ jobs:
       # Testes com Postgres real em container (Testcontainers usa o Docker do runner).
       - run: npm run test:int
 
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cruzadinha
+          POSTGRES_PASSWORD: cruzadinha
+          POSTGRES_DB: cruzadinha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cruzadinha"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://cruzadinha:cruzadinha@localhost:5432/cruzadinha
+      NODE_ENV: development
+      PORT: 3000
+      HOST: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Cruzada de amostra e conta de teste (sem rede); a API aplica as migrações ao subir.
+      - run: npm run db:migrate -w @cruzadinha/api
+      - run: npm run db:seed -w @cruzadinha/api
+      - name: Subir a API
+        run: |
+          npm run dev -w @cruzadinha/api > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fs http://localhost:3000/api/health && exit 0
+            sleep 1
+          done
+          cat api.log
+          exit 1
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      # O Playwright gera o site e o serve com `vite preview` (o proxy `/api` aponta para a API).
+      - run: npm run test:e2e -w @cruzadinha/web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 10

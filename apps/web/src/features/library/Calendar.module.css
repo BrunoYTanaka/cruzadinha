@@ -1,0 +1,146 @@
+.month {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.title::first-letter {
+  text-transform: uppercase;
+}
+
+.nav {
+  width: var(--tap);
+  padding: 0;
+  font-size: 20px;
+}
+
+.nav:disabled {
+  opacity: 0.35;
+}
+
+.caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+
+.weekday {
+  padding: 2px 0;
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.weekday abbr {
+  text-decoration: none;
+}
+
+.cell,
+.blank {
+  padding: 0;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.1;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.number {
+  font-variant-numeric: tabular-nums;
+}
+
+.status {
+  font-size: 10.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.completed {
+  border-color: var(--ok);
+  background: var(--ok-tint);
+}
+
+.completed .status {
+  color: var(--ok);
+}
+
+.in_progress {
+  border-color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.in_progress .status {
+  color: var(--warn);
+}
+
+.not_started {
+  background: var(--surface);
+}
+
+.fetchable {
+  border-style: dashed;
+  background: transparent;
+}
+
+.fetchable .status {
+  color: var(--mute);
+}
+
+.none,
+.future {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mute);
+  font-weight: 400;
+}
+
+.none .status {
+  color: var(--mute);
+}
+
+.today {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}

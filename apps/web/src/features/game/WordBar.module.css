@@ -1,0 +1,42 @@
+.bar {
+  display: grid;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.clue {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.clue b {
+  color: var(--accent);
+}
+
+.letters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.letter {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 36px;
+  border: 1px solid var(--cell-line);
+  border-radius: 6px;
+  background: var(--cell);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.active {
+  background: var(--sel);
+  border-color: var(--sel);
+  color: var(--sel-ink);
+}

@@ -1,0 +1,48 @@
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--mute);
+  font-size: 13px;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.completed {
+  border-color: var(--ok);
+  background: var(--ok-tint);
+}
+
+.in_progress {
+  border-color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.not_started {
+  background: var(--surface);
+}
+
+.fetchable {
+  border-style: dashed;
+  border-color: var(--mute);
+}
+
+.future {
+  border-color: transparent;
+  background: var(--line);
+}

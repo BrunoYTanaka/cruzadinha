@@ -1,0 +1,8 @@
+.body {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.body > div {
+  max-height: none;
+}

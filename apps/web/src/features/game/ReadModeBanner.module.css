@@ -1,0 +1,34 @@
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.text {
+  flex: 1;
+  margin: 0;
+  font-weight: 700;
+}
+
+.link {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  color: var(--ok);
+  font-weight: 500;
+}

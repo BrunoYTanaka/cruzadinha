@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="pt-BR">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <style>
+    body {
+      margin: 0;
+    }
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+  <title>Cruzadinha Conclusão e Convite</title>
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+  />
+  <style>
+    /* Layout: page chrome with framed mockups of the completion dialog, the read-only board and the invite dialog (success and quota error) */
+    :root {
+      --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --pg-bg: #eef0f3;
+      --pg-fg: #1c1f24;
+      --pg-mute: #565c66;
+      --pg-line: #d3d7dd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme='light']) {
+        --pg-bg: #0d0e10;
+        --pg-fg: #e6e8ec;
+        --pg-mute: #9aa1ac;
+        --pg-line: #2a2d33;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme='dark'] {
+      --pg-bg: #0d0e10;
+      --pg-fg: #e6e8ec;
+      --pg-mute: #9aa1ac;
+      --pg-line: #2a2d33;
+      color-scheme: dark;
+    }
+
+    body {
+      background: var(--pg-bg);
+      color: var(--pg-fg);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      padding-block: 32px 56px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--pg-mute);
+      margin: 0 0 12px;
+    }
+    .lead {
+      color: var(--pg-mute);
+      margin: 8px 0 0;
+      max-width: 62ch;
+    }
+    .pair {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+    .notes {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+      color: var(--pg-mute);
+      font-size: 13px;
+    }
+    .notes li::before {
+      content: '• ';
+    }
+
+    .mock {
+      position: relative;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --ink: #1c1f24;
+      --mute: #4f5661;
+      --line: #cfd4db;
+      --block: #1f2329;
+      --cell: #ffffff;
+      --cell-line: #aeb4bd;
+      --word: #cfe0ff;
+      --accent: #1a56c4;
+      --accent-ink: #ffffff;
+      --help: #8a2ec4;
+      --ok: #17693a;
+      --ok-tint: #dff3e6;
+      --warn: #8a5300;
+      --warn-tint: #fdeccd;
+      --focus: #1a56c4;
+      --cell-size: 30px;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--pg-line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .mock.dark {
+      --bg: #121316;
+      --surface: #1a1c20;
+      --ink: #eceef2;
+      --mute: #a4abb6;
+      --line: #33373f;
+      --block: #07080a;
+      --cell: #25282e;
+      --cell-line: #50555f;
+      --word: #27406e;
+      --accent: #8db4ff;
+      --accent-ink: #0a1a33;
+      --help: #d9a8ff;
+      --ok: #6fd69a;
+      --ok-tint: #17301f;
+      --warn: #f0b95e;
+      --warn-tint: #3a2b10;
+      --focus: #8db4ff;
+    }
+
+    .m-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .m-logo {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      flex: 1;
+    }
+    .m-timer {
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      font-size: 15px;
+    }
+    .btn {
+      font: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      min-height: 48px;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+    .btn.block {
+      width: 100%;
+    }
+
+    .board-area {
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      padding: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(11, var(--cell-size));
+      gap: 1px;
+      background: var(--block);
+      padding: 2px;
+      border-radius: 6px;
+    }
+    .c {
+      position: relative;
+      width: var(--cell-size);
+      height: var(--cell-size);
+      background: var(--cell);
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--cell-size) * 0.5);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .c.b {
+      background: var(--block);
+    }
+    .c.h::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 24%;
+      aspect-ratio: 1;
+      background: var(--help);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+    .c .n {
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      font-size: 8px;
+      font-weight: 500;
+      line-height: 1;
+      color: var(--mute);
+    }
+
+    .banner {
+      justify-self: stretch;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--ok-tint);
+      border: 1px solid var(--ok);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-height: 52px;
+    }
+    .banner b {
+      color: var(--ok);
+    }
+    .banner span {
+      flex: 1;
+      font-size: 15px;
+      min-width: 0;
+    }
+    .banner .tick {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--ok);
+      color: var(--bg);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      flex: none;
+    }
+
+    .backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 10, 14, 0.55);
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .dlg {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    }
+    .dlg h3 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      text-wrap: balance;
+    }
+    .dlg p {
+      margin: 0;
+      color: var(--mute);
+      font-size: 14px;
+    }
+    .dlg .mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 700;
+      background: var(--ok-tint);
+      color: var(--ok);
+      border: 1px solid var(--ok);
+    }
+    .dlg .mark.warn {
+      background: var(--warn-tint);
+      color: var(--warn);
+      border-color: var(--warn);
+    }
+    .dlg .row {
+      display: grid;
+      gap: 8px;
+    }
+    .dlg .acts {
+      display: grid;
+      gap: 8px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .stat {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 8px;
+      display: grid;
+      gap: 2px;
+      text-align: center;
+    }
+    .stat b {
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat small {
+      font-size: 12px;
+      color: var(--mute);
+    }
+    .stat.rec {
+      border-color: var(--ok);
+      background: var(--ok-tint);
+    }
+    .stat.rec small {
+      color: var(--ok);
+      font-weight: 500;
+    }
+    .code {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 6px 6px 6px 14px;
+    }
+    .code code {
+      flex: 1;
+      font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .code .btn {
+      min-height: 44px;
+      padding: 0 14px;
+      font-size: 14px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      font-size: 13px;
+      color: var(--mute);
+    }
+    .meta span::before {
+      content: '• ';
+    }
+    .note {
+      font-size: 13px;
+      color: var(--ink);
+      background: var(--warn-tint);
+      border: 1px solid var(--warn);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .frame-dim {
+      height: 680px;
+    }
+    .frame-dim .board-area {
+      padding-top: 24px;
+      opacity: 1;
+    }
+    .phone {
+      max-width: 390px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .bottom {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 420px) {
+      .stat b {
+        font-size: 19px;
+      }
+    }
+  </style>
+
+  <div class="wrap">
+    <header>
+      <h1>Conclusão e convite</h1>
+      <p class="lead">
+        Duas telas que aparecem por cima do jogo: o aviso de cruzada concluída e o convite criado
+        pelo código Konami. Tempos, códigos e datas são inventados para o exemplo.
+      </p>
+    </header>
+
+    <section>
+      <h2>Cruzada concluída</h2>
+      <div class="pair">
+        <div id="done-dlg"></div>
+        <div id="done-read"></div>
+      </div>
+      <ul class="notes">
+        <li>
+          Ao completar a grade com todas as letras certas, abre uma janela com o tempo, o melhor
+          tempo e o número de ajudas usadas. Grade completa e errada não mostra nada.
+        </li>
+        <li>
+          A janela é um diálogo acessível: foco vai para o botão principal, Esc fecha e o foco volta
+          ao tabuleiro. O tempo é anunciado ao leitor de tela.
+        </li>
+        <li>
+          Ao fechar, o tabuleiro fica em modo leitura, sem seleção nem teclado, com uma faixa verde
+          e a opção de jogar de novo. O melhor tempo é mantido ao recomeçar.
+        </li>
+        <li>A cor verde vem sempre com o texto "Concluída" e o ícone, nunca sozinha.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Convite criado pelo Konami</h2>
+      <div class="pair">
+        <div id="inv-ok"></div>
+        <div id="inv-full"></div>
+      </div>
+      <ul class="notes">
+        <li>
+          Quem digita a sequência (↑ ↑ ↓ ↓ ← → ← → B A) logado abre a janela. Não existe botão nem
+          dica visível: é um segredo para os amigos.
+        </li>
+        <li>
+          O código aparece uma única vez, por isso o aviso em destaque e o botão Copiar. Sem o
+          código, só gerando outro.
+        </li>
+        <li>
+          Quando já existem 3 convites ativos, a mesma janela explica o que fazer, sem mostrar erro
+          técnico.
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    var N = 11
+    var ROWS = [
+      '...#....#..',
+      '...#....#..',
+      '.....#.....',
+      '##...#...##',
+      '....#....#.',
+      '..#.....#..',
+      '.#....#....',
+      '##...#...##',
+      '.....#.....',
+      '..#....#...',
+      '..#....#...',
+    ]
+    var FILL = 'ARTESOLCAMINHOPEDRAFLORVENTO'
+    var HELPED = { '0,1': 1, '2,1': 1, '4,2': 1, '8,3': 1 }
+    function isBlock(r, c) {
+      return r < 0 || c < 0 || r >= N || c >= N || ROWS[r][c] === '#'
+    }
+    function board() {
+      var n = 0,
+        k = 0,
+        html =
+          '<div class="grid" role="img" aria-label="Palavras cruzadas 11 por 11, todas as letras preenchidas">'
+      for (var r = 0; r < N; r++)
+        for (var c = 0; c < N; c++) {
+          if (isBlock(r, c)) {
+            html += '<div class="c b"></div>'
+            continue
+          }
+          var a = isBlock(r, c - 1) && !isBlock(r, c + 1),
+            d = isBlock(r - 1, c) && !isBlock(r + 1, c)
+          if (a || d) n++
+          html +=
+            '<div class="c' +
+            (HELPED[r + ',' + c] ? ' h' : '') +
+            '">' +
+            (a || d ? '<span class="n">' + n + '</span>' : '') +
+            FILL[k++ % FILL.length] +
+            '</div>'
+        }
+      return html + '</div>'
+    }
+    function hdr(withTimer) {
+      return (
+        '<div class="m-head"><span class="m-logo">Cruzadinha</span>' +
+        (withTimer ? '<span class="m-timer">07:48</span>' : '') +
+        '</div>'
+      )
+    }
+    function doneDialog() {
+      return (
+        '<div class="backdrop"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dd-t" aria-describedby="dd-d">' +
+        '<div class="mark" aria-hidden="true">✓</div><h3 id="dd-t">Cruzada concluída</h3>' +
+        '<p id="dd-d">Você terminou a cruzada de quarta, 14 de outubro, em 7 minutos e 48 segundos.</p>' +
+        '<div class="stats"><div class="stat"><b>07:48</b><small>Seu tempo</small></div><div class="stat rec"><b>06:12</b><small>Melhor tempo</small></div><div class="stat"><b>4</b><small>Ajudas usadas</small></div></div>' +
+        '<div class="acts"><button class="btn primary block" type="button">Voltar à biblioteca</button><button class="btn block" type="button">Ver o tabuleiro</button></div></div></div>'
+      )
+    }
+    function frameDone() {
+      return (
+        '<div class="mock frame-dim">' +
+        hdr(true) +
+        '<div class="board-area">' +
+        board() +
+        '</div>' +
+        doneDialog() +
+        '</div>'
+      )
+    }
+    function frameRead() {
+      return (
+        '<div class="mock phone dark">' +
+        hdr(false) +
+        '<div class="board-area" style="padding:14px 10px">' +
+        '<div class="banner"><span class="tick" aria-hidden="true">✓</span><span><b>Concluída</b> em 07:48</span></div>' +
+        board() +
+        '</div>' +
+        '<div class="bottom"><button class="btn primary block" type="button">Jogar de novo</button><button class="btn block" type="button">Voltar à biblioteca</button></div></div>'
+      )
+    }
+    function inviteOk() {
+      return (
+        '<div class="mock frame-dim dark">' +
+        hdr(true) +
+        '<div class="board-area">' +
+        board() +
+        '</div>' +
+        '<div class="backdrop"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="io-t">' +
+        '<div class="mark" aria-hidden="true">✓</div><h3 id="io-t">Convite criado</h3><p>Mande este código para quem você quer chamar. Ele não aparece de novo.</p>' +
+        '<div class="code"><code>K7Q2 M9XA 4PDL 8WTE</code><button class="btn" type="button">Copiar</button></div>' +
+        '<div class="meta"><span>Vale por 7 dias</span><span>Uso único</span><span>2 de 3 convites ativos</span></div>' +
+        '<button class="btn primary block" type="button">Pronto</button></div></div></div>'
+      )
+    }
+    function inviteFull() {
+      return (
+        '<div class="mock frame-dim">' +
+        hdr(true) +
+        '<div class="board-area">' +
+        board() +
+        '</div>' +
+        '<div class="backdrop"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="if-t">' +
+        '<div class="mark warn" aria-hidden="true">!</div><h3 id="if-t">Você já tem 3 convites ativos</h3>' +
+        '<p>Quando um deles for usado ou expirar, abre uma vaga e você pode criar outro.</p>' +
+        '<div class="note">O mais antigo vence em 4 dias.</div>' +
+        '<button class="btn primary block" type="button">Entendi</button></div></div></div>'
+      )
+    }
+    document.getElementById('done-dlg').innerHTML = frameDone()
+    document.getElementById('done-read').innerHTML = frameRead()
+    document.getElementById('inv-ok').innerHTML = inviteOk()
+    document.getElementById('inv-full').innerHTML = inviteFull()
+  </script>
+</html>

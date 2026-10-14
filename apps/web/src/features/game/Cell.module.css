@@ -1,0 +1,62 @@
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  background: var(--cell);
+  color: var(--ink);
+  font-size: calc(var(--cell-size) * 0.5);
+  font-weight: 500;
+  text-transform: uppercase;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.block {
+  background: var(--block);
+}
+
+/* Palavra ativa e selecionada mudam só a cor de fundo (sem contorno nem borda). */
+.word {
+  background: var(--word);
+}
+
+.selected {
+  background: var(--sel);
+  color: var(--sel-ink);
+}
+
+.number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  color: var(--mute);
+  font-size: max(8px, calc(var(--cell-size) * 0.24));
+  font-weight: 500;
+  line-height: 1;
+}
+
+.selected .number {
+  color: var(--sel-ink);
+}
+
+/* Cantinho no canto superior direito: roxo para ajuda usada, vermelho para errada. */
+.helped::after,
+.wrong::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24%;
+  aspect-ratio: 1;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.helped::after {
+  background: var(--help);
+}
+
+.wrong::after {
+  background: var(--bad);
+}

@@ -1,0 +1,21 @@
+/* Tokens que não mudam com o tema. Os nomes de cor (iguais nos dois temas) estão em light.css e
+   dark.css e seguem contracts/ui-contracts.md:
+   superfícies e texto: --bg --surface --ink --mute --line
+   ação:                --accent --accent-ink --focus
+   tabuleiro:           --block --cell --cell-line --word --sel --sel-ink
+   ajuda:               --help --bad
+   estado:              --ok --ok-tint --warn --warn-tint
+   controles:           --pill
+   Componentes só leem tokens: nada de cor ou medida fixa. */
+:root {
+  --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --tap: 44px;
+  --gutter: 16px;
+  --content-max: 1040px;
+}

@@ -1,0 +1,63 @@
+/* Tema escuro: pela preferência do sistema (sem escolha salva) e pela escolha explícita. Os dois
+   blocos têm os mesmos valores. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #121316;
+    --surface: #1a1c20;
+    --ink: #eceef2;
+    --mute: #a4abb6;
+    --line: #33373f;
+
+    --accent: #8db4ff;
+    --accent-ink: #0a1a33;
+    --focus: #8db4ff;
+
+    --block: #07080a;
+    --cell: #25282e;
+    --cell-line: #50555f;
+    --word: #27406e;
+    --sel: #e8b93a;
+    --sel-ink: #1c1f24;
+
+    --help: #d9a8ff;
+    --bad: #ff6b6b;
+
+    --ok: #6fd69a;
+    --ok-tint: #17301f;
+    --warn: #f0b95e;
+    --warn-tint: #3a2b10;
+
+    --pill: #2c3038;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121316;
+  --surface: #1a1c20;
+  --ink: #eceef2;
+  --mute: #a4abb6;
+  --line: #33373f;
+
+  --accent: #8db4ff;
+  --accent-ink: #0a1a33;
+  --focus: #8db4ff;
+
+  --block: #07080a;
+  --cell: #25282e;
+  --cell-line: #50555f;
+  --word: #27406e;
+  --sel: #e8b93a;
+  --sel-ink: #1c1f24;
+
+  --help: #d9a8ff;
+  --bad: #ff6b6b;
+
+  --ok: #6fd69a;
+  --ok-tint: #17301f;
+  --warn: #f0b95e;
+  --warn-tint: #3a2b10;
+
+  --pill: #2c3038;
+}

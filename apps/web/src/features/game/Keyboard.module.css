@@ -1,0 +1,34 @@
+.keyboard {
+  display: grid;
+  gap: 6px;
+  padding: 10px 6px 14px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.key {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  max-width: 40px;
+  min-height: 46px;
+  padding: 0;
+  border: 1px solid var(--cell-line);
+  border-radius: 8px;
+  background: var(--cell);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.wide {
+  flex: 1.6 1 0;
+  max-width: 62px;
+  font-size: 14px;
+}

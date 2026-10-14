@@ -1,0 +1,10 @@
+.status {
+  color: var(--mute);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.warn {
+  color: var(--warn);
+  font-weight: 500;
+}
