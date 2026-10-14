@@ -1,0 +1,6 @@
+/* Fontes servidas pelo próprio site (nenhuma requisição a terceiros). O subconjunto latino
+   cobre o Ç e as letras acentuadas do português. */
+@import '@fontsource/roboto/latin-400.css';
+@import '@fontsource/roboto/latin-500.css';
+@import '@fontsource/roboto/latin-700.css';
+@import '@fontsource/roboto-mono/latin-500.css';

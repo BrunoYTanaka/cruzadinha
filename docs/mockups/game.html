@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="pt-BR">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <style>
+    body {
+      margin: 0;
+    }
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+  <title>Cruzadinha Mockup</title>
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+  />
+  <style>
+    /* Layout: page chrome with four framed mockups (desktop and phone, light and dark) of an 11 x 11 puzzle, each scoped by its own tokens */
+    :root {
+      --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --pg-bg: #eef0f3;
+      --pg-fg: #1c1f24;
+      --pg-mute: #565c66;
+      --pg-line: #d3d7dd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme='light']) {
+        --pg-bg: #0d0e10;
+        --pg-fg: #e6e8ec;
+        --pg-mute: #9aa1ac;
+        --pg-line: #2a2d33;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme='dark'] {
+      --pg-bg: #0d0e10;
+      --pg-fg: #e6e8ec;
+      --pg-mute: #9aa1ac;
+      --pg-line: #2a2d33;
+      color-scheme: dark;
+    }
+
+    body {
+      background: var(--pg-bg);
+      color: var(--pg-fg);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.5;
+      padding-block: 32px 56px;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--pg-mute);
+      margin: 0 0 12px;
+    }
+    .lead {
+      color: var(--pg-mute);
+      margin: 8px 0 0;
+      max-width: 62ch;
+    }
+    .pair {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+    .notes {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+      color: var(--pg-mute);
+      font-size: 13px;
+    }
+    .notes li::before {
+      content: '• ';
+    }
+
+    /* ---------- mock tokens ---------- */
+    .mock {
+      position: relative;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --ink: #1c1f24;
+      --mute: #4f5661;
+      --line: #cfd4db;
+      --block: #1f2329;
+      --cell: #ffffff;
+      --cell-line: #aeb4bd;
+      --word: #cfe0ff;
+      --sel: #ffd23f;
+      --sel-ink: #1c1f24;
+      --accent: #1a56c4;
+      --help: #8a2ec4;
+      --bad: #d32f2f;
+      --pill: #e4e7ec;
+      --focus: #1c1f24;
+      --cell-size: 44px;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--pg-line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .mock.dark {
+      --bg: #121316;
+      --surface: #1a1c20;
+      --ink: #eceef2;
+      --mute: #a4abb6;
+      --line: #33373f;
+      --block: #07080a;
+      --cell: #25282e;
+      --cell-line: #50555f;
+      --word: #27406e;
+      --sel: #e8b93a;
+      --sel-ink: #1c1f24;
+      --accent: #8db4ff;
+      --help: #d9a8ff;
+      --bad: #ff6b6b;
+      --pill: #2c3038;
+      --focus: #8db4ff;
+    }
+
+    .m-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .m-logo {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+    .m-meta {
+      color: var(--mute);
+      font-size: 13px;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .m-head {
+      position: relative;
+    }
+    .help-btn {
+      min-height: 44px;
+      font-weight: 700;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    .menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 12px;
+      z-index: 8;
+      width: 300px;
+      max-width: calc(100% - 24px);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 6px;
+      display: grid;
+      gap: 2px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+    }
+    .mi {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 56px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: left;
+    }
+    .mi:first-child {
+      background: var(--word);
+    }
+    .mi .ico {
+      --cell-size: 30px;
+      flex: none;
+    }
+    .mi .ico.c {
+      border: 1px solid var(--cell-line);
+      font-size: 15px;
+    }
+    .mi .tx {
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      gap: 1px;
+    }
+    .mi .tx b {
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .mi .tx small {
+      font-size: 12px;
+      color: var(--mute);
+    }
+    .mi .cnt {
+      flex: none;
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: var(--bg);
+    }
+    .strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .strip svg {
+      width: 22px;
+      height: 22px;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .st-left,
+    .st-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .st-left .m-timer {
+      font-size: 16px;
+      margin-right: 2px;
+    }
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 10px;
+      color: var(--ink);
+      padding: 0;
+    }
+    .tool-btn {
+      min-height: 44px;
+    }
+    .sep {
+      width: 1px;
+      height: 26px;
+      background: var(--line);
+    }
+    .pill {
+      --tri: var(--help);
+      position: relative;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--pill);
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .phone .strip {
+      padding: 6px 12px;
+    }
+    .phone .st-right {
+      width: 100%;
+    }
+    .phone .pill {
+      flex: 1;
+      justify-content: center;
+      padding: 0 8px;
+    }
+    .phone .st-right svg {
+      display: none;
+    }
+    .m-timer {
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      font-size: 15px;
+    }
+    .m-btn {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 36px;
+      padding: 0 12px;
+    }
+
+    .m-body {
+      display: grid;
+      gap: 20px;
+      padding: 20px;
+    }
+    .desk .m-body {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+    }
+    .m-board {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+    .m-clue-now {
+      align-self: stretch;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 2px 4px 2px 14px;
+      min-height: 52px;
+      position: relative;
+    }
+    .m-clue-now b {
+      color: var(--accent);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .m-clue-now span {
+      font-size: 15px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(var(--n, 11), var(--cell-size));
+      gap: 1px;
+      background: var(--block);
+      padding: 2px;
+      border-radius: 6px;
+    }
+    .c {
+      position: relative;
+      width: var(--cell-size);
+      height: var(--cell-size);
+      background: var(--cell);
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--cell-size) * 0.5);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .c.b {
+      background: var(--block);
+    }
+    .c.w {
+      background: var(--word);
+    }
+    .c.s {
+      background: var(--sel);
+      color: var(--sel-ink);
+    }
+    .c.h::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 24%;
+      aspect-ratio: 1;
+      background: var(--help);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+    .c.x::after {
+      background: var(--bad);
+    }
+    .c .n {
+      position: absolute;
+      top: 2px;
+      left: 3px;
+      font-size: max(8px, calc(var(--cell-size) * 0.24));
+      font-weight: 500;
+      line-height: 1;
+      color: var(--mute);
+    }
+    .c.s .n {
+      color: var(--sel-ink);
+    }
+
+    .clues {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-height: 600px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+    }
+    .clues > div,
+    .clues li span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .clues h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--mute);
+      margin: 0 0 8px;
+      font-weight: 500;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: 2px 0 4px;
+    }
+    .clues ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1px;
+    }
+    .clues li {
+      display: flex;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      min-height: 32px;
+      align-items: baseline;
+    }
+    .clues li b {
+      min-width: 1.6em;
+      font-weight: 700;
+      color: var(--mute);
+      font-variant-numeric: tabular-nums;
+    }
+    .clues li.on {
+      background: var(--word);
+    }
+    .clues li.on b {
+      color: var(--ink);
+    }
+    .clues li.done {
+      color: var(--mute);
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+    }
+
+    .kb {
+      display: grid;
+      gap: 6px;
+      padding: 10px 6px 14px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+    .kb div {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    .k {
+      flex: 1 1 0;
+      max-width: 40px;
+      min-height: 46px;
+      display: grid;
+      place-items: center;
+      background: var(--cell);
+      border: 1px solid var(--cell-line);
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .k.wide {
+      flex: 1.6 1 0;
+      max-width: 62px;
+    }
+
+    .legend-toggle {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      z-index: 6;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 16px;
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .phone .legend-toggle {
+      right: 12px;
+      bottom: 214px;
+    }
+    .desk .m-body {
+      padding-bottom: 76px;
+    }
+    .phone .m-body {
+      padding-bottom: 60px;
+    }
+    .states {
+      position: absolute;
+      right: 16px;
+      bottom: 68px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      font-size: 13px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .states span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .states .c {
+      --cell-size: 22px;
+      font-size: 12px;
+      border: 1px solid var(--cell-line);
+    }
+    .phone {
+      max-width: 390px;
+      width: 100%;
+      margin: 0 auto;
+      --cell-size: 30px;
+    }
+    .phone .m-body {
+      padding: 14px 10px 64px;
+    }
+    .phone .states {
+      right: 12px;
+      bottom: 266px;
+    }
+    .phone .m-meta {
+      display: none;
+    }
+    .phone .m-head {
+      padding: 10px 12px;
+    }
+    .phone .m-logo {
+      flex: 1;
+    }
+    .chips {
+      display: flex;
+      gap: 8px;
+      align-self: stretch;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mute);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--surface);
+    }
+    @media (max-width: 860px) {
+      .desk .m-body {
+        grid-template-columns: 1fr;
+      }
+      .desk {
+        --cell-size: 30px;
+      }
+      .clues {
+        grid-template-columns: 1fr;
+        max-height: 320px;
+      }
+    }
+  </style>
+
+  <div class="wrap">
+    <header>
+      <h1>Tela de jogo da Cruzadinha, grade 11 × 11</h1>
+      <p class="lead">
+        Mesma direção visual, agora com uma grade de 11 × 11. O tabuleiro cresce no computador e as
+        dicas passam a rolar numa coluna ao lado. No celular as células ficam menores. Todo o texto
+        e as dicas são inventados para o exemplo.
+      </p>
+    </header>
+
+    <section>
+      <h2>Computador · tema claro</h2>
+      <div id="desk-light"></div>
+      <ul class="notes">
+        <li>
+          Células de 44 px. O tabuleiro tem cerca de 500 px e a lista de dicas rola ao lado, com os
+          títulos fixos.
+        </li>
+        <li>
+          A dica ativa fica destacada na lista e repetida acima do tabuleiro. Dicas já preenchidas
+          ficam riscadas. Entre o cabeçalho e o jogo há uma faixa de ferramentas: à esquerda o
+          tempo, a pausa e o calendário; à direita o olho (ajudas) e os botões "Letra" e "Palavra",
+          com o que já foi usado do limite (4 e 2), e "Verificar", sem limite. O botão "?" no canto
+          inferior direito da tela abre a legenda, que começa escondida.
+        </li>
+        <li>
+          A selecionada agora é amarela com letra escura, e o azul fica para a palavra ativa e os
+          botões. Células que receberam ajuda ganham um cantinho no canto superior direito: roxo
+          para revelada ou conferida e certa, vermelho para errada na verificação. O exemplo mostra
+          uma verificação (linha 1, com o L errado), uma letra revelada (linha 3) e uma palavra
+          revelada (linha 5).
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Computador · tema escuro</h2>
+      <div id="desk-dark"></div>
+    </section>
+
+    <section>
+      <h2>Celular · claro e escuro</h2>
+      <div class="pair">
+        <div id="ph-light"></div>
+        <div id="ph-dark"></div>
+      </div>
+      <ul class="notes">
+        <li>
+          Células de 30 px para caber em 390 px de largura. O alvo de toque fica abaixo dos 44 px
+          recomendados, então a seleção também se move pelo teclado na tela e pelas dicas.
+        </li>
+        <li>A dica atual fica fixa acima do teclado e o botão "Dicas" abre a lista completa.</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    var N = 11
+    var ROWS = [
+      '...#....#..',
+      '...#....#..',
+      '.....#.....',
+      '##...#...##',
+      '....#....#.',
+      '..#.....#..',
+      '.#....#....',
+      '##...#...##',
+      '.....#.....',
+      '..#....#...',
+      '..#....#...',
+    ]
+    var LETTERS = {
+      '0,0': 'S',
+      '0,1': 'O',
+      '0,2': 'L',
+      '1,0': 'E',
+      '2,0': 'C',
+      '2,1': 'A',
+      '2,2': 'R',
+      '4,0': 'M',
+      '4,1': 'E',
+      '4,2': 'S',
+      '4,3': 'A',
+    }
+    var SEL = [2, 3]
+    // 'r' reveal or correct check (purple), 'x' wrong in a check (red)
+    var HELP = {
+      '0,0': 'r',
+      '0,1': 'r',
+      '0,2': 'x',
+      '2,1': 'r',
+      '4,0': 'r',
+      '4,1': 'r',
+      '4,2': 'r',
+      '4,3': 'r',
+    }
+    var POOL = [
+      'Moradia',
+      'Fruto da videira',
+      'Pronome possessivo',
+      'Nota musical',
+      'Preposição',
+      'Lugar de venda',
+      'Peça de vestuário',
+      'Ação de partir',
+      'Mensagem pelo correio',
+      'Astro do dia',
+      'Bebida quente',
+      'Animal de estimação',
+      'Cor da neve',
+      'Opção entre duas',
+      'Móvel da cozinha',
+      'Metal precioso',
+      'Parte do rosto',
+      'Som agudo',
+      'Doce de festa',
+      'Fim de semana',
+      'Rio do Pará',
+      'Clima do verão',
+      'Ave noturna',
+      'Prefixo de negação',
+      'Árvore frutífera',
+      'Esporte com raquete',
+      'Unidade de peso',
+      'Capital do Peru',
+      'Meio de transporte',
+      'Cheiro agradável',
+      'Cidade do Sul',
+      'Ferramenta de corte',
+      'Mês das flores',
+      'Terreno plantado',
+      'Lugar de estudo',
+      'Corpo celeste',
+    ]
+
+    function blockAt(r, c) {
+      return r < 0 || c < 0 || r >= N || c >= N || ROWS[r][c] === '#'
+    }
+    function analyse() {
+      var n = 0,
+        nums = {},
+        across = [],
+        down = []
+      for (var r = 0; r < N; r++)
+        for (var c = 0; c < N; c++) {
+          if (blockAt(r, c)) continue
+          var a = blockAt(r, c - 1) && !blockAt(r, c + 1)
+          var d = blockAt(r - 1, c) && !blockAt(r + 1, c)
+          if (a || d) {
+            n++
+            nums[r + ',' + c] = n
+          }
+          if (a) across.push({ n: n, r: r, c: c })
+          if (d) down.push({ n: n, r: r, c: c })
+        }
+      return { nums: nums, across: across, down: down }
+    }
+    var INFO = analyse()
+    function wordCells() {
+      var c0 = SEL[1],
+        c1 = SEL[1],
+        set = {}
+      while (!blockAt(SEL[0], c0 - 1)) c0--
+      while (!blockAt(SEL[0], c1 + 1)) c1++
+      for (var c = c0; c <= c1; c++) set[SEL[0] + ',' + c] = true
+      var w = INFO.across.filter(function (a) {
+        return a.r === SEL[0] && a.c === c0
+      })[0]
+      return { cells: set, num: w ? w.n : 0 }
+    }
+    var ACTIVE = wordCells()
+
+    function grid() {
+      var html =
+        '<div class="grid" style="--n:' +
+        N +
+        '" role="grid" aria-label="Palavras cruzadas ' +
+        N +
+        ' por ' +
+        N +
+        '">'
+      for (var r = 0; r < N; r++)
+        for (var c = 0; c < N; c++) {
+          var key = r + ',' + c
+          if (blockAt(r, c)) {
+            html += '<div class="c b" aria-hidden="true"></div>'
+            continue
+          }
+          var ch = LETTERS[key],
+            cls = 'c'
+          if (r === SEL[0] && c === SEL[1]) cls += ' s'
+          else if (ACTIVE.cells[key]) cls += ' w'
+          if (HELP[key]) cls += HELP[key] === 'x' ? ' h x' : ' h'
+          var label =
+            'Linha ' +
+            (r + 1) +
+            ', coluna ' +
+            (c + 1) +
+            (ch ? ', letra ' + ch : ', vazia') +
+            (HELP[key] === 'x' ? ', errada na verificação' : HELP[key] ? ', com ajuda' : '')
+          html +=
+            '<div class="' +
+            cls +
+            '" role="gridcell" aria-label="' +
+            label +
+            '">' +
+            (INFO.nums[key] ? '<span class="n">' + INFO.nums[key] + '</span>' : '') +
+            (ch || '') +
+            '</div>'
+        }
+      return html + '</div>'
+    }
+    var legendId = 0
+    function states() {
+      var id = 'legend-' + ++legendId
+      return (
+        '<button class="m-btn legend-toggle" type="button" aria-label="Legenda do tabuleiro" aria-expanded="false" aria-controls="' +
+        id +
+        '">?</button><div class="states" id="' +
+        id +
+        '" hidden><span><i class="c"></i>Vazia</span><span><i class="c w"></i>Palavra ativa</span><span><i class="c s"></i>Selecionada</span><span><i class="c h">A</i>Com ajuda</span><span><i class="c h x">A</i>Errada na verificação</span></div>'
+      )
+    }
+    function clueText(n) {
+      return POOL[(n * 7) % POOL.length]
+    }
+    function list(items, active, done) {
+      return items
+        .map(function (it) {
+          return (
+            '<li class="' +
+            (active === it.n ? 'on' : '') +
+            (done.indexOf(it.n) > -1 ? ' done' : '') +
+            '"><b>' +
+            it.n +
+            '</b><span>' +
+            clueText(it.n) +
+            '</span></li>'
+          )
+        })
+        .join('')
+    }
+    function head(date) {
+      return (
+        '<div class="m-head"><span class="m-logo">Cruzadinha</span><span class="m-meta">' +
+        date +
+        '</span>' +
+        '<button class="m-btn" type="button">Tema: Auto</button></div>'
+      )
+    }
+    function strip() {
+      return (
+        '<div class="strip" role="toolbar" aria-label="Ferramentas do jogo"><div class="st-left">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+        '<span class="m-timer" aria-label="Tempo de jogo: 7 minutos e 48 segundos">07:48</span>' +
+        '<button class="icon-btn" type="button" aria-label="Pausar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg></button>' +
+        '<span class="sep" aria-hidden="true"></span>' +
+        '<button class="icon-btn" type="button" aria-label="Escolher outro dia"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button></div>' +
+        '<div class="st-right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>' +
+        '<button class="pill" type="button" aria-label="Revelar letra, 1 de 4 usadas">1/4 Letra</button>' +
+        '<button class="pill" type="button" aria-label="Revelar palavra, 1 de 2 usadas">1/2 Palavra</button>' +
+        '<button class="pill bad" type="button" aria-label="Verificar as letras">Verificar</button></div></div>'
+      )
+    }
+    function nowBar(short) {
+      return (
+        '<div class="m-clue-now"><b>' +
+        ACTIVE.num +
+        (short ? ' H' : ' Horizontal') +
+        '</b><span>' +
+        clueText(ACTIVE.num) +
+        '</span></div>'
+      )
+    }
+    function desk(dark) {
+      return (
+        '<div class="mock desk' +
+        (dark ? ' dark' : '') +
+        '">' +
+        head('Qua, 14 out 2026 · Diária · 11 × 11') +
+        strip() +
+        '<div class="m-body"><div class="m-board">' +
+        nowBar(false) +
+        grid() +
+        '</div>' +
+        '<div class="clues"><div><h3>Horizontais</h3><ol>' +
+        list(INFO.across, ACTIVE.num, [1]) +
+        '</ol></div>' +
+        '<div><h3>Verticais</h3><ol>' +
+        list(INFO.down, 0, []) +
+        '</ol></div></div></div>' +
+        states() +
+        '</div>'
+      )
+    }
+    function keys(s) {
+      return s
+        .split('')
+        .map(function (k) {
+          return '<span class="k">' + k + '</span>'
+        })
+        .join('')
+    }
+    function phone(dark) {
+      return (
+        '<div class="mock phone' +
+        (dark ? ' dark' : '') +
+        '">' +
+        head('') +
+        strip() +
+        '<div class="m-body"><div class="chips"><span class="chip">Diária</span><span class="chip">14 out</span><span class="chip">11 de 95 letras</span></div>' +
+        '<div class="m-board">' +
+        nowBar(true) +
+        grid() +
+        '</div></div>' +
+        '<div class="kb"><div>' +
+        keys('QWERTYUIOP') +
+        '</div><div>' +
+        keys('ASDFGHJKL') +
+        '<span class="k">Ç</span></div>' +
+        '<div><span class="k wide">Dicas</span>' +
+        keys('ZXCVBNM') +
+        '<span class="k wide" aria-label="Apagar">⌫</span></div></div>' +
+        states() +
+        '</div>'
+      )
+    }
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('.legend-toggle')
+      if (!b) return
+      var panel = document.getElementById(b.getAttribute('aria-controls')),
+        open = panel.hidden
+      panel.hidden = !open
+      b.setAttribute('aria-expanded', String(open))
+    })
+    document.getElementById('desk-light').innerHTML = desk(false)
+    document.getElementById('desk-dark').innerHTML = desk(true)
+    document.getElementById('ph-light').innerHTML = phone(false)
+    document.getElementById('ph-dark').innerHTML = phone(true)
+  </script>
+</html>

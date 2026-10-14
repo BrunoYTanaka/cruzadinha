@@ -1,0 +1,33 @@
+.grid {
+  /* Celular: ocupa a largura (30 px com 11 colunas em 360 px). Computador: o maior tamanho que
+     cabe na largura (descontando a coluna de dicas) e na altura (cabeçalho, ferramentas, dica). */
+  --cell-size: clamp(24px, calc((100vw - 30px) / var(--cols)), 64px);
+  display: grid;
+  gap: 1px;
+  width: max-content;
+  max-width: 100%;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--block);
+}
+
+.grid:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell-size));
+  gap: 1px;
+}
+
+@media (min-width: 861px) {
+  .grid {
+    --cell-size: clamp(
+      30px,
+      min(calc((100vw - 400px) / var(--cols)), calc((100dvh - 200px) / var(--rows))),
+      110px
+    );
+  }
+}

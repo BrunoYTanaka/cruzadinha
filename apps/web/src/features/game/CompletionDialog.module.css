@@ -1,0 +1,53 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.stat {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--ok-tint);
+  color: var(--ok);
+  text-align: center;
+}
+
+.stat dt {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat dd {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.record {
+  outline: 2px solid var(--ok);
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pending {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--warn-tint);
+  color: var(--warn);
+  font-size: 14px;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}

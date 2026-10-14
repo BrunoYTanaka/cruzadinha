@@ -23,3 +23,8 @@ Thumbs.db
 
 # Respostas brutas da fonte (verificação sob demanda)
 apps/api/.source-samples/
+
+# Testes ponta a ponta e ferramentas de navegador
+playwright-report/
+test-results/
+.playwright-mcp/

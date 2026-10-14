@@ -9,7 +9,14 @@ import tseslint from 'typescript-eslint'
 
 export default defineConfig(
   {
-    ignores: ['**/dist/**', '**/coverage/**', '.specify/**', '.claude/**'],
+    ignores: [
+      '**/dist/**',
+      '**/coverage/**',
+      '**/test-results/**',
+      '**/playwright-report/**',
+      '.specify/**',
+      '.claude/**',
+    ],
   },
   {
     files: ['**/*.{ts,tsx,js,mjs}'],
@@ -19,7 +26,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['apps/api/**', 'packages/**', '**/*.config.{ts,mjs}'],
+    files: ['apps/api/**', 'packages/**', 'apps/web/e2e/**', '**/*.config.{ts,mjs}'],
     languageOptions: {
       globals: globals.node,
     },

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": ["es2024", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "types": ["vite/client", "@testing-library/jest-dom/vitest"]
+    "types": ["vite/client", "node", "@testing-library/jest-dom/vitest"]
   },
   "include": ["src"]
 }
