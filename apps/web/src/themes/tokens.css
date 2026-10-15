@@ -5,7 +5,7 @@
    tabuleiro:           --block --cell --cell-line --word --sel --sel-ink
    ajuda:               --help --bad
    estado:              --ok --ok-tint --warn --warn-tint
-   controles:           --pill
+   controles:           --pill --scrollbar
    Componentes só leem tokens: nada de cor ou medida fixa. */
 :root {
   --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -18,4 +18,9 @@
   --tap: 44px;
   --gutter: 16px;
   --content-max: 1040px;
+
+  /* Computador: largura máxima da área de dicas ao lado do tabuleiro e da biblioteca (1600 px de
+     calendário mais as margens). */
+  --clues-width: 560px;
+  --library-max: 1632px;
 }

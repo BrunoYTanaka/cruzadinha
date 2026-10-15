@@ -107,6 +107,34 @@ describe('digitar e apagar', () => {
     expect(filled.state.selected).toEqual({ row: 0, col: 1 })
   })
 
+  it('Delete apaga a letra da célula sem mover o cursor', () => {
+    const { state } = play(LAYOUT5, [...type('CASA'), select(0, 2), { type: 'delete' }])
+    expect(state.cells[0]).toEqual([null, 'C', null, 'S', 'A'])
+    expect(state.selected).toEqual({ row: 0, col: 2 })
+  })
+
+  it('Delete numa célula vazia não muda nada e não apaga a anterior', () => {
+    const before = play(LAYOUT5, type('C'))
+    const { state } = play(LAYOUT5, [...type('C'), { type: 'delete' }])
+    expect(state).toEqual(before.state)
+  })
+
+  it('Delete não apaga célula travada e tira a marca vermelha da que apaga', () => {
+    const locked = play(LAYOUT5, [select(0, 2), { type: 'delete' }], (initial) => ({
+      ...initial,
+      cells: cellsFrom(['.XY..', '.....', '.....', '.....', '.....']),
+      locked: initial.locked.map((row, r) => row.map((_, c) => r === 0 && c === 2)),
+    }))
+    expect(locked.state.cells[0]?.[2]).toBe('Y')
+    const wrong = play(LAYOUT5, [select(0, 1), { type: 'delete' }], (initial) => ({
+      ...initial,
+      cells: cellsFrom(['.X...', '.....', '.....', '.....', '.....']),
+      marks: { '0,1': 'wrong' },
+    }))
+    expect(wrong.state.cells[0]?.[1]).toBeNull()
+    expect(wrong.state.marks['0,1']).toBeUndefined()
+  })
+
   it('digita na vertical quando a direção é vertical', () => {
     const { state } = play(LAYOUT5, [select(1, 0), select(1, 0), ...type('MA')])
     expect(state.direction).toBe('down')
@@ -159,6 +187,20 @@ describe('setas, Tab e dicas', () => {
   it('no limite da grade a seta não faz nada', () => {
     const { state } = play(LAYOUT5, [{ type: 'move', arrow: 'ArrowUp' }])
     expect(state.selected).toEqual({ row: 0, col: 1 })
+  })
+
+  it('Home vai à primeira célula da palavra ativa e End à última, na direção atual', () => {
+    const start = play(LAYOUT5, [select(0, 3), { type: 'wordStart' }])
+    expect(start.state.selected).toEqual({ row: 0, col: 1 })
+    expect(start.state.direction).toBe('across')
+    const end = play(LAYOUT5, [select(0, 2), { type: 'wordEnd' }])
+    expect(end.state.selected).toEqual({ row: 0, col: 4 })
+    // na vertical: a palavra de (1,0) para baixo vai de (1,0) a (4,0)
+    const down = play(LAYOUT5, [select(2, 0), select(2, 0), { type: 'wordEnd' }])
+    expect(down.state.direction).toBe('down')
+    expect(down.state.selected).toEqual({ row: 4, col: 0 })
+    const up = play(LAYOUT5, [select(3, 0), select(3, 0), { type: 'wordStart' }])
+    expect(up.state.selected).toEqual({ row: 1, col: 0 })
   })
 
   it('Tab vai à próxima palavra e Shift+Tab à anterior, em ordem circular', () => {

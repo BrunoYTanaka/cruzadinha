@@ -22,6 +22,24 @@
   gap: 1px;
 }
 
+/* As células dos cantos acompanham a borda arredondada da grade (raio menos o recuo), para a
+   moldura ter a mesma espessura também nos cantos. */
+.row:first-child > :first-child {
+  border-top-left-radius: calc(var(--radius-sm) - 2px);
+}
+
+.row:first-child > :last-child {
+  border-top-right-radius: calc(var(--radius-sm) - 2px);
+}
+
+.row:last-child > :first-child {
+  border-bottom-left-radius: calc(var(--radius-sm) - 2px);
+}
+
+.row:last-child > :last-child {
+  border-bottom-right-radius: calc(var(--radius-sm) - 2px);
+}
+
 @media (min-width: 861px) {
   .grid {
     --cell-size: clamp(

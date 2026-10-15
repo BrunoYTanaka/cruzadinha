@@ -47,3 +47,28 @@
     width: 100%;
   }
 }
+
+/* Computador: a biblioteca usa a largura escolhida pela alça (--library-width, definida na página)
+   ou, sem escolha, até 1600 px de calendário. */
+@media (min-width: 861px) {
+  .page {
+    max-width: var(--library-width, var(--library-max));
+  }
+}
+
+/* Alça da borda direita do mês, na altura toda, e a pegada do canto inferior direito. Ficam dentro
+   da margem lateral da página, para nunca criar rolagem horizontal. */
+.edgeHandle {
+  position: absolute;
+  top: 16px;
+  right: calc(-1 * var(--gutter));
+  bottom: 16px;
+  z-index: 1;
+}
+
+.cornerHandle {
+  position: absolute;
+  right: calc(-1 * var(--gutter));
+  bottom: calc(-1 * var(--gutter));
+  z-index: 1;
+}

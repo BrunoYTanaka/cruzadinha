@@ -1,9 +1,10 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../test/axe'
 import { makeLibraryItem } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
+import { desktop, mockMatchMedia, phone } from '../../test/media'
 import { renderRoutes, resetSessionHandlers } from '../../test/render'
 import { LibraryPage } from './LibraryPage'
 import { SOURCE_DOWN_KEY } from './source-down'
@@ -163,5 +164,82 @@ describe('LibraryPage', () => {
     const legend = screen.getByRole('list', { name: 'Legenda do calendário' })
     expect(within(legend).getAllByRole('listitem')).toHaveLength(5)
     await expectNoA11yViolations(container)
+  })
+
+  describe('largura do calendário (feature 011)', () => {
+    const KEY = 'cruzadinha:library-width'
+    const handle = () => screen.getByRole('slider', { name: 'Largura do calendário' })
+    // A coluna da biblioteca: título > bloco do título > faixa do topo > página.
+    const page = () =>
+      screen.getByRole('heading', { name: 'Escolha um dia' }).parentElement!.parentElement!
+        .parentElement!
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('no computador há uma alça; sem escolha, a largura é automática', async () => {
+      mockMatchMedia(desktop)
+      library()
+      renderRoutes(routes, ['/'])
+      expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+      expect(handle().getAttribute('aria-valuetext')).toMatch(/, automático$/)
+      expect(page().style.getPropertyValue('--library-width')).toBe('')
+    })
+
+    it('as setas guardam a largura; clique duplo volta ao automático', async () => {
+      const user = userEvent.setup()
+      mockMatchMedia(desktop)
+      library()
+      renderRoutes(routes, ['/'])
+      await screen.findByRole('heading', { name: 'outubro de 2026' })
+      handle().focus()
+      await user.keyboard('{ArrowLeft}')
+      expect(window.localStorage.getItem(KEY)).toBe('{"width":1560}')
+      expect(page().style.getPropertyValue('--library-width')).toBe(
+        'calc(1560px + 2 * var(--gutter))',
+      )
+      fireEvent.doubleClick(handle())
+      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(page().style.getPropertyValue('--library-width')).toBe('')
+    })
+
+    it('uma largura guardada vale ao abrir', async () => {
+      window.localStorage.setItem(KEY, '{"width":1000}')
+      mockMatchMedia(desktop)
+      library()
+      renderRoutes(routes, ['/'])
+      await screen.findByRole('heading', { name: 'outubro de 2026' })
+      expect(handle()).toHaveAttribute('aria-valuenow', '1000')
+      expect(page().style.getPropertyValue('--library-width')).toBe(
+        'calc(1000px + 2 * var(--gutter))',
+      )
+    })
+
+    it('no celular não há alça e a largura guardada é ignorada, sem ser apagada', async () => {
+      window.localStorage.setItem(KEY, '{"width":1000}')
+      const media = mockMatchMedia(phone)
+      library()
+      renderRoutes(routes, ['/'])
+      await screen.findByRole('heading', { name: 'outubro de 2026' })
+      expect(screen.queryByRole('slider')).toBeNull()
+      expect(page().style.getPropertyValue('--library-width')).toBe('')
+      act(() => media.change(desktop))
+      expect(page().style.getPropertyValue('--library-width')).toBe(
+        'calc(1000px + 2 * var(--gutter))',
+      )
+      expect(window.localStorage.getItem(KEY)).toBe('{"width":1000}')
+    })
+
+    it('a pegada de canto não aparece para o leitor de tela nem no Tab', async () => {
+      mockMatchMedia(desktop)
+      library()
+      const { container } = renderRoutes(routes, ['/'])
+      await screen.findByRole('heading', { name: 'outubro de 2026' })
+      expect(screen.getAllByRole('slider')).toHaveLength(1)
+      const hidden = container.querySelectorAll('[aria-hidden="true"][tabindex="-1"]')
+      expect(hidden.length).toBeGreaterThan(0)
+      await expectNoA11yViolations(container)
+    })
   })
 })

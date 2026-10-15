@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { getLibrary } from '../../api/library'
 import { queryKeys } from '../../api/query-keys'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { Notice } from '../../components/Notice'
+import { ResizeHandle, type ResizeHandleProps } from '../../components/ResizeHandle'
 import { addMonths, todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
+import { useMediaQuery } from '../../lib/useMediaQuery'
 import { buildMonth, compareMonths, currentMonth, firstNavigableMonth } from './calendar'
 import { Calendar } from './Calendar'
 import styles from './LibraryPage.module.css'
 import { LibraryLegend } from './LibraryLegend'
+import { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from './library-width'
 import { isSourceDown, readNoPuzzleDates } from './source-down'
+import { useLibraryWidth } from './useLibraryWidth'
+
+// Computador: o calendário fica largo e pode ser redimensionado pela alça da borda.
+export const LIBRARY_DESKTOP_QUERY = '(min-width: 861px)'
 
 export function LibraryPage() {
   useDocumentTitle('Escolha um dia')
@@ -31,6 +38,9 @@ export function LibraryPage() {
     )
     return buildMonth(month, today, items, readNoPuzzleDates(monthDates))
   }, [month, today, items])
+  const wide = useMediaQuery(LIBRARY_DESKTOP_QUERY)
+  const pageRef = useRef<HTMLDivElement>(null)
+  const size = useLibraryWidth(pageRef, { enabled: wide, ready: library.isSuccess })
 
   if (library.isPending) return <LoadingState label="Carregando a biblioteca…" />
   if (library.isError) {
@@ -48,7 +58,7 @@ export function LibraryPage() {
   const todayPath = todayItem ? `/jogo/${todayItem.puzzleId}` : `/dia/${today}`
 
   return (
-    <div className={styles.page}>
+    <div ref={pageRef} className={styles.page} style={size?.style}>
       <div className={styles.top}>
         <div>
           <h1 className={styles.title}>Escolha um dia</h1>
@@ -70,8 +80,32 @@ export function LibraryPage() {
         canGoNext={compareMonths(month, last) < 0}
         onPrevious={() => setMonth((current) => addMonths(current, -1))}
         onNext={() => setMonth((current) => addMonths(current, 1))}
+        resizeHandle={size ? <CalendarHandles size={size} /> : null}
       />
       <LibraryLegend />
     </div>
+  )
+}
+
+// Alça da borda direita (a acessível) e a pegada do canto inferior direito, só visual.
+function CalendarHandles({ size }: { size: NonNullable<ReturnType<typeof useLibraryWidth>> }) {
+  const common: Omit<ResizeHandleProps, 'variant'> = {
+    label: 'Largura do calendário',
+    value: size.width,
+    min: Math.min(MIN_WIDTH, size.max),
+    max: size.max,
+    step: KEYBOARD_STEP,
+    valueText: (value) =>
+      `Largura do calendário ${value} de ${size.max}${size.isAuto ? ', automático' : ''}`,
+    fromDrag: ({ startValue, dx }) => widthFromDrag({ startWidth: startValue, dx }),
+    onChange: size.preview,
+    onCommit: size.commit,
+    onReset: size.reset,
+  }
+  return (
+    <>
+      <ResizeHandle {...common} variant="edge" className={styles.edgeHandle} />
+      <ResizeHandle {...common} variant="corner" decorative className={styles.cornerHandle} />
+    </>
   )
 }

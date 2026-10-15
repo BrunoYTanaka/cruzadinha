@@ -12,6 +12,8 @@ type ToolbarProps = {
   onResume: () => void
   saveStatus?: ReactNode
   helps?: ReactNode
+  // Computador: "Tamanho padrão" do tabuleiro.
+  sizeReset?: ReactNode
 }
 
 // Faixa entre o cabeçalho e o jogo: tempo, pausa, escolher outro dia, estado do salvamento e as
@@ -24,6 +26,7 @@ export function Toolbar({
   onResume,
   saveStatus,
   helps,
+  sizeReset,
 }: ToolbarProps) {
   return (
     <div className={styles.strip} role="toolbar" aria-label="Ferramentas do jogo">
@@ -59,6 +62,12 @@ export function Toolbar({
             <path d="M4 10h16M9 3v4M15 3v4" />
           </svg>
         </Link>
+        {sizeReset ? (
+          <>
+            <span className={styles.separator} aria-hidden="true" />
+            {sizeReset}
+          </>
+        ) : null}
         {saveStatus}
       </div>
       {helps ? (

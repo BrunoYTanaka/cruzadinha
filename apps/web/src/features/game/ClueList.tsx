@@ -1,4 +1,5 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
+import { useEffect, useRef } from 'react'
 import styles from './ClueList.module.css'
 
 type ClueListProps = {
@@ -7,6 +8,9 @@ type ClueListProps = {
   // Palavras já preenchidas, no formato "6across".
   filled: ReadonlySet<string>
   onSelect: (word: Word) => void
+  // Computador: as listas ocupam a altura do pai e cada grupo rola por dentro, mantendo a dica
+  // ativa visível.
+  fill?: boolean
 }
 
 export function wordKey(word: Word): string {
@@ -19,7 +23,7 @@ function Group({
   activeWord,
   filled,
   onSelect,
-}: { title: string; words: Word[] } & Omit<ClueListProps, 'puzzle'>) {
+}: { title: string; words: Word[] } & Omit<ClueListProps, 'puzzle' | 'fill'>) {
   return (
     <section aria-label={title} className={styles.group}>
       <h2 className={styles.heading}>{title}</h2>
@@ -49,11 +53,32 @@ function Group({
 }
 
 // Horizontais e verticais; clicar numa dica seleciona a palavra no tabuleiro.
-export function ClueList({ puzzle, activeWord, filled, onSelect }: ClueListProps) {
+export function ClueList({ puzzle, activeWord, filled, onSelect, fill = false }: ClueListProps) {
   const across = puzzle.words.filter((word) => word.direction === 'across')
   const down = puzzle.words.filter((word) => word.direction === 'down')
+  const listsRef = useRef<HTMLDivElement>(null)
+  const activeKey = activeWord ? wordKey(activeWord) : null
+
+  // Rola só o grupo da dica ativa: `scrollIntoView` também rolaria a página. O título do grupo fica
+  // fixo no topo, então a área visível começa abaixo dele.
+  useEffect(() => {
+    if (!fill || activeKey === null) return
+    const button = listsRef.current?.querySelector<HTMLElement>('[aria-current="true"]')
+    const group = button?.closest<HTMLElement>('section')
+    if (!button || !group) return
+    const area = group.getBoundingClientRect()
+    const heading = group.querySelector('h2')
+    const top = heading
+      ? heading.getBoundingClientRect().bottom +
+        (Number.parseFloat(getComputedStyle(heading).marginBottom) || 0)
+      : area.top
+    const item = button.getBoundingClientRect()
+    if (item.top < top) group.scrollTop -= top - item.top
+    else if (item.bottom > area.bottom) group.scrollTop += item.bottom - area.bottom
+  }, [fill, activeKey])
+
   return (
-    <div className={styles.lists}>
+    <div ref={listsRef} className={`${styles.lists} ${fill ? styles.fill : ''}`}>
       <Group
         title="Horizontais"
         words={across}

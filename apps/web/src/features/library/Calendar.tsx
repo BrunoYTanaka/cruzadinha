@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import { Button } from '../../components/Button'
 import type { MonthView } from './calendar'
 import styles from './Calendar.module.css'
@@ -20,9 +20,18 @@ type CalendarProps = {
   canGoNext: boolean
   onPrevious: () => void
   onNext: () => void
+  // Computador: alça de redimensionar presa à borda direita do mês.
+  resizeHandle?: ReactNode
 }
 
-export function Calendar({ view, canGoPrevious, canGoNext, onPrevious, onNext }: CalendarProps) {
+export function Calendar({
+  view,
+  canGoPrevious,
+  canGoNext,
+  onPrevious,
+  onNext,
+  resizeHandle,
+}: CalendarProps) {
   const title = `${MONTH_NAMES[view.month - 1] ?? ''} de ${view.year}`
   const cells: (number | null)[] = [
     ...Array.from({ length: view.leadingBlanks }, () => null),
@@ -86,6 +95,7 @@ export function Calendar({ view, canGoPrevious, canGoNext, onPrevious, onNext }:
           ))}
         </tbody>
       </table>
+      {resizeHandle}
     </section>
   )
 }
