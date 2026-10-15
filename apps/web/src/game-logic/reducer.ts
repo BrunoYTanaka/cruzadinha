@@ -43,7 +43,10 @@ export type GameAction =
   | { type: 'toggleDirection' }
   | { type: 'type'; key: string }
   | { type: 'backspace' }
+  | { type: 'delete' }
   | { type: 'move'; arrow: Arrow }
+  | { type: 'wordStart' }
+  | { type: 'wordEnd' }
   | { type: 'nextWord' }
   | { type: 'previousWord' }
   | { type: 'selectWord'; number: number; direction: Direction }
@@ -218,6 +221,27 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
               : state.marks,
           selected: previous,
         }
+      }
+      // Delete: apaga a letra da célula selecionada e o cursor fica onde está.
+      case 'delete': {
+        const at = state.selected
+        if (!at || state.cells[at.row]?.[at.col] == null || state.locked[at.row]?.[at.col]) {
+          return state
+        }
+        return {
+          ...state,
+          cells: withCell(state.cells, at, null),
+          marks: state.marks[cellKey(at)] === 'wrong' ? withoutMark(state.marks, at) : state.marks,
+        }
+      }
+      // Home e End: primeira e última célula da palavra ativa, sem mudar a direção.
+      case 'wordStart':
+      case 'wordEnd': {
+        const word = activeWord(index, state.selected, state.direction)
+        if (!word) return state
+        const cells = index.cellsOf(word)
+        const target = action.type === 'wordStart' ? cells[0] : cells[cells.length - 1]
+        return target ? { ...state, selected: target } : state
       }
       case 'move': {
         if (!state.selected) return state

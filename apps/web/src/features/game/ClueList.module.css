@@ -12,15 +12,32 @@
   min-width: 0;
 }
 
+/* Computador: as duas colunas têm a altura do pai e cada uma rola por dentro, com o título fixo. */
+.fill {
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  padding-right: 0;
+}
+
+.fill .group {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
 .heading {
   position: sticky;
   top: 0;
   margin: 0 0 8px;
   padding: 2px 0 4px;
   background: var(--bg);
-  color: var(--mute);
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -34,9 +51,8 @@
 }
 
 .clue {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
+  /* Texto corrido: a segunda linha da dica volta para baixo do número. */
+  display: block;
   width: 100%;
   min-height: 40px;
   padding: 6px 10px;
@@ -44,23 +60,27 @@
   border-radius: 8px;
   background: transparent;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 16px;
   text-align: left;
   overflow-wrap: anywhere;
 }
 
+.fill .clue {
+  font-size: 17px;
+}
+
 .number {
-  min-width: 1.6em;
-  color: var(--mute);
+  margin-right: 0.35em;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.number::after {
+  content: '.';
 }
 
 .active {
   background: var(--word);
-}
-
-.active .number {
-  color: var(--ink);
 }
 
 .done {

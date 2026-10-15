@@ -17,6 +17,39 @@ body {
   line-height: 1.5;
 }
 
+/* Barra de rolagem fina e com as cores do tema, igual nos navegadores. `scrollbar-color` é
+   herdada; `scrollbar-width` não, por isso vale para todos os elementos. */
+:root {
+  scrollbar-color: var(--scrollbar) transparent;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+/* Navegadores sem `scrollbar-color` (Safari) usam os pseudo-elementos do WebKit. */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--scrollbar);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--mute);
+  }
+}
+
 [hidden] {
   display: none !important;
 }

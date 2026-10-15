@@ -64,6 +64,16 @@ const CONTROL_PAIRS: [string, string][] = [
   ['--focus', '--surface'],
   ['--help', '--cell'],
   ['--bad', '--cell'],
+  // Alças de redimensionar (feature 011): em repouso (--mute) e no hover e no foco (--accent).
+  ['--mute', '--bg'],
+  ['--mute', '--surface'],
+  ['--accent', '--bg'],
+  ['--accent', '--surface'],
+  // Botões ‹ › da barra da dica ativa, sobre o fundo da palavra ativa.
+  ['--ink', '--word'],
+  // Barra de rolagem (FR-025 da feature 011), sobre a página e sobre superfícies.
+  ['--scrollbar', '--bg'],
+  ['--scrollbar', '--surface'],
 ]
 
 // Estados do tabuleiro entre si: exceção assumida pelo autor (plan.md, Riscos 1). Não há mínimo;

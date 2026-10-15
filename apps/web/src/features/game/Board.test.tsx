@@ -61,9 +61,50 @@ describe('Board', () => {
     for (const cell of screen.getAllByRole('gridcell')) expect(cell).not.toHaveAttribute('tabindex')
     await user.tab()
     expect(grid()).toHaveFocus()
-    // Shift+Tab na primeira palavra sai do tabuleiro em vez de prender o foco
+  })
+
+  it('Tab e Shift+Tab dão a volta nas palavras sem sair do tabuleiro', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.tab()
+    const first = screen.getByText(/^Dica /).textContent
+    // Shift+Tab na primeira palavra vai à última, e Tab na última volta à primeira.
+    await user.tab({ shift: true })
+    expect(grid()).toHaveFocus()
+    expect(screen.getByText(/^Dica /).textContent).not.toBe(first)
+    await user.tab()
+    expect(grid()).toHaveFocus()
+    expect(screen.getByText(/^Dica /).textContent).toBe(first)
+  })
+
+  it('Esc libera o próximo Tab para sair do tabuleiro, nos dois sentidos', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.tab()
+    await user.keyboard('{Escape}')
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Depois do tabuleiro' })).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(grid()).toHaveFocus()
+    await user.keyboard('{Escape}')
     await user.tab({ shift: true })
     expect(grid()).not.toHaveFocus()
+  })
+
+  it('Esc só vale para o Tab seguinte: outra tecla volta a prender o Tab nas palavras', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.tab()
+    await user.keyboard('{Escape}{ArrowRight}')
+    await user.tab()
+    expect(grid()).toHaveFocus()
+  })
+
+  it('o tabuleiro explica como sair com o teclado', () => {
+    render(<Harness />)
+    expect(grid()).toHaveAccessibleDescription(
+      'Tab e Shift+Tab mudam de palavra. Delete apaga a letra sem mover; Home e End vão ao início e ao fim da palavra. Para sair do tabuleiro, aperte Esc e depois Tab.',
+    )
   })
 
   it('descreve cada célula: linha, coluna e letra ou vazia', async () => {
@@ -98,6 +139,20 @@ describe('Board', () => {
     expect(screen.getByRole('gridcell', { name: 'Linha 1, coluna 2, letra C' })).toBeInTheDocument()
   })
 
+  it('Delete apaga a letra sem mover; Home e End vão às pontas da palavra', async () => {
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.tab()
+    await user.keyboard('CASA')
+    await user.click(screen.getByRole('gridcell', { name: 'Linha 1, coluna 3, letra A' }))
+    await user.keyboard('{Delete}')
+    expect(activeCell()).toHaveAccessibleName('Linha 1, coluna 3, vazia')
+    await user.keyboard('{Home}')
+    expect(activeCell()).toHaveAccessibleName('Linha 1, coluna 2, letra C')
+    await user.keyboard('{End}')
+    expect(activeCell()).toHaveAccessibleName('Linha 1, coluna 5, letra A')
+  })
+
   it('ignora teclas que não são letras e deixa passar atalhos do navegador', async () => {
     const user = userEvent.setup()
     render(<Harness />)
@@ -117,7 +172,7 @@ describe('Board', () => {
     expect(activeCell()).toHaveAccessibleName('Linha 3, coluna 3, vazia')
   })
 
-  it('Tab anda entre palavras e Shift+Tab volta, sem prender o foco nas pontas', async () => {
+  it('Tab anda entre palavras e Shift+Tab volta', async () => {
     const user = userEvent.setup()
     render(<Harness />)
     await user.tab()
@@ -127,19 +182,17 @@ describe('Board', () => {
     expect(screen.getByText('Dica 4 horizontal')).toBeInTheDocument()
     await user.tab({ shift: true }) // volta à 1 horizontal
     expect(screen.getByText('Dica 1 horizontal')).toBeInTheDocument()
-    await user.tab({ shift: true }) // na primeira palavra, Shift+Tab sai
-    expect(grid()).not.toHaveFocus()
   })
 
-  it('Tab na última palavra segue para fora do tabuleiro', async () => {
+  it('Tab na última palavra volta à primeira, sem sair do tabuleiro', async () => {
     const user = userEvent.setup()
     render(<Harness />)
     await user.tab()
     for (let step = 0; step < 10; step++) await user.tab() // 1H … 4V
     expect(screen.getByText('Dica 4 vertical')).toBeInTheDocument()
-    expect(grid()).toHaveFocus()
     await user.tab()
-    expect(screen.getByRole('button', { name: 'Depois do tabuleiro' })).toHaveFocus()
+    expect(grid()).toHaveFocus()
+    expect(screen.getByText('Dica 1 horizontal')).toBeInTheDocument()
   })
 
   it('clicar seleciona, e clicar de novo na mesma célula alterna a direção', async () => {

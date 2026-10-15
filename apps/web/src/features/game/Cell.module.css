@@ -6,11 +6,20 @@
   height: var(--cell-size);
   background: var(--cell);
   color: var(--ink);
-  font-size: calc(var(--cell-size) * 0.5);
+  font-size: calc(var(--cell-size) * 0.7);
   font-weight: 500;
   text-transform: uppercase;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* A caixa da letra é só a altura da maiúscula (sem o espaço de acentos e descendentes), então o
+   centro da célula é o centro da letra. Desce um pouco para não encostar no número do canto. */
+.letter {
+  display: block;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  translate: 0 calc(var(--cell-size) * 0.06);
 }
 
 .block {
@@ -33,7 +42,7 @@
   left: 3px;
   color: var(--mute);
   font-size: max(8px, calc(var(--cell-size) * 0.24));
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1;
 }
 

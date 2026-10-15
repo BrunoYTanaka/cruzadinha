@@ -170,8 +170,8 @@ apps/web/src/
 
 1. Uma célula fica selecionada por vez, e a palavra ativa na direção atual fica destacada.
 2. Clicar numa célula já selecionada alterna a direção.
-3. Digitar uma letra a preenche e avança para a próxima célula da palavra. Apagar volta uma célula.
-4. As setas movem a seleção. Tab e Shift+Tab pulam para a próxima ou anterior palavra.
+3. Digitar uma letra a preenche e avança para a próxima célula da palavra. Apagar (Backspace) volta uma célula. Delete apaga a letra da célula sem mover o cursor.
+4. As setas movem a seleção. Home e End levam à primeira e à última célula da palavra ativa. Tab e Shift+Tab pulam para a próxima ou anterior palavra, dando a volta na lista sem sair do tabuleiro. Esc e depois Tab (ou Shift+Tab) saem do tabuleiro, como diz a descrição da grade para leitor de tela.
 5. Clicar numa dica seleciona a palavra correspondente.
 6. Só entram letras A a Z e "Ç". Letras acentuadas são convertidas para a letra simples.
 7. Células de bloco não são selecionáveis.

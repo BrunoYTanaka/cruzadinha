@@ -29,6 +29,7 @@
     --warn-tint: #3a2b10;
 
     --pill: #2c3038;
+    --scrollbar: #6e7581;
   }
 }
 
@@ -60,4 +61,5 @@
   --warn-tint: #3a2b10;
 
   --pill: #2c3038;
+  --scrollbar: #6e7581;
 }

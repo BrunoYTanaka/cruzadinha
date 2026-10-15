@@ -1,12 +1,18 @@
-import { act, cleanup, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../../api/query-keys'
 import { clearExpired } from '../../app/session-expired'
 import { cellsFrom, makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
+import { desktop, mockMatchMedia, phone } from '../../test/media'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
 import { GamePage } from './GamePage'
+import { useMeasuredSpace } from './useMeasuredSpace'
+
+// Sem layout no jsdom: os testes de tamanho simulam só a medida do espaço e usam o `useBoardSize`
+// real. Por padrão não há medida, como no jsdom.
+vi.mock('./useMeasuredSpace', () => ({ useMeasuredSpace: vi.fn(() => null) }))
 
 const routes = [
   { path: '/jogo/:puzzleId', element: <GamePage /> },
@@ -275,6 +281,173 @@ describe('GamePage', () => {
       expect(
         screen.getByRole('gridcell', { name: /letra X, errada na verificação/ }),
       ).toBeInTheDocument()
+    })
+  })
+
+  describe('layout de computador (feature 011)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    const board = () => screen.getByRole('region', { name: 'Tabuleiro' })
+    const clues = () => screen.getByRole('complementary', { name: 'Dicas' })
+
+    it('põe a barra da dica ativa acima do tabuleiro e deixa só as listas ao lado', async () => {
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      const bar = within(board()).getByText('Dica 1 horizontal')
+      expect(bar.compareDocumentPosition(grid()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(within(clues()).queryByRole('button', { name: 'Próxima dica' })).toBeNull()
+      expect(within(clues()).getByRole('region', { name: 'Horizontais' })).toBeInTheDocument()
+      expect(within(clues()).getByRole('region', { name: 'Verticais' })).toBeInTheDocument()
+      expect(within(clues()).getByText(/Fonte: O Globo/)).toBeInTheDocument()
+      expect(board().parentElement?.className).toMatch(/desktop/)
+    })
+
+    it('"Próxima dica" e "Dica anterior" trocam a palavra e devolvem o foco ao tabuleiro', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      const live = () => within(board()).getByText(/^Dica \d+ (horizontal|vertical)$/).textContent
+      const before = live()
+      await user.click(screen.getByRole('button', { name: 'Próxima dica' }))
+      expect(live()).not.toBe(before)
+      expect(grid()).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Dica anterior' }))
+      expect(live()).toBe(before)
+      expect(grid()).toHaveFocus()
+    })
+
+    it('no celular a tela fica como na feature 010', async () => {
+      mockMatchMedia(phone)
+      openGame()
+      await screen.findByRole('grid')
+      expect(screen.queryByRole('button', { name: 'Próxima dica' })).toBeNull()
+      expect(screen.queryByRole('complementary', { name: 'Dicas' })).toBeNull()
+      expect(board().parentElement?.className).not.toMatch(/desktop/)
+    })
+  })
+
+  describe('tamanho do tabuleiro (feature 011)', () => {
+    // Grade 3 × 3: 3·c + 6 ≤ espaço. Altura 228 → padrão 74; largura 340 → máximo 110.
+    const SPACE = { width: 340, height: 228 }
+    const KEY = 'cruzadinha:board-size'
+    const handle = () => screen.getByRole('slider', { name: 'Tamanho do tabuleiro' })
+    const reset = () => screen.getByRole('button', { name: 'Tamanho padrão' })
+    const cellSize = () => grid().style.getPropertyValue('--cell-size')
+
+    beforeEach(() => {
+      vi.mocked(useMeasuredSpace).mockImplementation((_ref, enabled) => (enabled ? SPACE : null))
+    })
+
+    afterEach(() => {
+      vi.mocked(useMeasuredSpace).mockImplementation(() => null)
+      vi.unstubAllGlobals()
+    })
+
+    it('mostra a alça no padrão e "Tamanho padrão" indisponível', async () => {
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      expect(handle()).toHaveAttribute('aria-valuetext', 'Tamanho do tabuleiro 74 de 110, padrão')
+      expect(cellSize()).toBe('74px')
+      expect(reset()).toBeDisabled()
+    })
+
+    it('as setas mudam e guardam o tamanho; "Tamanho padrão" apaga', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      handle().focus()
+      await user.keyboard('{ArrowRight}')
+      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":84}')
+      expect(cellSize()).toBe('84px')
+      expect(handle()).toHaveAttribute('aria-valuetext', 'Tamanho do tabuleiro 84 de 110')
+      await user.click(reset())
+      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(cellSize()).toBe('74px')
+      expect(reset()).toBeDisabled()
+    })
+
+    it('clique duplo na alça volta ao padrão', async () => {
+      window.localStorage.setItem(KEY, '{"cellSize":100}')
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      expect(cellSize()).toBe('100px')
+      fireEvent.doubleClick(handle())
+      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(cellSize()).toBe('74px')
+    })
+
+    it('mudar o tamanho 10 vezes não mexe no jogo nem no salvamento', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      const { calls } = openGame()
+      await screen.findByRole('grid')
+      await user.click(screen.getByRole('button', { name: /Revelar letra/ }))
+      await user.keyboard('x')
+      await vi.advanceTimersByTimeAsync(2000)
+      const cellsBefore = screen
+        .getAllByRole('gridcell')
+        .map((cell) => cell.getAttribute('aria-label'))
+      const selected = grid().getAttribute('aria-activedescendant')
+      const clue = within(screen.getByRole('region', { name: 'Tabuleiro' })).getByText(
+        /^Dica /,
+      ).textContent
+      const saves = calls.filter((call) => call.key === SAVE).length
+      handle().focus()
+      for (let index = 0; index < 10; index += 1) {
+        await user.keyboard(index % 2 === 0 ? '{ArrowRight}' : '{ArrowLeft}')
+      }
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(
+        screen.getAllByRole('gridcell').map((cell) => cell.getAttribute('aria-label')),
+      ).toEqual(cellsBefore)
+      expect(grid().getAttribute('aria-activedescendant')).toBe(selected)
+      expect(
+        within(screen.getByRole('region', { name: 'Tabuleiro' })).getByText(/^Dica /).textContent,
+      ).toBe(clue)
+      expect(screen.getByText('1/4 Letra')).toBeInTheDocument()
+      expect(calls.filter((call) => call.key === SAVE).length).toBe(saves)
+    })
+
+    it('uma escolha guardada vale ao abrir; na pausa a alça some', async () => {
+      const user = setup()
+      window.localStorage.setItem(KEY, '{"cellSize":90}')
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      expect(cellSize()).toBe('90px')
+      await user.click(screen.getByRole('button', { name: 'Pausar' }))
+      expect(screen.queryByRole('slider')).toBeNull()
+    })
+
+    it('no celular não há alça nem "Tamanho padrão", e a escolha é ignorada', async () => {
+      window.localStorage.setItem(KEY, '{"cellSize":90}')
+      mockMatchMedia(phone)
+      openGame()
+      await screen.findByRole('grid')
+      expect(screen.queryByRole('slider')).toBeNull()
+      expect(screen.queryByRole('button', { name: 'Tamanho padrão' })).toBeNull()
+      expect(cellSize()).toBe('')
+      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":90}')
+    })
+
+    it('ao passar do celular para o computador, a escolha guardada volta a valer', async () => {
+      window.localStorage.setItem(KEY, '{"cellSize":90}')
+      const media = mockMatchMedia(phone)
+      openGame()
+      await screen.findByRole('grid')
+      expect(cellSize()).toBe('')
+      act(() => media.change(desktop))
+      expect(cellSize()).toBe('90px')
+      act(() => media.change(phone))
+      expect(cellSize()).toBe('')
+      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":90}')
     })
   })
 })

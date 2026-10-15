@@ -61,6 +61,45 @@
   text-align: left;
 }
 
+/* Computador (feature 011): tabuleiro e dicas num bloco centralizado, colados um ao outro. A classe
+   vem de `useDesktopLayout`, a mesma condição da alça de tamanho. */
+.desktop {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.desktop .board {
+  flex: none;
+}
+
+.desktop .clues {
+  display: block;
+  flex: 0 1 var(--clues-width);
+  min-width: 0;
+  /* A altura vem só do tabuleiro: sem isso, a lista de dicas esticava o bloco além da janela e a
+     página rolava ao entrar. */
+  contain: size;
+}
+
+/* Alça de tamanho no canto inferior direito, metade para fora da grade. */
+.sizeHandle {
+  position: absolute;
+  right: -24px;
+  bottom: -24px;
+  z-index: 1;
+}
+
+/* As dicas têm a altura do tabuleiro e, quando ele passa da janela, ficam fixas ao lado. */
+.cluesInner {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: min(100%, calc(100dvh - 32px));
+}
+
 @media (max-width: 860px) {
   .body {
     grid-template-columns: 1fr;

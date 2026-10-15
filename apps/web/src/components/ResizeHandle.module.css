@@ -1,0 +1,45 @@
+.handle {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--mute);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.handle:hover,
+.handle:active,
+.handle:focus-visible {
+  color: var(--accent);
+}
+
+/* Canto: alvo de 44 × 44 px com três traços na diagonal. */
+.corner {
+  width: var(--tap);
+  height: var(--tap);
+  cursor: nwse-resize;
+}
+
+/* Borda: faixa de 44 px de largura na altura toda, com um traço vertical no meio. */
+.edge {
+  width: var(--tap);
+  cursor: ew-resize;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.bar {
+  width: 5px;
+  height: 64px;
+  max-height: 60%;
+  border-radius: 3px;
+  background: currentColor;
+}

@@ -1,6 +1,6 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { getProgress } from '../../api/progress'
@@ -16,6 +16,9 @@ import { boardKeyToAction } from './board-keys'
 import { Board } from './Board'
 import { ClueBar } from './ClueBar'
 import { Notice } from '../../components/Notice'
+import { ResizeHandle } from '../../components/ResizeHandle'
+import { cellFromDrag, KEYBOARD_STEP, MIN_CELL } from './board-size'
+import { BoardSizeReset } from './BoardSizeReset'
 import { CompletionDialog } from './CompletionDialog'
 import { ReadModeBanner } from './ReadModeBanner'
 import { ClueList, wordKey } from './ClueList'
@@ -27,6 +30,8 @@ import { LegendButton } from './LegendButton'
 import { PauseCover } from './PauseCover'
 import { SaveStatus } from './SaveStatus'
 import { Toolbar } from './Toolbar'
+import { useBoardSize } from './useBoardSize'
+import { useDesktopLayout } from './useDesktopLayout'
 import { useGame } from './useGame'
 import { useOnScreenKeyboard } from './useOnScreenKeyboard'
 import { WordBar } from './WordBar'
@@ -137,8 +142,26 @@ function Game({
   const [busy, setBusy] = useState(false)
   const [cluesOpen, setCluesOpen] = useState(false)
   const onScreenKeyboard = useOnScreenKeyboard()
+  const desktop = useDesktopLayout()
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const size = useBoardSize(bodyRef, {
+    cols: puzzle.grid.width,
+    rows: puzzle.grid.height,
+    enabled: desktop,
+  })
   const word = activeWord(game.index, state.selected, state.direction)
   const readOnly = state.mode !== 'playing'
+
+  // Com o tabuleiro maior que a janela, a página rola o mínimo para mostrar a célula selecionada (o
+  // foco fica na grade, então o navegador não rola sozinho).
+  const selectedRow = state.selected?.row
+  const selectedCol = state.selected?.col
+  useEffect(() => {
+    if (!desktop || selectedRow === undefined || selectedCol === undefined) return
+    document
+      .getElementById(`cell-${selectedRow}-${selectedCol}`)
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  }, [desktop, selectedRow, selectedCol])
 
   const filled = useMemo(() => {
     const done = new Set<string>()
@@ -183,12 +206,33 @@ function Game({
     document.getElementById('board')?.focus()
   }
 
+  // Anterior e próxima na barra acima do tabuleiro (computador); o foco volta ao tabuleiro.
+  function stepWord(type: 'previousWord' | 'nextWord') {
+    dispatch({ type })
+    document.getElementById('board')?.focus()
+  }
+
   const bar =
     state.mode === 'completed' ? (
       <ReadModeBanner elapsedMs={finishedMs} onPlayAgain={() => void onPlayAgain()} busy={busy} />
+    ) : desktop ? (
+      <ClueBar
+        word={word}
+        onPrevious={() => stepWord('previousWord')}
+        onNext={() => stepWord('nextWord')}
+      />
     ) : (
       <ClueBar word={word} />
     )
+  const clueList = (
+    <ClueList
+      puzzle={puzzle}
+      activeWord={word}
+      filled={filled}
+      onSelect={selectClue}
+      fill={desktop}
+    />
+  )
 
   return (
     <div
@@ -207,6 +251,7 @@ function Game({
         onPause={clock.pause}
         onResume={clock.resume}
         saveStatus={<SaveStatus state={saveState} />}
+        sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
           readOnly ? null : (
             <HelpButtons
@@ -233,9 +278,9 @@ function Game({
         ) : null}
         {playAgainError ? <Notice variant="error">{playAgainError}</Notice> : null}
       </div>
-      <div className={styles.body}>
+      <div ref={bodyRef} className={`${styles.body} ${desktop ? styles.desktop : ''}`}>
         <section className={styles.board} aria-label="Tabuleiro">
-          {onScreenKeyboard ? bar : null}
+          {onScreenKeyboard || desktop ? bar : null}
           <div className={styles.boardWrap}>
             <div inert={clock.paused}>
               <Board
@@ -245,23 +290,59 @@ function Game({
                 state={state}
                 readOnly={readOnly}
                 focusOnMount={!readOnly}
+                cellSize={size?.cellSize}
                 onSelect={(position) => dispatch({ type: 'select', position })}
                 onKey={(key) => dispatch(boardKeyToAction(key))}
               />
             </div>
             {clock.paused ? <PauseCover onResume={clock.resume} /> : null}
+            {size && !clock.paused ? (
+              <ResizeHandle
+                className={styles.sizeHandle}
+                variant="corner"
+                label="Tamanho do tabuleiro"
+                value={size.cellSize}
+                min={MIN_CELL}
+                max={size.max}
+                step={KEYBOARD_STEP}
+                valueText={(value) =>
+                  `Tamanho do tabuleiro ${value} de ${size.max}${size.isDefault ? ', padrão' : ''}`
+                }
+                fromDrag={({ startValue, dx, dy }) =>
+                  cellFromDrag({
+                    startCell: startValue,
+                    dx,
+                    dy,
+                    cols: puzzle.grid.width,
+                    rows: puzzle.grid.height,
+                  })
+                }
+                onChange={size.preview}
+                onCommit={size.commit}
+                onReset={size.reset}
+                // Depois de arrastar com o mouse, as letras digitadas voltam a ir para o tabuleiro.
+                onDragEnd={() => document.getElementById('board')?.focus()}
+              />
+            ) : null}
           </div>
           {onScreenKeyboard ? (
             <WordBar word={word} index={game.index} cells={state.cells} selected={state.selected} />
           ) : null}
           {onScreenKeyboard ? <p className={styles.attribution}>{attribution(puzzle)}</p> : null}
         </section>
-        {onScreenKeyboard ? null : (
-          // No computador o tabuleiro fica sozinho na coluna da esquerda e ocupa o máximo de espaço;
-          // a dica ativa, a lista e a fonte ficam na coluna ao lado.
+        {onScreenKeyboard ? null : desktop ? (
+          // Computador: tabuleiro e dicas formam um bloco centralizado. As dicas acompanham a altura
+          // do tabuleiro e ficam fixas ao lado quando a página rola.
+          <aside className={styles.clues} aria-label="Dicas">
+            <div className={styles.cluesInner}>
+              {clueList}
+              <p className={styles.attribution}>{attribution(puzzle)}</p>
+            </div>
+          </aside>
+        ) : (
           <aside className={styles.clues} aria-label="Dicas">
             {bar}
-            <ClueList puzzle={puzzle} activeWord={word} filled={filled} onSelect={selectClue} />
+            {clueList}
             <p className={styles.attribution}>{attribution(puzzle)}</p>
           </aside>
         )}

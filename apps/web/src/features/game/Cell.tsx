@@ -55,7 +55,9 @@ export const Cell = memo(function Cell({
           {number}
         </span>
       ) : null}
-      <span aria-hidden="true">{letter}</span>
+      <span className={styles.letter} aria-hidden="true">
+        {letter}
+      </span>
     </div>
   )
 })
