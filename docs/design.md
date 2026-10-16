@@ -236,17 +236,19 @@ apps/web/src/
 
 Meta: custo zero, sem prazo de expiração.
 
-| Peça            | Opção                                                                |
-| --------------- | -------------------------------------------------------------------- |
-| Front estático  | Cloudflare Pages                                                     |
-| API (container) | Render (plano free; dorme após ~15 min, com cold start de 30 a 60 s) |
-| Banco           | Neon (Postgres)                                                      |
-| Coleta diária   | GitHub Actions agendado (`schedule`)                                 |
+| Peça            | Opção                                                                      |
+| --------------- | -------------------------------------------------------------------------- |
+| Front estático  | Cloudflare Pages                                                           |
+| API (container) | Render (plano free, Virgínia; dorme após 15 min, acorda em cerca de 1 min) |
+| Banco           | Neon (Postgres)                                                            |
+| Coleta diária   | GitHub Actions agendado (`schedule`)                                       |
 
-- **Mesmo domínio:** o front repassa `/api/*` para a API, para o cookie `HttpOnly` funcionar e dispensar CORS. No Cloudflare Pages isso exige uma Pages Function que faça o proxy (o `_redirects` não repassa para hosts externos), e a confirmação disso é uma tarefa do plano de implantação. Em desenvolvimento, o Vite faz o proxy.
+- **Mesmo domínio:** o front repassa `/api/*` para a API, para o cookie `HttpOnly` funcionar e dispensar CORS. No Cloudflare Pages isso é uma Pages Function (`apps/web/functions`), porque o `_redirects` não repassa para hosts externos. A Function manda um segredo do repasse e o IP real de quem acessa; com `PROXY_SECRET`, a API recusa pedidos que não vieram do site (exceto `/api/health`) e conta os limites de tentativas por esse IP. Em desenvolvimento, o Vite faz o proxy.
+- **Região:** API no Render em Virgínia e banco no Neon em `us-east-1`, juntos e o mais perto do Brasil que o Render oferece.
+- **Versões e publicação:** a API e o site têm versões próprias, mantidas pela release-please a partir dos Conventional Commits; aceitar o pedido de lançamento publica só as partes com versão nova, depois da CI verde. Detalhes em [docs/versionamento.md](versionamento.md); roteiro em [docs/deploy.md](deploy.md).
 - **Desenvolvimento local:** `docker compose` para Postgres e API, mais o Vite.
 - **Portabilidade para AWS:** a API roda num Dockerfile, a configuração é só por variáveis de ambiente, o Postgres é padrão (migrações Drizzle) e o front é estático (S3 + CloudFront). A migração é troca de deploy, sem mudar código de aplicação. A AWS não foi escolhida porque o plano grátis dura 6 meses.
-- **Cold start:** a primeira tela mostra "acordando o servidor" enquanto a API acorda.
+- **Cold start:** a primeira tela mostra "Acordando o servidor" depois de 2 s de espera e desiste com "Tentar de novo" aos 90 s; depois de carregada, a partida nunca é coberta pela espera.
 - **Coleta diária:** um workflow agendado do GitHub Actions roda `puzzles collect` duas vezes por dia e grava direto no Neon, com a `DATABASE_URL` guardada nos segredos da CI. Não depende do Render acordado e reusa o adaptador e o repositório da API. O workflow roda às 00:01 e às 08:00 de Brasília, não aplica migrações (a API as aplica ao subir) e é ignorado, com um aviso, enquanto o segredo não existe; avisa quando falha. Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem commits, o que precisa ser acompanhado. O cron do Render foi descartado por ser pago.
 
 ## 10. Ordem sugerida da implementação (para o plano)
@@ -258,4 +260,4 @@ Meta: custo zero, sem prazo de expiração.
 5. `puzzles` (com a coleta diária e o workflow agendado), `library` e `progress`.
 6. `game-logic` e tela do jogo, com temas claro e escuro.
 7. Biblioteca, convites pelo easter egg e acabamento.
-8. Implantação.
+8. Implantação. Concluído (feature 012).

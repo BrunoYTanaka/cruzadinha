@@ -125,6 +125,16 @@ describe('GamePage', () => {
     await waitFor(() => expect(screen.getByText('Salvo')).toBeInTheDocument())
   })
 
+  it('um salvamento lento não cobre o tabuleiro com a espera do servidor (FR-011)', async () => {
+    const user = setup()
+    openGame({ [SAVE]: () => new Promise<Response>(() => {}) })
+    await screen.findByRole('grid')
+    await user.keyboard('C')
+    await act(() => vi.advanceTimersByTimeAsync(1600 + 5000))
+    expect(grid()).toBeInTheDocument()
+    expect(screen.queryByText(/Acordando o servidor/)).not.toBeInTheDocument()
+  })
+
   it('salva também em StrictMode (monta, desmonta e monta de novo)', async () => {
     const user = setup()
     const { calls } = openGame({}, { strict: true })

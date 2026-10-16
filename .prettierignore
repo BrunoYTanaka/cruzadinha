@@ -1,6 +1,9 @@
 dist/
 coverage/
 package-lock.json
+# Gerados pela release-please; formatá-los faria o format:check reprovar o pedido de lançamento.
+**/CHANGELOG.md
+.release-please-manifest.json
 .specify/
 .claude/
 specs/

@@ -11,8 +11,9 @@ const msSchema = z.number().int().min(0).max(MAX_ELAPSED_MS)
 const instantSchema = z.iso.datetime({ offset: true })
 
 // Visão de leitura de um puzzle para o jogador: só metadados, sem grade, solução nem letras.
+// Resposta: descarta campos desconhecidos para o site anterior aceitar versões novas da API (FR-025).
 export const libraryItemSchema = z
-  .strictObject({
+  .object({
     puzzleId: z.uuid(),
     date: isoDateSchema,
     level: levelSchema,
@@ -28,7 +29,7 @@ export const libraryItemSchema = z
     path: ['bestMs'],
   })
 
-export const libraryResponseSchema = z.strictObject({ items: z.array(libraryItemSchema) })
+export const libraryResponseSchema = z.object({ items: z.array(libraryItemSchema) })
 
 export type LibraryStatus = z.infer<typeof libraryStatusSchema>
 export type LibraryItem = z.infer<typeof libraryItemSchema>

@@ -1,0 +1,15 @@
+# Site privado: os buscadores não devem indexar nem seguir links (feature 012, FR-007).
+/*
+  X-Robots-Tag: noindex, nofollow
+
+# O HTML é sempre conferido, para uma aba nova não apontar para arquivos que deixaram de existir
+# depois de uma publicação (FR-024).
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+# Versão publicada do site, lida pelo workflow de publicação (FR-023).
+/version.json
+  Cache-Control: no-store

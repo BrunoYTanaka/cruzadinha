@@ -1,0 +1,55 @@
+.wake {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 24px var(--gutter);
+  text-align: center;
+}
+
+.indicator {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+
+.indicator[data-animated='true'] {
+  animation: spin 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator[data-animated='true'] {
+    animation: none;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.title:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+.message {
+  margin: 0;
+  color: var(--ink);
+}
+
+.counter {
+  margin: 0;
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

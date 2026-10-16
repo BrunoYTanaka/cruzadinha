@@ -11,6 +11,10 @@ describe('apiErrorSchema', () => {
     expect(apiErrorSchema.parse(error)).toEqual(error)
   })
 
+  it('accepts the forbidden code', () => {
+    expect(apiErrorCodeSchema.options).toContain('forbidden')
+  })
+
   it('accepts the progress-completed code', () => {
     expect(apiErrorCodeSchema.options).toContain('progress-completed')
   })

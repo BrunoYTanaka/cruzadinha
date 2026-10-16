@@ -70,8 +70,14 @@ describe('puzzleResponseSchema', () => {
     )
   })
 
-  it('recusa campo extra desconhecido', () => {
+  it('descarta campo extra desconhecido no envelope (FR-025)', () => {
     const extra = { puzzleId, puzzle, solution, answer: 'x' }
+    const parsed = puzzleResponseSchema.parse(extra)
+    expect(parsed).not.toHaveProperty('answer')
+  })
+
+  it('continua recusando campo extra dentro do puzzle', () => {
+    const extra = { puzzleId, puzzle: { ...puzzle, answer: 'x' }, solution }
     expect(puzzleResponseSchema.safeParse(extra).success).toBe(false)
   })
 })

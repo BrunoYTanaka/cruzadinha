@@ -45,7 +45,11 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
         const fields = [...new Set(query.error.issues.map((issue) => String(issue.path[0])))]
         return sendError(reply, 400, 'invalid-input', fields)
       }
-      const result = await puzzles.getByDate(query.data.level, query.data.date, request.ip)
+      const result = await puzzles.getByDate(
+        query.data.level,
+        query.data.date,
+        request.clientAddress,
+      )
       if (!result.ok) return sendPuzzleFailure(result, request, reply)
       const body: PuzzleResponse = {
         puzzleId: result.puzzleId,

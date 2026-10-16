@@ -11,6 +11,7 @@ export const apiErrorCodeSchema = z.enum([
   'puzzle-unavailable',
   'puzzle-source-failed',
   'progress-completed',
+  'forbidden',
   'service-unavailable',
   'internal-error',
 ])

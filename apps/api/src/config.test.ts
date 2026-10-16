@@ -23,6 +23,8 @@ describe('loadConfig', () => {
       databaseUrl,
       trustProxyHops: 0,
       collectHistoryDays: 31,
+      proxySecret: undefined,
+      releaseCommit: undefined,
     })
   })
 
@@ -44,6 +46,8 @@ describe('loadConfig', () => {
       databaseUrl: 'postgresql://user:pass@db:5432/app',
       trustProxyHops: 2,
       collectHistoryDays: 7,
+      proxySecret: undefined,
+      releaseCommit: undefined,
     })
   })
 
@@ -96,6 +100,62 @@ describe('loadConfig', () => {
     expect(message).not.toContain('SEGREDO')
     expect(errorMessage({ DATABASE_URL: 'mysql://usuario:SEGREDO@host/db' })).not.toContain(
       'SEGREDO',
+    )
+  })
+})
+
+describe('loadConfig PROXY_SECRET e versão publicada', () => {
+  it.each([undefined, ''])('has no proxy secret when PROXY_SECRET is %j', (value) => {
+    expect(loadConfig({ DATABASE_URL: databaseUrl, PROXY_SECRET: value }).proxySecret).toBe(
+      undefined,
+    )
+  })
+
+  it.each([32, 256])('accepts a PROXY_SECRET of %i characters', (length) => {
+    const secret = 'S'.repeat(length)
+    expect(loadConfig({ DATABASE_URL: databaseUrl, PROXY_SECRET: secret }).proxySecret).toBe(secret)
+  })
+
+  it.each([31, 257])('rejects a PROXY_SECRET of %i characters without echoing it', (length) => {
+    const secret = 'SEGREDO'.padEnd(length, 'x')
+    const message = errorMessage({ DATABASE_URL: databaseUrl, PROXY_SECRET: secret })
+    expect(message).toContain('PROXY_SECRET: deve ter de 32 a 256 caracteres')
+    expect(message).not.toContain('SEGREDO')
+  })
+
+  it('reads RELEASE_COMMIT', () => {
+    const config = loadConfig({ DATABASE_URL: databaseUrl, RELEASE_COMMIT: 'abcdef1' })
+    expect(config.releaseCommit).toBe('abcdef1')
+  })
+
+  it('falls back to RENDER_GIT_COMMIT', () => {
+    const commit = 'a'.repeat(40)
+    const config = loadConfig({ DATABASE_URL: databaseUrl, RENDER_GIT_COMMIT: commit })
+    expect(config.releaseCommit).toBe(commit)
+  })
+
+  it('prefers RELEASE_COMMIT over RENDER_GIT_COMMIT', () => {
+    const config = loadConfig({
+      DATABASE_URL: databaseUrl,
+      RELEASE_COMMIT: 'abcdef1',
+      RENDER_GIT_COMMIT: 'b'.repeat(40),
+    })
+    expect(config.releaseCommit).toBe('abcdef1')
+  })
+
+  it('treats empty values as absent', () => {
+    const config = loadConfig({
+      DATABASE_URL: databaseUrl,
+      RELEASE_COMMIT: '',
+      RENDER_GIT_COMMIT: '',
+    })
+    expect(config.releaseCommit).toBe(undefined)
+    expect(config.proxySecret).toBe(undefined)
+  })
+
+  it.each(['ABCDEF1', 'abcdef', 'xyz1234'])('rejects the commit %s', (commit) => {
+    expect(errorMessage({ DATABASE_URL: databaseUrl, RELEASE_COMMIT: commit })).toContain(
+      'deve ser um SHA de 7 a 40 caracteres hexadecimais',
     )
   })
 })

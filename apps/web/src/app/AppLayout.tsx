@@ -1,12 +1,17 @@
+import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet } from 'react-router'
 import { Button } from '../components/Button'
 import { KonamiListener } from '../features/invites/KonamiListener'
-import { useLogoutMutation, useSessionQuery } from '../features/auth/useSession'
+import { sessionQueryOptions, useLogoutMutation } from '../features/auth/useSession'
+import { useServerReady } from '../features/status/useSlowServer'
 import { ThemeToggle } from '../themes/ThemeToggle'
 import styles from './AppLayout.module.css'
 
 export function AppLayout() {
-  const session = useSessionQuery()
+  // Só consulta a sessão depois de o servidor acordar, para não competir com a espera inicial; os
+  // loaders já preenchem o cache antes disso nas telas protegidas.
+  const serverReady = useServerReady()
+  const session = useQuery({ ...sessionQueryOptions(), enabled: serverReady })
   const logout = useLogoutMutation()
   return (
     <div className={styles.shell}>

@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { ApiRequestError } from './api/client'
+import { installReloadAfterDeploy } from './app/reload-after-deploy'
 import { createAppRouter } from './app/router'
 import './themes/fonts.css'
 import './themes/tokens.css'
@@ -23,6 +24,8 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+installReloadAfterDeploy(window)
 
 const router = createAppRouter(queryClient)
 

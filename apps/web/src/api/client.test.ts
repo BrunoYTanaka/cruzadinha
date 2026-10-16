@@ -4,9 +4,11 @@ import {
   ApiRequestError,
   apiRequest,
   apiRequestNoContent,
+  getOldestPendingStartedAt,
   getServerClockOffsetMs,
   resetServerClockOffset,
   setUnauthenticatedHandler,
+  subscribePending,
 } from './client'
 
 const okSchema = z.object({ ok: z.literal(true) })
@@ -140,5 +142,75 @@ describe('desvio do relógio do servidor', () => {
     const fetch = respond(200, { ok: true }, { date: 'ontem' })
     await apiRequest('/api/x', okSchema, { fetch })
     expect(getServerClockOffsetMs()).toBe(0)
+  })
+})
+
+describe('pedidos em andamento', () => {
+  function deferred() {
+    let resolve: (response: Response) => void = () => {}
+    let reject: (error: unknown) => void = () => {}
+    const promise = new Promise<Response>((ok, fail) => {
+      resolve = ok
+      reject = fail
+    })
+    return { promise, resolve, reject }
+  }
+
+  it('não há pedido sem chamadas', () => {
+    expect(getOldestPendingStartedAt()).toBeUndefined()
+  })
+
+  it('registra o início, devolve o mais antigo e limpa ao terminar, com sucesso ou erro', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(1_000)
+    const first = deferred()
+    const second = deferred()
+    const listener = vi.fn()
+    const unsubscribe = subscribePending(listener)
+
+    const a = apiRequest('/api/a', okSchema, { fetch: vi.fn(() => first.promise) })
+    vi.setSystemTime(2_000)
+    const b = apiRequest('/api/b', okSchema, { fetch: vi.fn(() => second.promise) }).catch(
+      () => undefined,
+    )
+    expect(getOldestPendingStartedAt()).toBe(1_000)
+
+    first.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+    await a
+    expect(getOldestPendingStartedAt()).toBe(2_000)
+
+    second.reject(new TypeError('offline'))
+    await b
+    expect(getOldestPendingStartedAt()).toBeUndefined()
+    expect(listener).toHaveBeenCalledTimes(4)
+    unsubscribe()
+  })
+
+  it('limpa também quando o pedido é cancelado', async () => {
+    const controller = new AbortController()
+    const fetch = vi.fn(
+      (_url: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) =>
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('x', 'AbortError')),
+          ),
+        ),
+    )
+    const request = apiRequest('/api/x', okSchema, { fetch, signal: controller.signal })
+    expect(getOldestPendingStartedAt()).toBeDefined()
+    controller.abort()
+    await expect(request).rejects.toMatchObject({ name: 'AbortError' })
+    expect(getOldestPendingStartedAt()).toBeUndefined()
+  })
+
+  it('ignora pedidos com keepalive', async () => {
+    const pending = deferred()
+    const request = apiRequest('/api/x', okSchema, {
+      keepalive: true,
+      fetch: vi.fn(() => pending.promise),
+    })
+    expect(getOldestPendingStartedAt()).toBeUndefined()
+    pending.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+    await request
   })
 })

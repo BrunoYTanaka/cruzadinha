@@ -1,0 +1,31 @@
+# Blueprint da API no Render (feature 012). Ver docs/deploy.md.
+#
+# - O deploy é feito pelo workflow .github/workflows/deploy.yml, pelo deploy hook, só para
+#   versões lançadas; por isso o auto-deploy fica desligado.
+# - Os segredos (DATABASE_URL, PROXY_SECRET) são preenchidos no painel do Render, nunca aqui.
+# - Mudanças neste arquivo valem pela sincronização do Blueprint, não pela versão da API.
+services:
+  - type: web
+    name: cruzadinha-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '10000'
+      - key: TRUST_PROXY_HOPS
+        value: '0'
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: PROXY_SECRET
+        sync: false
