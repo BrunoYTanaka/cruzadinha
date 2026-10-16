@@ -8,3 +8,8 @@
   color: var(--warn);
   font-weight: 500;
 }
+
+.login {
+  font-size: 13px;
+  white-space: nowrap;
+}

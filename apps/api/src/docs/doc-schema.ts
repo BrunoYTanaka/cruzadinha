@@ -45,3 +45,7 @@ export const commonErrors = {
   503: errorResponse('`service-unavailable`: banco de dados fora do ar.'),
   500: errorResponse('`internal-error`: falha inesperada.'),
 } satisfies Record<number, DocSchema>
+
+// Sessão opcional em OpenAPI 3.1: o objeto vazio diz que a rota também atende sem sessão
+// (visitante, feature 013).
+export const optionalSessionSecurity: Record<string, string[]>[] = [{}, { session: [] }]

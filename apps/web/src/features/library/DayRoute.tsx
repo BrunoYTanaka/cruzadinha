@@ -42,7 +42,7 @@ function FetchDay({ date }: { date: string }) {
     if (!data) return
     clearSourceDown()
     queryClient.setQueryData(queryKeys.puzzle(data.puzzleId), data)
-    void queryClient.invalidateQueries({ queryKey: queryKeys.library })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.libraryAll })
     void navigate(`/jogo/${data.puzzleId}`, { replace: true })
   }, [data, navigate, queryClient])
 

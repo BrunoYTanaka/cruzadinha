@@ -15,6 +15,10 @@ describe('apiErrorSchema', () => {
     expect(apiErrorCodeSchema.options).toContain('forbidden')
   })
 
+  it('accepts the registration-closed code', () => {
+    expect(apiErrorCodeSchema.options).toContain('registration-closed')
+  })
+
   it('accepts the progress-completed code', () => {
     expect(apiErrorCodeSchema.options).toContain('progress-completed')
   })

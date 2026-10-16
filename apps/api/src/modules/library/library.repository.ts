@@ -18,6 +18,18 @@ export type LibraryRow = {
   hasLetters: boolean | null
 }
 
+export type PuzzleRow = Pick<LibraryRow, 'puzzleId' | 'date' | 'level'>
+
+// Biblioteca de visitante (feature 013): só os metadados dos puzzles, na mesma ordem da biblioteca
+// de uma conta, sem `JOIN` com `progress` e sem `data`/`solution`.
+export async function listPuzzleRows(db: Executor, limit: number): Promise<PuzzleRow[]> {
+  return db
+    .select({ puzzleId: puzzles.puzzleId, date: puzzles.date, level: puzzles.level })
+    .from(puzzles)
+    .orderBy(desc(puzzles.date), asc(puzzles.level), asc(puzzles.puzzleId))
+    .limit(limit)
+}
+
 // Nunca seleciona `puzzles.data`, `puzzles.solution` nem `progress.cells`. O filtro do usuário fica
 // no `ON` (e não no `WHERE`) para que os puzzles sem progresso continuem na lista.
 export async function listLibraryRows(

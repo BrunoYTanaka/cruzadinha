@@ -4,7 +4,6 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { puzzles } from '../db/schema'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
-import { createInvitesService } from '../modules/invites/invites.service'
 import type { FetchPuzzleResult } from '../sources/types'
 import { buildTestApp, sessionCookieFrom } from './app'
 import { fakeSource, okResult, type FakeSource } from './fake-source'
@@ -42,11 +41,10 @@ async function start(
     rateLimits,
     logStream,
   })
-  const { code } = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
   const response = await app.inject({
     method: 'POST',
     url: '/api/auth/register',
-    payload: { email: 'ana@exemplo.com', password: 'senha-boa-123', inviteCode: code },
+    payload: { email: 'ana@exemplo.com', password: 'senha-boa-123' },
   })
   const sid = sessionCookieFrom(response.headers['set-cookie'])
   if (!sid) throw new Error('cadastro sem cookie')
@@ -68,14 +66,40 @@ afterEach(() => app.close())
 afterAll(() => handle.close())
 
 describe('GET /api/puzzles', () => {
-  it('recusa quem não tem sessão e não consulta a fonte', async () => {
-    await start(okFor(today()))
+  it('atende o visitante sem sessão com o puzzle e a solução (feature 013)', async () => {
+    const ok = okResult(today())
+    await start(new Map([[today(), ok]]))
     const response = await get(`/api/puzzles?date=${today()}`, false)
+
+    expect(response.statusCode).toBe(200)
+    expect(Object.keys(response.json()).sort()).toEqual(['puzzle', 'puzzleId', 'solution'])
+    expect(response.json().solution).toEqual(ok.solution)
+    expect(response.headers['set-cookie']).toBeUndefined()
+  })
+
+  it('com cookie inválido responde 401, apaga o cookie e não consulta a fonte', async () => {
+    await start(okFor(today()))
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/puzzles?date=${today()}`,
+      headers: { cookie: `sid=${'A'.repeat(43)}` },
+    })
 
     expect(response.statusCode).toBe(401)
     expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('unauthenticated')
+    expect(String(response.headers['set-cookie'])).toMatch(/^sid=;.*Expires=Thu, 01 Jan 1970/)
     expect(source.calls).toEqual([])
+  })
+
+  it('o visitante conta no limite de buscas à fonte por endereço', async () => {
+    const limits = { ...defaultRateLimits, puzzleFetch: { max: 1, windowMinutes: 60 } }
+    await start(okFor(daysAgo(0), daysAgo(1)), limits)
+
+    expect((await get(`/api/puzzles?date=${daysAgo(0)}`, false)).statusCode).toBe(200)
+    const blocked = await get(`/api/puzzles?date=${daysAgo(1)}`, false)
+    expect(blocked.statusCode).toBe(429)
+    expect(source.calls).toEqual([daysAgo(0)])
   })
 
   it('busca na fonte, grava e devolve; a segunda chamada vem do banco', async () => {
@@ -261,10 +285,19 @@ describe('GET /api/puzzles/:id', () => {
     },
   )
 
-  it('recusa quem não tem sessão', async () => {
+  it('atende o visitante sem sessão (feature 013)', async () => {
+    await start(okFor(today()))
+    const { puzzleId } = (await get(`/api/puzzles?date=${today()}`)).json()
+    const response = await get(`/api/puzzles/${puzzleId}`, false)
+    expect(response.statusCode).toBe(200)
+    expect(response.json().puzzleId).toBe(puzzleId)
+    expect(response.json().solution).toBeDefined()
+  })
+
+  it('para o visitante, um id inexistente continua 404 sem solução', async () => {
     await start()
     const response = await get('/api/puzzles/0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a', false)
-    expect(response.statusCode).toBe(401)
+    expect(response.statusCode).toBe(404)
     expect(response.body).not.toContain('solution')
   })
 })

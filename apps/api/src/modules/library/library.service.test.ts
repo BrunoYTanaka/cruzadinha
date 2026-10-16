@@ -1,6 +1,6 @@
 import { libraryItemSchema } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import { toLibraryItem, type LibraryRow } from './library.service'
+import { toLibraryItem, toPublicLibraryItem, type LibraryRow } from './library.service'
 
 const base: LibraryRow = {
   puzzleId: '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a',
@@ -110,5 +110,23 @@ describe('toLibraryItem', () => {
     for (const row of rows) {
       expect(libraryItemSchema.safeParse(toLibraryItem(row)).success).toBe(true)
     }
+  })
+})
+
+describe('toPublicLibraryItem', () => {
+  it('sem sessão: sempre não iniciado e sem tempos', () => {
+    const item = toPublicLibraryItem({ puzzleId: base.puzzleId, date: base.date, level: 'daily' })
+    expect(item).toEqual({
+      puzzleId: base.puzzleId,
+      date: '2026-10-13',
+      level: 'daily',
+      status: 'not_started',
+      elapsedMs: null,
+      finishedMs: null,
+      completedAt: null,
+      bestMs: null,
+      bestAt: null,
+    })
+    expect(libraryItemSchema.safeParse(item).success).toBe(true)
   })
 })

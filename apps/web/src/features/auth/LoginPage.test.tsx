@@ -112,6 +112,65 @@ describe('LoginPage', () => {
     renderRoutes(routes, ['/login'])
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('autocomplete', 'username')
     expect(screen.getByLabelText('Senha')).toHaveAttribute('autocomplete', 'current-password')
-    expect(screen.getByRole('link', { name: 'Criar conta' })).toHaveAttribute('href', '/cadastro')
+  })
+})
+
+describe('LoginPage: criar conta e jogar sem entrar (feature 013)', () => {
+  it('com o cadastro fechado não mostra "Criar conta"', async () => {
+    mockApi({
+      'GET /api/auth/me': noSession,
+      'GET /api/auth/registration': () => jsonResponse(200, { open: false }),
+    })
+    renderRoutes(routes, ['/login'])
+    expect(await screen.findByRole('link', { name: 'Jogar sem entrar' })).toHaveAttribute(
+      'href',
+      '/',
+    )
+    await waitFor(() =>
+      expect(screen.queryByRole('link', { name: 'Criar conta' })).not.toBeInTheDocument(),
+    )
+  })
+
+  it('sem resposta da rota de cadastro (rede ou API anterior), trata como fechado', async () => {
+    const { calls } = mockApi({ 'GET /api/auth/me': noSession })
+    renderRoutes(routes, ['/login'])
+    await waitFor(() =>
+      expect(calls.some((call) => call.key === 'GET /api/auth/registration')).toBe(true),
+    )
+    expect(screen.queryByRole('link', { name: 'Criar conta' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Jogar sem entrar' })).toBeInTheDocument()
+  })
+
+  it('com o cadastro aberto mostra "Criar conta", levando o endereço de origem', async () => {
+    mockApi({
+      'GET /api/auth/me': noSession,
+      'GET /api/auth/registration': () => jsonResponse(200, { open: true }),
+    })
+    renderRoutes(routes, ['/login?next=%2Fjogo%2Fabc'])
+    expect(await screen.findByRole('link', { name: 'Criar conta' })).toHaveAttribute(
+      'href',
+      '/cadastro?next=%2Fjogo%2Fabc',
+    )
+  })
+
+  it('"Jogar sem entrar" e "Criar conta" são alcançados pelo teclado e seguidos com Enter', async () => {
+    mockApi({
+      'GET /api/auth/me': noSession,
+      'GET /api/auth/registration': () => jsonResponse(200, { open: true }),
+    })
+    const user = userEvent.setup()
+    const { router } = renderRoutes(routes, ['/login'])
+    const create = await screen.findByRole('link', { name: 'Criar conta' })
+    const guest = screen.getByRole('link', { name: 'Jogar sem entrar' })
+
+    let reachedCreate = false
+    for (let step = 0; step < 10 && document.activeElement !== guest; step++) {
+      await user.tab()
+      if (document.activeElement === create) reachedCreate = true
+    }
+    expect(reachedCreate).toBe(true)
+    expect(guest).toHaveFocus()
+    await user.keyboard('{Enter}')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
   })
 })

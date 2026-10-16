@@ -39,7 +39,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['apps/web/version-plugin*.ts'],
+    files: ['apps/web/version-plugin*.ts', 'apps/web/public-headers.test.ts'],
     languageOptions: {
       globals: globals.node,
     },

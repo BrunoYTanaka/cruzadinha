@@ -1,16 +1,23 @@
 import { libraryResponseSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { commonErrors, errorResponse, toDocSchema } from '../../docs/doc-schema'
+import {
+  commonErrors,
+  errorResponse,
+  optionalSessionSecurity,
+  toDocSchema,
+} from '../../docs/doc-schema'
 
 export const getLibrarySchema = {
   tags: ['library'],
-  security: [{ session: [] }],
+  // Sessão opcional (feature 013).
+  security: optionalSessionSecurity,
   summary: 'Lista os puzzles disponíveis com a situação do usuário',
   description:
     'Devolve até 366 puzzles já guardados, do mais recente ao mais antigo, cada um com a situação do ' +
     'usuário (`not_started`, `in_progress` ou `completed`) e os tempos dele. Só lê o que está ' +
     'guardado: nunca consulta a fonte nem consome o limite de busca, e não traz grade, dicas, ' +
-    'solução nem letras. Cada usuário só enxerga a própria situação.',
+    'solução nem letras. Cada usuário só enxerga a própria situação. Sem sessão (visitante), ' +
+    'devolve os mesmos puzzles, todos `not_started` e com os tempos nulos: nenhum dado de usuário.',
   response: {
     200: {
       description: 'Puzzles guardados (lista vazia se não houver nenhum)',
@@ -42,7 +49,9 @@ export const getLibrarySchema = {
         ],
       },
     },
-    401: errorResponse('`unauthenticated`: sem sessão válida.'),
+    401: errorResponse(
+      '`unauthenticated`: cookie de sessão presente, mas inválido (vencido ou encerrado); a resposta o apaga.',
+    ),
     ...commonErrors,
   },
 } satisfies FastifySchema

@@ -2,7 +2,7 @@ import type { AuthResponse } from '@cruzadinha/shared'
 import type { QueryClient } from '@tanstack/react-query'
 import { setUnauthenticatedHandler } from '../api/client'
 import { queryKeys } from '../api/query-keys'
-import { buildLoginPath } from '../features/auth/redirect'
+import { markEnded } from './session-ended'
 import { markExpired } from './session-expired'
 
 type RouterLike = {
@@ -10,19 +10,25 @@ type RouterLike = {
   navigate: (to: string, options?: { replace?: boolean }) => unknown
 }
 
-// O que fazer num `401 unauthenticated`:
+// O que fazer num `401 unauthenticated` (feature 013):
 // - em /login e /cadastro, nada (as telas tratam o próprio erro);
-// - no tabuleiro (/jogo/...), só marcar a sessão como expirada: o jogo continua (FR-032);
-// - nas demais telas, limpar a sessão em cache e ir ao login levando o endereço de origem.
+// - só quando a sessão em cache era de uma conta; para o visitante, nada: a tela trata o erro, e
+//   assim não há laço de pedidos contra uma API anterior;
+// - no tabuleiro (/jogo/...), só marcar a sessão como expirada: o jogo continua (FR-032 da 010);
+// - nas demais telas, a pessoa vira visitante (sessão `null`), a biblioteca é buscada de novo uma vez
+//   e aparece o aviso de sessão terminada (FR-013), sem ir ao login.
 export function installSessionHandlers(router: RouterLike, queryClient: QueryClient): void {
   setUnauthenticatedHandler(() => {
-    const { pathname, search } = router.state.location
+    const { pathname } = router.state.location
     if (pathname === '/login' || pathname === '/cadastro') return
+    const user = queryClient.getQueryData<AuthResponse | null>(queryKeys.session)?.user
+    if (!user) return
     if (pathname.startsWith('/jogo/')) {
-      markExpired(queryClient.getQueryData<AuthResponse>(queryKeys.session)?.user ?? null)
+      markExpired(user)
       return
     }
-    queryClient.removeQueries({ queryKey: queryKeys.session })
-    void router.navigate(buildLoginPath(pathname + search), { replace: true })
+    queryClient.setQueryData(queryKeys.session, null)
+    void queryClient.invalidateQueries({ queryKey: queryKeys.libraryAll })
+    markEnded()
   })
 }

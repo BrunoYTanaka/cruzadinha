@@ -23,11 +23,12 @@ function databaseUrl(): string {
   return url
 }
 
-function runApi(script: string[]): string {
+function runApi(script: string[], input?: string): string {
   return execFileSync('npm', ['run', ...script], {
     cwd: repoRoot,
     env: { ...process.env, NODE_ENV: process.env.NODE_ENV ?? 'development' },
     encoding: 'utf8',
+    input,
   })
 }
 
@@ -49,13 +50,24 @@ export function seedDatabase(): void {
   runApi(['db:seed', '-w', '@cruzadinha/api'])
 }
 
-// Cria um convite pela CLI do autor e devolve o código.
-export function createInviteCode(): string {
+// Cria uma conta pela CLI do autor (feature 013); a senha vai pela entrada padrão, nunca como argumento.
+export function createAccount(email: string, password: string): void {
   databaseUrl()
-  const output = runApi(['cli', '-w', '@cruzadinha/api', '--', 'invites', 'create'])
-  const code = /Convite criado:\s*([A-Z2-9]{4}(?:-[A-Z2-9]{4}){3})/.exec(output)?.[1]
-  if (!code) throw new Error('Não foi possível ler o código do convite')
-  return code
+  runApi(
+    ['cli', '-w', '@cruzadinha/api', '--', 'users', 'create', '--email', email],
+    `${password}\n`,
+  )
+}
+
+// Linhas de progresso guardadas no servidor (o visitante não grava nenhuma).
+export async function progressRowCount(): Promise<number> {
+  const sql = postgres(databaseUrl(), { max: 1, onnotice: () => undefined })
+  try {
+    const [row] = await sql<{ count: string }[]>`SELECT count(*)::text AS count FROM progress`
+    return Number(row?.count ?? 0)
+  } finally {
+    await sql.end()
+  }
 }
 
 export function brasiliaToday(): string {

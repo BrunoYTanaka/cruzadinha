@@ -1,19 +1,28 @@
 import { puzzleResponseSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { commonErrors, errorResponse, retryAfterHeader, toDocSchema } from '../../docs/doc-schema'
+import {
+  commonErrors,
+  errorResponse,
+  optionalSessionSecurity,
+  retryAfterHeader,
+  toDocSchema,
+} from '../../docs/doc-schema'
 
-const unauthenticated = errorResponse('`unauthenticated`: sem sessão válida.')
+const unauthenticated = errorResponse(
+  '`unauthenticated`: cookie de sessão presente, mas inválido (vencido ou encerrado); a resposta o apaga.',
+)
 const unavailable = errorResponse(
   '`puzzle-unavailable`: data futura, ou a fonte não publica puzzle nessa data.',
 )
 
 export const getPuzzleByDateSchema = {
   tags: ['puzzles'],
-  security: [{ session: [] }],
+  // Sessão opcional (feature 013): visitantes também recebem o puzzle e a solução.
+  security: optionalSessionSecurity,
   summary: 'Busca o puzzle de uma data',
   description:
     'Devolve o puzzle guardado ou, se faltar e a data não for futura, busca na fonte, guarda e devolve. ' +
-    'A resposta traz também a `solution` (uma letra por célula aberta, `null` nos blocos), só para quem tem sessão. Buscas à fonte contam no limite de tentativas.',
+    'A resposta traz também a `solution` (uma letra por célula aberta, `null` nos blocos), com ou sem sessão. Buscas à fonte contam no limite de tentativas por endereço.',
   querystring: {
     type: 'object',
     properties: {
@@ -48,10 +57,11 @@ export const getPuzzleByDateSchema = {
 
 export const getPuzzleByIdSchema = {
   tags: ['puzzles'],
-  security: [{ session: [] }],
+  // Sessão opcional (feature 013): visitantes também recebem o puzzle e a solução.
+  security: optionalSessionSecurity,
   summary: 'Busca um puzzle guardado pelo identificador',
   description:
-    'Só lê o que já está guardado; nunca consulta a fonte. A resposta traz a `solution`, só para quem tem sessão.',
+    'Só lê o que já está guardado; nunca consulta a fonte. A resposta traz a `solution`, com ou sem sessão.',
   params: {
     type: 'object',
     properties: {

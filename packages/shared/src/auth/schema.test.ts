@@ -5,6 +5,7 @@ import {
   loginRequestSchema,
   passwordSchema,
   registerRequestSchema,
+  registrationStatusSchema,
 } from './schema'
 
 describe('emailSchema', () => {
@@ -30,18 +31,37 @@ describe('passwordSchema', () => {
 })
 
 describe('registerRequestSchema', () => {
-  const valid = { email: 'ana@x.com', password: 'senha-boa-123', inviteCode: 'qualquer-coisa' }
+  const valid = { email: 'ana@x.com', password: 'senha-boa-123' }
 
-  it('does not check the invite code format', () => {
-    expect(registerRequestSchema.parse(valid).inviteCode).toBe('qualquer-coisa')
+  it('accepts e-mail and password only', () => {
+    expect(registerRequestSchema.parse(valid)).toEqual(valid)
   })
 
-  it('rejects an empty or too long invite code and extra properties', () => {
-    expect(registerRequestSchema.safeParse({ ...valid, inviteCode: '' }).success).toBe(false)
+  it('accepts and keeps an optional invite code sent by the previous site', () => {
+    expect(
+      registerRequestSchema.safeParse({ ...valid, inviteCode: 'qualquer-coisa' }).success,
+    ).toBe(true)
+    expect(registerRequestSchema.safeParse({ ...valid, inviteCode: 'a'.repeat(64) }).success).toBe(
+      true,
+    )
+  })
+
+  it('rejects a too long invite code and extra properties', () => {
     expect(registerRequestSchema.safeParse({ ...valid, inviteCode: 'a'.repeat(65) }).success).toBe(
       false,
     )
     expect(registerRequestSchema.safeParse({ ...valid, extra: 1 }).success).toBe(false)
+  })
+})
+
+describe('registrationStatusSchema', () => {
+  it('accepts the open flag and drops unknown keys', () => {
+    expect(registrationStatusSchema.parse({ open: true, extra: 1 })).toEqual({ open: true })
+  })
+
+  it('rejects a non-boolean flag', () => {
+    expect(registrationStatusSchema.safeParse({ open: 'true' }).success).toBe(false)
+    expect(registrationStatusSchema.safeParse({}).success).toBe(false)
   })
 })
 

@@ -6,11 +6,13 @@ type NoticeProps = {
   variant?: 'info' | 'warning' | 'error'
   children: ReactNode
   action?: { label: string; onClick: () => void }
+  // Botão "Fechar" opcional, para avisos que a pessoa pode dispensar.
+  onDismiss?: () => void
 }
 
 // Aviso que não bloqueia: fica fora do tabuleiro, não toma o foco e não cobre o jogo. `status`
 // anuncia com educação (`aria-live="polite"`); só o erro usa `alert`.
-export function Notice({ variant = 'info', children, action }: NoticeProps) {
+export function Notice({ variant = 'info', children, action, onDismiss }: NoticeProps) {
   return (
     <div
       className={`${styles.notice} ${styles[variant]}`}
@@ -20,6 +22,11 @@ export function Notice({ variant = 'info', children, action }: NoticeProps) {
       {action ? (
         <Button onClick={action.onClick} className={styles.action}>
           {action.label}
+        </Button>
+      ) : null}
+      {onDismiss ? (
+        <Button variant="ghost" onClick={onDismiss} className={styles.action}>
+          Fechar
         </Button>
       ) : null}
     </div>

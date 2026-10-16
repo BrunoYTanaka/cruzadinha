@@ -5,6 +5,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'invalid-input': 'Dados inválidos.',
   'invalid-invite': 'Convite inválido.',
   'registration-failed': 'Não foi possível concluir o cadastro.',
+  'registration-closed': 'O cadastro está fechado no momento.',
   'invalid-credentials': 'E-mail ou senha incorretos.',
   unauthenticated: 'Não autenticado.',
   'invite-quota-reached': 'Você já tem 3 convites ativos.',

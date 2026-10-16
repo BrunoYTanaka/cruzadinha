@@ -7,7 +7,9 @@ import {
 import { ApiRequestError, getServerClockOffsetMs } from '../../api/client'
 import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
 
-export type SaveState = 'saved' | 'saving' | 'offline' | 'session-expired' | 'completed-elsewhere'
+// `local-only`: só a fila do visitante, quando o navegador não deixa guardar (feature 013, FR-009).
+export type SaveState =
+  'saved' | 'saving' | 'offline' | 'session-expired' | 'completed-elsewhere' | 'local-only'
 
 export type SaveSnapshot = {
   cells: (string | null)[][]

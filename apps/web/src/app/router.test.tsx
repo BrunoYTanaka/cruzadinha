@@ -45,6 +45,21 @@ describe('entrada do site com a espera do servidor', () => {
     expect(keys.indexOf('GET /api/health')).toBeLessThan(keys.indexOf('GET /api/auth/me'))
   })
 
+  it('sem sessão abre a biblioteca, e não o login (feature 013)', async () => {
+    mockApi({
+      'GET /api/health': healthUp,
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+    })
+    const { router } = renderApp('/')
+    await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
+    expect(router.state.location.pathname).toBe('/')
+    await waitFor(() =>
+      expect(screen.queryByText('Carregando a biblioteca…')).not.toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('heading', { name: 'Entrar' })).not.toBeInTheDocument()
+  })
+
   it('não espera o health na página de status', async () => {
     mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
     renderApp('/status')

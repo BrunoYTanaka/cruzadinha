@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import type { SaveState } from './save-queue'
 import { SaveStatus } from './SaveStatus'
@@ -51,5 +52,38 @@ describe('SaveStatus', () => {
     expect(announcement(container)).toBe('')
     rerender(<SaveStatus state="completed-elsewhere" />)
     expect(announcement(container)).toBe('')
+  })
+})
+
+describe('SaveStatus do visitante (feature 013)', () => {
+  function renderGuest(state: SaveState) {
+    return render(
+      <MemoryRouter>
+        <SaveStatus state={state} guest={{ loginTo: '/login?next=%2Fjogo%2Fabc' }} />
+      </MemoryRouter>,
+    )
+  }
+
+  it('diz que está salvo neste aparelho e oferece entrar, sem aviso de rede', () => {
+    const { container } = renderGuest('saved')
+    expect(screen.getByText('Salvo neste aparelho')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Entrar para salvar na sua conta' })).toHaveAttribute(
+      'href',
+      '/login?next=%2Fjogo%2Fabc',
+    )
+    expect(announcement(container)).toBe('Seu progresso fica salvo só neste aparelho.')
+  })
+
+  it('sem armazenamento avisa que vale só nesta aba', () => {
+    const { container, rerender } = renderGuest('saved')
+    rerender(
+      <MemoryRouter>
+        <SaveStatus state="local-only" guest={{ loginTo: '/login' }} />
+      </MemoryRouter>,
+    )
+    expect(
+      screen.getByText('Não salvo: vale só nesta aba', { selector: 'span:not([aria-live])' }),
+    ).toBeVisible()
+    expect(announcement(container)).toBe('Não salvo: vale só nesta aba')
   })
 })

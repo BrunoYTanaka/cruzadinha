@@ -1,11 +1,9 @@
-import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { invites, sessions, users } from '../db/schema'
+import { rateLimitAttempts, sessions, users } from '../db/schema'
 import { sha256Hex } from '../lib/tokens'
-import { createInvitesService } from '../modules/invites/invites.service'
 import { buildTestApp, sessionCookieFrom } from './app'
-import { DAY, MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
+import { MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
 const { db } = handle
@@ -21,10 +19,6 @@ beforeEach(async () => {
 afterEach(() => app.close())
 afterAll(() => handle.close())
 
-function newInvite(days = 7) {
-  return createInvitesService({ db, clock: clock.now }).createInvite({ days })
-}
-
 function register(
   body: Record<string, unknown>,
   options: { remoteAddress?: string; cookie?: string } = {},
@@ -38,21 +32,45 @@ function register(
   })
 }
 
-async function inviteRow(inviteId: string) {
-  const [row] = await db.select().from(invites).where(eq(invites.inviteId, inviteId))
-  return row
+// Mesma instância com o cadastro fechado (o padrão fora dos testes, feature 013).
+async function closeRegistration() {
+  await app.close()
+  app = buildTestApp({ database: db, clock: clock.now, env: { REGISTRATION_ENABLED: 'false' } })
 }
 
-const INVALID_INVITE = { error: 'invalid-invite', message: 'Convite inválido.' }
+describe('POST /api/auth/register com o cadastro fechado', () => {
+  it('recusa com 403 registration-closed sem criar conta nem contar tentativa', async () => {
+    await closeRegistration()
+    const response = await register({ email: 'ana@exemplo.com', password: 'senha-boa-123' })
 
-describe('POST /api/auth/register', () => {
-  it('creates the account, consumes the invite and opens a session', async () => {
-    const invite = await newInvite()
-    const response = await register({
-      email: 'Ana@Exemplo.com ',
-      password: 'senha-boa-123',
-      inviteCode: invite.code,
+    expect(response.statusCode).toBe(403)
+    expect(response.json()).toEqual({
+      error: 'registration-closed',
+      message: 'O cadastro está fechado no momento.',
     })
+    expect(response.headers['set-cookie']).toBeUndefined()
+    expect(await db.select().from(users)).toHaveLength(0)
+    expect(await db.select().from(rateLimitAttempts)).toHaveLength(0)
+  })
+
+  it('recusa também um corpo inválido, sem dizer o motivo', async () => {
+    await closeRegistration()
+    const response = await register({ email: 'ana', password: '1' })
+    expect(response.statusCode).toBe(403)
+    expect(response.json().error).toBe('registration-closed')
+  })
+
+  it('GET /api/auth/registration diz que está fechado', async () => {
+    await closeRegistration()
+    const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
+    expect(response.json()).toEqual({ open: false })
+    expect(response.headers['cache-control']).toBe('no-store')
+  })
+})
+
+describe('POST /api/auth/register com o cadastro aberto', () => {
+  it('cria a conta só com e-mail e senha e abre a sessão', async () => {
+    const response = await register({ email: 'Ana@Exemplo.com ', password: 'senha-boa-123' })
 
     expect(response.statusCode).toBe(201)
     const body = response.json()
@@ -69,101 +87,61 @@ describe('POST /api/auth/register', () => {
     const [session] = await db.select().from(sessions)
     expect(session?.tokenHash).toBe(sha256Hex(token))
     expect(session?.userId).toBe(body.user.id)
-
-    const row = await inviteRow(invite.inviteId)
-    expect(row?.usedByUserId).toBe(body.user.id)
-    expect(row?.usedAt).toBeInstanceOf(Date)
   })
 
-  it('answers the same for unknown, used, expired, revoked and malformed codes', async () => {
-    const used = await newInvite()
-    expect(
-      (await register({ email: 'a@x.com', password: 'senha-boa-123', inviteCode: used.code }))
-        .statusCode,
-    ).toBe(201)
-
-    const revoked = await newInvite()
-    await db
-      .update(invites)
-      .set({ revokedAt: clock.now() })
-      .where(eq(invites.inviteId, revoked.inviteId))
-
-    const expired = await newInvite(7)
-    clock.advance(8 * DAY)
-
-    const responses = await Promise.all(
-      ['ABCD-EFGH-JKMN-PQRS', used.code, expired.code, revoked.code, 'nao-e-um-codigo'].map(
-        (inviteCode, index) =>
-          register({ email: `b${index}@x.com`, password: 'senha-boa-123', inviteCode }),
-      ),
-    )
-    for (const response of responses) {
-      expect(response.statusCode).toBe(400)
-      expect(response.json()).toEqual(INVALID_INVITE)
-    }
-    expect(new Set(responses.map((response) => response.body)).size).toBe(1)
-  })
-
-  it('refuses an e-mail that already has an account without spending the invite', async () => {
-    const first = await newInvite()
-    await register({ email: 'ana@exemplo.com', password: 'senha-boa-123', inviteCode: first.code })
-
-    const second = await newInvite()
+  it('ignora o código de convite enviado pelo site anterior', async () => {
     const response = await register({
-      email: ' ANA@exemplo.com',
-      password: 'outra-senha-123',
-      inviteCode: second.code,
+      email: 'ana@exemplo.com',
+      password: 'senha-boa-123',
+      inviteCode: 'ABCD-EFGH-JKMN-PQRS',
     })
+    expect(response.statusCode).toBe(201)
+  })
+
+  it('recusa um e-mail que já tem conta com a mensagem genérica', async () => {
+    await register({ email: 'ana@exemplo.com', password: 'senha-boa-123' })
+    const response = await register({ email: ' ANA@exemplo.com', password: 'outra-senha-123' })
 
     expect(response.statusCode).toBe(409)
     expect(response.json()).toEqual({
       error: 'registration-failed',
       message: 'Não foi possível concluir o cadastro.',
     })
-    expect((await inviteRow(second.inviteId))?.usedAt).toBeNull()
+    expect(await db.select().from(users)).toHaveLength(1)
   })
 
-  it('points to the invalid fields without spending the invite', async () => {
-    const invite = await newInvite()
-    const response = await register({
-      email: 'ana',
-      password: '1234567',
-      inviteCode: invite.code,
-    })
-
+  it('aponta os campos inválidos e recusa campos desconhecidos', async () => {
+    const response = await register({ email: 'ana', password: '1234567' })
     expect(response.statusCode).toBe(400)
     expect(response.json()).toEqual({
       error: 'invalid-input',
       message: 'Dados inválidos.',
       fields: ['email', 'password'],
     })
-    expect((await inviteRow(invite.inviteId))?.usedAt).toBeNull()
+
+    const extra = await register({ email: 'ana@x.com', password: 'senha-boa-123', papel: 'admin' })
+    expect(extra.statusCode).toBe(400)
   })
 
-  it('creates exactly one account for two simultaneous uses of one invite', async () => {
-    const invite = await newInvite()
+  it('cria uma única conta para dois cadastros simultâneos do mesmo e-mail', async () => {
     const responses = await Promise.all(
-      ['a@x.com', 'b@x.com'].map((email) =>
-        register({ email, password: 'senha-boa-123', inviteCode: invite.code }),
-      ),
+      [1, 2].map(() => register({ email: 'ana@x.com', password: 'senha-boa-123' })),
     )
-
-    expect(responses.map((response) => response.statusCode).sort()).toEqual([201, 400])
+    expect(responses.map((response) => response.statusCode).sort()).toEqual([201, 409])
     expect(await db.select().from(users)).toHaveLength(1)
   })
 
-  it('limits registrations per network address', async () => {
-    const invite = await newInvite()
+  it('limita os cadastros por endereço de rede', async () => {
     for (let i = 0; i < 10; i++) {
       const response = await register(
-        { email: `x${i}@x.com`, password: '1234567', inviteCode: invite.code },
+        { email: `x${i}@x.com`, password: '1234567' },
         { remoteAddress: '10.0.0.1' },
       )
       expect(response.statusCode).toBe(400)
     }
 
     const blocked = await register(
-      { email: 'ana@x.com', password: 'senha-boa-123', inviteCode: invite.code },
+      { email: 'ana@x.com', password: 'senha-boa-123' },
       { remoteAddress: '10.0.0.1' },
     )
     expect(blocked.statusCode).toBe(429)
@@ -174,37 +152,21 @@ describe('POST /api/auth/register', () => {
     expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0)
 
     const otherAddress = await register(
-      { email: 'bia@x.com', password: '1234567', inviteCode: invite.code },
+      { email: 'bia@x.com', password: '1234567' },
       { remoteAddress: '10.0.0.2' },
     )
     expect(otherAddress.statusCode).toBe(400)
 
     clock.advance(61 * MINUTE)
     const later = await register(
-      { email: 'ana@x.com', password: 'senha-boa-123', inviteCode: invite.code },
+      { email: 'ana@x.com', password: 'senha-boa-123' },
       { remoteAddress: '10.0.0.1' },
     )
     expect(later.statusCode).toBe(201)
   })
 
-  it('accepts the code typed in lowercase with spaces', async () => {
-    const invite = await newInvite()
-    const typed = ` ${invite.code.toLowerCase().replaceAll('-', ' ')} `
-    const response = await register({
-      email: 'ana@x.com',
-      password: 'senha-boa-123',
-      inviteCode: typed,
-    })
-    expect(response.statusCode).toBe(201)
-  })
-
-  it('never stores or returns the password or its hash', async () => {
-    const invite = await newInvite()
-    const response = await register({
-      email: 'ana@x.com',
-      password: 'senha-boa-123',
-      inviteCode: invite.code,
-    })
+  it('nunca guarda nem devolve a senha ou o hash', async () => {
+    const response = await register({ email: 'ana@x.com', password: 'senha-boa-123' })
     const [user] = await db.select().from(users)
 
     expect(user?.passwordHash.startsWith('$argon2id$')).toBe(true)
@@ -213,36 +175,17 @@ describe('POST /api/auth/register', () => {
     expect(response.body).not.toContain('senha-boa-123')
   })
 
-  it('refuses an invite at the exact instant it expires', async () => {
-    const invite = await newInvite(1)
-    clock.set(invite.expiresAt)
-    const response = await register({
-      email: 'ana@x.com',
-      password: 'senha-boa-123',
-      inviteCode: invite.code,
-    })
+  it('cadastra uma conta nova mesmo chamado com outra sessão ativa', async () => {
+    const first = await register({ email: 'ana@x.com', password: 'senha-boa-123' })
+    const cookie = sessionCookieFrom(first.headers['set-cookie'])
 
-    expect(response.json()).toEqual(INVALID_INVITE)
-    expect((await inviteRow(invite.inviteId))?.usedAt).toBeNull()
-  })
-
-  it('registers a new account even when called with another active session', async () => {
-    const first = await newInvite()
-    const firstResponse = await register({
-      email: 'ana@x.com',
-      password: 'senha-boa-123',
-      inviteCode: first.code,
-    })
-    const cookie = sessionCookieFrom(firstResponse.headers['set-cookie'])
-
-    const second = await newInvite()
-    const response = await register(
-      { email: 'bia@x.com', password: 'senha-boa-123', inviteCode: second.code },
-      { cookie },
-    )
-
+    const response = await register({ email: 'bia@x.com', password: 'senha-boa-123' }, { cookie })
     expect(response.statusCode).toBe(201)
     expect(response.json().user.email).toBe('bia@x.com')
-    expect(await db.select().from(sessions)).toHaveLength(2)
+  })
+
+  it('GET /api/auth/registration diz que está aberto', async () => {
+    const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
+    expect(response.json()).toEqual({ open: true })
   })
 })

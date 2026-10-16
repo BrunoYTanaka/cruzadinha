@@ -3,7 +3,6 @@ import { sql } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { puzzles } from '../db/schema'
-import { createInvitesService } from '../modules/invites/invites.service'
 import { buildTestApp, sessionCookieFrom } from './app'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 import { fakeSource, okResult, type FakeSource } from './fake-source'
@@ -20,11 +19,10 @@ let emptyCells: ProgressCells
 let openPosition: { row: number; col: number }
 
 async function register(email: string): Promise<string> {
-  const { code } = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
   const response = await app.inject({
     method: 'POST',
     url: '/api/auth/register',
-    payload: { email, password: PASSWORD, inviteCode: code },
+    payload: { email, password: PASSWORD },
   })
   const sid = sessionCookieFrom(response.headers['set-cookie'])
   if (!sid) throw new Error('cadastro sem cookie')
@@ -310,16 +308,46 @@ describe('sem fonte e sem expor a resposta (US2)', () => {
   })
 })
 
-describe('só logado e isolado por usuário (US3)', () => {
-  it('recusa pedido sem sessão', async () => {
+describe('visitante sem sessão (feature 013)', () => {
+  it('vê os mesmos puzzles, na mesma ordem, sem situação nem tempos de ninguém', async () => {
+    const sid = await register('ana@exemplo.com')
+    const first = await storePuzzle('2026-10-12')
     await storePuzzle('2026-10-13')
+    await storePuzzle('2026-10-11')
+    await putProgress(first, save({ status: 'completed', elapsedMs: 300_000 }), sid)
+
     const response = await getLibrary()
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['set-cookie']).toBeUndefined()
+    const items: LibraryItem[] = response.json().items
+    const ofAna = await libraryOf(sid)
+
+    expect(items.map((item) => item.puzzleId)).toEqual(ofAna.map((item) => item.puzzleId))
+    for (const item of items) {
+      expect(item).toMatchObject({
+        status: 'not_started',
+        elapsedMs: null,
+        finishedMs: null,
+        completedAt: null,
+        bestMs: null,
+        bestAt: null,
+      })
+    }
+    expect(libraryResponseSchema.safeParse(response.json()).success).toBe(true)
+  })
+
+  it('com cookie inválido responde 401 e apaga o cookie', async () => {
+    await storePuzzle('2026-10-13')
+    const response = await getLibrary('A'.repeat(43))
 
     expect(response.statusCode).toBe(401)
     expect(response.json()).toMatchObject({ error: 'unauthenticated' })
     expect(response.body).not.toContain('puzzleId')
+    expect(String(response.headers['set-cookie'])).toMatch(/^sid=;.*Expires=Thu, 01 Jan 1970/)
   })
+})
 
+describe('isolado por usuário (US3)', () => {
   it('recusa sessão expirada', async () => {
     const sid = await register('ana@exemplo.com')
     await storePuzzle('2026-10-13')

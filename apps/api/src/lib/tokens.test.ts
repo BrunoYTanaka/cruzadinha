@@ -1,34 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  INVITE_CODE_ALPHABET,
-  formatInviteCode,
-  generateInviteCode,
-  generateSessionToken,
-  normalizeInviteCode,
-  sha256Hex,
-} from './tokens'
-
-describe('generateInviteCode', () => {
-  it('draws 16 characters from the alphabet without ambiguous ones', () => {
-    for (let i = 0; i < 1000; i++) {
-      const code = generateInviteCode()
-      expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{16}$/)
-    }
-    expect(INVITE_CODE_ALPHABET).toHaveLength(31)
-    for (const ambiguous of ['0', 'O', '1', 'I', 'L']) {
-      expect(INVITE_CODE_ALPHABET).not.toContain(ambiguous)
-    }
-  })
-
-  it('formats in groups of four', () => {
-    expect(formatInviteCode('ABCDEFGHJKMNPQRS')).toBe('ABCD-EFGH-JKMN-PQRS')
-    expect(formatInviteCode(generateInviteCode())).toMatch(/^[A-Z2-9]{4}(-[A-Z2-9]{4}){3}$/)
-  })
-
-  it('normalizes case, spaces and hyphens', () => {
-    expect(normalizeInviteCode(' abcd-efgh jkmn-pqrs ')).toBe('ABCDEFGHJKMNPQRS')
-  })
-})
+import { generateSessionToken, sha256Hex } from './tokens'
 
 describe('generateSessionToken', () => {
   it('returns distinct 43-character base64url values', () => {

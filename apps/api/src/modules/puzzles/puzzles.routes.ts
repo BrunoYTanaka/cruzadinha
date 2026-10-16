@@ -2,13 +2,13 @@ import { isoDateSchema, levelSchema, type PuzzleResponse } from '@cruzadinha/sha
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError, sendTooManyAttempts } from '../../http/errors'
-import type { RequireSession } from '../auth/session.plugin'
+import type { OptionalSession } from '../auth/session.plugin'
 import { getPuzzleByDateSchema, getPuzzleByIdSchema } from './puzzles.schemas'
 import type { GetPuzzleResult, PuzzlesService } from './puzzles.service'
 
 export type PuzzlesRoutesOptions = {
   puzzles: PuzzlesService
-  requireSession: RequireSession
+  optionalSession: OptionalSession
 }
 
 const querySchema = z.object({
@@ -18,7 +18,7 @@ const querySchema = z.object({
 
 export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
   app,
-  { puzzles, requireSession },
+  { puzzles, optionalSession },
 ) => {
   function sendPuzzleFailure(
     result: Extract<GetPuzzleResult, { ok: false }>,
@@ -37,9 +37,9 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
 
   app.get(
     '/api/puzzles',
-    { schema: getPuzzleByDateSchema, preHandler: requireSession },
+    // Aberta a visitantes (feature 013): a sessão, se houver, não muda a resposta.
+    { schema: getPuzzleByDateSchema, preHandler: optionalSession },
     async (request, reply) => {
-      if (!request.user) return sendError(reply, 401, 'unauthenticated')
       const query = querySchema.safeParse(request.query)
       if (!query.success) {
         const fields = [...new Set(query.error.issues.map((issue) => String(issue.path[0])))]
@@ -62,9 +62,8 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
 
   app.get(
     '/api/puzzles/:id',
-    { schema: getPuzzleByIdSchema, preHandler: requireSession },
+    { schema: getPuzzleByIdSchema, preHandler: optionalSession },
     async (request, reply) => {
-      if (!request.user) return sendError(reply, 401, 'unauthenticated')
       const id = z.uuid().safeParse((request.params as { id?: unknown }).id)
       if (!id.success) return sendError(reply, 404, 'puzzle-unavailable')
       const result = await puzzles.getById(id.data)

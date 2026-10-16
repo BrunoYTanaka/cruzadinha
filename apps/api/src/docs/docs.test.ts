@@ -1,13 +1,12 @@
 import SwaggerParser from '@apidevtools/swagger-parser'
 import {
   authResponseSchema,
-  createdInviteSchema,
   puzzleResponseSchema,
-  inviteListSchema,
   libraryResponseSchema,
   loginRequestSchema,
   progressEnvelopeSchema,
   registerRequestSchema,
+  registrationStatusSchema,
   saveProgressRequestSchema,
 } from '@cruzadinha/shared'
 import type { FastifyInstance } from 'fastify'
@@ -86,8 +85,8 @@ function propertyNames(value: unknown): string[] {
 
 const catalog = [
   'GET /api/auth/me',
+  'GET /api/auth/registration',
   'GET /api/health',
-  'GET /api/invites',
   'GET /api/library',
   'GET /api/progress/{puzzleId}',
   'GET /api/puzzles',
@@ -95,7 +94,6 @@ const catalog = [
   'POST /api/auth/login',
   'POST /api/auth/logout',
   'POST /api/auth/register',
-  'POST /api/invites',
   'POST /api/progress/{puzzleId}/reset',
   'PUT /api/progress/{puzzleId}',
 ]
@@ -168,9 +166,7 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'invites', 'puzzles', 'progress', 'library']).toContain(
-        op.tags?.[0],
-      )
+      expect(['health', 'auth', 'puzzles', 'progress', 'library']).toContain(op.tags?.[0])
       expect(op.summary).toBeTruthy()
     }
   })
@@ -250,13 +246,14 @@ describe('documento para ferramentas', () => {
 describe('sessão', () => {
   const protectedOperations = [
     'GET /api/auth/me',
-    'POST /api/invites',
-    'GET /api/invites',
-    'GET /api/puzzles',
-    'GET /api/puzzles/{id}',
     'GET /api/progress/{puzzleId}',
     'PUT /api/progress/{puzzleId}',
     'POST /api/progress/{puzzleId}/reset',
+  ]
+  // Abertas a visitantes (feature 013): a sessão é opcional.
+  const optionalSessionOperations = [
+    'GET /api/puzzles',
+    'GET /api/puzzles/{id}',
     'GET /api/library',
   ]
 
@@ -279,6 +276,9 @@ describe('sessão', () => {
 
     if (protectedOperations.includes(key)) {
       expect(op.security).toEqual([{ session: [] }])
+      expect(op.responses).toHaveProperty('401')
+    } else if (optionalSessionOperations.includes(key)) {
+      expect(op.security).toEqual([{}, { session: [] }])
       expect(op.responses).toHaveProperty('401')
     } else {
       expect(op.security).toBeUndefined()
@@ -387,8 +387,7 @@ describe('documentação vinda das regras de validação', () => {
 
   it.each([
     ['get', '/api/auth/me', '200', authResponseSchema],
-    ['post', '/api/invites', '201', createdInviteSchema],
-    ['get', '/api/invites', '200', inviteListSchema],
+    ['get', '/api/auth/registration', '200', registrationStatusSchema],
     ['get', '/api/puzzles', '200', puzzleResponseSchema],
     ['get', '/api/puzzles/{id}', '200', puzzleResponseSchema],
     ['get', '/api/progress/{puzzleId}', '200', progressEnvelopeSchema],

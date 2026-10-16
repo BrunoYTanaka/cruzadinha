@@ -7,12 +7,17 @@ export const passwordSchema = z.string().min(8).max(128)
 export const registerRequestSchema = z.strictObject({
   email: emailSchema,
   password: passwordSchema,
-  // O formato do código é conferido pelo servidor, para que um código mal formado
-  // receba a mesma resposta dos outros convites inválidos (FR-020).
-  inviteCode: z.string().min(1).max(64),
+  // Aceito e ignorado só para o site anterior, que ainda o envia; sai no lançamento B
+  // (feature 013, research R15).
+  inviteCode: z.string().max(64).optional(),
 })
 
 export type RegisterRequest = z.infer<typeof registerRequestSchema>
+
+// Resposta de GET /api/auth/registration: se o cadastro está aberto (feature 013).
+export const registrationStatusSchema = z.object({ open: z.boolean() })
+
+export type RegistrationStatus = z.infer<typeof registrationStatusSchema>
 
 // No login a senha só precisa ser texto, para não revelar a regra de tamanho.
 export const loginRequestSchema = z.strictObject({

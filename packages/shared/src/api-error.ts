@@ -2,10 +2,13 @@ import { z } from 'zod'
 
 export const apiErrorCodeSchema = z.enum([
   'invalid-input',
+  // Obsoletos desde a feature 013 (sem convites); saem no lançamento B.
   'invalid-invite',
   'registration-failed',
+  'registration-closed',
   'invalid-credentials',
   'unauthenticated',
+  // Obsoleto desde a feature 013; sai no lançamento B.
   'invite-quota-reached',
   'too-many-attempts',
   'puzzle-unavailable',

@@ -13,7 +13,7 @@ Como as versões funcionam (o que cada tipo de commit faz, como lançar, como re
 5. [API: Render](#5-api-render)
 6. [Site: Cloudflare Pages](#6-site-cloudflare-pages)
 7. [Primeiro deploy](#7-primeiro-deploy)
-8. [Primeiro convite](#8-primeiro-convite)
+8. [Contas e cadastro](#8-contas-e-cadastro)
 9. [Verificação](#9-verificação)
 10. [Lançamento e publicação automática](#lançamento-e-publicação-automática)
 11. [Reversão](#reversão)
@@ -37,13 +37,14 @@ GitHub Actions ──▶ coleta diária (direto no Neon), lançamento de versõe
 
 Onde fica cada valor:
 
-| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                         |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon            |
-| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse               |
-| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com` |
-| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse       |
-| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                  |
+| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                         |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------ |
+| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                            |
+| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse                               |
+| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha |
+| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                 |
+| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                       |
+| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                  |
 
 ## 2. Contas
 
@@ -113,22 +114,26 @@ Feito **depois do merge** da feature 012 na `main` (o Render publica a `main`). 
 
 Os deploys seguintes são automáticos: [Lançamento e publicação automática](#lançamento-e-publicação-automática).
 
-## 8. Primeiro convite
+## 8. Contas e cadastro
 
-O cadastro é só por convite. Crie o primeiro rodando a CLI da sua máquina contra o banco de produção, com a string só no comando (o terminal remoto do Render é pago):
+Desde a feature 013 não há convites: qualquer pessoa joga como visitante, e o cadastro pelo site fica atrás da chave `REGISTRATION_ENABLED`, **fechado por padrão**.
+
+**Abrir ou fechar o cadastro.** No painel do Render, **`cruzadinha-api` → Environment**, crie ou mude `REGISTRATION_ENABLED` para `true` (aberto) ou `false` (fechado) e salve; o Render reinicia a API. O site lê a situação na API (`GET /api/auth/registration`), então não precisa de nova publicação. Qualquer outro valor impede a API de subir. A variável fica com `sync: false` no `render.yaml`, sem valor: assim a sincronização do Blueprint não desfaz o que foi escolhido no painel.
+
+**Criar uma conta com o cadastro fechado.** Rode a CLI da sua máquina contra o banco de produção, com a string só no comando (o terminal remoto do Render é pago). A senha é pedida duas vezes, sem aparecer na tela, e nunca vai como argumento:
 
 ```sh
 # o espaço no início evita gravar a linha no histórico na maioria dos shells (HISTCONTROL=ignorespace)
  read -rs DATABASE_URL && export DATABASE_URL
- NODE_ENV=production npm run cli -w @cruzadinha/api -- invites create --days 1
+ NODE_ENV=production npm run cli -w @cruzadinha/api -- users create --email amigo@exemplo.com
  unset DATABASE_URL
 ```
 
-`NODE_ENV=production` faz a CLI ignorar o `.env` local. Cadastre-se com o código e convide os amigos pelo próprio site.
+`NODE_ENV=production` faz a CLI ignorar o `.env` local. O comando sai com `1` se o e-mail já tem conta (sem mudar nada) e com `2` para e-mail ou senha inválidos.
 
 ## 9. Verificação
 
-Rode as verificações da seção 2 de [`specs/012-implantacao/quickstart.md`](../specs/012-implantacao/quickstart.md) e o fluxo da seção 3 (convite → cadastro → jogar → outro aparelho).
+Rode as verificações da seção 2 de [`specs/012-implantacao/quickstart.md`](../specs/012-implantacao/quickstart.md) e o fluxo da seção 3, agora com conta criada por `users create` (ou cadastro com a chave aberta) → jogar → outro aparelho. Confira também que uma janela anônima abre o calendário como visitante.
 
 ## Lançamento e publicação automática
 

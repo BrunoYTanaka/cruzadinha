@@ -1,19 +1,19 @@
 import { expect, test } from '@playwright/test'
-import { createInviteCode, fillSolution, resetAndSeed, todaySolution, typedLetter } from './support'
+import { fillSolution, resetAndSeed, todaySolution, typedLetter } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
 })
 
-test('convite, cadastro, biblioteca, jogo, conclusão, modo leitura e jogar de novo', async ({
+// A API do E2E sobe com REGISTRATION_ENABLED=true (CI e quickstart): o cadastro está aberto.
+test('cadastro sem convite, biblioteca, jogo, conclusão, modo leitura e jogar de novo', async ({
   page,
 }) => {
-  const code = createInviteCode()
-
   await page.goto('/')
-  await expect(page).toHaveURL(/\/login/)
+  await page.getByRole('link', { name: 'Entrar' }).click()
   await page.getByRole('link', { name: /criar conta/i }).click()
-  await page.getByLabel(/código do convite/i).fill(code)
+  // O login também tem "E-mail": espera a tela de cadastro antes de preencher.
+  await expect(page.getByRole('heading', { name: 'Criar conta' })).toBeVisible()
   await page.getByLabel('E-mail').fill('ana@exemplo.com')
   await page.getByLabel('Senha').fill('uma-senha-longa-123')
   await page.getByRole('button', { name: 'Criar conta' }).click()

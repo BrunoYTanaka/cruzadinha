@@ -101,3 +101,43 @@ describe('error handler', () => {
     expect(response.json()).toEqual({ error: 'invalid-input', message: 'Dados inválidos.' })
   })
 })
+
+describe('fim dos convites (feature 013)', () => {
+  it.each(['POST', 'GET'] as const)('%s /api/invites responde 404', async (method) => {
+    app = buildApp({ config, probe: probe(true), database: testDatabase.db })
+    const response = await app.inject({ method, url: '/api/invites' })
+    expect(response.statusCode).toBe(404)
+  })
+})
+
+describe('GET /api/auth/registration', () => {
+  it.each([
+    [undefined, false],
+    ['true', true],
+  ] as const)('com REGISTRATION_ENABLED=%s responde open=%s sem cache', async (value, open) => {
+    const withFlag = loadConfig({
+      DATABASE_URL: 'postgres://user:SEGREDO@localhost:5432/db',
+      LOG_LEVEL: 'fatal',
+      REGISTRATION_ENABLED: value,
+    })
+    app = buildApp({ config: withFlag, probe: probe(true), database: testDatabase.db })
+    const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toEqual({ open })
+    expect(response.headers['cache-control']).toBe('no-store')
+  })
+
+  it('com o cadastro fechado, POST /api/auth/register responde 403 sem tocar no banco', async () => {
+    app = buildApp({ config, probe: probe(true), database: testDatabase.db })
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/register',
+      payload: { email: 'ana@exemplo.com', password: 'senha-boa-123' },
+    })
+    expect(response.statusCode).toBe(403)
+    expect(response.json()).toEqual({
+      error: 'registration-closed',
+      message: 'O cadastro está fechado no momento.',
+    })
+  })
+})

@@ -5,7 +5,10 @@ import { expectNoA11yViolations } from '../../test/axe'
 import { makeLibraryItem } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { desktop, mockMatchMedia, phone } from '../../test/media'
-import { renderRoutes, resetSessionHandlers } from '../../test/render'
+import { queryKeys } from '../../api/query-keys'
+import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
+import { AppLayout } from '../../app/AppLayout'
+import { guestStore } from '../guest/guest-store'
 import { LibraryPage } from './LibraryPage'
 import { SOURCE_DOWN_KEY } from './source-down'
 
@@ -28,6 +31,13 @@ const items = [
   makeLibraryItem('2026-10-11'),
 ]
 
+// Biblioteca de uma conta (a de visitante tem testes próprios, feature 013).
+function withAccount() {
+  const queryClient = makeQueryClient()
+  queryClient.setQueryData(queryKeys.session, { user: aUser })
+  return queryClient
+}
+
 function library(list = items) {
   return mockApi({ 'GET /api/library': () => jsonResponse(200, { items: list }) })
 }
@@ -47,7 +57,7 @@ afterEach(() => {
 describe('LibraryPage', () => {
   it('mostra o mês atual com a situação de cada dia por texto', async () => {
     library()
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '13 de outubro, concluído em 6 minutos e 52 segundos' }),
@@ -63,7 +73,7 @@ describe('LibraryPage', () => {
 
   it('dia futuro fica sem ação e dia passado não guardado leva à busca', async () => {
     library()
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const future = screen.getByRole('img', { name: '15 de outubro, indisponível' })
     expect(future.closest('a')).toBeNull()
@@ -75,14 +85,14 @@ describe('LibraryPage', () => {
 
   it('"Jogar a de hoje" abre o jogo de hoje quando guardado e a busca quando não', async () => {
     library()
-    const first = renderRoutes(routes, ['/'])
+    const first = renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
       'href',
       '/jogo/00000000-0000-4000-8000-000020261014',
     )
     first.unmount()
     library(items.slice(1))
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
       'href',
       '/dia/2026-10-14',
@@ -92,7 +102,7 @@ describe('LibraryPage', () => {
   it('navega entre meses e desabilita os botões nos limites', async () => {
     library()
     const user = userEvent.setup()
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const previous = screen.getByRole('button', { name: 'Mês anterior' })
     const next = screen.getByRole('button', { name: 'Próximo mês' })
@@ -108,7 +118,7 @@ describe('LibraryPage', () => {
   it('mostra erro com "Tentar de novo" quando a biblioteca falha', async () => {
     const { calls } = mockApi({ 'GET /api/library': () => apiError(500, 'internal-error') })
     const user = userEvent.setup()
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Não foi possível carregar a biblioteca',
     )
@@ -125,14 +135,14 @@ describe('LibraryPage', () => {
         throw new TypeError('Failed to fetch')
       }),
     )
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão')
   })
 
   it('o aviso da fonte só aparece por 10 minutos e não esconde o que está guardado', async () => {
     library()
     window.localStorage.setItem(SOURCE_DOWN_KEY, String(Date.now() - 60_000))
-    const first = renderRoutes(routes, ['/'])
+    const first = renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     expect(screen.getByText(/Novas cruzadas não podem ser buscadas agora/)).toBeInTheDocument()
     expect(
@@ -141,7 +151,7 @@ describe('LibraryPage', () => {
     first.unmount()
 
     window.localStorage.setItem(SOURCE_DOWN_KEY, String(Date.now() - 11 * 60_000))
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     expect(
       screen.queryByText(/Novas cruzadas não podem ser buscadas agora/),
@@ -151,7 +161,7 @@ describe('LibraryPage', () => {
   it('lembra os dias em que a fonte disse que não há cruzada', async () => {
     library()
     window.sessionStorage.setItem('cruzadinha:no-puzzle:2026-10-03', '1')
-    renderRoutes(routes, ['/'])
+    renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const day = screen.getByRole('img', { name: '3 de outubro, sem cruzada neste dia' })
     expect(within(day).getByText('Sem cruzada')).toBeInTheDocument()
@@ -159,7 +169,7 @@ describe('LibraryPage', () => {
 
   it('traz a legenda e passa nas regras de acessibilidade', async () => {
     library()
-    const { container } = renderRoutes(routes, ['/'])
+    const { container } = renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const legend = screen.getByRole('list', { name: 'Legenda do calendário' })
     expect(within(legend).getAllByRole('listitem')).toHaveLength(5)
@@ -181,7 +191,7 @@ describe('LibraryPage', () => {
     it('no computador há uma alça; sem escolha, a largura é automática', async () => {
       mockMatchMedia(desktop)
       library()
-      renderRoutes(routes, ['/'])
+      renderRoutes(routes, ['/'], withAccount())
       expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
       expect(handle().getAttribute('aria-valuetext')).toMatch(/, automático$/)
       expect(page().style.getPropertyValue('--library-width')).toBe('')
@@ -191,7 +201,7 @@ describe('LibraryPage', () => {
       const user = userEvent.setup()
       mockMatchMedia(desktop)
       library()
-      renderRoutes(routes, ['/'])
+      renderRoutes(routes, ['/'], withAccount())
       await screen.findByRole('heading', { name: 'outubro de 2026' })
       handle().focus()
       await user.keyboard('{ArrowLeft}')
@@ -208,7 +218,7 @@ describe('LibraryPage', () => {
       window.localStorage.setItem(KEY, '{"width":1000}')
       mockMatchMedia(desktop)
       library()
-      renderRoutes(routes, ['/'])
+      renderRoutes(routes, ['/'], withAccount())
       await screen.findByRole('heading', { name: 'outubro de 2026' })
       expect(handle()).toHaveAttribute('aria-valuenow', '1000')
       expect(page().style.getPropertyValue('--library-width')).toBe(
@@ -220,7 +230,7 @@ describe('LibraryPage', () => {
       window.localStorage.setItem(KEY, '{"width":1000}')
       const media = mockMatchMedia(phone)
       library()
-      renderRoutes(routes, ['/'])
+      renderRoutes(routes, ['/'], withAccount())
       await screen.findByRole('heading', { name: 'outubro de 2026' })
       expect(screen.queryByRole('slider')).toBeNull()
       expect(page().style.getPropertyValue('--library-width')).toBe('')
@@ -234,12 +244,97 @@ describe('LibraryPage', () => {
     it('a pegada de canto não aparece para o leitor de tela nem no Tab', async () => {
       mockMatchMedia(desktop)
       library()
-      const { container } = renderRoutes(routes, ['/'])
+      const { container } = renderRoutes(routes, ['/'], withAccount())
       await screen.findByRole('heading', { name: 'outubro de 2026' })
       expect(screen.getAllByRole('slider')).toHaveLength(1)
       const hidden = container.querySelectorAll('[aria-hidden="true"][tabindex="-1"]')
       expect(hidden.length).toBeGreaterThan(0)
       await expectNoA11yViolations(container)
     })
+  })
+})
+
+describe('biblioteca do visitante (feature 013)', () => {
+  const guestRoutes = [
+    {
+      element: <AppLayout />,
+      children: [
+        { path: '/', element: <LibraryPage /> },
+        { path: '/login', element: <p>Tela de login</p> },
+        { path: '/jogo/:id', element: <p>Jogo</p> },
+        { path: '/dia/:date', element: <p>Busca</p> },
+      ],
+    },
+  ]
+  const publicItems = items.map((item) => makeLibraryItem(item.date, { puzzleId: item.puzzleId }))
+
+  function asGuest() {
+    const queryClient = makeQueryClient()
+    queryClient.setQueryData(queryKeys.session, null)
+    return queryClient
+  }
+
+  it('abre direto o calendário do mês atual, sem nada por cima, com "Visitante" e "Entrar"', async () => {
+    mockApi({
+      'GET /api/library': () => jsonResponse(200, { items: publicItems }),
+      'GET /api/health': () => jsonResponse(200, { status: 'ok', database: 'up' }),
+    })
+    const { container } = renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByText('Visitante')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/login')
+    await expectNoA11yViolations(container)
+  })
+
+  it('"Entrar" é alcançado pelo teclado, com foco visível, e segue com Enter', async () => {
+    mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { router } = renderRoutes(guestRoutes, ['/'], asGuest())
+    const enter = await screen.findByRole('link', { name: 'Entrar' })
+    for (let step = 0; step < 10 && document.activeElement !== enter; step++) await user.tab()
+    expect(enter).toHaveFocus()
+    await user.keyboard('{Enter}')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
+  })
+
+  it('mostra a situação e o tempo de cada dia a partir do navegador', async () => {
+    await guestStore.save({
+      puzzleId: publicItems[1]?.puzzleId ?? '',
+      date: '2026-10-13',
+      cells: [['A']],
+      elapsedMs: 412_000,
+      status: 'completed',
+      savedAt: '2026-10-13T14:00:00.000Z',
+      help: null,
+    })
+    await guestStore.save({
+      puzzleId: publicItems[2]?.puzzleId ?? '',
+      date: '2026-10-12',
+      cells: [['A']],
+      elapsedMs: 5_000,
+      status: 'in_progress',
+      savedAt: '2026-10-12T14:00:00.000Z',
+      help: null,
+    })
+    mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(
+      await screen.findByRole('link', {
+        name: '13 de outubro, concluído em 6 minutos e 52 segundos',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
+  })
+
+  it('com a API anterior (401 sem sessão), pede para entrar em vez de travar', async () => {
+    const { calls } = mockApi({
+      'GET /api/library': () => apiError(401, 'unauthenticated'),
+    })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(await screen.findByText('Entre para ver a biblioteca')).toBeInTheDocument()
+    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(1)
   })
 })

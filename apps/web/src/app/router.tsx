@@ -9,8 +9,8 @@ import { ServerWake } from '../features/status/ServerWake'
 import { StatusPage } from '../features/status/StatusPage'
 import { AppLayout } from './AppLayout'
 import { NotFoundPage } from './NotFoundPage'
-import { requireSessionLoader } from './RequireSession'
 import { RouteError } from './RouteError'
+import { viewerLoader } from './viewer'
 import { installSessionHandlers } from './session-handlers'
 
 const serverReadyLoader: LoaderFunction = async ({ request }) => {
@@ -37,7 +37,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
             { path: '/login', element: <LoginPage /> },
             { path: '/cadastro', element: <RegisterPage /> },
             {
-              loader: requireSessionLoader(queryClient),
+              loader: viewerLoader(queryClient),
               children: [
                 { path: '/', element: <LibraryPage /> },
                 { path: '/dia/:date', element: <DayRoute /> },

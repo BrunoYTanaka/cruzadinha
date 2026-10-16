@@ -7,6 +7,7 @@ import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import styles from './AuthPage.module.css'
 import { authMessages, invalidFields, loginErrorMessage } from './messages'
 import { safeNext } from './redirect'
+import { useRegistration } from './useRegistration'
 import { useLoginMutation, useSessionQuery } from './useSession'
 
 export function LoginPage() {
@@ -16,6 +17,7 @@ export function LoginPage() {
   const next = safeNext(params.get('next'))
   const session = useSessionQuery()
   const login = useLoginMutation()
+  const registration = useRegistration()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -78,8 +80,16 @@ export function LoginPage() {
             {login.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
         </form>
+        {registration.isOpen ? (
+          <p className={styles.alt}>
+            Ainda não tem conta?{' '}
+            <Link to={next === '/' ? '/cadastro' : `/cadastro?next=${encodeURIComponent(next)}`}>
+              Criar conta
+            </Link>
+          </p>
+        ) : null}
         <p className={styles.alt}>
-          Tem um convite? <Link to="/cadastro">Criar conta</Link>
+          <Link to="/">Jogar sem entrar</Link>
         </p>
       </div>
     </div>
