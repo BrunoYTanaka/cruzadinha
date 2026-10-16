@@ -40,14 +40,17 @@ unitário. O estado de servidor fora da partida MUST vir do TanStack Query, sem 
 global extra.
 
 ### VI. Segurança e privacidade por padrão
-A solução de um puzzle MAY ser enviada ao navegador no payload do puzzle, mas somente a usuários
-com sessão válida e nunca em respostas de erro, logs ou mensagens; assim o front controla as
-formas de dica sem depender do servidor. O servidor MUST validar a coerência entre puzzle e
+A solução de um puzzle MAY ser enviada ao navegador no payload do puzzle, a usuários logados e a
+visitantes sem sessão, mas nunca em respostas de erro, logs ou mensagens; assim o front controla
+as formas de dica sem depender do servidor. O servidor MUST validar a coerência entre puzzle e
 solução antes de entregá-la. Verificação autoritativa de respostas, se um dia for necessária,
-MUST acontecer no servidor. Senhas MUST usar hash argon2; convites e sessões MUST ser
-guardados apenas como hash. Cookies de sessão MUST ser `HttpOnly` e `SameSite=Lax`. Login, cadastro
-e geração de convites MUST ter limite de tentativas. Mensagens de erro de autenticação e convite
-MUST ser genéricas. Cada usuário MUST acessar somente o próprio progresso.
+MUST acontecer no servidor. O progresso de visitantes MUST ficar só no navegador do aparelho e
+MUST NOT ser enviado ao servidor. Senhas MUST usar hash argon2; sessões MUST ser guardadas apenas
+como hash. Cookies de sessão MUST ser `HttpOnly` e `SameSite=Lax`. Login e cadastro MUST ter
+limite de tentativas. O cadastro aberto MUST ficar atrás de uma chave de configuração desligada
+por padrão, e com ela desligada o servidor MUST recusar todo cadastro, venha ou não do site.
+Mensagens de erro de autenticação MUST ser genéricas. Cada usuário MUST acessar somente o próprio
+progresso, e respostas a quem não tem sessão MUST NOT conter dados de nenhum usuário.
 
 Segredos e informações sensíveis MUST NOT ser compartilhados nem versionados: isso inclui variáveis
 de ambiente com valores reais (`.env`), tokens e chaves de API (como `x-access-token` e `x-key` da
@@ -59,21 +62,23 @@ de respostas reais MUST ser sanitizadas antes de entrar no repositório. Segredo
 ficar nos cofres dos provedores e da CI. Um segredo exposto MUST ser tratado como comprometido e
 rotacionado.
 Rationale: o histórico do git é permanente, e um segredo publicado deve ser considerado vazado.
-A entrega da solução ao navegador (emenda 3.0.0) é aceita porque o site é privado, a fonte
-original também a entrega e o jogo não tem placar competitivo nem prêmio.
+A entrega da solução ao navegador (emendas 3.0.0 e 4.0.0) é aceita porque a fonte original
+também a entrega sem login e o jogo não tem placar competitivo nem prêmio.
 
 ### VII. Testes determinísticos e sem internet
-A suíte automática MUST NOT depender de serviços externos. Autenticação, convites e progresso MUST
+A suíte automática MUST NOT depender de serviços externos. Autenticação, cadastro e progresso MUST
 ter testes de integração com Postgres real em container. Testes contra a fonte real ficam fora da
 rotina automática e rodam sob demanda. Um ou dois caminhos ponta a ponta (Playwright) cobrem o
 fluxo principal.
 
 ### VIII. Conteúdo de terceiros e uso privado
-Os puzzles pertencem às fontes. O site MUST permanecer privado, restrito a convidados, e MUST NOT
-redistribuir o conteúdo publicamente. Cada puzzle MUST exibir a atribuição à sua fonte. O cache
-MUST guardar apenas o necessário para jogar.
+Os puzzles pertencem às fontes. O site MAY ser acessado por qualquer pessoa que tenha o endereço,
+com ou sem conta, mas MUST NOT ser divulgado em buscadores: as instruções de não indexação MUST
+valer para todas as páginas. O conteúdo MUST NOT ser redistribuído fora do site (exportação,
+feeds ou API pública documentada). Cada puzzle MUST exibir a atribuição à sua fonte. O cache MUST
+guardar apenas o necessário para jogar.
 Rationale: o projeto é de portfólio e usa uma API não oficial; o risco de direitos fica restrito
-ao uso privado e atribuído. A leitura dos termos de uso das fontes não é condição de nenhuma
+ao uso não divulgado e atribuído, já que a própria fonte publica os puzzles sem login. A leitura dos termos de uso das fontes não é condição de nenhuma
 feature (emenda 2.0.0).
 
 ### IX. Mudanças de schema por migração
@@ -129,4 +134,19 @@ incompatível. Plano de migração, sem alteração de dados nem de schema: a fe
 entrega do puzzle, atualiza o FR-002 e o SC-004 da feature 006 e o item 30 de `docs/design.md`.
 Até a 007 ser implementada, a API continua sem entregar a solução.
 
-**Version**: 3.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-13
+### Emenda 4.0.0 (2026-10-16)
+
+Os princípios VI e VIII deixaram de exigir sessão e convite. Justificativa: a feature 013
+(`specs/013-jogo-sem-login/spec.md`) abre o jogo a visitantes sem conta, com o progresso só no
+navegador, e troca o cadastro por convite por um cadastro aberto controlado por chave de
+configuração (desligada por padrão; o autor cria contas pela linha de comando). O VI passa a
+permitir a solução para visitantes, proíbe enviar o progresso deles ao servidor e tira as regras de
+convite, mantendo o limite de tentativas no login e no cadastro. O VIII troca "privado, restrito a
+convidados" por "acessível a quem tem o endereço, sem indexação". O VII troca convites por cadastro
+nos testes de integração. É MAJOR por redefinir princípios de forma incompatível. Plano de
+migração: a feature 013 entrega as rotas de puzzle e biblioteca sem sessão, remove os convites
+(API, site, linha de comando e dados, por migração) e mantém o `noindex` da feature 012. Até a 013
+ser implementada, o código continua exigindo sessão e convite, o que é mais restrito que esta
+versão e, portanto, conforme.
+
+**Version**: 4.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-16
