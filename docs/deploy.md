@@ -146,28 +146,39 @@ O Release precisa de um token próprio: o que o token padrão do GitHub cria nã
    - desmarque **Webhook → Active**;
    - **Repository permissions**: **Contents: Read and write** e **Pull requests: Read and write**; nada mais;
    - **Where can this GitHub App be installed?**: Only on this account.
-2. Na página do App, **Generate a private key** (baixa um `.pem`) e anote o **Client ID**.
+2. Na página do App, **Generate a private key** (baixa um `.pem`) e anote o **Client ID**. Não abra o `.pem` num editor com assistente de IA ou extensões conectadas: copie direto para a área de transferência (`xclip -sel c < arquivo.pem`). Se o conteúdo vazar, gere outra chave e apague a antiga na mesma página.
 3. **Install App** → só o repositório `cruzadinha`.
-4. No repositório, **Settings → Secrets and variables → Actions**:
+4. No repositório, **Settings → Secrets and variables → Actions** (sempre em **Repository**, veja abaixo):
    - variable `RELEASE_APP_CLIENT_ID`: o Client ID;
-   - secret `RELEASE_APP_PRIVATE_KEY`: o conteúdo do `.pem` (depois apague o arquivo local).
+   - secret `RELEASE_APP_PRIVATE_KEY`: o conteúdo inteiro do `.pem`, com as linhas `BEGIN`/`END` (depois apague o arquivo local).
 5. **Settings → Actions → General → Workflow permissions**: marque **Allow GitHub Actions to create and approve pull requests**.
 6. Dispare o primeiro pedido de lançamento: `gh workflow run release.yml`.
 
 ### Secrets e variables da publicação
 
-Em **Settings → Secrets and variables → Actions** (ou `gh secret set <nome>` / `gh variable set <nome>`, digitando o valor no prompt, nunca na linha de comando):
+Em **Settings → Secrets and variables → Actions** (ou `gh secret set <nome>` / `gh variable set <nome>`, digitando o valor no prompt, nunca na linha de comando). Use **Repository secrets** e **Repository variables**, nunca os de **Environment**: nenhum workflow declara `environment:`, então um valor cadastrado num ambiente não chega a eles e o Deploy continua com "configuração ausente". Secret é o que dá acesso a algo (token, chave, URL com chave, string do banco); variable é o que pode ficar visível.
 
-| Nome                                             | Tipo                | Conteúdo                                                                                                          |
-| ------------------------------------------------ | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`                           | secret              | token criado em **My Profile → API Tokens → Create Token → Custom**, só com **Account → Cloudflare Pages → Edit** |
-| `CLOUDFLARE_ACCOUNT_ID`                          | secret              | id da conta Cloudflare (painel, barra lateral)                                                                    |
-| `RENDER_DEPLOY_HOOK_URL`                         | secret              | URL do deploy hook do Render                                                                                      |
-| `SITE_URL`                                       | variable            | `https://<projeto>.pages.dev`                                                                                     |
-| `CLOUDFLARE_PAGES_PROJECT`                       | variable            | `<projeto>`                                                                                                       |
-| `VITE_HELP_LETTER_LIMIT`, `VITE_HELP_WORD_LIMIT` | variable (opcional) | limites das ajudas; sem elas valem 4 e 2                                                                          |
+| Nome                                             | Tipo                | Conteúdo                                                                                             |
+| ------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`                           | secret              | token só com a permissão de escrita do Pages (veja abaixo)                                           |
+| `CLOUDFLARE_ACCOUNT_ID`                          | secret              | id da conta Cloudflare (**Account home**, ou na URL do painel: `dash.cloudflare.com/<account-id>/…`) |
+| `RENDER_DEPLOY_HOOK_URL`                         | secret              | URL do deploy hook do Render (passo 5); contém uma chave                                             |
+| `SITE_URL`                                       | variable            | endereço de produção com `https://` e sem hash: `https://<projeto>.pages.dev`                        |
+| `CLOUDFLARE_PAGES_PROJECT`                       | variable            | só o nome do projeto (`<projeto>`), como aparece em **Workers & Pages**                              |
+| `VITE_HELP_LETTER_LIMIT`, `VITE_HELP_WORD_LIMIT` | variable (opcional) | limites das ajudas; sem elas valem 4 e 2                                                             |
 
 Sem essa configuração, o Deploy disparado por um merge termina com um aviso, sem erro.
+
+O Deploy não acessa o banco: a API recebe o `DATABASE_URL` no Render (passo 5) e aplica as migrações ao subir. O secret `DATABASE_URL` do GitHub é só da [Coleta diária](#coleta-diária).
+
+`SITE_URL` não é o endereço que o Wrangler mostra ao publicar (`https://<hash>.<projeto>.pages.dev`): esse aponta para um deploy específico e o hash muda a cada publicação. O Deploy lê `SITE_URL/api/health` e `SITE_URL/version.json` para saber o que está no ar, então precisa do domínio de produção. Se o subdomínio `<projeto>` já estava ocupado, a Cloudflare usa outro (por exemplo, `<projeto>-abc.pages.dev`): confira em **Workers & Pages → `<projeto>`**.
+
+**Token da Cloudflare**: **My Profile → API Tokens → Create Token → Create Custom Token**:
+
+- dê um nome (por exemplo, `cruzadinha-deploy`); sem nome o botão de revisão fica bloqueado;
+- no bloco de permissões, deixe o escopo em **Entire Account** (a sua conta, não "All accounts"), busque `Pages` e marque só a permissão de escrita do **Cloudflare Pages** (_Edit_), nada mais: o grupo **Developer Platform** fica com 1 marcada e os outros com 0; não use **Add policy** nem **Bulk Select**;
+- sem filtro de IP (os runners do GitHub mudam de endereço); a validade é opcional, mas um token vencido faz o Deploy falhar até ser trocado;
+- no resumo deve aparecer só a permissão do Pages. O token é mostrado uma vez: cole direto no secret.
 
 ### Por que o auto-deploy do Render fica desligado
 
@@ -202,7 +213,7 @@ Migrações não são desfeitas. Toda migração segue a regra de compatibilidad
 
 O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzle do dia direto no Neon, às 00:01 e às 08:00 de Brasília, sem depender da API acordada.
 
-1. Cadastre o secret `DATABASE_URL` com a string do Neon.
+1. Cadastre o secret `DATABASE_URL` (em **Repository secrets**) com a string do Neon, a mesma do Render. Sem ele, cada execução agendada termina em segundos com "coleta ignorada".
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
 
