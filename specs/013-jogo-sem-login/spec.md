@@ -17,6 +17,7 @@ _Leitura da descrição_: "quando estiver jogando logado não é salvo na api" f
 - Q: Com o cadastro fechado e sem convites, como uma conta nova é criada? → A: Por um comando do autor na linha de comando, no lugar de `invites create`.
 - Q: O que acontece com o progresso do visitante quando ele entra numa conta? → A: Fica guardado no aparelho, fora de vista, e volta quando a pessoa sai da conta; nada é levado para a conta.
 - Q: Com o jogo aberto a visitantes, qual o nível de exposição do site? → A: Qualquer pessoa com o endereço do site pode acessá-lo, sem convite nem conta. Não ficou definido se buscadores podem indexar o site; a premissa é manter o `noindex` atual (ver Assumptions).
+- Q: Ao entrar no site, o que a pessoa vê primeiro? → A: O calendário da biblioteca, no mês atual, direto, sem tela de boas-vindas, banner ou convite para entrar por cima. Vale para visitante e para quem está logado. A única indicação de visitante é "Visitante / Entrar" no cabeçalho.
 
 ## Contexto
 
@@ -40,7 +41,7 @@ Alguém abre o site pela primeira vez, sem conta, e chega à biblioteca. Escolhe
 
 **Acceptance Scenarios**:
 
-1. **Given** uma pessoa sem sessão, **When** abre o site, **Then** chega à biblioteca sem passar pelo login e vê um jeito claro de entrar numa conta.
+1. **Given** uma pessoa sem sessão, **When** abre o site, **Then** vê direto o calendário da biblioteca no mês atual, sem passar pelo login e sem nenhuma tela, banner ou janela por cima, e tem "Entrar" no cabeçalho.
 2. **Given** um visitante na biblioteca, **When** abre um dia já guardado, **Then** o tabuleiro carrega e ele pode jogar, com ajudas, pausa e cronômetro iguais aos da pessoa logada.
 3. **Given** um visitante com letras preenchidas, **When** recarrega a página ou fecha e reabre o navegador, **Then** as letras, o tempo decorrido e as ajudas usadas voltam como estavam.
 4. **Given** um visitante jogando, **When** a conexão cai, **Then** ele continua jogando e o progresso continua guardado no aparelho, sem aviso de erro ao salvar (para o visitante, salvar não depende da rede).
@@ -127,6 +128,7 @@ Um visitante que já jogou decide entrar numa conta. A partir daí ele vê e sal
 - Dados de visitante gravados por uma versão anterior do site, ou corrompidos: são descartados com segurança e a cruzada abre do zero, sem travar a tela.
 - Uma cruzada removida ou alterada no servidor depois que o visitante começou: o progresso guardado que não bate com a grade atual é descartado.
 - Sessão que expira no meio da partida de uma pessoa logada: segue a regra de hoje (FR-032 da feature 010). O jogo não passa a ser de visitante sozinho, para as letras não irem para o lugar errado.
+- Cookie de uma sessão vencida ou encerrada ao abrir o site (por exemplo, uma conta antiga que não entra há meses): a pessoa entra como visitante, sem erro e sem aviso de sessão terminada, e o cookie velho é descartado na primeira resposta. Um link direto para uma cruzada também abre normalmente.
 - Sessão expirada fora do tabuleiro: a pessoa passa a navegar como visitante, com um aviso de que a sessão terminou e um botão para entrar de novo.
 - Chave de cadastro desligada com a tela de cadastro aberta numa aba antiga: o envio é recusado com a mensagem de "cadastro fechado".
 - Chave de cadastro com valor inválido na configuração: a API não sobe, como acontece com qualquer configuração inválida.
@@ -137,7 +139,7 @@ Um visitante que já jogou decide entrar numa conta. A partir daí ele vê e sal
 
 ### Acesso sem conta
 
-- **FR-001**: O site MUST permitir abrir a biblioteca e jogar qualquer cruzada guardada sem sessão. Login e cadastro deixam de ser a porta obrigatória. Isto substitui o FR-001 da feature 010.
+- **FR-001**: O site MUST permitir abrir a biblioteca e jogar qualquer cruzada guardada sem sessão. Login e cadastro deixam de ser a porta obrigatória. Abrir o endereço do site MUST mostrar direto o calendário da biblioteca no mês atual, para visitante e para quem está logado, sem tela de boas-vindas, banner ou janela por cima. A única espera permitida é a de o servidor acordar (feature 012). Isto substitui o FR-001 da feature 010.
 - **FR-002**: O servidor MUST entregar a lista de dias disponíveis e cada cruzada (parte pública e solução) também a quem não tem sessão, mantendo a verificação de que puzzle e solução combinam antes da entrega. Para quem não tem sessão, a lista MUST NOT trazer situação nem tempos de nenhum usuário.
 - **FR-003**: Buscar na fonte um dia passado ainda não guardado MUST seguir, para o visitante, as mesmas regras, mensagens e limite por endereço de rede de hoje (feature 006).
 - **FR-004**: O progresso, o cronômetro, as ajudas usadas, as marcas das ajudas, a conclusão, o tempo final e o melhor tempo do visitante MUST ficar só no navegador do aparelho e MUST NOT ser enviados ao servidor.
@@ -147,8 +149,8 @@ Um visitante que já jogou decide entrar numa conta. A partir daí ele vê e sal
 - **FR-008**: Os dados de visitante lidos do navegador MUST ser validados antes do uso. Dados inválidos, de formato antigo ou que não batem com a grade atual MUST ser descartados sem travar a tela.
 - **FR-009**: Se o navegador não deixar guardar dados, o visitante MUST continuar jogando e MUST ver um aviso que não bloqueia dizendo que o progresso não será guardado.
 - **FR-010**: O site MUST deixar claro, em todas as telas, se a pessoa está como visitante ou logada, e MUST oferecer "Entrar" ao visitante. Na tela de jogo, o visitante MUST ver, sem bloquear o jogo, que o progresso fica só neste aparelho.
-- **FR-011**: O progresso de visitante e o progresso de uma conta MUST ficar separados no aparelho. Sair da conta MUST levar a pessoa de volta a visitante sem mostrar nada da conta, e o progresso da conta guardado para envio MUST NOT ser lido como progresso de visitante.
-- **FR-012**: Ao entrar numa conta, o progresso de visitante MUST NOT ser enviado ao servidor nem misturado ao da conta. Ele MUST ficar guardado no aparelho, fora de vista enquanto a pessoa estiver logada, e MUST voltar intacto quando ela sair da conta.
+- **FR-011**: O progresso de visitante e o progresso de uma conta MUST ficar separados no aparelho: um nunca é lido, gravado ou mostrado como o outro. Sair da conta MUST levar a pessoa de volta a visitante, com o progresso de visitante intacto e nada da conta à vista.
+- **FR-012**: Ao entrar numa conta, o progresso de visitante MUST NOT ser enviado ao servidor e MUST ficar guardado no aparelho, fora de vista enquanto a pessoa estiver logada (a volta ao sair segue o FR-011).
 - **FR-013**: Para a pessoa logada, o progresso MUST continuar indo para o servidor como hoje (features 008 e 010). A sessão que expira no meio da partida MUST seguir o FR-032 da feature 010. A sessão que expira fora do tabuleiro MUST levar a pessoa à navegação de visitante, com aviso e opção de entrar de novo (substitui a ida obrigatória ao login).
 
 ### Cadastro e chave de cadastro
@@ -163,7 +165,7 @@ Um visitante que já jogou decide entrar numa conta. A partir daí ele vê e sal
 ### Fim dos convites
 
 - **FR-020**: O sistema MUST deixar de aceitar, gerar, listar e revogar convites: pela API, pelo site (janela aberta pela sequência Konami) e pela linha de comando do autor. A sequência Konami MUST deixar de ter efeito.
-- **FR-021**: Os convites guardados MUST ser descartados por migração versionada (constitution, princípio IX). As contas criadas com convite MUST continuar intactas, e as tentativas guardadas de "geração de convite" MUST deixar de ser contadas.
+- **FR-021**: Os convites guardados MUST ser descartados por migração versionada (constitution, princípio IX). As contas criadas com convite MUST continuar intactas, e as tentativas guardadas de "geração de convite" MUST deixar de ser contadas. A migração entra no lançamento seguinte ao que para de usar os convites (ver Assumptions e o FR-022).
 - **FR-022**: A remoção MUST respeitar a compatibilidade entre versões vizinhas da API e do site (`docs/versionamento.md`): um site da versão anterior que ainda chame uma rota de convite MUST receber uma resposta tratável, sem quebrar as outras telas.
 
 ### Geral
@@ -198,6 +200,7 @@ Um visitante que já jogou decide entrar numa conta. A partir daí ele vê e sal
 - O armazenamento do navegador é escolhido no plano. A descrição sugere IndexedDB, o que se encaixa nos requisitos (sobrevive a reabrir o navegador, guarda bem mais que algumas cruzadas), mas a escolha fica para o `/speckit-plan`.
 - As preferências que já ficam só no aparelho (tema, tamanho do tabuleiro, largura da biblioteca, uso das ajudas) continuam onde estão. Para o visitante, as ajudas passam a ficar junto do progresso de visitante.
 - O visitante não tem "outro aparelho": não há aviso de "concluída em outro aparelho" nem conflito entre aparelhos.
+- Ler cruzadas já guardadas (biblioteca e cruzada por id, com a solução) não tem limite de pedidos, com ou sem sessão. Quem tem o endereço pode copiar o acervo guardado inteiro, e isso pesa no plano gratuito da API. O risco é aceito: a documentação da API não existe em produção, o site não oferece exportação nem feed (constitution VIII) e o uso esperado é pequeno. Se aparecer cópia em massa ou carga, a medida é um limite de leitura por endereço de rede, numa feature própria.
 - O limite de buscas na fonte por endereço de rede (feature 006) basta para proteger a fonte com o jogo aberto. Mudar esse limite fica para depois, se necessário.
 - Os textos e o fluxo de login continuam os da feature 010. Só saem o campo do código de convite e a ida obrigatória ao login.
 - O seed de desenvolvimento continua criando a conta de teste.
