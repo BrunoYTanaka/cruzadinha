@@ -15,6 +15,8 @@ type CompletionDialogProps = {
   confirmed: boolean
   helpsUsed: number
   isRecord: boolean
+  // Visitante (feature 013): tudo fica no aparelho, então nunca há "vamos registrar".
+  localOnly?: boolean
 }
 
 // Aparece uma vez por conclusão, na hora, mesmo sem conexão.
@@ -26,6 +28,7 @@ export function CompletionDialog({
   confirmed,
   helpsUsed,
   isRecord,
+  localOnly = false,
 }: CompletionDialogProps) {
   const navigate = useNavigate()
   const primary = useRef<HTMLButtonElement>(null)
@@ -54,7 +57,7 @@ export function CompletionDialog({
           <dd>{helpsUsed}</dd>
         </div>
       </dl>
-      {confirmed ? null : (
+      {confirmed || localOnly ? null : (
         <p className={styles.pending} role="status">
           Vamos registrar quando a conexão voltar.
         </p>

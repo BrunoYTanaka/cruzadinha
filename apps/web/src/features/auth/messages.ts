@@ -1,10 +1,10 @@
 import { ApiRequestError } from '../../api/client'
 import { formatWait } from '../../lib/time'
 
-// Textos fixos. Nunca dizem se um e-mail existe nem por que um convite foi recusado.
+// Textos fixos. Nunca dizem se um e-mail existe.
 export const authMessages = {
   invalidCredentials: 'E-mail ou senha incorretos.',
-  invalidInvite: 'Convite inválido.',
+  registrationClosed: 'O cadastro está fechado no momento.',
   registrationFailed: 'Não foi possível criar a conta.',
   offline: 'Sem conexão. Tente de novo quando voltar.',
   generic: 'Algo deu errado. Tente de novo.',
@@ -41,7 +41,7 @@ export function registerErrorMessage(error: unknown): string {
   const common = commonMessage(error)
   if (common) return common
   if (error instanceof ApiRequestError) {
-    if (error.code === 'invalid-invite') return authMessages.invalidInvite
+    if (error.code === 'registration-closed') return authMessages.registrationClosed
     if (error.code === 'registration-failed') return authMessages.registrationFailed
   }
   return authMessages.generic

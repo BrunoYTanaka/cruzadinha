@@ -7,7 +7,7 @@ Status: revisado após a feature 001 (fonte viável)
 
 Um site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria que o autor considera ruim, e este projeto entrega uma experiência única de jogo.
 
-- **Uso:** projeto de portfólio, site pequeno e privado, para o autor e amigos.
+- **Uso:** projeto de portfólio, site pequeno, aberto a quem tem o endereço e fora dos buscadores. Joga-se sem conta (o progresso fica no navegador) ou com conta (o progresso fica salvo entre dispositivos), feature 013.
 - **Foco:** a experiência de jogar (tabuleiro, teclado, dicas, navegação) e a qualidade do código.
 - **Sucesso:** o usuário entra, escolhe uma data do O Globo, joga numa interface agradável em claro ou escuro, e o progresso fica salvo entre dispositivos.
 
@@ -79,14 +79,13 @@ apps/api/src/
   db/                conexão, schema e migrações (Drizzle)
   modules/
     auth/            cadastro, login, logout, sessão, limite de tentativas
-    invites/         geração, cota, validação, revogação
     puzzles/         rotas e cache (o formato interno fica em packages/shared)
     progress/        salvar e ler o progresso
   sources/
     types.ts         interface PuzzleSource
     oglobo/          única parte que conhece a Agilmente: pedido, token,
                      schema da resposta, conversão ipuz, fixtures e source:check
-  cli.ts             invites create | list | revoke; puzzles collect
+  cli.ts             users create; puzzles collect
 ```
 
 ### Fonte de puzzles
@@ -141,12 +140,12 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 
 ```
 apps/web/src/
-  app/            rotas, layout, guarda de login, provedor de tema
+  app/            rotas, layout, quem está usando (visitante ou conta), provedor de tema
   features/
     auth/         login e cadastro
     library/      calendário mensal dos dias (só o nível diário)
     game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro, ajudas, conclusão
-    invites/      easter egg Konami e janela do convite
+    guest/        progresso do visitante no navegador (IndexedDB) e biblioteca do visitante
   game-logic/     lógica pura do tabuleiro, sem React (reducer testável)
   api/            cliente HTTP único, com tipos de packages/shared
   themes/         tokens claro e escuro
@@ -194,24 +193,24 @@ apps/web/src/
 16. Limite de tentativas de login (por exemplo 5 em 15 minutos).
 17. Mensagens de erro de login e cadastro são genéricas e não revelam se um e-mail existe.
 
-### Convites
+### Cadastro e visitante (feature 013, no lugar dos convites)
 
-18. O cadastro só funciona com um convite válido, de uso único.
-19. O código tem cerca de 16 caracteres aleatórios. Ele aparece uma vez, na criação. O banco guarda só o hash.
-20. Validade de 7 dias por padrão. Pela CLI, pode ser alterada (`--days`).
-21. Convite inexistente, usado, expirado ou revogado dá a mesma mensagem: "convite inválido".
-22. O convite é consumido na mesma transação que cria o usuário. Se o cadastro falhar, ele não é gasto.
-23. O convite não é amarrado a um e-mail.
-24. **Geração pelo easter egg:** um usuário logado digita a sequência Konami (↑ ↑ ↓ ↓ ← → ← → B A) fora do tabuleiro. O front chama `POST /api/invites`, e o servidor decide; a janela mostra o código uma vez e "N convites ativos", sem repetir o número da cota (que é só do servidor). O código de sequência no front serve só para a descoberta. A proteção está no servidor: exige sessão e aplica a cota.
-25. **Cota:** no máximo 3 convites ativos por usuário (não usados, não expirados e não revogados). Usado, expirado ou revogado libera uma vaga.
-26. O cadastro e a geração de convites têm limite de tentativas por IP.
-27. A CLI (`create`, `list`, `revoke`) é do autor e não tem cota.
+18. Quem não tem conta joga como visitante: abre o calendário direto, joga e conclui. Letras, tempo, ajudas, conclusão e recorde ficam só no navegador (IndexedDB) e nunca vão ao servidor.
+19. Entrar numa conta não leva o progresso do visitante: ele fica guardado no navegador e volta ao sair da conta.
+20. O cadastro pede só e-mail e senha e fica atrás da chave `REGISTRATION_ENABLED`, desligada por padrão. Com ela desligada, o site não oferece "Criar conta" e a API recusa qualquer cadastro (`403 registration-closed`).
+21. O site pergunta à API se o cadastro está aberto (`GET /api/auth/registration`); sem resposta, trata como fechado.
+22. Com o cadastro fechado, o autor cria contas pela linha de comando (`users create --email`), que pede a senha sem eco e não tem limite de tentativas.
+23. O e-mail já cadastrado recebe a mesma mensagem genérica de falha; o limite por endereço reduz o uso disso para descobrir contas.
+24. Os convites (código, cota, Konami) deixaram de existir. A tabela `invites` sai num lançamento seguinte, por migração.
+25. Uma sessão vencida ou encerrada vira visitante: fora do tabuleiro, com o aviso "Sua sessão terminou"; no tabuleiro, o jogo da conta continua e o login abre por cima (feature 010).
+26. O cadastro tem limite de tentativas por IP.
+27. A CLI (`users create`, `puzzles collect`) é do autor.
 
 ### Puzzles
 
 28. Datas futuras, ou sem puzzle na fonte, aparecem como indisponíveis.
 29. Se a fonte estiver fora do ar, o site continua mostrando o que já está em cache e avisa que não consegue buscar novos.
-30. A resposta correta vai ao navegador junto do puzzle, só para usuário logado; o front controla as dicas (feature 007).
+30. A resposta correta vai ao navegador junto do puzzle, para visitantes e para quem está logado; o front controla as dicas (features 007 e 013).
 
 ## 7. Tratamento de erros
 
@@ -220,16 +219,16 @@ apps/web/src/
 | Fonte fora do ar ou formato mudou | API responde 502. O front diz que não conseguiu buscar o puzzle e oferece os que estão em cache |
 | Puzzle não existe na data         | 404, mostrado como indisponível                                                                 |
 | Falha ao salvar progresso         | Letras guardadas localmente e envio repetido                                                    |
-| Sessão expirada                   | Redireciona ao login e volta ao puzzle depois                                                   |
+| Sessão expirada                   | Fora do tabuleiro, segue como visitante com aviso; no tabuleiro, login por cima do jogo         |
 | Login ou cadastro inválido        | Mensagem genérica                                                                               |
 
 ## 8. Testes
 
 - **`game-logic` (Vitest):** seleção, digitação, direção, avanço, conclusão. É a parte com mais regras.
 - **Conversão de formato:** testes com respostas reais da Agilmente salvas como fixtures. Se o formato mudar, o teste quebra e avisa.
-- **Convites e autenticação:** integração com Postgres real em container, cobrindo uso único, expiração, cota de 3, revogação e limite de tentativas.
+- **Cadastro e autenticação:** integração com Postgres real em container, cobrindo a chave de cadastro, sessão opcional, `users create` e limite de tentativas.
 - **Progresso:** integração do salvamento e da leitura.
-- **Ponta a ponta (Playwright):** um ou dois caminhos principais: cadastro com convite, abrir um puzzle, digitar e conferir o progresso salvo.
+- **Ponta a ponta (Playwright):** os caminhos principais: cadastro sem convite, abrir um puzzle, digitar e conferir o progresso salvo; e o visitante, que joga e conclui sem nada no servidor.
 - **Teste real contra a Agilmente:** fica fora da rotina automática, para a suíte não depender da internet. Roda sob demanda.
 
 ## 9. Infra e implantação

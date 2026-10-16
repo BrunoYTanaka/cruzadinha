@@ -25,6 +25,7 @@ describe('loadConfig', () => {
       collectHistoryDays: 31,
       proxySecret: undefined,
       releaseCommit: undefined,
+      registrationEnabled: false,
     })
   })
 
@@ -48,6 +49,7 @@ describe('loadConfig', () => {
       collectHistoryDays: 7,
       proxySecret: undefined,
       releaseCommit: undefined,
+      registrationEnabled: false,
     })
   })
 
@@ -101,6 +103,30 @@ describe('loadConfig', () => {
     expect(errorMessage({ DATABASE_URL: 'mysql://usuario:SEGREDO@host/db' })).not.toContain(
       'SEGREDO',
     )
+  })
+})
+
+describe('loadConfig REGISTRATION_ENABLED', () => {
+  it.each([undefined, '', 'false'])('keeps registration closed when the value is %j', (value) => {
+    expect(
+      loadConfig({ DATABASE_URL: databaseUrl, REGISTRATION_ENABLED: value }).registrationEnabled,
+    ).toBe(false)
+  })
+
+  it('opens registration with true', () => {
+    expect(
+      loadConfig({ DATABASE_URL: databaseUrl, REGISTRATION_ENABLED: 'true' }).registrationEnabled,
+    ).toBe(true)
+  })
+
+  it.each(['1', 'yes', 'talvez', 'TRUE'])('fails on REGISTRATION_ENABLED=%s', (value) => {
+    const message = errorMessage({
+      DATABASE_URL: secretMarker,
+      REGISTRATION_ENABLED: value,
+      NODE_ENV: 'bogus',
+    })
+    expect(message).toContain('REGISTRATION_ENABLED: deve ser true ou false')
+    expect(message).not.toContain('SEGREDO')
   })
 })
 

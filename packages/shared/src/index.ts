@@ -5,10 +5,12 @@ export {
   loginRequestSchema,
   passwordSchema,
   registerRequestSchema,
+  registrationStatusSchema,
   userSchema,
   type AuthResponse,
   type LoginRequest,
   type RegisterRequest,
+  type RegistrationStatus,
   type User,
 } from './auth/schema'
 export { healthStatusSchema, type HealthStatus } from './health'
@@ -54,12 +56,3 @@ export {
   type ProgressStatus,
   type SaveProgressRequest,
 } from './progress/schema'
-export {
-  createdInviteSchema,
-  inviteCodeSchema,
-  inviteListSchema,
-  inviteStatusSchema,
-  type CreatedInvite,
-  type InviteList,
-  type InviteStatus,
-} from './invites/schema'

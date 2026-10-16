@@ -1,4 +1,5 @@
-# Site privado: os buscadores não devem indexar nem seguir links (feature 012, FR-007).
+# Site sem divulgação em buscadores (constitution VIII): não indexar nem seguir links (feature 012,
+# FR-007; feature 013, FR-025).
 /*
   X-Robots-Tag: noindex, nofollow
 

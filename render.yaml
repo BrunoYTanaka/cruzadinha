@@ -29,3 +29,8 @@ services:
         sync: false
       - key: PROXY_SECRET
         sync: false
+      # Cadastro aberto (feature 013). Definida só no painel do Render; ausente vale `false`
+      # (cadastro fechado). Mudar no painel e reiniciar abre ou fecha o cadastro sem nova versão.
+      # Sem `value` aqui: um valor no Blueprint voltaria a cada sincronização e desfaria o painel.
+      - key: REGISTRATION_ENABLED
+        sync: false

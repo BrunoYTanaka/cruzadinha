@@ -3,12 +3,15 @@ import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { getLibrary } from '../../api/library'
+import { mergeGuestLibrary } from '../guest/guest-library'
+import { guestStore } from '../guest/guest-store'
 import { queryKeys } from '../../api/query-keys'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { Notice } from '../../components/Notice'
 import { ResizeHandle, type ResizeHandleProps } from '../../components/ResizeHandle'
 import { addMonths, todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
+import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import { buildMonth, compareMonths, currentMonth, firstNavigableMonth } from './calendar'
 import { Calendar } from './Calendar'
@@ -24,7 +27,15 @@ export const LIBRARY_DESKTOP_QUERY = '(min-width: 861px)'
 export function LibraryPage() {
   useDocumentTitle('Escolha um dia')
   const today = useMemo(() => todayInBrasilia(), [])
-  const library = useQuery({ queryKey: queryKeys.library, queryFn: getLibrary })
+  const viewer = useViewer()
+  const library = useQuery({
+    queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending'),
+    queryFn: () => (viewer ? libraryFor(viewer) : getLibrary()),
+    enabled: viewer !== undefined,
+    // Com a API anterior, a biblioteca de visitante responde 401: um erro só, sem novas tentativas
+    // (R19, feature 013).
+    retry: false,
+  })
   const [month, setMonth] = useState(() => currentMonth(today))
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
@@ -44,6 +55,15 @@ export function LibraryPage() {
 
   if (library.isPending) return <LoadingState label="Carregando a biblioteca…" />
   if (library.isError) {
+    if (viewer?.kind === 'guest' && library.error instanceof ApiRequestError) {
+      if (library.error.status === 401) {
+        return (
+          <ErrorState title="Entre para ver a biblioteca">
+            <Link to="/login">Entrar</Link>
+          </ErrorState>
+        )
+      }
+    }
     const offline = library.error instanceof ApiRequestError && library.error.isOffline
     return (
       <ErrorState
@@ -85,6 +105,13 @@ export function LibraryPage() {
       <LibraryLegend />
     </div>
   )
+}
+
+// Visitante: os dias vêm do servidor e a situação de cada um, do navegador (feature 013, FR-007).
+async function libraryFor(viewer: Viewer) {
+  const response = await getLibrary()
+  if (viewer.kind === 'user') return response
+  return { items: mergeGuestLibrary(response.items, await guestStore.getAll()) }
 }
 
 // Alça da borda direita (a acessível) e a pegada do canto inferior direito, só visual.

@@ -10,6 +10,7 @@
     "playwright.config.ts",
     "version-plugin.ts",
     "version-plugin.test.ts",
+    "public-headers.test.ts",
     "e2e"
   ]
 }

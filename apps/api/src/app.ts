@@ -9,10 +9,8 @@ import { proxyGuard } from './http/proxy-guard'
 import { systemClock, type Clock } from './lib/clock'
 import { authRoutes } from './modules/auth/auth.routes'
 import { createAuthService } from './modules/auth/auth.service'
-import { createRequireSession } from './modules/auth/session.plugin'
+import { createOptionalSession, createRequireSession } from './modules/auth/session.plugin'
 import { healthRoutes } from './modules/health/health.routes'
-import { invitesRoutes } from './modules/invites/invites.routes'
-import { createInvitesService } from './modules/invites/invites.service'
 import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
 import { createRateLimitRepository } from './modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from './modules/rate-limit/rate-limit.service'
@@ -93,10 +91,9 @@ export function buildApp({
     release: { version: API_VERSION, commit: config.releaseCommit },
   })
   const requireSession = createRequireSession(auth, config, clock)
-  const invites = createInvitesService({ db: database, clock, rateLimiter, limits: rateLimits })
+  const optionalSession = createOptionalSession(auth, config, clock)
 
   app.register(authRoutes, { auth, config, clock, requireSession })
-  app.register(invitesRoutes, { invites, requireSession })
   const puzzles = createPuzzlesService({
     db: database,
     clock,
@@ -104,10 +101,10 @@ export function buildApp({
     rateLimiter,
     limits: rateLimits,
   })
-  app.register(puzzlesRoutes, { puzzles, requireSession })
+  app.register(puzzlesRoutes, { puzzles, optionalSession })
   const progress = createProgressService({ db: database, clock })
   app.register(progressRoutes, { progress, requireSession })
   const library = createLibraryService({ db: database })
-  app.register(libraryRoutes, { library, requireSession })
+  app.register(libraryRoutes, { library, optionalSession })
   return app
 }

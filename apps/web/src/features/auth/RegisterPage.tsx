@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { Button } from '../../components/Button'
 import { Field } from '../../components/Field'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import styles from './AuthPage.module.css'
+import { ApiRequestError } from '../../api/client'
 import { authMessages, invalidFields, registerErrorMessage } from './messages'
+import { safeNext } from './redirect'
+import { useRegistration } from './useRegistration'
 import { useRegisterMutation, useSessionQuery } from './useSession'
 
 const MIN_PASSWORD = 8
@@ -12,23 +15,25 @@ const MIN_PASSWORD = 8
 export function RegisterPage() {
   useDocumentTitle('Criar conta')
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const next = safeNext(params.get('next'))
   const session = useSessionQuery()
+  const registration = useRegistration()
   const register = useRegisterMutation()
-  const [inviteCode, setInviteCode] = useState('')
+  // Uma aba antiga pode enviar com o cadastro já fechado: a recusa vira o mesmo aviso de fechado.
+  const [closedByServer, setClosedByServer] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [fields, setFields] = useState<string[]>([])
 
-  if (session.data) return <Navigate to="/" replace />
+  if (session.data) return <Navigate to={next} replace />
+  if (registration.isPending) return null
+  if (!registration.isOpen || closedByServer) return <RegistrationClosed />
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    const missing = [
-      !inviteCode.trim() ? 'inviteCode' : '',
-      !email.trim() ? 'email' : '',
-      !password ? 'password' : '',
-    ].filter(Boolean)
+    const missing = [!email.trim() ? 'email' : '', !password ? 'password' : ''].filter(Boolean)
     if (missing.length > 0) {
       setError(authMessages.fillAll)
       setFields(missing)
@@ -42,9 +47,13 @@ export function RegisterPage() {
     setError(null)
     setFields([])
     try {
-      await register.mutateAsync({ inviteCode: inviteCode.trim(), email: email.trim(), password })
-      void navigate('/', { replace: true })
+      await register.mutateAsync({ email: email.trim(), password })
+      void navigate(next, { replace: true })
     } catch (failure) {
+      if (failure instanceof ApiRequestError && failure.code === 'registration-closed') {
+        setClosedByServer(true)
+        return
+      }
       setError(registerErrorMessage(failure))
       setFields(invalidFields(failure))
     }
@@ -54,24 +63,13 @@ export function RegisterPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
-        <p className={styles.lead}>O cadastro funciona só com um convite.</p>
+        <p className={styles.lead}>Com uma conta, seu progresso fica salvo em qualquer aparelho.</p>
         {error ? (
           <div role="alert" className={styles.alert}>
             {error}
           </div>
         ) : null}
         <form onSubmit={onSubmit} noValidate className={styles.form}>
-          <Field
-            label="Código do convite"
-            name="inviteCode"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            value={inviteCode}
-            onChange={(event) => setInviteCode(event.target.value)}
-            hint="Peça a um amigo que já joga."
-            error={fields.includes('inviteCode') ? 'Confira este campo.' : undefined}
-          />
           <Field
             label="E-mail"
             type="email"
@@ -99,6 +97,25 @@ export function RegisterPage() {
         </form>
         <p className={styles.alt}>
           Já tem conta? <Link to="/login">Entrar</Link>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function RegistrationClosed() {
+  return (
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Criar conta</h1>
+        <p role="status" className={styles.lead}>
+          {authMessages.registrationClosed}
+        </p>
+        <p className={styles.alt}>
+          Já tem conta? <Link to="/login">Entrar</Link>
+        </p>
+        <p className={styles.alt}>
+          <Link to="/">Jogar sem entrar</Link>
         </p>
       </div>
     </div>

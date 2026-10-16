@@ -60,6 +60,12 @@ const envSchema = z.object({
       .max(256, { error: 'deve ter de 32 a 256 caracteres' })
       .optional(),
   ),
+  // Cadastro aberto pelo site e pela API (feature 013); desligado por padrão. Texto vazio vale como
+  // ausente. Só aceita "true" ou "false", para um erro de digitação não abrir o cadastro.
+  REGISTRATION_ENABLED: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.enum(['true', 'false'], { error: 'deve ser true ou false' }).default('false'),
+  ),
   // Commit publicado, mostrado no /api/health. No Render vem de RENDER_GIT_COMMIT.
   RELEASE_COMMIT: commitSchema,
   RENDER_GIT_COMMIT: commitSchema,
@@ -80,6 +86,8 @@ export type ServerConfig = Readonly<{
   collectHistoryDays: number
   proxySecret: string | undefined
   releaseCommit: string | undefined
+  // Cadastro aberto (feature 013); desligado por padrão.
+  registrationEnabled: boolean
 }>
 
 export function loadConfig(env: Record<string, string | undefined>): ServerConfig {
@@ -99,6 +107,7 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     PROXY_SECRET,
     RELEASE_COMMIT,
     RENDER_GIT_COMMIT,
+    REGISTRATION_ENABLED,
   } = result.data
   return Object.freeze({
     nodeEnv: NODE_ENV,
@@ -110,6 +119,7 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     collectHistoryDays: COLLECT_HISTORY_DAYS,
     proxySecret: PROXY_SECRET,
     releaseCommit: RELEASE_COMMIT ?? RENDER_GIT_COMMIT,
+    registrationEnabled: REGISTRATION_ENABLED === 'true',
   })
 }
 

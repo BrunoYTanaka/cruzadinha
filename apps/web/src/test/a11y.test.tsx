@@ -31,7 +31,10 @@ describe('acessibilidade (axe, sem a regra de contraste: ela fica no teste dos t
   })
 
   it('Cadastro', async () => {
-    mockApi({ 'GET /api/auth/me': () => apiError(401, 'unauthenticated') })
+    mockApi({
+      'GET /api/auth/me': () => apiError(401, 'unauthenticated'),
+      'GET /api/auth/registration': () => jsonResponse(200, { open: true }),
+    })
     const { container } = renderRoutes(authRoutes, ['/cadastro'])
     await screen.findByRole('button', { name: 'Criar conta' })
     await expectNoA11yViolations(container)

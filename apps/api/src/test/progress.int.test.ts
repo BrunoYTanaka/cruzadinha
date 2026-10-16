@@ -3,9 +3,8 @@ import { eq, sql } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { Writable } from 'node:stream'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { invites, progress, puzzles, users } from '../db/schema'
+import { progress, puzzles, users } from '../db/schema'
 import { todayInSaoPaulo } from '../lib/dates'
-import { createInvitesService } from '../modules/invites/invites.service'
 import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
 import { buildTestApp, sessionCookieFrom } from './app'
 import { fakeSource, okResult } from './fake-source'
@@ -26,11 +25,10 @@ let blockPosition: { row: number; col: number }
 let openPosition: { row: number; col: number }
 
 async function register(email: string): Promise<string> {
-  const { code } = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
   const response = await app.inject({
     method: 'POST',
     url: '/api/auth/register',
-    payload: { email, password: PASSWORD, inviteCode: code },
+    payload: { email, password: PASSWORD },
   })
   const sid = sessionCookieFrom(response.headers['set-cookie'])
   if (!sid) throw new Error('cadastro sem cookie')
@@ -309,10 +307,8 @@ describe('isolamento entre usuários (US3)', () => {
     await putProgress(puzzleId, save(), ana)
     await putProgress(puzzleId, save(), beto)
 
-    // O convite usado referencia o usuário sem cascata (feature 004); sai antes para isolar o progresso.
     const [anaUser] = await db.select().from(users).where(eq(users.email, 'ana@exemplo.com'))
     if (!anaUser) throw new Error('usuário de teste ausente')
-    await db.delete(invites).where(eq(invites.usedByUserId, anaUser.userId))
     await db.delete(users).where(eq(users.userId, anaUser.userId))
     expect(await rowCount()).toBe(1)
     expect((await getProgress(puzzleId, beto)).json().progress).not.toBeNull()

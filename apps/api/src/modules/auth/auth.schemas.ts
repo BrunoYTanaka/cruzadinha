@@ -1,4 +1,9 @@
-import { authResponseSchema, loginRequestSchema, registerRequestSchema } from '@cruzadinha/shared'
+import {
+  authResponseSchema,
+  loginRequestSchema,
+  registerRequestSchema,
+  registrationStatusSchema,
+} from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
 import {
   commonErrors,
@@ -28,24 +33,32 @@ const tooManyAttempts = {
 
 export const registerSchema = {
   tags: ['auth'],
-  summary: 'Cadastra uma conta com um convite',
+  summary: 'Cadastra uma conta com e-mail e senha',
   description:
-    'O limite de tentativas por endereço é conferido antes do corpo. Em caso de sucesso, a sessão ' +
-    'já fica aberta.',
+    'Só funciona com o cadastro aberto (`REGISTRATION_ENABLED=true`); fechado, responde 403 antes ' +
+    'de qualquer outra checagem. Depois, o limite de tentativas por endereço é conferido antes do ' +
+    'corpo. Em caso de sucesso, a sessão já fica aberta. `inviteCode` é aceito e ignorado, só para ' +
+    'o site anterior.',
   body: {
     ...withFieldDescription(toDocSchema(registerRequestSchema), 'email', emailDescription),
-    examples: [
-      { email: 'ana@example.com', password: 'senha-de-exemplo', inviteCode: 'ABCD-EFGH-JKMN-PQRS' },
-    ],
+    examples: [{ email: 'ana@example.com', password: 'senha-de-exemplo' }],
   },
   response: {
     201: { ...authenticated('Conta criada e sessão aberta'), headers: sessionOpened },
-    400: errorResponse(
-      '`invalid-input` (com `fields`) para corpo inválido, ou `invalid-invite` para convite ' +
-        'inexistente, usado, expirado ou revogado.',
-    ),
+    400: errorResponse('`invalid-input` (com `fields`): corpo inválido.'),
+    403: errorResponse('`registration-closed`: o cadastro está fechado.'),
     409: errorResponse('`registration-failed`: não foi possível concluir o cadastro.'),
     429: tooManyAttempts,
+    ...commonErrors,
+  },
+} satisfies FastifySchema
+
+export const registrationSchema = {
+  tags: ['auth'],
+  summary: 'Diz se o cadastro está aberto',
+  description: 'Sem sessão. O site mostra "Criar conta" só quando `open` é verdadeiro.',
+  response: {
+    200: { description: 'Situação do cadastro', ...toDocSchema(registrationStatusSchema) },
     ...commonErrors,
   },
 } satisfies FastifySchema

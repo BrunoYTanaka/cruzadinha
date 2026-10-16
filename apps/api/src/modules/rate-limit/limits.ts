@@ -4,7 +4,6 @@ export type RateLimits = {
   loginEmail: RateWindow
   loginAddress: RateWindow
   register: RateWindow
-  inviteCreate: RateWindow
   puzzleFetch: RateWindow
 }
 
@@ -13,6 +12,5 @@ export const defaultRateLimits: RateLimits = {
   loginEmail: { max: 5, windowMinutes: 15 },
   loginAddress: { max: 20, windowMinutes: 15 },
   register: { max: 10, windowMinutes: 60 },
-  inviteCreate: { max: 10, windowMinutes: 60 },
   puzzleFetch: { max: 30, windowMinutes: 60 },
 }

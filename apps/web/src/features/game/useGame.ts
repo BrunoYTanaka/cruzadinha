@@ -13,22 +13,38 @@ import { getProgress, resetProgress, saveProgress } from '../../api/progress'
 import { config } from '../../config'
 import { removeStorage } from '../../lib/storage'
 import { isSolved } from '../../game-logic/completion'
+import type { GuestProgress } from '../../game-logic/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../game-logic/reducer'
 import type { GameState } from '../../game-logic/state'
+import { createGuestSaveQueue } from '../guest/guest-save-queue'
+import { guestStore as defaultGuestStore, type GuestStore } from '../guest/guest-store'
 import { clearHelp, loadHelp, saveHelp } from './help-storage'
-import { createSaveQueue, outboxKey, readOutbox } from './save-queue'
+import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from './save-queue'
 import { useClock } from './useClock'
 
-type UseGameArgs = {
-  response: PuzzleResponse
-  // Progresso do servidor ao abrir (ou `null` se nunca jogou).
-  progress: Progress | null
-  user: User
-}
+// Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
+// nunca leem nem gravam o lugar do outro (FR-011).
+export type GameOwner =
+  | { kind: 'user'; user: User; progress: Progress | null }
+  | { kind: 'guest'; record: GuestProgress | null; store?: GuestStore }
+
+// O que a tela mostra de tempo final e recorde, venha do servidor ou do navegador.
+export type ProgressSummary = Pick<Progress, 'status' | 'finishedMs' | 'bestMs'>
+
+type UseGameArgs = { response: PuzzleResponse; owner: GameOwner }
+
+type Source = { cells: (string | null)[][] | null; elapsedMs: number; fromOutbox: boolean }
 
 // Escolhe de onde vêm as letras ao abrir: o servidor, ou a fila local se ela for mais nova (letras
-// que não chegaram a ser enviadas antes da página fechar).
-function initialSource(progress: Progress | null, outbox: SaveProgressRequest | null) {
+// que não chegaram a ser enviadas antes da página fechar). O visitante só tem o registro local.
+function initialSource(owner: GameOwner, puzzleId: string): Source {
+  if (owner.kind === 'guest') {
+    return owner.record
+      ? { cells: owner.record.cells, elapsedMs: owner.record.elapsedMs, fromOutbox: false }
+      : { cells: null, elapsedMs: 0, fromOutbox: false }
+  }
+  const { progress } = owner
+  const outbox: SaveProgressRequest | null = readOutbox(owner.user.id, puzzleId)
   if (outbox && (!progress || outbox.savedAt > progress.savedAt)) {
     return { cells: outbox.cells, elapsedMs: outbox.elapsedMs, fromOutbox: true }
   }
@@ -37,74 +53,137 @@ function initialSource(progress: Progress | null, outbox: SaveProgressRequest | 
     : { cells: null, elapsedMs: 0, fromOutbox: false }
 }
 
-export function useGame({ response, progress, user }: UseGameArgs) {
-  const { puzzle, solution, puzzleId } = {
-    ...response,
-    puzzle: response.puzzle,
-    solution: response.solution,
+function summaryOf(owner: GameOwner): ProgressSummary | null {
+  return owner.kind === 'guest' ? owner.record : owner.progress
+}
+
+function helpOf(state: Pick<GameState, 'usage' | 'marks' | 'locked'>): HelpSnapshot {
+  return {
+    usage: state.usage,
+    marks: state.marks,
+    locked: state.locked.flatMap((line, row) =>
+      line.flatMap((isLocked, col) => (isLocked ? [`${row},${col}`] : [])),
+    ),
   }
+}
+
+function hasHelp(help: HelpSnapshot): boolean {
+  return help.usage.letters + help.usage.words > 0 || Object.keys(help.marks).length > 0
+}
+
+export function useGame({ response, owner }: UseGameArgs) {
+  const { puzzle, solution, puzzleId } = response
   const game = useMemo(
     () => createGame({ puzzle, solution, limits: config.helpLimits }),
     [puzzle, solution],
   )
+  const guest = owner.kind === 'guest'
+  const userId = owner.kind === 'user' ? owner.user.id : null
+  const store = owner.kind === 'guest' ? (owner.store ?? defaultGuestStore) : null
 
-  const [serverProgress, setServerProgress] = useState<Progress | null>(progress)
+  const [summary, setSummary] = useState<ProgressSummary | null>(() => summaryOf(owner))
 
-  // O estado inicial junta o progresso do servidor e a fila local, uma única vez.
-  const [source] = useState(() => initialSource(progress, readOutbox(user.id, puzzleId)))
+  // O estado inicial junta o progresso guardado e a fila local, uma única vez.
+  const [source] = useState(() => initialSource(owner, puzzleId))
 
   const [state, dispatch] = useReducer(game.reducer, game.initialState, (start): GameState => {
-    if (progress?.status === 'completed') {
-      return game.reducer(start, { type: 'viewServerProgress', cells: progress.cells })
+    const opened = owner.kind === 'guest' ? owner.record : owner.progress
+    if (opened?.status === 'completed') {
+      return game.reducer(start, { type: 'viewServerProgress', cells: opened.cells })
     }
-    // Ajudas ficam só neste aparelho (por conta e cruzada); sem letras guardadas não valem nada.
-    const help = loadHelp(user.id, puzzleId)
+    // Ajudas ficam só neste aparelho: no registro do visitante, ou por conta e cruzada.
+    const help =
+      owner.kind === 'guest' ? (owner.record?.help ?? null) : loadHelp(owner.user.id, puzzleId)
     if (source.cells) return game.reducer(start, { type: 'hydrate', cells: source.cells, help })
     return help ? game.reducer(start, { type: 'hydrate', cells: start.cells, help }) : start
   })
 
-  // Cada mudança de ajuda (contadores, marcas, células travadas) vai para o aparelho.
-  useEffect(() => {
-    const snapshot: HelpSnapshot = {
-      usage: state.usage,
-      marks: state.marks,
-      locked: state.locked.flatMap((line, row) =>
-        line.flatMap((isLocked, col) => (isLocked ? [`${row},${col}`] : [])),
-      ),
-    }
-    const used = snapshot.usage.letters + snapshot.usage.words > 0
-    if (used || Object.keys(snapshot.marks).length > 0) saveHelp(user.id, puzzleId, snapshot)
-  }, [state.usage, state.marks, state.locked, user.id, puzzleId])
-
-  const clock = useClock(source.elapsedMs, state.mode === 'playing')
-  const { readElapsedMs, stop: stopClock } = clock
-
-  const queue = useMemo(
-    () =>
-      createSaveQueue({
-        puzzleId,
-        userId: user.id,
-        save: saveProgress,
-        onProgress: (saved, body) => {
-          if (saved) setServerProgress(saved)
-          if (body.status === 'completed') dispatch({ type: 'confirmCompletion' })
-        },
-      }),
-    [puzzleId, user.id, dispatch],
-  )
-  const saveState = useSyncExternalStore(queue.subscribe, queue.getState, queue.getState)
-
-  // Letras novas vão para a fila de salvamento (com debounce); o que veio do servidor não.
-  const savedCells = useRef(state.cells)
   const stateRef = useRef(state)
   useEffect(() => {
     stateRef.current = state
   })
+
+  // Conta: cada mudança de ajuda vai para o aparelho (o visitante grava junto do progresso).
+  const { usage, marks, locked } = state
   useEffect(() => {
-    if (state.mode !== 'playing' || state.cells === savedCells.current) return
+    if (!userId) return
+    const snapshot = helpOf({ usage, marks, locked })
+    if (hasHelp(snapshot)) saveHelp(userId, puzzleId, snapshot)
+  }, [usage, marks, locked, userId, puzzleId])
+
+  const clock = useClock(source.elapsedMs, state.mode === 'playing')
+  const { readElapsedMs, stop: stopClock } = clock
+
+  const queue: SaveQueue = useMemo(() => {
+    if (store) {
+      return createGuestSaveQueue({
+        puzzleId,
+        date: puzzle.date,
+        store,
+        onSaved: (record) => {
+          setSummary(record)
+          if (record.status === 'completed') dispatch({ type: 'confirmCompletion' })
+        },
+      })
+    }
+    return createSaveQueue({
+      puzzleId,
+      userId: userId ?? '',
+      save: saveProgress,
+      onProgress: (saved, body) => {
+        if (saved) setSummary(saved)
+        if (body.status === 'completed') dispatch({ type: 'confirmCompletion' })
+      },
+    })
+  }, [puzzleId, puzzle.date, userId, store, dispatch])
+  const saveState = useSyncExternalStore(queue.subscribe, queue.getState, queue.getState)
+
+  // O que vai para a fila. O visitante leva junto as ajudas atuais (R7); a conta não, porque o corpo
+  // do servidor é estrito e as ajudas da conta ficam no `localStorage`.
+  const snapshotOf = useCallback(
+    (current: GameState, status: 'in_progress' | 'completed', elapsedMs: number) => {
+      const base = { cells: current.cells, elapsedMs, status }
+      if (!guest) return base
+      const help = helpOf(current)
+      return { ...base, help: hasHelp(help) ? help : null }
+    },
+    [guest],
+  )
+
+  // Letras novas vão para a fila de salvamento; o que veio guardado não. O visitante grava também
+  // quando só as ajudas mudam (uma verificação que só marca células, FR-004).
+  const savedCells = useRef(state.cells)
+  const savedHelp = useRef({ usage: state.usage, marks: state.marks, locked: state.locked })
+  useEffect(() => {
+    if (state.mode !== 'playing') return
+    const helpChanged =
+      guest &&
+      (state.usage !== savedHelp.current.usage ||
+        state.marks !== savedHelp.current.marks ||
+        state.locked !== savedHelp.current.locked)
+    if (state.cells === savedCells.current && !helpChanged) return
     savedCells.current = state.cells
-    queue.schedule({ cells: state.cells, elapsedMs: readElapsedMs(), status: 'in_progress' })
-  }, [state.cells, state.mode, queue, readElapsedMs])
+    savedHelp.current = { usage: state.usage, marks: state.marks, locked: state.locked }
+    queue.schedule(snapshotOf(stateRef.current, 'in_progress', readElapsedMs()))
+  }, [
+    state.cells,
+    state.usage,
+    state.marks,
+    state.locked,
+    state.mode,
+    guest,
+    queue,
+    readElapsedMs,
+    snapshotOf,
+  ])
+
+  // Visitante: pausar também grava o tempo (R4).
+  useEffect(() => {
+    if (!guest || !clock.paused) return
+    const current = stateRef.current
+    if (current.mode !== 'playing') return
+    queue.schedule(snapshotOf(current, 'in_progress', readElapsedMs()))
+  }, [guest, clock.paused, queue, readElapsedMs, snapshotOf])
 
   // Ao sair da tela de jogo (navegação dentro do site), o que ainda estava esperando o debounce
   // sai agora; só depois os temporizadores são cancelados.
@@ -112,14 +191,13 @@ export function useGame({ response, progress, user }: UseGameArgs) {
     () => () => {
       const current = stateRef.current
       if (current.mode === 'playing' && current.cells.some((row) => row.some(Boolean))) {
-        void queue.sendNow(
-          { cells: current.cells, elapsedMs: readElapsedMs(), status: 'in_progress' },
-          { keepalive: true },
-        )
+        void queue.sendNow(snapshotOf(current, 'in_progress', readElapsedMs()), {
+          keepalive: true,
+        })
       }
       queue.dispose()
     },
-    [queue, readElapsedMs],
+    [queue, readElapsedMs, snapshotOf],
   )
 
   // Letras da fila local que ainda não chegaram ao servidor seguem na abertura.
@@ -131,8 +209,8 @@ export function useGame({ response, progress, user }: UseGameArgs) {
   useEffect(() => {
     if (state.completion !== 'pending') return
     stopClock()
-    void queue.sendNow({ cells: state.cells, elapsedMs: readElapsedMs(), status: 'completed' })
-  }, [state.completion, state.cells, queue, readElapsedMs, stopClock])
+    void queue.sendNow(snapshotOf(stateRef.current, 'completed', readElapsedMs()))
+  }, [state.completion, state.cells, queue, readElapsedMs, stopClock, snapshotOf])
 
   // Outro aparelho concluiu: o jogo só avisa.
   useEffect(() => {
@@ -144,10 +222,7 @@ export function useGame({ response, progress, user }: UseGameArgs) {
     function leave() {
       const current = stateRef.current
       if (current.mode !== 'playing') return
-      void queue.sendNow(
-        { cells: current.cells, elapsedMs: readElapsedMs(), status: 'in_progress' },
-        { keepalive: true },
-      )
+      void queue.sendNow(snapshotOf(current, 'in_progress', readElapsedMs()), { keepalive: true })
     }
     function onVisibility() {
       if (document.visibilityState === 'hidden') leave()
@@ -158,7 +233,7 @@ export function useGame({ response, progress, user }: UseGameArgs) {
       window.removeEventListener('pagehide', leave)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [queue, readElapsedMs])
+  }, [queue, readElapsedMs, snapshotOf])
 
   // Voltou a rede: reenvia o que ficou na fila.
   useEffect(() => {
@@ -172,14 +247,27 @@ export function useGame({ response, progress, user }: UseGameArgs) {
   const [completedHere, setCompletedHere] = useState(false)
   if (state.completion === 'pending' && !completedHere) setCompletedHere(true)
 
-  // "Jogar de novo": exige o servidor (ele guarda o melhor tempo); sem ele, nada é reiniciado aqui.
+  // "Jogar de novo": a conta exige o servidor (ele guarda o melhor tempo); o visitante reinicia no
+  // navegador, também sem conexão, mantendo o recorde.
   const playAgain = useCallback(async (): Promise<'ok' | 'offline' | 'error'> => {
     try {
-      const { progress: fresh } = await resetProgress(puzzleId)
-      setServerProgress(fresh)
-      clearHelp(user.id, puzzleId)
-      removeStorage(outboxKey(user.id, puzzleId))
+      if (store) {
+        const fresh = await store.reset(puzzleId)
+        if (fresh) setSummary(fresh)
+      } else {
+        const { progress: fresh } = await resetProgress(puzzleId)
+        setSummary(fresh)
+        if (userId) {
+          clearHelp(userId, puzzleId)
+          removeStorage(outboxKey(userId, puzzleId))
+        }
+      }
       savedCells.current = game.initialState.cells
+      savedHelp.current = {
+        usage: game.initialState.usage,
+        marks: game.initialState.marks,
+        locked: game.initialState.locked,
+      }
       dispatch({ type: 'reset' })
       setCompletedHere(false)
       clock.restart()
@@ -187,21 +275,22 @@ export function useGame({ response, progress, user }: UseGameArgs) {
     } catch (error) {
       return error instanceof ApiRequestError && error.isOffline ? 'offline' : 'error'
     }
-  }, [puzzleId, user.id, game, clock])
+  }, [puzzleId, userId, store, game, clock])
 
   // "Ver como ficou": só se a pessoa escolher, carrega o progresso concluído do servidor.
   const viewCompleted = useCallback(async (): Promise<boolean> => {
+    if (store) return false
     try {
       const { progress: fresh } = await getProgress(puzzleId)
       if (!fresh || fresh.status !== 'completed') return false
-      setServerProgress(fresh)
+      setSummary(fresh)
       stopClock()
       dispatch({ type: 'viewServerProgress', cells: fresh.cells })
       return true
     } catch {
       return false
     }
-  }, [puzzleId, stopClock])
+  }, [puzzleId, stopClock, store])
 
   const send = useCallback((action: GameAction) => dispatch(action), [])
 
@@ -212,7 +301,7 @@ export function useGame({ response, progress, user }: UseGameArgs) {
     clock,
     queue,
     saveState,
-    serverProgress,
+    summary,
     completedHere,
     playAgain,
     viewCompleted,

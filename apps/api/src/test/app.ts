@@ -21,6 +21,8 @@ export function buildTestApp(options: {
     DATABASE_URL: 'postgres://nao-usado@localhost:1/db',
     NODE_ENV: 'test',
     LOG_LEVEL: options.logStream ? 'error' : 'fatal',
+    // Cadastro aberto nos testes; quem testa o cadastro fechado passa `REGISTRATION_ENABLED: 'false'`.
+    REGISTRATION_ENABLED: 'true',
     ...env,
   })
   return buildApp({

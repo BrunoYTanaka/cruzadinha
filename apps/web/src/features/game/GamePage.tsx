@@ -1,6 +1,6 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { getProgress } from '../../api/progress'
@@ -10,7 +10,9 @@ import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { config } from '../../config'
 import { activeWord } from '../../game-logic/navigation'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
-import { useSessionQuery } from '../auth/useSession'
+import { buildLoginPath } from '../auth/redirect'
+import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
+import { guestStore } from '../guest/guest-store'
 import { SessionExpiredNotice } from '../auth/SessionExpiredNotice'
 import { boardKeyToAction } from './board-keys'
 import { Board } from './Board'
@@ -32,10 +34,10 @@ import { SaveStatus } from './SaveStatus'
 import { Toolbar } from './Toolbar'
 import { useBoardSize } from './useBoardSize'
 import { useDesktopLayout } from './useDesktopLayout'
-import { useGame } from './useGame'
+import { useGame, type GameOwner } from './useGame'
 import { useOnScreenKeyboard } from './useOnScreenKeyboard'
 import { WordBar } from './WordBar'
-import type { PuzzleResponse, Progress, User } from '@cruzadinha/shared'
+import type { PuzzleResponse } from '@cruzadinha/shared'
 
 function BackLink() {
   return <Link to="/">Voltar à biblioteca</Link>
@@ -55,11 +57,12 @@ function attribution(puzzle: Puzzle): string {
   return ['Fonte: ' + sourceName, title, author, copyright].filter(Boolean).join(' · ')
 }
 
-// Carrega a cruzada e o progresso em paralelo. Depois de carregado, nenhum erro tira o tabuleiro
-// da tela (FR-032): falhas viram avisos que não bloqueiam.
+// Carrega a cruzada e o progresso em paralelo: o da conta vem do servidor, o do visitante do
+// navegador (feature 013). Depois de carregado, nenhum erro tira o tabuleiro da tela (FR-032):
+// falhas viram avisos que não bloqueiam.
 export function GamePage() {
   const { puzzleId = '' } = useParams()
-  const session = useSessionQuery()
+  const viewer = useViewer()
   const puzzleQuery = useQuery({
     queryKey: queryKeys.puzzle(puzzleId),
     queryFn: () => getPuzzleById(puzzleId),
@@ -70,6 +73,17 @@ export function GamePage() {
   const progressQuery = useQuery({
     queryKey: queryKeys.progress(puzzleId),
     queryFn: () => getProgress(puzzleId),
+    enabled: viewer?.kind === 'user',
+    retry: false,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+  const grid = puzzleQuery.data?.puzzle.grid
+  const guestQuery = useQuery({
+    queryKey: ['guest-progress', puzzleId],
+    queryFn: () => (grid ? guestStore.getForPuzzle(puzzleId, grid) : null),
+    enabled: viewer?.kind === 'guest' && grid !== undefined,
     retry: false,
     gcTime: 0,
     refetchOnWindowFocus: false,
@@ -95,35 +109,45 @@ export function GamePage() {
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={() => {
           void puzzleQuery.refetch()
-          void progressQuery.refetch()
+          if (viewer?.kind === 'user') void progressQuery.refetch()
         }}
       >
         <BackLink />
       </ErrorState>
     )
   }
-  if (!puzzleQuery.data || !progressQuery.data || !session.data) {
+  // Ao trocar de visitante para conta (ou o inverso) a consulta volta a buscar: o jogo só monta
+  // com o progresso novo, nunca com o que ficou em cache da troca anterior.
+  const fetching = viewer?.kind === 'user' ? progressQuery.isFetching : guestQuery.isFetching
+  const owner = fetching ? null : ownerOf(viewer, progressQuery.data?.progress, guestQuery.data)
+  if (!puzzleQuery.data || !viewer || !owner) {
     return <LoadingState label="Carregando a cruzada…" />
   }
-  return (
-    <Game
-      key={puzzleId}
-      response={puzzleQuery.data}
-      progress={progressQuery.data.progress}
-      user={session.data.user}
-    />
-  )
+  // Trocar de visitante para conta (ou o inverso) monta um jogo novo, sem misturar estados.
+  return <Game key={`${puzzleId}:${viewerKey(viewer)}`} response={puzzleQuery.data} owner={owner} />
 }
 
-function Game({
-  response,
-  progress,
-  user,
-}: {
-  response: PuzzleResponse
-  progress: Progress | null
-  user: User
-}) {
+function ownerOf(
+  viewer: Viewer | undefined,
+  progress: GameOwnerProgress | undefined,
+  record: GuestRecord | undefined,
+): GameOwner | null {
+  if (!viewer) return null
+  if (viewer.kind === 'user') {
+    return progress === undefined ? null : { kind: 'user', user: viewer.user, progress }
+  }
+  return record === undefined ? null : { kind: 'guest', record }
+}
+
+type GameOwnerProgress = Extract<GameOwner, { kind: 'user' }>['progress']
+type GuestRecord = Extract<GameOwner, { kind: 'guest' }>['record']
+
+// Se o navegador deixou guardar o progresso do visitante (FR-009).
+function useGuestStorageAvailable(): boolean {
+  return useSyncExternalStore(guestStore.subscribe, guestStore.isAvailable, guestStore.isAvailable)
+}
+
+function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner }) {
   const { puzzle } = response
   const {
     game,
@@ -132,11 +156,13 @@ function Game({
     clock,
     queue,
     saveState,
-    serverProgress,
+    summary,
     completedHere,
     playAgain,
     viewCompleted,
-  } = useGame({ response, progress, user })
+  } = useGame({ response, owner })
+  const guest = owner.kind === 'guest'
+  const storageAvailable = useGuestStorageAvailable()
   const [dialogClosed, setDialogClosed] = useState(false)
   const [playAgainError, setPlayAgainError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -175,11 +201,11 @@ function Game({
 
   const confirmed = state.completion === 'confirmed'
   const finishedMs =
-    serverProgress?.status === 'completed' && serverProgress.finishedMs !== null
-      ? serverProgress.finishedMs
+    summary?.status === 'completed' && summary.finishedMs !== null
+      ? summary.finishedMs
       : clock.elapsedMs
-  const bestMs = serverProgress?.bestMs ?? null
-  const isRecord = confirmed && bestMs !== null && serverProgress?.finishedMs === bestMs
+  const bestMs = summary?.bestMs ?? null
+  const isRecord = confirmed && bestMs !== null && summary?.finishedMs === bestMs
 
   async function onPlayAgain() {
     setBusy(true)
@@ -250,7 +276,12 @@ function Game({
         canPause={!readOnly}
         onPause={clock.pause}
         onResume={clock.resume}
-        saveStatus={<SaveStatus state={saveState} />}
+        saveStatus={
+          <SaveStatus
+            state={saveState}
+            guest={guest ? { loginTo: buildLoginPath(`/jogo/${response.puzzleId}`) } : undefined}
+          />
+        }
         sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
           readOnly ? null : (
@@ -267,7 +298,13 @@ function Game({
         }
       />
       <div className={styles.notices}>
-        <SessionExpiredNotice onSuccess={() => void queue.retry()} />
+        {guest ? null : <SessionExpiredNotice onSuccess={() => void queue.retry()} />}
+        {guest && !storageAvailable ? (
+          <Notice variant="warning">
+            Seu navegador não deixou guardar o progresso. Ele vale só enquanto esta aba estiver
+            aberta.
+          </Notice>
+        ) : null}
         {state.elsewhere ? (
           <Notice
             variant="info"
@@ -362,6 +399,7 @@ function Game({
         confirmed={confirmed}
         helpsUsed={state.usage.letters + state.usage.words}
         isRecord={isRecord}
+        localOnly={guest}
       />
       <LegendButton />
       <ClueSheet

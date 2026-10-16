@@ -1,9 +1,7 @@
-import { inviteCodeSchema } from '@cruzadinha/shared'
 import type { Database } from '../../db/client'
 import { addDays, type Clock } from '../../lib/clock'
 import { createDummyHash, hashPassword, verifyPassword } from '../../lib/password'
 import { generateSessionToken, sha256Hex } from '../../lib/tokens'
-import { lockValidInviteByCodeHash, markInviteUsed } from '../invites/invites.repository'
 import type { RateLimits } from '../rate-limit/limits'
 import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
@@ -22,7 +20,10 @@ export type OpenedSession = { user: AuthUser; sessionToken: string; expiresAt: D
 export type Throttled = { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
 export type RegisterResult =
-  ({ ok: true } & OpenedSession) | { ok: false; reason: 'invalid-invite' | 'registration-failed' }
+  ({ ok: true } & OpenedSession) | { ok: false; reason: 'registration-failed' }
+
+export type CreateAccountResult =
+  { ok: true; user: AuthUser } | { ok: false; reason: 'email-taken' }
 
 export type LoginResult =
   ({ ok: true } & OpenedSession) | Throttled | { ok: false; reason: 'invalid-credentials' }
@@ -32,7 +33,10 @@ export type Authenticated = { user: AuthUser; renewedExpiresAt?: Date }
 export type AuthService = {
   // Conta a tentativa de cadastro do endereço antes de olhar o corpo (FR-028).
   admitRegistration(address: string): Promise<{ ok: true } | Throttled>
-  register(input: { email: string; password: string; inviteCode: string }): Promise<RegisterResult>
+  // Cadastro aberto (feature 013): cria a conta e abre a sessão; quem chama confere a chave.
+  register(input: { email: string; password: string }): Promise<RegisterResult>
+  // Conta criada pelo autor na linha de comando: sem sessão e sem limite de tentativas (FR-019).
+  createAccount(input: { email: string; password: string }): Promise<CreateAccountResult>
   login(input: { email: string; password: string; address: string }): Promise<LoginResult>
   authenticate(sessionToken: string | undefined): Promise<Authenticated | null>
   logout(sessionToken: string | undefined): Promise<void>
@@ -87,32 +91,30 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       return { ok: true }
     },
 
-    async register({ email, password, inviteCode }) {
-      const code = inviteCodeSchema.safeParse(inviteCode)
-      if (!code.success) return { ok: false, reason: 'invalid-invite' }
-
-      // O hash fica fora da transação, para não segurar a trava do convite durante o argon2.
+    async register({ email, password }) {
+      // O hash fica fora da transação, para não segurar conexão durante o argon2.
       const passwordHash = await hashPassword(password)
       const now = clock()
 
       try {
         return await db.transaction(async (tx): Promise<RegisterResult> => {
-          // O convite é conferido antes do e-mail: sem convite, ninguém descobre se um e-mail existe.
-          const invite = await lockValidInviteByCodeHash(tx, sha256Hex(code.data), now)
-          if (!invite) return { ok: false, reason: 'invalid-invite' }
-
           const user = await insertIfEmailFree(tx, { email, passwordHash })
           if (!user) throw new EmailTaken()
-
-          await markInviteUsed(tx, invite.inviteId, user.userId, now)
           const session = await openSession(tx, { id: user.userId, email: user.email }, now)
           return { ok: true, ...session }
         })
       } catch (error) {
-        // A exceção desfaz a transação: o convite continua válido (FR-005, SC-005).
+        // A exceção desfaz a transação: nada fica gravado.
         if (error instanceof EmailTaken) return { ok: false, reason: 'registration-failed' }
         throw error
       }
+    },
+
+    async createAccount({ email, password }) {
+      const passwordHash = await hashPassword(password)
+      const user = await insertIfEmailFree(db, { email, passwordHash })
+      if (!user) return { ok: false, reason: 'email-taken' }
+      return { ok: true, user: { id: user.userId, email: user.email } }
     },
 
     async login({ email, password, address }) {

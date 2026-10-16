@@ -1,3 +1,6 @@
+import { createInterface } from 'node:readline/promises'
+import { Writable } from 'node:stream'
+import { text } from 'node:stream/consumers'
 import { runCli } from './cli/run-cli'
 import { loadConfig } from './config'
 import { createDatabase } from './db/client'
@@ -8,6 +11,35 @@ import { createOgloboSource } from './sources/oglobo/oglobo'
 
 // Entrada de npm run cli (tsx) e de dist/cli.mjs (imagem).
 loadDotEnvIfPresent()
+
+// Senha do `users create` (feature 013, FR-019). No terminal, o que se digita não aparece: a saída do
+// readline é silenciada enquanto a pergunta está aberta. Com a entrada redirecionada (um script), vale
+// a primeira linha, para a senha e a confirmação. O valor nunca é escrito nem registrado.
+function createSecretReader(): (prompt: string) => Promise<string> {
+  if (process.stdin.isTTY) {
+    return async (prompt) => {
+      let muted = false
+      const output = new Writable({
+        write(chunk, _encoding, callback) {
+          if (!muted) process.stdout.write(chunk)
+          callback()
+        },
+      })
+      const rl = createInterface({ input: process.stdin, output, terminal: true, historySize: 0 })
+      process.stdout.write(prompt)
+      muted = true
+      try {
+        return await rl.question('')
+      } finally {
+        muted = false
+        rl.close()
+        process.stdout.write('\n')
+      }
+    }
+  }
+  let firstLine: Promise<string> | undefined
+  return () => (firstLine ??= text(process.stdin).then((all) => all.split(/\r?\n/)[0] ?? ''))
+}
 
 let databaseUrl: string
 let historyDays: number
@@ -28,6 +60,7 @@ try {
     clock: systemClock,
     source: createOgloboSource(),
     historyDays,
+    readSecret: createSecretReader(),
     stdout: (text) => process.stdout.write(text),
     stderr: (text) => process.stderr.write(text),
   })

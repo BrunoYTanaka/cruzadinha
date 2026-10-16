@@ -3,7 +3,6 @@ import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { sessions } from '../db/schema'
 import { sha256Hex } from '../lib/tokens'
-import { createInvitesService } from '../modules/invites/invites.service'
 import type { RateLimits } from '../modules/rate-limit/limits'
 import { buildTestApp, sessionCookieFrom } from './app'
 import { DAY, MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
@@ -24,14 +23,14 @@ afterAll(() => handle.close())
 
 const PASSWORD = 'senha-boa-123'
 const UNAUTHENTICATED = { error: 'unauthenticated', message: 'Não autenticado.' }
+const CLEARED_COOKIE = /^sid=;.*Expires=Thu, 01 Jan 1970/
 const INVALID_CREDENTIALS = { error: 'invalid-credentials', message: 'E-mail ou senha incorretos.' }
 
 async function createAccount(email: string): Promise<string> {
-  const invite = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
   const response = await app.inject({
     method: 'POST',
     url: '/api/auth/register',
-    payload: { email, password: PASSWORD, inviteCode: invite.code },
+    payload: { email, password: PASSWORD },
   })
   expect(response.statusCode).toBe(201)
   const cookie = sessionCookieFrom(response.headers['set-cookie'])
@@ -104,10 +103,30 @@ describe('login and me', () => {
       const response = await me(value)
       expect(response.statusCode, String(value)).toBe(401)
       expect(response.json()).toEqual(UNAUTHENTICATED)
+      // Um cookie presente e inválido é apagado; sem cookie, nada é enviado (feature 013, R8).
+      if (value === undefined) expect(response.headers['set-cookie']).toBeUndefined()
+      else expect(String(response.headers['set-cookie'])).toMatch(CLEARED_COOKIE)
     }
 
     clock.advance(30 * DAY)
-    expect((await me(cookie)).statusCode).toBe(401)
+    const expired = await me(cookie)
+    expect(expired.statusCode).toBe(401)
+    expect(String(expired.headers['set-cookie'])).toMatch(CLEARED_COOKIE)
+  })
+})
+
+describe('sessão vencida vira visitante (feature 013)', () => {
+  it('o 401 do me apaga o cookie e o pedido seguinte, sem cookie, é atendido como visitante', async () => {
+    const cookie = await createAccount('ana@exemplo.com')
+    clock.advance(30 * DAY)
+
+    const expired = await me(cookie)
+    expect(expired.statusCode).toBe(401)
+    expect(String(expired.headers['set-cookie'])).toMatch(CLEARED_COOKIE)
+
+    const library = await app.inject({ method: 'GET', url: '/api/library' })
+    expect(library.statusCode).toBe(200)
+    expect(library.json()).toEqual({ items: [] })
   })
 })
 
@@ -219,7 +238,6 @@ describe('timing and speed', () => {
     loginEmail: { max: 1000, windowMinutes: 15 },
     loginAddress: { max: 1000, windowMinutes: 15 },
     register: { max: 1000, windowMinutes: 60 },
-    inviteCreate: { max: 1000, windowMinutes: 60 },
     puzzleFetch: { max: 1000, windowMinutes: 60 },
   }
 
@@ -265,7 +283,6 @@ describe('timing and speed', () => {
   )
 
   it('answers register, login, me and logout in under 1 second each (SC-008)', async () => {
-    const invite = await createInvitesService({ db, clock: clock.now }).createInvite({ days: 7 })
     const timed = async <T>(run: () => Promise<T>): Promise<T> => {
       const start = performance.now()
       const result = await run()
@@ -277,7 +294,7 @@ describe('timing and speed', () => {
       app.inject({
         method: 'POST',
         url: '/api/auth/register',
-        payload: { email: 'ana@exemplo.com', password: PASSWORD, inviteCode: invite.code },
+        payload: { email: 'ana@exemplo.com', password: PASSWORD },
       }),
     )
     const cookie = sessionCookieFrom(
