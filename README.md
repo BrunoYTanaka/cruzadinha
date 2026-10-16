@@ -75,7 +75,7 @@ Rode a partir da raiz do repositório:
 
 Para rodar um único arquivo de teste, entre no workspace: `cd apps/api && npx vitest run src/config.test.ts`.
 
-Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
+Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e os testes end-to-end (Playwright, com o seed de desenvolvimento) e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
 
 ## Versões
 
