@@ -28,7 +28,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   { auth, config, clock, requireSession },
 ) => {
   app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
-    const admission = await auth.admitRegistration(request.ip)
+    const admission = await auth.admitRegistration(request.clientAddress)
     if (!admission.ok) return sendTooManyAttempts(reply, admission.retryAfterSeconds)
 
     const body: unknown = request.body
@@ -54,7 +54,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
       return sendError(reply, 400, 'invalid-input', invalidFields(parsed.error.issues))
     }
 
-    const result = await auth.login({ ...parsed.data, address: request.ip })
+    const result = await auth.login({ ...parsed.data, address: request.clientAddress })
     if (!result.ok) {
       return result.reason === 'too-many-attempts'
         ? sendTooManyAttempts(reply, result.retryAfterSeconds)

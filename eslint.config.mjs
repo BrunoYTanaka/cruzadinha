@@ -32,6 +32,19 @@ export default defineConfig(
     },
   },
   {
+    // Pages Functions rodam no runtime de Workers (Request, Response, fetch).
+    files: ['apps/web/functions/**/*.ts'],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
+  {
+    files: ['apps/web/version-plugin*.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
     files: ['apps/web/src/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended, jsxA11y.flatConfigs.recommended],
     languageOptions: {

@@ -4,7 +4,7 @@ Site de palavras cruzadas que reúne puzzles de sites existentes numa interface 
 
 A primeira fonte é o jogo de palavras cruzadas do **O Globo**, com escolha de nível e de data. É um projeto de portfólio, pequeno e privado, com foco na experiência de jogar e na qualidade do código.
 
-> **Estado atual:** a fundação está pronta (monorepo, qualidade, CI e ambiente local). O código de aplicação por enquanto se resume a `GET /api/health` e uma página de status; as funcionalidades de jogo vêm nas próximas features.
+> **Estado atual:** o jogo está completo (login por convite, calendário, tabuleiro, ajudas e progresso entre aparelhos) e a implantação está descrita em [docs/deploy.md](docs/deploy.md).
 
 ## Stack
 
@@ -76,6 +76,16 @@ Rode a partir da raiz do repositório:
 Para rodar um único arquivo de teste, entre no workspace: `cd apps/api && npx vitest run src/config.test.ts`.
 
 Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
+
+## Versões
+
+A API e o site têm versões próprias (`MAJOR.MINOR.PATCH`), calculadas sozinhas a partir dos tipos de commit: `fix` sobe o patch, `feat` sobe o minor. Cada merge na `main` atualiza um pedido de lançamento; aceitá-lo cria as tags, os registros de mudanças e publica só a parte que ganhou versão nova. Números e registros nunca são editados à mão.
+
+Como funciona, com exemplos e como reverter: **[docs/versionamento.md](docs/versionamento.md)**.
+
+## Produção
+
+O site roda no Cloudflare Pages, a API no Render e o banco no Neon, com custo zero. O roteiro para criar, publicar, verificar e manter o ambiente está em [docs/deploy.md](docs/deploy.md).
 
 ## Contribuindo
 

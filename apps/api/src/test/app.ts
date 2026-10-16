@@ -13,16 +13,20 @@ export function buildTestApp(options: {
   puzzleSource?: PuzzleSource
   /** Com um destino de log, o nível sobe para `error` para o teste ler o que foi registrado. */
   logStream?: NodeJS.WritableStream
+  /** Variáveis extras para a configuração (por exemplo, `PROXY_SECRET`). */
+  env?: Record<string, string>
 }): FastifyInstance {
+  const { env, ...deps } = options
   const config = loadConfig({
     DATABASE_URL: 'postgres://nao-usado@localhost:1/db',
     NODE_ENV: 'test',
     LOG_LEVEL: options.logStream ? 'error' : 'fatal',
+    ...env,
   })
   return buildApp({
     config,
     probe: { check: async () => true, close: async () => {} },
-    ...options,
+    ...deps,
   })
 }
 

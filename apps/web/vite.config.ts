@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+import { siteVersionPlugin } from './version-plugin'
 
 const apiProxy = {
   '/api': {
@@ -10,7 +11,7 @@ const apiProxy = {
 }
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), siteVersionPlugin()],
   // O .env único fica na raiz; só variáveis com prefixo VITE_ chegam ao navegador.
   envDir: fileURLToPath(new URL('../..', import.meta.url)),
   server: { proxy: apiProxy },

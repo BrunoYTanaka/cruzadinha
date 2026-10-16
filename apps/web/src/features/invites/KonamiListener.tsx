@@ -4,7 +4,8 @@ import { useLocation } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { createInvite, listInvites } from '../../api/invites'
 import { queryKeys } from '../../api/query-keys'
-import { useSessionQuery } from '../auth/useSession'
+import { sessionQueryOptions } from '../auth/useSession'
+import { useServerReady } from '../status/useSlowServer'
 import { InviteDialog, type InviteResult } from './InviteDialog'
 import { createKonamiDetector } from './konami'
 
@@ -16,7 +17,8 @@ function isTextTarget(target: EventTarget | null): boolean {
 // Ouvinte global da sequência secreta: só com sessão, fora de campos de texto e fora do tabuleiro
 // (lá as setas movem a seleção e B e A digitam letras).
 export function KonamiListener() {
-  const session = useSessionQuery()
+  // Lê a sessão do cache e só a consulta depois de o servidor acordar (feature 012).
+  const session = useQuery({ ...sessionQueryOptions(), enabled: useServerReady() })
   const { pathname } = useLocation()
   const enabled = Boolean(session.data) && !pathname.startsWith('/jogo')
   const [result, setResult] = useState<InviteResult | null>(null)

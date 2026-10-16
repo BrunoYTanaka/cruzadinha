@@ -5,6 +5,7 @@ import { buildApp } from './app'
 import { loadConfig } from './config'
 import { createDatabase } from './db/client'
 import type { DatabaseProbe } from './db/probe'
+import { API_VERSION } from './version'
 
 const config = loadConfig({
   DATABASE_URL: 'postgres://user:SEGREDO@localhost:5432/db',
@@ -38,7 +39,11 @@ describe('GET /api/health', () => {
     const response = await app.inject({ method: 'GET', url: '/api/health' })
 
     expect(response.statusCode).toBe(200)
-    expect(healthStatusSchema.parse(response.json())).toEqual({ status: 'ok', database })
+    expect(healthStatusSchema.parse(response.json())).toEqual({
+      status: 'ok',
+      database,
+      version: API_VERSION,
+    })
     expect(response.body).not.toContain('SEGREDO')
   })
 

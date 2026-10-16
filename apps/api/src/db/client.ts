@@ -15,7 +15,9 @@ export type DatabaseHandle = {
 
 // O cliente do postgres.js é preguiçoso: só conecta na primeira consulta.
 export function createDatabase(databaseUrl: string): DatabaseHandle {
-  const client = postgres(databaseUrl, { onnotice: () => {} })
+  // O Neon derruba as conexões ao suspender (5 min sem uso); fechar as ociosas antes disso evita
+  // falhar a primeira consulta depois da suspensão (feature 012, research R7).
+  const client = postgres(databaseUrl, { onnotice: () => {}, idle_timeout: 60 })
   return {
     db: drizzle({ client }),
     async close() {

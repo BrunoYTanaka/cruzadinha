@@ -1,0 +1,224 @@
+name: Deploy
+
+# Publica as partes cuja última versão lançada (tags api-v*, web-v*) é diferente da que está no ar,
+# depois da CI verde na main. A API publica antes do site, porque um site novo pode depender de
+# rotas novas e as mudanças de API são compatíveis com o site anterior (FR-025). O disparo manual
+# publica as versões pedidas mesmo que já estejam no ar (reversão). Ver docs/versionamento.md e
+# specs/012-implantacao/contracts/deploy-workflow.md.
+#
+# Segurança: o workflow_run tem acesso aos segredos, então só código da main e das tags (confiável)
+# é usado aqui; nada vem de pull requests.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      api:
+        description: 'Versão da API (ex.: 0.2.0), "ultima" ou "atual" (não publicar)'
+        default: ultima
+        required: true
+      web:
+        description: 'Versão do site (ex.: 0.3.1), "ultima" ou "atual" (não publicar)'
+        default: ultima
+        required: true
+
+env:
+  HUSKY: 0
+
+permissions:
+  contents: read
+  deployments: write
+  actions: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+    steps:
+      # Só booleanos: nenhum valor sai deste passo.
+      - id: guard
+        env:
+          HAS_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+          HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+          HAS_SITE: ${{ vars.SITE_URL != '' }}
+          HAS_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT != '' }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$HAS_HOOK$HAS_CF_TOKEN$HAS_CF_ACCOUNT$HAS_SITE$HAS_PROJECT" = "truetruetruetruetrue" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "::error::configuração de publicação ausente (veja docs/deploy.md)"
+            exit 1
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::publicação ignorada: configuração ausente"
+          fi
+
+      - if: steps.guard.outputs.enabled == 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # As tags do lançamento são criadas pelo workflow Release no mesmo push: espera ele terminar.
+      - name: Esperar o lançamento do mesmo commit
+        if: steps.guard.outputs.enabled == 'true' && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          for i in $(seq 1 30); do
+            status=$(gh run list --workflow release.yml --commit "$SHA" --json status,conclusion \
+              --jq '.[0] | "\(.status) \(.conclusion)"' || true)
+            case "$status" in
+              "completed success"|"") break ;;
+              completed*) echo "::error::o workflow Release falhou neste commit"; exit 1 ;;
+            esac
+            sleep 10
+          done
+          git fetch --tags --force
+
+      - name: Decidir o que publicar
+        id: plan
+        if: steps.guard.outputs.enabled == 'true'
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_API: ${{ inputs.api }}
+          INPUT_WEB: ${{ inputs.web }}
+        run: |
+          latest() { git tag --list "$1-v*" --sort=-v:refname | head -1 | sed "s/^$1-v//"; }
+
+          # Versão no ar: health da API (com tentativas, o que também acorda a API) e version.json.
+          live_api=""
+          for i in $(seq 1 12); do
+            live_api=$(curl -fsS --max-time 20 "$SITE_URL/api/health" | jq -r '.version // empty' || true)
+            [ -n "$live_api" ] && break
+            sleep 10
+          done
+          live_web=$(curl -fsS --max-time 20 -H 'cache-control: no-cache' "$SITE_URL/version.json" \
+            | jq -r '.version // empty' || true)
+
+          decide() { # parte, entrada, no ar
+            local part="$1" input="$2" live="$3" target="" publish=false
+            if [ "$EVENT" = "workflow_dispatch" ]; then
+              case "$input" in
+                atual) target="" ;;
+                ultima|"") target=$(latest "$part"); [ -n "$target" ] && publish=true ;;
+                *) target="$input"; publish=true ;;
+              esac
+            else
+              target=$(latest "$part")
+              if [ -n "$target" ] && [ "$target" != "$live" ]; then publish=true; fi
+            fi
+            if [ "$publish" = true ]; then
+              if ! git rev-parse -q --verify "refs/tags/$part-v$target" > /dev/null; then
+                echo "::error::tag $part-v$target não existe"; exit 1
+              fi
+              echo "${part}_ref=$(git rev-list -n1 "$part-v$target")" >> "$GITHUB_OUTPUT"
+            fi
+            echo "$part=$publish" >> "$GITHUB_OUTPUT"
+            echo "${part}_version=$target" >> "$GITHUB_OUTPUT"
+            echo "$part: no ar=${live:-desconhecida} alvo=${target:-nenhum} publicar=$publish"
+          }
+          decide api "$INPUT_API" "$live_api"
+          decide web "$INPUT_WEB" "$live_web"
+
+      - name: Nada a publicar
+        if: steps.plan.outputs.api == 'false' && steps.plan.outputs.web == 'false'
+        run: echo "::notice::nada a publicar"
+
+      # API: deploy hook do Render no commit da tag, depois espera o health mostrar a versão.
+      - name: Publicar a API
+        if: steps.plan.outputs.api == 'true'
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          REF: ${{ steps.plan.outputs.api_ref }}
+        run: |
+          code=$(curl -sS -X POST -o /dev/null -w '%{http_code}' "$HOOK&ref=$REF")
+          echo "deploy hook: HTTP $code"
+          [ "$code" = "200" ] || [ "$code" = "202" ] || exit 1
+
+      - name: Esperar a API nova
+        if: steps.plan.outputs.api == 'true'
+        env:
+          TARGET: ${{ steps.plan.outputs.api_version }}
+        run: |
+          for i in $(seq 1 60); do
+            live=$(curl -fsS --max-time 20 "$SITE_URL/api/health" | jq -r '.version // empty' || true)
+            if [ "$live" = "$TARGET" ]; then echo "API $TARGET no ar"; exit 0; fi
+            sleep 15
+          done
+          echo "::error::a API não mostrou a versão $TARGET em 15 minutos"
+          exit 1
+
+      # Site: build do commit da tag numa árvore separada e Direct Upload no Cloudflare Pages.
+      - name: Preparar o site
+        if: steps.plan.outputs.web == 'true'
+        env:
+          REF: ${{ steps.plan.outputs.web_ref }}
+        run: git worktree add ../site "$REF"
+
+      - if: steps.plan.outputs.web == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Build do site
+        if: steps.plan.outputs.web == 'true'
+        working-directory: ../site
+        env:
+          GITHUB_SHA: ${{ steps.plan.outputs.web_ref }}
+          VITE_HELP_LETTER_LIMIT: ${{ vars.VITE_HELP_LETTER_LIMIT }}
+          VITE_HELP_WORD_LIMIT: ${{ vars.VITE_HELP_WORD_LIMIT }}
+        run: |
+          # Variáveis vazias valem como ausentes (o build usa os padrões).
+          [ -n "$VITE_HELP_LETTER_LIMIT" ] || unset VITE_HELP_LETTER_LIMIT
+          [ -n "$VITE_HELP_WORD_LIMIT" ] || unset VITE_HELP_WORD_LIMIT
+          npm ci
+          npm run build -w @cruzadinha/web
+
+      - name: Publicar o site
+        if: steps.plan.outputs.web == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.151.1'
+          workingDirectory: ../site/apps/web
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }} --branch=main
+
+      - name: Verificar
+        if: steps.plan.outputs.api == 'true' || steps.plan.outputs.web == 'true'
+        env:
+          API: ${{ steps.plan.outputs.api }}
+          WEB: ${{ steps.plan.outputs.web }}
+          API_VERSION: ${{ steps.plan.outputs.api_version }}
+          WEB_VERSION: ${{ steps.plan.outputs.web_version }}
+        run: |
+          curl -fsSI "$SITE_URL/" | grep -i '^x-robots-tag:.*noindex'
+          if [ "$WEB" = "true" ]; then
+            for i in $(seq 1 12); do
+              live=$(curl -fsS -H 'cache-control: no-cache' "$SITE_URL/version.json" | jq -r '.version // empty' || true)
+              [ "$live" = "$WEB_VERSION" ] && break
+              sleep 5
+            done
+            [ "$live" = "$WEB_VERSION" ] || { echo "::error::site não mostra $WEB_VERSION"; exit 1; }
+          fi
+          if [ "$API" = "true" ]; then
+            live=$(curl -fsS "$SITE_URL/api/health" | jq -r '.version // empty')
+            [ "$live" = "$API_VERSION" ] || { echo "::error::API não mostra $API_VERSION"; exit 1; }
+          fi
+          echo "publicação conferida"

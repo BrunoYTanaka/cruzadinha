@@ -20,7 +20,8 @@ export const saveProgressRequestSchema = z.strictObject({
   savedAt: instantSchema,
 })
 
-export const progressSchema = z.strictObject({
+// Resposta: descarta campos desconhecidos para o site anterior aceitar versões novas da API (FR-025).
+export const progressSchema = z.object({
   puzzleId: z.uuid(),
   cells: progressCellsSchema,
   elapsedMs: elapsedMsSchema,
@@ -33,7 +34,7 @@ export const progressSchema = z.strictObject({
   updatedAt: instantSchema,
 })
 
-export const progressEnvelopeSchema = z.strictObject({ progress: progressSchema.nullable() })
+export const progressEnvelopeSchema = z.object({ progress: progressSchema.nullable() })
 
 export type ProgressStatus = z.infer<typeof progressStatusSchema>
 export type ProgressCells = z.infer<typeof progressCellsSchema>

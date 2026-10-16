@@ -57,3 +57,25 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           COLLECT_HISTORY_DAYS: ${{ vars.COLLECT_HISTORY_DAYS }}
         run: node apps/api/dist/cli.mjs puzzles collect
+
+  # Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem atividade.
+  # Reativar o workflow pela API todo dia 1 (na primeira execução do dia) renova esse prazo sem
+  # commits vazios. Não depende do segredo do banco (feature 012, research R8).
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Reativar o agendamento no dia 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "03" ]; then
+            gh api -X PUT "repos/$REPO/actions/workflows/collect.yml/enable"
+            echo "agendamento reativado"
+          else
+            echo "nada a fazer hoje"
+          fi

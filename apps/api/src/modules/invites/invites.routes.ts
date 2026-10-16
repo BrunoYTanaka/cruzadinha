@@ -19,7 +19,7 @@ export const invitesRoutes: FastifyPluginAsync<InvitesRoutesOptions> = async (
     { schema: createInviteSchema, preHandler: requireSession },
     async (request, reply) => {
       if (!request.user) return sendError(reply, 401, 'unauthenticated')
-      const result = await invites.createForUser(request.user.id, request.ip)
+      const result = await invites.createForUser(request.user.id, request.clientAddress)
       if (!result.ok) {
         return result.reason === 'too-many-attempts'
           ? sendTooManyAttempts(reply, result.retryAfterSeconds)

@@ -75,8 +75,39 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
+// Pedidos esperando resposta, com o instante de início: o carregamento das telas usa isso para
+// explicar a espera quando a API gratuita está acordando (feature 012, FR-011). Pedidos com
+// `keepalive` (envio ao sair da página) não contam.
+const pending = new Map<number, number>()
+const pendingListeners = new Set<() => void>()
+let nextPendingId = 0
+
+function notifyPending(): void {
+  for (const listener of pendingListeners) listener()
+}
+
+export function subscribePending(listener: () => void): () => void {
+  pendingListeners.add(listener)
+  return () => {
+    pendingListeners.delete(listener)
+  }
+}
+
+export function getOldestPendingStartedAt(): number | undefined {
+  let oldest: number | undefined
+  for (const startedAt of pending.values()) {
+    if (oldest === undefined || startedAt < oldest) oldest = startedAt
+  }
+  return oldest
+}
+
 async function send(path: string, options: ApiRequestOptions): Promise<Response> {
   const doFetch = options.fetch ?? globalThis.fetch.bind(globalThis)
+  const pendingId = options.keepalive ? undefined : nextPendingId++
+  if (pendingId !== undefined) {
+    pending.set(pendingId, Date.now())
+    notifyPending()
+  }
   let response: Response
   try {
     response = await doFetch(path, {
@@ -90,6 +121,11 @@ async function send(path: string, options: ApiRequestOptions): Promise<Response>
   } catch (cause) {
     if (cause instanceof DOMException && cause.name === 'AbortError') throw cause
     throw new ApiRequestError(0)
+  } finally {
+    if (pendingId !== undefined) {
+      pending.delete(pendingId)
+      notifyPending()
+    }
   }
   learnServerClock(response)
   if (response.ok) return response

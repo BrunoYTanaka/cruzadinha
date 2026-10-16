@@ -37,11 +37,11 @@ describe('libraryItemSchema', () => {
     expect(libraryItemSchema.safeParse({ ...notStarted, date: '13/10/2026' }).success).toBe(false)
   })
 
-  it('recusa campos extras como letras ou solução', () => {
-    expect(libraryItemSchema.safeParse({ ...notStarted, cells: [['A']] }).success).toBe(false)
-    expect(libraryItemSchema.safeParse({ ...notStarted, solution: { cells: [] } }).success).toBe(
-      false,
-    )
+  it('descarta campos extras, para o site anterior aceitar versões novas da API (FR-025)', () => {
+    const parsed = libraryItemSchema.parse({ ...notStarted, cells: [['A']] })
+    expect(parsed).not.toHaveProperty('cells')
+    const list = libraryResponseSchema.parse({ items: [notStarted], total: 1 })
+    expect(list).toEqual({ items: [notStarted] })
   })
 
   it('exige bestMs e bestAt juntos', () => {

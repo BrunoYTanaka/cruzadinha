@@ -66,4 +66,10 @@ describe('authResponseSchema', () => {
     const body = { user: { id: '0b6f0c1e-4b7a-4e1f-9a62-1f6c7d2c9e10', email: 'ana@x.com' } }
     expect(authResponseSchema.parse(body)).toEqual(body)
   })
+
+  it('drops unknown fields in the response (FR-025)', () => {
+    const user = { id: '0b6f0c1e-4b7a-4e1f-9a62-1f6c7d2c9e10', email: 'ana@x.com' }
+    const parsed = authResponseSchema.parse({ user: { ...user, name: 'Ana' }, extra: 1 })
+    expect(parsed).toEqual({ user })
+  })
 })

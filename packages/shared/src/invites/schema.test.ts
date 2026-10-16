@@ -56,4 +56,17 @@ describe('inviteListSchema', () => {
   it('accepts an empty list', () => {
     expect(inviteListSchema.parse({ invites: [] })).toEqual({ invites: [] })
   })
+
+  it('drops unknown fields in the responses (FR-025)', () => {
+    const invite = {
+      createdAt: '2026-10-13T12:00:00.000Z',
+      expiresAt: '2026-10-20T12:00:00.000Z',
+      status: 'active',
+    }
+    expect(inviteListSchema.parse({ invites: [{ ...invite, id: 'x' }], extra: 1 })).toEqual({
+      invites: [invite],
+    })
+    const created = { code: 'ABCD-EFGH-JKMN-PQRS', expiresAt: '2026-10-20T12:00:00.000Z' }
+    expect(createdInviteSchema.parse({ ...created, extra: 1 })).toEqual(created)
+  })
 })

@@ -5,6 +5,7 @@ import type { Database } from './db/client'
 import { describeError, isConnectionError } from './db/errors'
 import type { DatabaseProbe } from './db/probe'
 import { apiError } from './http/errors'
+import { proxyGuard } from './http/proxy-guard'
 import { systemClock, type Clock } from './lib/clock'
 import { authRoutes } from './modules/auth/auth.routes'
 import { createAuthService } from './modules/auth/auth.service'
@@ -23,6 +24,7 @@ import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
 import { createPuzzlesService } from './modules/puzzles/puzzles.service'
 import { createOgloboSource } from './sources/oglobo/oglobo'
 import type { PuzzleSource } from './sources/types'
+import { API_VERSION } from './version'
 
 export type AppDeps = {
   config: ServerConfig
@@ -46,7 +48,8 @@ export function buildApp({
 }: AppDeps): FastifyInstance {
   const app = Fastify({
     logger: logStream ? { level: config.logLevel, stream: logStream } : { level: config.logLevel },
-    // Confia só nos N saltos de proxy configurados; com 0, o X-Forwarded-For é ignorado.
+    // Confia só nos N saltos de proxy configurados; com 0, o X-Forwarded-For é ignorado. Com
+    // PROXY_SECRET (produção), o endereço usado nos limites vem do repasse do site (proxy-guard).
     trustProxy: (_address: string, hop: number) => hop < config.trustProxyHops,
   })
 
@@ -56,6 +59,7 @@ export function buildApp({
   app.setSerializerCompiler(() => (data) => JSON.stringify(data))
 
   app.register(cookie)
+  app.register(proxyGuard, { proxySecret: config.proxySecret })
   app.decorateRequest('user', null)
 
   // Documentação só fora de produção, sem configuração que a ligue; registrada antes das
@@ -84,7 +88,10 @@ export function buildApp({
   const rateLimiter = createRateLimiter(createRateLimitRepository(database))
   const auth = createAuthService({ db: database, clock, rateLimiter, limits: rateLimits })
 
-  app.register(healthRoutes, { probe })
+  app.register(healthRoutes, {
+    probe,
+    release: { version: API_VERSION, commit: config.releaseCommit },
+  })
   const requireSession = createRequireSession(auth, config, clock)
   const invites = createInvitesService({ db: database, clock, rateLimiter, limits: rateLimits })
 

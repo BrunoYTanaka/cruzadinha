@@ -3,6 +3,14 @@ import { z } from 'zod'
 
 const postgresUrl = /^postgres(ql)?:\/\//
 
+const commitSchema = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z
+    .string()
+    .regex(/^[0-9a-f]{7,40}$/, { error: 'deve ser um SHA de 7 a 40 caracteres hexadecimais' })
+    .optional(),
+)
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'], {
@@ -42,6 +50,19 @@ const envSchema = z.object({
       .max(365, { error: 'deve ser um inteiro de 0 a 365' })
       .default(31),
   ),
+  // Segredo que prova que o pedido passou pelo repasse do site (feature 012). Vazio vale como
+  // ausente: sem ele a API aceita pedidos diretos, como no desenvolvimento e nos testes.
+  PROXY_SECRET: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z
+      .string({ error: 'deve ter de 32 a 256 caracteres' })
+      .min(32, { error: 'deve ter de 32 a 256 caracteres' })
+      .max(256, { error: 'deve ter de 32 a 256 caracteres' })
+      .optional(),
+  ),
+  // Commit publicado, mostrado no /api/health. No Render vem de RENDER_GIT_COMMIT.
+  RELEASE_COMMIT: commitSchema,
+  RENDER_GIT_COMMIT: commitSchema,
   DATABASE_URL: z
     .string({ error: 'obrigatória' })
     .refine((value) => postgresUrl.test(value) && URL.canParse(value), {
@@ -57,6 +78,8 @@ export type ServerConfig = Readonly<{
   databaseUrl: string
   trustProxyHops: number
   collectHistoryDays: number
+  proxySecret: string | undefined
+  releaseCommit: string | undefined
 }>
 
 export function loadConfig(env: Record<string, string | undefined>): ServerConfig {
@@ -65,8 +88,18 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     const lines = result.error.issues.map((issue) => `${String(issue.path[0])}: ${issue.message}`)
     throw new Error(`Configuração inválida:\n${lines.join('\n')}`)
   }
-  const { NODE_ENV, HOST, PORT, LOG_LEVEL, DATABASE_URL, TRUST_PROXY_HOPS, COLLECT_HISTORY_DAYS } =
-    result.data
+  const {
+    NODE_ENV,
+    HOST,
+    PORT,
+    LOG_LEVEL,
+    DATABASE_URL,
+    TRUST_PROXY_HOPS,
+    COLLECT_HISTORY_DAYS,
+    PROXY_SECRET,
+    RELEASE_COMMIT,
+    RENDER_GIT_COMMIT,
+  } = result.data
   return Object.freeze({
     nodeEnv: NODE_ENV,
     host: HOST,
@@ -75,6 +108,8 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     databaseUrl: DATABASE_URL,
     trustProxyHops: TRUST_PROXY_HOPS,
     collectHistoryDays: COLLECT_HISTORY_DAYS,
+    proxySecret: PROXY_SECRET,
+    releaseCommit: RELEASE_COMMIT ?? RENDER_GIT_COMMIT,
   })
 }
 

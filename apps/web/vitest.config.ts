@@ -7,6 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     // O E2E roda no Playwright (`npm run test:e2e`), não no Vitest.
-    include: ['src/**/*.test.{ts,tsx}'],
+    // Os testes da Function e do plugin de versão rodam em ambiente node (docblock no arquivo).
+    include: ['src/**/*.test.{ts,tsx}', 'functions/**/*.test.ts', 'version-plugin.test.ts'],
   },
 })

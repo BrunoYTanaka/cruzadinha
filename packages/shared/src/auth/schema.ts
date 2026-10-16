@@ -22,14 +22,15 @@ export const loginRequestSchema = z.strictObject({
 
 export type LoginRequest = z.infer<typeof loginRequestSchema>
 
-export const userSchema = z.strictObject({
+// Resposta: descarta campos desconhecidos para o site anterior aceitar versões novas da API (FR-025).
+export const userSchema = z.object({
   id: z.uuid(),
   email: z.string(),
 })
 
 export type User = z.infer<typeof userSchema>
 
-export const authResponseSchema = z.strictObject({
+export const authResponseSchema = z.object({
   user: userSchema,
 })
 

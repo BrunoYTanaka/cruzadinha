@@ -100,8 +100,9 @@ describe('progressSchema', () => {
     ).toBe(true)
   })
 
-  it('recusa campo extra', () => {
-    expect(progressSchema.safeParse({ ...inProgress, userId: puzzleId }).success).toBe(false)
+  it('descarta campo extra da resposta (FR-025)', () => {
+    const parsed = progressSchema.parse({ ...inProgress, userId: puzzleId })
+    expect(parsed).not.toHaveProperty('userId')
   })
 })
 
@@ -112,6 +113,10 @@ describe('progressEnvelopeSchema', () => {
 
   it('recusa corpo sem a chave progress', () => {
     expect(progressEnvelopeSchema.safeParse({}).success).toBe(false)
+  })
+
+  it('descarta campo extra do envelope (FR-025)', () => {
+    expect(progressEnvelopeSchema.parse({ progress: null, extra: 1 })).toEqual({ progress: null })
   })
 })
 

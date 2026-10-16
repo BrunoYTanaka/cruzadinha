@@ -1,0 +1,54 @@
+name: Release
+
+# Mantém o pedido de lançamento (release-please) e, quando ele é aceito, cria as tags api-v*,
+# web-v* e as releases. Detalhes em docs/versionamento.md e specs/012-implantacao.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  HUSKY: 0
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Só booleanos: nenhum valor sai deste passo. Sem o GitHub App, o lançamento é ignorado; o
+      # token padrão não serve, porque o que ele cria não dispara a CI no pedido de lançamento.
+      - id: guard
+        env:
+          HAS_CLIENT_ID: ${{ vars.RELEASE_APP_CLIENT_ID != '' }}
+          HAS_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY != '' }}
+        run: |
+          if [ "$HAS_CLIENT_ID" = "true" ] && [ "$HAS_PRIVATE_KEY" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::lançamento ignorado: App não configurado"
+          fi
+
+      # Token do GitHub App do autor, restrito a este repositório, mascarado e revogado no fim.
+      - id: app-token
+        if: steps.guard.outputs.enabled == 'true'
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - if: steps.guard.outputs.enabled == 'true'
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

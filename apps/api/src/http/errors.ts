@@ -12,6 +12,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'puzzle-unavailable': 'Puzzle indisponível.',
   'puzzle-source-failed': 'Não foi possível buscar o puzzle agora, tente mais tarde.',
   'progress-completed': 'Este puzzle já foi concluído; reinicie para jogar de novo.',
+  forbidden: 'Acesso negado.',
   'service-unavailable': 'Serviço indisponível, tente mais tarde.',
   'internal-error': 'Erro interno.',
 }
