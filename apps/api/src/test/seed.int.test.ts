@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
 import { invites, puzzles, users } from '../db/schema'
 import { createDatabase } from '../db/client'
@@ -112,22 +113,35 @@ describe('db:seed', () => {
 describe('db:seed (puzzle de exemplo)', () => {
   const today = () => todayInSaoPaulo(clock.now)
 
-  it('grava o exemplo na data de hoje, com atribuição própria e sem rede', async () => {
+  it('grava um exemplo de cada fonte na data de hoje, com atribuição própria e sem rede', async () => {
     expect(await seed(DEV)).toBe(0)
-    expect(out).toContain(`Puzzle de exemplo gravado: ${today()}`)
+    expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (O Globo)`)
+    expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzada Online)`)
 
-    const [row] = await db.select().from(puzzles)
-    expect(row?.date).toBe(today())
-    const puzzle = puzzleSchema.parse(row?.data)
-    expect(puzzle.attribution).toEqual({
+    const rows = await db.select().from(puzzles).orderBy(puzzles.source)
+    expect(rows.map((row) => [row.source, row.date])).toEqual([
+      ['cruzadaonline', today()],
+      ['oglobo', today()],
+    ])
+    const [cruzada, globo] = rows.map((row) => puzzleSchema.parse(row.data))
+    expect(globo?.attribution).toEqual({
       sourceName: 'Exemplo de desenvolvimento (seed)',
       title: 'Exemplo de desenvolvimento (seed)',
       author: null,
       copyright: null,
     })
-    expect(validatePuzzleWithSolution(puzzle, solutionSchema.parse(row?.solution)).success).toBe(
-      true,
-    )
+    expect(cruzada?.attribution).toEqual({
+      sourceName: 'Exemplo de desenvolvimento (seed)',
+      title: 'Exemplo de desenvolvimento (seed): Cruzada Online',
+      author: null,
+      copyright: null,
+    })
+    for (const row of rows) {
+      const puzzle = puzzleSchema.parse(row.data)
+      expect(validatePuzzleWithSolution(puzzle, solutionSchema.parse(row.solution)).success).toBe(
+        true,
+      )
+    }
   })
 
   it('é entregue pela API como qualquer puzzle, sem consultar a fonte', async () => {
@@ -136,7 +150,7 @@ describe('db:seed (puzzle de exemplo)', () => {
     const app: FastifyInstance = buildTestApp({
       database: db,
       clock: clock.now,
-      puzzleSource: source,
+      puzzleSources: [source],
     })
     const logged = await app.inject({
       method: 'POST',
@@ -153,23 +167,25 @@ describe('db:seed (puzzle de exemplo)', () => {
 
     expect(response.statusCode).toBe(200)
     const body = puzzleResponseSchema.parse(response.json())
-    expect(body.solution).toEqual(
-      solutionSchema.parse((await db.select().from(puzzles))[0]?.solution),
-    )
+    const [stored] = await db.select().from(puzzles).where(eq(puzzles.source, 'oglobo'))
+    expect(body.solution).toEqual(solutionSchema.parse(stored?.solution))
     expect(source.calls).toEqual([])
   })
 
   it('não altera o exemplo ao rodar de novo', async () => {
     await seed(DEV)
-    const [before] = await db.select().from(puzzles)
+    const before = await db.select().from(puzzles).orderBy(puzzles.source)
 
     out = ''
     expect(await seed(DEV)).toBe(0)
-    expect(out).toContain(`Já existe puzzle em ${today()}; exemplo não gravado.`)
-    const rows = await db.select().from(puzzles)
-    expect(rows).toHaveLength(1)
-    expect(rows[0]?.puzzleId).toBe(before?.puzzleId)
-    expect(rows[0]?.updatedAt.getTime()).toBe(before?.updatedAt.getTime())
+    expect(out).toContain(`Já existe puzzle em ${today()} (O Globo); exemplo não gravado.`)
+    expect(out).toContain(`Já existe puzzle em ${today()} (Cruzada Online); exemplo não gravado.`)
+    const rows = await db.select().from(puzzles).orderBy(puzzles.source)
+    expect(rows).toHaveLength(2)
+    expect(rows.map((row) => row.puzzleId)).toEqual(before.map((row) => row.puzzleId))
+    expect(rows.map((row) => row.updatedAt.getTime())).toEqual(
+      before.map((row) => row.updatedAt.getTime()),
+    )
   })
 
   it('não substitui o puzzle real já guardado para hoje', async () => {
@@ -183,8 +199,8 @@ describe('db:seed (puzzle de exemplo)', () => {
     })
 
     expect(await seed(DEV)).toBe(0)
-    expect(out).toContain(`Já existe puzzle em ${today()}; exemplo não gravado.`)
-    const [row] = await db.select().from(puzzles)
+    expect(out).toContain(`Já existe puzzle em ${today()} (O Globo); exemplo não gravado.`)
+    const [row] = await db.select().from(puzzles).where(eq(puzzles.source, 'oglobo'))
     expect(puzzleSchema.parse(row?.data).attribution.title).toBe('Real')
   })
 

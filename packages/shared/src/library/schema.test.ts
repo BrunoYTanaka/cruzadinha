@@ -5,6 +5,7 @@ const ID = '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a'
 
 const notStarted = {
   puzzleId: ID,
+  source: 'oglobo',
   date: '2026-10-13',
   level: 'daily',
   status: 'not_started',
@@ -42,6 +43,16 @@ describe('libraryItemSchema', () => {
     expect(parsed).not.toHaveProperty('cells')
     const list = libraryResponseSchema.parse({ items: [notStarted], total: 1 })
     expect(list).toEqual({ items: [notStarted] })
+  })
+
+  it('fonte ausente vira oglobo (API anterior) e fonte desconhecida é recusada', () => {
+    const withoutSource: Record<string, unknown> = { ...notStarted }
+    delete withoutSource.source
+    expect(libraryItemSchema.parse(withoutSource).source).toBe('oglobo')
+    expect(libraryItemSchema.parse({ ...notStarted, source: 'cruzadaonline' }).source).toBe(
+      'cruzadaonline',
+    )
+    expect(libraryItemSchema.safeParse({ ...notStarted, source: 'xyz' }).success).toBe(false)
   })
 
   it('exige bestMs e bestAt juntos', () => {

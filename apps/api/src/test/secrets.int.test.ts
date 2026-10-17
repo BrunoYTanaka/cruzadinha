@@ -25,7 +25,7 @@ describe('stored secrets', () => {
     await runCli(['users', 'create', '--email', 'bia@exemplo.com'], {
       db,
       clock: clock.now,
-      source: fakeSource(),
+      sources: [fakeSource()],
       historyDays: 0,
       readSecret: async () => cliPassword,
       stdout: () => {},

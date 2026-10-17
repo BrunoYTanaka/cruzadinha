@@ -1,14 +1,14 @@
-import { puzzleResponseSchema, type PuzzleResponse } from '@cruzadinha/shared'
+import { puzzleResponseSchema, type PuzzleResponse, type PuzzleSourceId } from '@cruzadinha/shared'
 import { apiRequest } from './client'
 
 export function getPuzzleById(id: string): Promise<PuzzleResponse> {
   return apiRequest(`/api/puzzles/${encodeURIComponent(id)}`, puzzleResponseSchema)
 }
 
-// A fonte só publica o nível diário.
-export function getPuzzleByDate(date: string): Promise<PuzzleResponse> {
+// As fontes só publicam o nível diário.
+export function getPuzzleByDate(source: PuzzleSourceId, date: string): Promise<PuzzleResponse> {
   return apiRequest(
-    `/api/puzzles?level=daily&date=${encodeURIComponent(date)}`,
+    `/api/puzzles?level=daily&date=${encodeURIComponent(date)}&source=${source}`,
     puzzleResponseSchema,
   )
 }

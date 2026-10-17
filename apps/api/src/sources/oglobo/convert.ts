@@ -1,6 +1,7 @@
 import {
   isoDateSchema,
   puzzleSchema,
+  puzzleSourceNames,
   validatePuzzleWithSolution,
   type AvailableDate,
   type Cell,
@@ -174,7 +175,7 @@ export function convertAgilmenteResponse(
       level,
       date,
       attribution: {
-        sourceName: 'O Globo',
+        sourceName: puzzleSourceNames.oglobo,
         title: ipuz.title ?? null,
         author: ipuz.author ?? null,
         copyright: ipuz.copyright ?? null,

@@ -1,4 +1,9 @@
-import { libraryResponseSchema, type LibraryItem, type ProgressCells } from '@cruzadinha/shared'
+import {
+  libraryResponseSchema,
+  type LibraryItem,
+  type ProgressCells,
+  type PuzzleSourceId,
+} from '@cruzadinha/shared'
 import { sql } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -75,8 +80,8 @@ const save = (overrides: Record<string, unknown> = {}) => ({
 })
 
 // Guarda um puzzle (conteúdo inventado da fixture) por data; devolve o id.
-async function storePuzzle(date: string): Promise<string> {
-  const ok = okResult(date)
+async function storePuzzle(date: string, source: PuzzleSourceId = 'oglobo'): Promise<string> {
+  const ok = okResult(date, source)
   const [row] = await db
     .insert(puzzles)
     .values({
@@ -102,7 +107,7 @@ beforeEach(async () => {
   await truncateAll(db)
   clock = testClock()
   source = fakeSource()
-  app = buildTestApp({ database: db, clock: clock.now, puzzleSource: source })
+  app = buildTestApp({ database: db, clock: clock.now, puzzleSources: [source] })
 
   const ok = okResult('2026-01-01')
   emptyCells = ok.puzzle.grid.cells.map((row) => row.map(() => null))
@@ -142,6 +147,7 @@ describe('lista com a situação do jogador (US1)', () => {
     expect(await libraryOf(sid)).toEqual([
       {
         puzzleId,
+        source: 'oglobo',
         date: '2026-10-13',
         level: 'daily',
         status: 'not_started',
@@ -291,6 +297,7 @@ describe('sem fonte e sem expor a resposta (US2)', () => {
         'finishedMs',
         'level',
         'puzzleId',
+        'source',
         'status',
       ].sort(),
     )
@@ -389,5 +396,70 @@ describe('isolado por usuário (US3)', () => {
     const response = await getLibrary(ana, `?userId=${userId}`)
     expect(response.statusCode).toBe(200)
     expect(response.json().items[0]).toMatchObject({ status: 'not_started', bestMs: null })
+  })
+})
+
+describe('biblioteca por fonte (feature 014)', () => {
+  async function bothSources() {
+    const globo = await storePuzzle('2026-10-13')
+    const cruzada = await storePuzzle('2026-10-13', 'cruzadaonline')
+    return { globo, cruzada }
+  }
+
+  it('sem fonte lista só o O Globo, com a fonte em cada item (SC-007)', async () => {
+    const { globo } = await bothSources()
+    const response = await getLibrary()
+
+    expect(response.statusCode).toBe(200)
+    const items = libraryResponseSchema.parse(response.json()).items
+    expect(items.map((item) => [item.puzzleId, item.source])).toEqual([[globo, 'oglobo']])
+    expect(response.json().items[0].source).toBe('oglobo')
+  })
+
+  it('source=cruzadaonline lista só a nova fonte, para visitante e para conta', async () => {
+    const { cruzada } = await bothSources()
+    const sid = await register('ana@exemplo.com')
+
+    for (const who of [undefined, sid]) {
+      const response = await getLibrary(who, '?source=cruzadaonline')
+      expect(response.statusCode).toBe(200)
+      expect(response.json().items).toMatchObject([
+        { puzzleId: cruzada, source: 'cruzadaonline', status: 'not_started' },
+      ])
+    }
+  })
+
+  it('o progresso de um puzzle da nova fonte só aparece na lista dela', async () => {
+    const { cruzada } = await bothSources()
+    const sid = await register('ana@exemplo.com')
+    expect((await putProgress(cruzada, save(), sid)).statusCode).toBe(200)
+
+    const ofCruzada = (await getLibrary(sid, '?source=cruzadaonline')).json().items
+    const ofGlobo = (await getLibrary(sid, '?source=oglobo')).json().items
+    expect(ofCruzada[0]).toMatchObject({ status: 'in_progress', elapsedMs: 83_000 })
+    expect(ofGlobo[0]).toMatchObject({ status: 'not_started', elapsedMs: null })
+  })
+
+  it('fonte desconhecida é pedido inválido', async () => {
+    const response = await getLibrary(undefined, '?source=xyz')
+    expect(response.statusCode).toBe(400)
+    expect(response.json()).toMatchObject({ error: 'invalid-input', fields: ['source'] })
+  })
+
+  it('o limite de 366 vale por fonte', async () => {
+    const ok = okResult('2025-01-01')
+    const start = Date.UTC(2025, 0, 1)
+    const rows = Array.from({ length: 366 }, (_, index) => ({
+      source: ok.puzzle.source,
+      level: ok.puzzle.level,
+      date: new Date(start + index * 86_400_000).toISOString().slice(0, 10),
+      data: ok.puzzle,
+      solution: ok.solution,
+    }))
+    await db.insert(puzzles).values(rows)
+    await storePuzzle('2024-06-01', 'cruzadaonline')
+
+    expect((await getLibrary()).json().items).toHaveLength(366)
+    expect((await getLibrary(undefined, '?source=cruzadaonline')).json().items).toHaveLength(1)
   })
 })

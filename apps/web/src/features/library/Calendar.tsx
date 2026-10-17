@@ -1,3 +1,4 @@
+import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Fragment, type ReactNode } from 'react'
 import { Button } from '../../components/Button'
 import type { MonthView } from './calendar'
@@ -16,6 +17,8 @@ const WEEKDAYS = [
 
 type CalendarProps = {
   view: MonthView
+  // Fonte escolhida: o dia buscável abre a busca nela (feature 014).
+  source: PuzzleSourceId
   canGoPrevious: boolean
   canGoNext: boolean
   onPrevious: () => void
@@ -26,6 +29,7 @@ type CalendarProps = {
 
 export function Calendar({
   view,
+  source,
   canGoPrevious,
   canGoNext,
   onPrevious,
@@ -86,7 +90,7 @@ export function Calendar({
                     <td className={styles.blank} />
                   ) : (
                     <td className={styles.cell}>
-                      <DayCell day={view.days[dayIndex]!} month={view.month} />
+                      <DayCell day={view.days[dayIndex]!} month={view.month} source={source} />
                     </td>
                   )}
                 </Fragment>

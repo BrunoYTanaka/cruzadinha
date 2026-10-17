@@ -14,7 +14,8 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "cli": "tsx src/cli.ts",
-    "source:check": "tsx src/sources/oglobo/check.ts"
+    "source:check": "tsx src/sources/oglobo/check.ts",
+    "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts"
   },
   "dependencies": {
     "@cruzadinha/shared": "0.4.0",
@@ -23,6 +24,7 @@
     "@fastify/swagger-ui": "6.1",
     "@node-rs/argon2": "2.2",
     "drizzle-orm": "0.45",
+    "fast-xml-parser": "5.11",
     "fastify": "5.12",
     "fastify-plugin": "6.0",
     "postgres": "3.4",

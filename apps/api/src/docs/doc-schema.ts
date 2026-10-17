@@ -1,4 +1,4 @@
-import { apiErrorSchema } from '@cruzadinha/shared'
+import { apiErrorSchema, puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { z } from 'zod'
 
 export type DocSchema = z.core.JSONSchema.JSONSchema
@@ -49,3 +49,11 @@ export const commonErrors = {
 // Sessão opcional em OpenAPI 3.1: o objeto vazio diz que a rota também atende sem sessão
 // (visitante, feature 013).
 export const optionalSessionSecurity: Record<string, string[]>[] = [{}, { session: [] }]
+
+// Fonte opcional nas rotas de puzzle por data e de biblioteca (feature 014): sem ela vale O Globo.
+export const sourceQueryProperty = {
+  type: 'string',
+  enum: [...puzzleSourceIdSchema.options],
+  default: 'oglobo',
+  description: 'Fonte da cruzada; sem ela vale O Globo (`oglobo`).',
+} as const

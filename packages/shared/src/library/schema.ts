@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isoDateSchema, levelSchema } from '../puzzle/schema'
+import { isoDateSchema, levelSchema, puzzleSourceIdSchema } from '../puzzle/schema'
 import { MAX_ELAPSED_MS } from '../progress/schema'
 
 // Quantos puzzles a biblioteca devolve por resposta (cerca de um ano de diários).
@@ -15,6 +15,8 @@ const instantSchema = z.iso.datetime({ offset: true })
 export const libraryItemSchema = z
   .object({
     puzzleId: z.uuid(),
+    // A API anterior não manda a fonte: só listava O Globo (feature 014).
+    source: puzzleSourceIdSchema.default('oglobo'),
     date: isoDateSchema,
     level: levelSchema,
     status: libraryStatusSchema,

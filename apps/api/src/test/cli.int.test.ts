@@ -34,7 +34,7 @@ function cli(...argv: string[]): Promise<number> {
   return runCli(argv, {
     db,
     clock: clock.now,
-    source,
+    sources: [source],
     historyDays: 0,
     readSecret: async (prompt) => {
       prompts.push(prompt)
@@ -155,9 +155,7 @@ describe('puzzles collect', () => {
     withSource(new Map([[today(), okResult(today())]]))
 
     expect(await cli('puzzles', 'collect')).toBe(0)
-    expect(out).toContain(
-      'Coleta de puzzles: 1 gravados, 0 já existentes, 0 indisponíveis, 0 falhas.',
-    )
+    expect(out).toContain('Coleta O Globo: 1 gravados, 0 já existentes, 0 indisponíveis, 0 falhas.')
     expect(out).toContain(`Gravados: ${today()}`)
     expect(err).toBe('')
   })
@@ -177,7 +175,7 @@ describe('puzzles collect', () => {
     withSource(new Map([[today(), { ok: false, reason: 'source-down', detail: 'corpo-bruto' }]]))
 
     expect(await cli('puzzles', 'collect')).toBe(1)
-    expect(err).toContain(`Falhou em ${today()}: source-down`)
+    expect(err).toContain(`[O Globo] Falhou em ${today()}: source-down`)
     expect(out + err).not.toContain('corpo-bruto')
   })
 
@@ -193,7 +191,7 @@ describe('puzzles collect', () => {
     const code = await runCli(['puzzles', 'collect'], {
       db,
       clock: clock.now,
-      source,
+      sources: [source],
       historyDays: 1,
       readSecret: async () => '',
       stdout: (text) => {
@@ -205,7 +203,37 @@ describe('puzzles collect', () => {
     })
 
     expect(code).toBe(1)
-    expect(err).toContain(`Interrompido por limite de uso da fonte; pendentes: ${yesterday}`)
+    expect(err).toContain(
+      `[O Globo] Interrompido por limite de uso da fonte; pendentes: ${yesterday}`,
+    )
+  })
+
+  it('resume cada fonte e sai com 1 quando só uma delas falha', async () => {
+    withSource(new Map([[today(), okResult(today())]]))
+    const cruzada = fakeSource(new Map([[today(), { ok: false, reason: 'source-down' }]]), {
+      id: 'cruzadaonline',
+    })
+
+    const code = await runCli(['puzzles', 'collect'], {
+      db,
+      clock: clock.now,
+      sources: [source, cruzada],
+      historyDays: 0,
+      readSecret: async () => '',
+      stdout: (text) => {
+        out += text
+      },
+      stderr: (text) => {
+        err += text
+      },
+    })
+
+    expect(code).toBe(1)
+    expect(out).toContain('Coleta O Globo: 1 gravados')
+    expect(out).toContain(
+      'Coleta Cruzada Online: 0 gravados, 0 já existentes, 0 indisponíveis, 1 falhas.',
+    )
+    expect(err).toContain(`[Cruzada Online] Falhou em ${today()}: source-down`)
   })
 
   it('recusa argumento inesperado com o uso', async () => {

@@ -20,6 +20,8 @@ export {
   levelSchema,
   puzzleSchema,
   puzzleSourceIdSchema,
+  puzzleSourceNames,
+  puzzleSourceQuerySchema,
   solutionSchema,
   type AvailableDate,
   type Cell,

@@ -10,7 +10,10 @@ import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../.
 import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../guest/guest-store'
 import { LibraryPage } from './LibraryPage'
-import { SOURCE_DOWN_KEY } from './source-down'
+import { SOURCE_KEY } from './source-choice'
+import { sourceDownKey } from './source-down'
+
+const SOURCE_DOWN_KEY = sourceDownKey('oglobo')
 
 const routes = [
   { path: '/', element: <LibraryPage /> },
@@ -80,7 +83,7 @@ describe('LibraryPage', () => {
     expect(screen.queryByRole('link', { name: /^15 de outubro/ })).not.toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '1 de outubro, não guardado, abre para buscar na fonte' }),
-    ).toHaveAttribute('href', '/dia/2026-10-01')
+    ).toHaveAttribute('href', '/dia/2026-10-01?fonte=oglobo')
   })
 
   it('"Jogar a de hoje" abre o jogo de hoje quando guardado e a busca quando não', async () => {
@@ -95,7 +98,7 @@ describe('LibraryPage', () => {
     renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
       'href',
-      '/dia/2026-10-14',
+      '/dia/2026-10-14?fonte=oglobo',
     )
   })
 
@@ -160,7 +163,7 @@ describe('LibraryPage', () => {
 
   it('lembra os dias em que a fonte disse que não há cruzada', async () => {
     library()
-    window.sessionStorage.setItem('cruzadinha:no-puzzle:2026-10-03', '1')
+    window.sessionStorage.setItem('cruzadinha:no-puzzle:oglobo:2026-10-03', '1')
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const day = screen.getByRole('img', { name: '3 de outubro, sem cruzada neste dia' })
@@ -254,6 +257,103 @@ describe('LibraryPage', () => {
   })
 })
 
+describe('escolha da fonte (feature 014)', () => {
+  const cruzadaItems = [
+    makeLibraryItem('2026-10-12', {
+      puzzleId: '00000000-0000-4000-8000-00000000c012',
+      source: 'cruzadaonline',
+      status: 'in_progress',
+      elapsedMs: 9_000,
+    }),
+  ]
+
+  // Responde a biblioteca de cada fonte pelo parâmetro `source`.
+  function bySource() {
+    return mockApi({
+      'GET /api/library': ({ url }) =>
+        jsonResponse(200, {
+          items:
+            new URL(url, 'http://x').searchParams.get('source') === 'cruzadaonline'
+              ? cruzadaItems
+              : items,
+        }),
+    })
+  }
+
+  it('começa em O Globo e troca para Cruzada Online sem mudar o mês', async () => {
+    const { calls } = bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(calls[0]?.url).toBe('/api/library?source=oglobo')
+    expect(screen.getByRole('button', { name: 'O Globo' })).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    expect(await screen.findByRole('heading', { name: 'setembro de 2026' })).toBeInTheDocument()
+    expect(calls.at(-1)?.url).toBe('/api/library?source=cruzadaonline')
+    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+
+    await user.click(screen.getByRole('button', { name: 'Próximo mês' }))
+    expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: '13 de outubro, concluído em 6 minutos e 52 segundos' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('a preferência gravada abre direto na fonte escolhida', async () => {
+    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    const { calls } = bySource()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(calls[0]?.url).toBe('/api/library?source=cruzadaonline')
+    expect(screen.getByRole('button', { name: 'Cruzada Online' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
+      'href',
+      '/dia/2026-10-14?fonte=cruzadaonline',
+    )
+    expect(
+      screen.getByRole('link', { name: '1 de outubro, não guardado, abre para buscar na fonte' }),
+    ).toHaveAttribute('href', '/dia/2026-10-01?fonte=cruzadaonline')
+  })
+
+  it('o aviso de fonte fora do ar vale só para a fonte marcada', async () => {
+    window.localStorage.setItem(sourceDownKey('cruzadaonline'), String(Date.now()))
+    bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(
+      screen.queryByText(/Novas cruzadas não podem ser buscadas agora/),
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    expect(
+      await screen.findByText(/Novas cruzadas não podem ser buscadas agora/),
+    ).toBeInTheDocument()
+  })
+
+  it('itens de outra fonte (API anterior) não entram no calendário', async () => {
+    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    library()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.queryByText('◐ Em jogo')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: '13 de outubro, não guardado, abre para buscar na fonte' }),
+    ).toBeInTheDocument()
+  })
+
+  it('o seletor continua visível enquanto a biblioteca carrega', async () => {
+    mockApi({ 'GET /api/library': () => new Promise<Response>(() => {}) })
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('group', { name: 'Fonte da cruzada' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando a biblioteca…')
+  })
+})
+
 describe('biblioteca do visitante (feature 013)', () => {
   const guestRoutes = [
     {
@@ -327,6 +427,28 @@ describe('biblioteca do visitante (feature 013)', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
+  })
+
+  it('na Cruzada Online, a situação do visitante vem do navegador pelo puzzle', async () => {
+    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    const cruzadaId = '00000000-0000-4000-8000-00000000c012'
+    await guestStore.save({
+      puzzleId: cruzadaId,
+      date: '2026-10-12',
+      cells: [['A']],
+      elapsedMs: 5_000,
+      status: 'in_progress',
+      savedAt: '2026-10-12T14:00:00.000Z',
+      help: null,
+    })
+    mockApi({
+      'GET /api/library': () =>
+        jsonResponse(200, {
+          items: [makeLibraryItem('2026-10-12', { puzzleId: cruzadaId, source: 'cruzadaonline' })],
+        }),
+    })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(await screen.findByText('◐ Em jogo')).toBeInTheDocument()
   })
 
   it('com a API anterior (401 sem sessão), pede para entrar em vez de travar', async () => {

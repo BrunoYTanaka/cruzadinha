@@ -17,7 +17,7 @@ Estatísticas, streaks, ranking entre amigos, temas visuais extras e outras font
 
 ## 2. Fonte de puzzles
 
-A v1 usa só o **O Globo**. O jogo do O Globo é um widget da fornecedora **Agilmente**, que consome:
+A v1 usava só o **O Globo**; a feature 014 acrescentou a **Cruzada Online** (abaixo). O jogo do O Globo é um widget da fornecedora **Agilmente**, que consome:
 
 - Base: `https://oglobo-api.agilmenteapp.com/api/`
 - Rota: `games/crossword/{nível}/{YYYY-MM-DD}`
@@ -25,6 +25,15 @@ A v1 usa só o **O Globo**. O jogo do O Globo é um widget da fornecedora **Agil
 - A resposta lista também as datas disponíveis (`dates`, cada uma com `inTheFuture` e `status`), o que permite navegar pelo histórico.
 - Formato: o puzzle vem no padrão aberto **ipuz v2** (`ipuzData`: grade, solução e dicas `Across`/`Down`), mais `fromIpuz` com a resposta e a posição de cada palavra.
 - Autenticação: header `x-access-token` com um token anônimo no formato `ANONYMOUS-<32 hexadecimais>-ANONYMOUS`. O servidor aceita qualquer valor nesse formato, então o token é gerado localmente; ele identifica o visitante, não o autentica. A `x-key` não foi necessária. Sem o token a API responde HTTP 200 com `{"error":"NO-USER"}`, por isso a recusa é detectada pelo corpo, não pelo status.
+
+### Cruzada Online (feature 014)
+
+A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. O jogador escolhe a fonte no calendário (O Globo por padrão), e a atribuição de cada puzzle mostra "Cruzada Online".
+
+- Arquivo por dia: `https://static.publico.pt/s3/files/widgets/crosswords/prd/AAAAMMDD.xml`, sem login nem token.
+- Formato: XML do Crossword Compiler (células com coluna, linha, letra e número, ou bloco; palavras com o intervalo de células; dicas ligadas à palavra). Os metadados vêm vazios, e algumas dicas trazem um link de notícia, que não é guardado.
+- Uma data sem arquivo responde 403 da CDN. O arquivo do dia seguinte já está publicado na véspera, então o adaptador nunca pede data futura.
+- Histórico: há arquivos desde pelo menos 2024. Detalhes em `specs/014-adaptador-publico/findings.md`.
 
 ### Viabilidade (resolvida)
 
@@ -85,12 +94,15 @@ apps/api/src/
     types.ts         interface PuzzleSource
     oglobo/          única parte que conhece a Agilmente: pedido, token,
                      schema da resposta, conversão ipuz, fixtures e source:check
+    cruzadaonline/   única parte que conhece o XML do Público: pedido, leitura
+                     segura do XML, schema, conversão, fixtures e
+                     source:check:cruzadaonline
   cli.ts             users create; puzzles collect
 ```
 
 ### Fonte de puzzles
 
-`puzzles` conhece apenas a interface `PuzzleSource`. O adaptador `oglobo` gera o token anônimo (guardado em memória, e trocado por um novo se a fonte o recusar), busca o puzzle e converte o ipuz para o **formato interno**. Adicionar uma fonte é escrever outro adaptador, sem tocar no resto.
+`puzzles` conhece apenas a interface `PuzzleSource`. O adaptador `oglobo` gera o token anônimo (guardado em memória, e trocado por um novo se a fonte o recusar), busca o puzzle e converte o ipuz para o **formato interno**. O adaptador `cruzadaonline` lê o XML do Crossword Compiler (recusa DOCTYPE e corpos grandes) e o converte para o mesmo formato. O serviço recebe a lista de adaptadores; as rotas por data e a biblioteca aceitam a fonte, com O Globo como padrão. Adicionar uma fonte é escrever outro adaptador e incluí-lo na lista, sem tocar no resto.
 
 ### Formato interno de puzzle (`packages/shared`)
 

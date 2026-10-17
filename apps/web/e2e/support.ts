@@ -101,6 +101,13 @@ export async function todaySolution(request: APIRequestContext): Promise<Solutio
   return body.solution.cells
 }
 
+// Digita uma letra no tabuleiro. O teclado do Playwright é o americano e não tem a tecla Ç: ela
+// chega ao tabuleiro como o evento de tecla de um teclado brasileiro.
+export async function pressLetter(page: Page, letter: string): Promise<void> {
+  if (letter !== 'Ç') return page.keyboard.press(letter)
+  await page.getByRole('grid').dispatchEvent('keydown', { key: 'Ç', bubbles: true })
+}
+
 // Clica em cada célula aberta e digita a letra da solução (pula as que já estão certas).
 export async function fillSolution(page: Page, cells: (string | null)[][]): Promise<void> {
   for (const [row, line] of cells.entries()) {
@@ -109,7 +116,7 @@ export async function fillSolution(page: Page, cells: (string | null)[][]): Prom
       await page
         .getByRole('gridcell', { name: new RegExp(`^Linha ${row + 1}, coluna ${col + 1},`) })
         .click()
-      await page.keyboard.press(typedLetter(letter))
+      await pressLetter(page, typedLetter(letter))
     }
   }
 }

@@ -15,7 +15,16 @@ const dimension = z
 // A fonte só publica o nível diário; novos níveis entram aqui quando houver fonte para eles.
 export const levelSchema = z.enum(['daily'], { error: 'deve ser daily' })
 
-export const puzzleSourceIdSchema = z.enum(['oglobo'])
+export const puzzleSourceIdSchema = z.enum(['oglobo', 'cruzadaonline'])
+
+// Fonte não informada vale oglobo, para o site anterior (feature 014).
+export const puzzleSourceQuerySchema = puzzleSourceIdSchema.default('oglobo')
+
+// Nome exibido de cada fonte: atribuição gravada pelos adaptadores, saída da coleta e seletor do site.
+export const puzzleSourceNames = {
+  oglobo: 'O Globo',
+  cruzadaonline: 'Cruzada Online',
+} as const satisfies Record<PuzzleSourceId, string>
 
 export const isoDateSchema = z.iso.date({ error: 'deve ser uma data AAAA-MM-DD válida' })
 
