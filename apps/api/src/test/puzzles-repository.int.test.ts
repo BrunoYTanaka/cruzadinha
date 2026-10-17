@@ -78,6 +78,30 @@ describe('repositório de puzzles', () => {
     expect((await existingDates(db, { source: 'oglobo', level: 'daily', dates: [] })).size).toBe(0)
   })
 
+  it('guarda as duas fontes na mesma data em linhas diferentes', async () => {
+    const globo = okResult('2026-10-12')
+    const cruzada = okResult('2026-10-12', 'cruzadaonline')
+    const a = await insertPuzzleIfAbsent(db, globo)
+    const b = await insertPuzzleIfAbsent(db, cruzada)
+
+    expect(a.inserted && b.inserted).toBe(true)
+    expect(a.puzzleId).not.toBe(b.puzzleId)
+    const stored = await findPuzzle(db, { ...key('2026-10-12'), source: 'cruzadaonline' })
+    expect(stored?.puzzle.attribution.sourceName).toBe('Cruzada Online')
+    expect((await findPuzzle(db, key('2026-10-12')))?.puzzleId).toBe(a.puzzleId)
+  })
+
+  it('a regra do banco recusa uma fonte desconhecida', async () => {
+    const { puzzle, solution } = okResult('2026-10-12')
+    await expect(
+      db.execute(
+        sql`INSERT INTO puzzles (source, level, date, data, solution)
+            VALUES ('xyz', 'daily', '2026-10-12', ${JSON.stringify(puzzle)}::jsonb,
+                    ${JSON.stringify(solution)}::jsonb)`,
+      ),
+    ).rejects.toMatchObject({ cause: { constraint_name: 'puzzles_source_check' } })
+  })
+
   it('lança, sem vazar o conteúdo, quando a linha guardada é inválida', async () => {
     await db.execute(
       sql`INSERT INTO puzzles (source, level, date, data, solution)

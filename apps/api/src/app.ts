@@ -20,6 +20,7 @@ import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
 import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
 import { createPuzzlesService } from './modules/puzzles/puzzles.service'
+import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
 import { createOgloboSource } from './sources/oglobo/oglobo'
 import type { PuzzleSource } from './sources/types'
 import { API_VERSION } from './version'
@@ -30,7 +31,8 @@ export type AppDeps = {
   database: Database
   clock?: Clock
   rateLimits?: RateLimits
-  puzzleSource?: PuzzleSource
+  /** Um adaptador por fonte de puzzles; os testes passam fontes falsas. */
+  puzzleSources?: readonly PuzzleSource[]
   /** Destino do log; só os testes trocam (para conferir o que é registrado). */
   logStream?: NodeJS.WritableStream
 }
@@ -41,7 +43,7 @@ export function buildApp({
   database,
   clock = systemClock,
   rateLimits = defaultRateLimits,
-  puzzleSource = createOgloboSource(),
+  puzzleSources = [createOgloboSource(), createCruzadaOnlineSource()],
   logStream,
 }: AppDeps): FastifyInstance {
   const app = Fastify({
@@ -97,7 +99,7 @@ export function buildApp({
   const puzzles = createPuzzlesService({
     db: database,
     clock,
-    source: puzzleSource,
+    sources: puzzleSources,
     rateLimiter,
     limits: rateLimits,
   })

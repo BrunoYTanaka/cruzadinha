@@ -4,6 +4,7 @@ import { toLibraryItem, toPublicLibraryItem, type LibraryRow } from './library.s
 
 const base: LibraryRow = {
   puzzleId: '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a',
+  source: 'oglobo',
   date: '2026-10-13',
   level: 'daily',
   status: null,
@@ -23,6 +24,7 @@ describe('toLibraryItem', () => {
     const item = toLibraryItem(base)
     expect(item).toEqual({
       puzzleId: base.puzzleId,
+      source: 'oglobo',
       date: '2026-10-13',
       level: 'daily',
       status: 'not_started',
@@ -115,9 +117,15 @@ describe('toLibraryItem', () => {
 
 describe('toPublicLibraryItem', () => {
   it('sem sessão: sempre não iniciado e sem tempos', () => {
-    const item = toPublicLibraryItem({ puzzleId: base.puzzleId, date: base.date, level: 'daily' })
+    const item = toPublicLibraryItem({
+      puzzleId: base.puzzleId,
+      source: 'cruzadaonline',
+      date: base.date,
+      level: 'daily',
+    })
     expect(item).toEqual({
       puzzleId: base.puzzleId,
+      source: 'cruzadaonline',
       date: '2026-10-13',
       level: 'daily',
       status: 'not_started',

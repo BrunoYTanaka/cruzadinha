@@ -7,6 +7,7 @@ const today = '2026-10-14'
 function item(date: string, overrides: Partial<LibraryItem> = {}): LibraryItem {
   return {
     puzzleId: `00000000-0000-4000-8000-${date.replaceAll('-', '').padStart(12, '0')}`,
+    source: 'oglobo',
     date,
     level: 'daily',
     status: 'not_started',

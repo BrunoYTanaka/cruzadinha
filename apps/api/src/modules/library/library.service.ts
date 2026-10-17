@@ -1,4 +1,4 @@
-import { LIBRARY_LIMIT, type LibraryItem } from '@cruzadinha/shared'
+import { LIBRARY_LIMIT, type LibraryItem, type PuzzleSourceId } from '@cruzadinha/shared'
 import type { Database } from '../../db/client'
 import {
   listLibraryRows,
@@ -16,6 +16,7 @@ export function toLibraryItem(row: LibraryRow): LibraryItem {
   const started = row.status === 'in_progress' && row.hasLetters === true
   return {
     puzzleId: row.puzzleId,
+    source: row.source,
     date: row.date,
     level: row.level,
     status: completed ? 'completed' : started ? 'in_progress' : 'not_started',
@@ -31,6 +32,7 @@ export function toLibraryItem(row: LibraryRow): LibraryItem {
 export function toPublicLibraryItem(row: PuzzleRow): LibraryItem {
   return {
     puzzleId: row.puzzleId,
+    source: row.source,
     date: row.date,
     level: row.level,
     status: 'not_started',
@@ -47,13 +49,14 @@ export type LibraryService = ReturnType<typeof createLibraryService>
 // Só lê o que já está guardado: não recebe `PuzzleSource` nem o limitador de busca.
 export function createLibraryService(deps: { db: Database }) {
   return {
-    async list(userId: string): Promise<LibraryItem[]> {
-      const rows = await listLibraryRows(deps.db, userId, LIBRARY_LIMIT)
+    // O limite vale por fonte: a lista traz só a fonte pedida (feature 014).
+    async list(userId: string, source: PuzzleSourceId): Promise<LibraryItem[]> {
+      const rows = await listLibraryRows(deps.db, userId, source, LIBRARY_LIMIT)
       return rows.map(toLibraryItem)
     },
 
-    async listPublic(): Promise<LibraryItem[]> {
-      const rows = await listPuzzleRows(deps.db, LIBRARY_LIMIT)
+    async listPublic(source: PuzzleSourceId): Promise<LibraryItem[]> {
+      const rows = await listPuzzleRows(deps.db, source, LIBRARY_LIMIT)
       return rows.map(toPublicLibraryItem)
     },
   }

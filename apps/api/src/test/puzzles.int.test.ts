@@ -15,6 +15,7 @@ const { db } = handle
 let clock: TestClock
 let app: FastifyInstance
 let source: FakeSource
+let cruzada: FakeSource
 let cookie: string
 
 const today = () => todayInSaoPaulo(clock.now)
@@ -25,8 +26,10 @@ let logged: string[]
 async function start(
   responses: Map<string, FetchPuzzleResult> = new Map(),
   rateLimits: RateLimits = defaultRateLimits,
+  cruzadaResponses: Map<string, FetchPuzzleResult> = new Map(),
 ) {
   source = fakeSource(responses)
+  cruzada = fakeSource(cruzadaResponses, { id: 'cruzadaonline' })
   logged = []
   const logStream = new Writable({
     write(chunk, _encoding, done) {
@@ -37,7 +40,7 @@ async function start(
   app = buildTestApp({
     database: db,
     clock: clock.now,
-    puzzleSource: source,
+    puzzleSources: [source, cruzada],
     rateLimits,
     logStream,
   })
@@ -256,6 +259,84 @@ describe('GET /api/puzzles', () => {
     expect(a.json().puzzleId).toBe(b.json().puzzleId)
     expect(a.json().solution).toEqual(b.json().solution)
     expect(await db.select().from(puzzles)).toHaveLength(1)
+  })
+})
+
+describe('GET /api/puzzles com fonte (feature 014)', () => {
+  const cruzadaFor = (...dates: string[]) =>
+    new Map<string, FetchPuzzleResult>(dates.map((date) => [date, okResult(date, 'cruzadaonline')]))
+
+  it('sem fonte vale oglobo e a resposta é a de antes (SC-007)', async () => {
+    await start(okFor(today()), defaultRateLimits, cruzadaFor(today()))
+    const response = await get(`/api/puzzles?date=${today()}`, false)
+
+    expect(response.statusCode).toBe(200)
+    expect(Object.keys(response.json()).sort()).toEqual(['puzzle', 'puzzleId', 'solution'])
+    expect(response.json().puzzle.source).toBe('oglobo')
+    expect(source.calls).toEqual([today()])
+    expect(cruzada.calls).toEqual([])
+  })
+
+  it('source=cruzadaonline busca só nessa fonte', async () => {
+    await start(okFor(today()), defaultRateLimits, cruzadaFor(today()))
+    const response = await get(`/api/puzzles?date=${today()}&source=cruzadaonline`, false)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().puzzle.source).toBe('cruzadaonline')
+    expect(response.json().puzzle.attribution.sourceName).toBe('Cruzada Online')
+    expect(cruzada.calls).toEqual([today()])
+    expect(source.calls).toEqual([])
+  })
+
+  it('fonte desconhecida é pedido inválido', async () => {
+    await start()
+    const response = await get(`/api/puzzles?date=${today()}&source=xyz`, false)
+
+    expect(response.statusCode).toBe(400)
+    expect(response.json()).toMatchObject({ error: 'invalid-input', fields: ['source'] })
+  })
+
+  it('data futura da nova fonte responde 404 sem consultar a fonte', async () => {
+    await start(new Map(), defaultRateLimits, cruzadaFor(daysAgo(-1)))
+    const response = await get(`/api/puzzles?date=${daysAgo(-1)}&source=cruzadaonline`, false)
+
+    expect(response.statusCode).toBe(404)
+    expect(cruzada.calls).toEqual([])
+  })
+
+  it('o limite de buscas por endereço é o mesmo para as duas fontes', async () => {
+    const limits = { ...defaultRateLimits, puzzleFetch: { max: 2, windowMinutes: 60 } }
+    await start(okFor(daysAgo(0), daysAgo(2)), limits, cruzadaFor(daysAgo(1)))
+
+    expect((await get(`/api/puzzles?date=${daysAgo(0)}`, false)).statusCode).toBe(200)
+    expect(
+      (await get(`/api/puzzles?date=${daysAgo(1)}&source=cruzadaonline`, false)).statusCode,
+    ).toBe(200)
+    expect((await get(`/api/puzzles?date=${daysAgo(2)}`, false)).statusCode).toBe(429)
+  })
+
+  it('o puzzle guardado de uma fonte não é devolvido para a outra', async () => {
+    await start(okFor(today()), defaultRateLimits, cruzadaFor(today()))
+    const globo = (await get(`/api/puzzles?date=${today()}`, false)).json()
+    const other = (await get(`/api/puzzles?date=${today()}&source=cruzadaonline`, false)).json()
+
+    expect(other.puzzleId).not.toBe(globo.puzzleId)
+    expect(cruzada.calls).toEqual([today()])
+    expect(await db.select().from(puzzles)).toHaveLength(2)
+  })
+
+  it('falha da nova fonte responde 502 sem vazar o detalhe', async () => {
+    const failure: FetchPuzzleResult = {
+      ok: false,
+      reason: 'source-down',
+      detail: 'detalhe-secreto',
+    }
+    await start(new Map(), defaultRateLimits, new Map([[today(), failure]]))
+    const response = await get(`/api/puzzles?date=${today()}&source=cruzadaonline`, false)
+
+    expect(response.statusCode).toBe(502)
+    expect(response.json().error).toBe('puzzle-source-failed')
+    expect(response.body + logged.join('')).not.toContain('detalhe-secreto')
   })
 })
 

@@ -97,7 +97,7 @@ beforeEach(async () => {
       done()
     },
   })
-  app = buildTestApp({ database: db, clock: clock.now, puzzleSource: fakeSource(), logStream })
+  app = buildTestApp({ database: db, clock: clock.now, puzzleSources: [fakeSource()], logStream })
 
   const ok = okResult(todayInSaoPaulo(clock.now))
   const inserted = await insertPuzzleIfAbsent(db, { puzzle: ok.puzzle, solution: ok.solution })

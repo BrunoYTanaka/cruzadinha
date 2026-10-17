@@ -1,4 +1,4 @@
-import { emailSchema, passwordSchema } from '@cruzadinha/shared'
+import { emailSchema, passwordSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { parseArgs } from 'node:util'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
@@ -12,8 +12,8 @@ import type { PuzzleSource } from '../sources/types'
 export type CliDeps = {
   db: Database
   clock: Clock
-  /** Fonte dos puzzles usada por `puzzles collect`. */
-  source: PuzzleSource
+  /** Fontes dos puzzles usadas por `puzzles collect`, na ordem da coleta. */
+  sources: readonly PuzzleSource[]
   /** Dias anteriores a hoje que a coleta também busca (0 = só hoje). */
   historyDays: number
   /** Lê um segredo (a senha) sem eco no terminal, ou da entrada padrão; nunca é registrado. */
@@ -74,25 +74,32 @@ async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
   const puzzles = createPuzzlesService({
     db: deps.db,
     clock: deps.clock,
-    source: deps.source,
+    sources: deps.sources,
     rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
     limits: defaultRateLimits,
     historyDays: deps.historyDays,
   })
-  const report = await puzzles.collect()
+  const run = await puzzles.collect()
 
-  deps.stdout(
-    `Coleta de puzzles: ${report.saved.length} gravados, ${report.skipped.length} já existentes, ` +
-      `${report.unavailable.length} indisponíveis, ${report.failed.length} falhas.\n`,
-  )
-  if (report.saved.length > 0) deps.stdout(`Gravados: ${report.saved.join(', ')}\n`)
-  for (const { date, reason } of report.failed) deps.stderr(`Falhou em ${date}: ${reason}\n`)
-  if (report.stoppedBy) {
-    deps.stderr(
-      `Interrompido por limite de uso da fonte; pendentes: ${report.pending.join(', ')}\n`,
+  let failed = false
+  for (const { source, report } of run.sources) {
+    const name = puzzleSourceNames[source]
+    deps.stdout(
+      `Coleta ${name}: ${report.saved.length} gravados, ${report.skipped.length} já existentes, ` +
+        `${report.unavailable.length} indisponíveis, ${report.failed.length} falhas.\n`,
     )
+    if (report.saved.length > 0) deps.stdout(`Gravados: ${report.saved.join(', ')}\n`)
+    for (const { date, reason } of report.failed) {
+      deps.stderr(`[${name}] Falhou em ${date}: ${reason}\n`)
+    }
+    if (report.stoppedBy) {
+      deps.stderr(
+        `[${name}] Interrompido por limite de uso da fonte; pendentes: ${report.pending.join(', ')}\n`,
+      )
+    }
+    if (report.failed.length > 0 || report.stoppedBy) failed = true
   }
-  return report.failed.length > 0 || report.stoppedBy ? 1 : 0
+  return failed ? 1 : 0
 }
 
 export async function runCli(argv: string[], deps: CliDeps): Promise<number> {

@@ -5,6 +5,7 @@ import { defaultRateLimits } from '../modules/rate-limit/limits'
 import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
 import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
+import type { CollectRun } from '../modules/puzzles/puzzles.service'
 import type { FetchPuzzleResult } from '../sources/types'
 import { fakeSource, okResult } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
@@ -22,6 +23,12 @@ afterAll(() => handle.close())
 
 const today = () => todayInSaoPaulo(clock.now)
 
+// Relatório da única fonte do serviço.
+function only(run: CollectRun) {
+  expect(run.sources).toHaveLength(1)
+  return run.sources[0]!.report
+}
+
 function serviceWith(
   responses: Map<string, FetchPuzzleResult>,
   options: { historyDays?: number; sleep?: (ms: number) => Promise<void> } = {},
@@ -30,7 +37,7 @@ function serviceWith(
   const service = createPuzzlesService({
     db,
     clock: clock.now,
-    source,
+    sources: [source],
     rateLimiter: createRateLimiter(createRateLimitRepository(db)),
     limits: defaultRateLimits,
     historyDays: options.historyDays ?? 0,
@@ -42,7 +49,7 @@ function serviceWith(
 describe('collect (só o dia de hoje)', () => {
   it('grava o puzzle de hoje', async () => {
     const { service, source } = serviceWith(new Map([[today(), okResult(today())]]))
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report).toEqual({
       saved: [today()],
@@ -60,7 +67,7 @@ describe('collect (só o dia de hoje)', () => {
     await service.collect()
     source.calls.length = 0
 
-    const report = await service.collect()
+    const report = only(await service.collect())
     expect(report.saved).toEqual([])
     expect(report.skipped).toEqual([today()])
     expect(source.calls).toEqual([])
@@ -75,7 +82,7 @@ describe('collect (só o dia de hoje)', () => {
     const { service } = serviceWith(new Map([[today(), { ok: false, reason: 'source-down' }]]), {
       historyDays: 1,
     })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.failed).toEqual([{ date: today(), reason: 'source-down' }])
     expect(report.skipped).toEqual([yesterday])
@@ -84,7 +91,7 @@ describe('collect (só o dia de hoje)', () => {
 
   it('conta a data que a fonte não publica como indisponível, não como falha', async () => {
     const { service } = serviceWith(new Map([[today(), { ok: false, reason: 'unavailable' }]]))
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.unavailable).toEqual([today()])
     expect(report.failed).toEqual([])
@@ -94,7 +101,7 @@ describe('collect (só o dia de hoje)', () => {
   it('não grava puzzle inconsistente da fonte', async () => {
     const broken = { ...okResult(today()), solution: { cells: [['A']] } }
     const { service } = serviceWith(new Map([[today(), broken]]))
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.failed).toEqual([{ date: today(), reason: 'unexpected-format' }])
     expect(await db.select().from(puzzles)).toHaveLength(0)
@@ -117,7 +124,7 @@ describe('collect (histórico dentro da janela)', () => {
         pauses.push(ms)
       },
     })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.saved).toEqual(dates)
     expect(source.calls).toEqual(dates)
@@ -132,7 +139,7 @@ describe('collect (histórico dentro da janela)', () => {
     await service.collect()
     source.calls.length = 0
 
-    const report = await service.collect()
+    const report = only(await service.collect())
     expect(report.skipped).toHaveLength(32)
     expect(report.saved).toEqual([])
     expect(source.calls).toEqual([])
@@ -144,7 +151,7 @@ describe('collect (histórico dentro da janela)', () => {
     await first.service.collect()
 
     const { service, source } = serviceWith(okForAll(dates), { historyDays: 3 })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(source.calls).toEqual([dates[0], dates[2]])
     expect(report.saved).toEqual([dates[0], dates[2]])
@@ -156,7 +163,7 @@ describe('collect (histórico dentro da janela)', () => {
     const responses = okForAll(dates)
     responses.set(dates[2]!, { ok: false, reason: 'unavailable' })
     const { service } = serviceWith(responses, { historyDays: 3 })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.unavailable).toEqual([dates[2]])
     expect(report.failed).toEqual([])
@@ -168,7 +175,7 @@ describe('collect (histórico dentro da janela)', () => {
     const responses = okForAll(dates)
     responses.set(dates[4]!, { ok: false, reason: 'rate-limited' })
     const { service, source } = serviceWith(responses, { historyDays: 6 })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.stoppedBy).toBe('rate-limited')
     expect(report.saved).toEqual(dates.slice(0, 4))
@@ -181,7 +188,7 @@ describe('collect (histórico dentro da janela)', () => {
     const responses = okForAll(dates)
     responses.set(dates[1]!, { ok: false, reason: 'source-down' })
     const { service } = serviceWith(responses, { historyDays: 2 })
-    const report = await service.collect()
+    const report = only(await service.collect())
 
     expect(report.failed).toEqual([{ date: dates[1], reason: 'source-down' }])
     expect(report.saved).toEqual([dates[0], dates[2]])
@@ -192,5 +199,95 @@ describe('collect (histórico dentro da janela)', () => {
     const { service, source } = serviceWith(new Map(), { historyDays: 3 })
     await service.collect()
     expect(source.calls).toHaveLength(4)
+  })
+})
+
+describe('collect (várias fontes)', () => {
+  function twoSources(
+    globo: Map<string, FetchPuzzleResult>,
+    cruzada: Map<string, FetchPuzzleResult>,
+    options: { historyDays?: number; throwOn?: ReadonlySet<string>; pauses?: number[] } = {},
+  ) {
+    const first = fakeSource(globo, { throwOn: options.throwOn })
+    const second = fakeSource(cruzada, { id: 'cruzadaonline' })
+    const service = createPuzzlesService({
+      db,
+      clock: clock.now,
+      sources: [first, second],
+      rateLimiter: createRateLimiter(createRateLimitRepository(db)),
+      limits: defaultRateLimits,
+      historyDays: options.historyDays ?? 0,
+      sleep: async (ms) => {
+        options.pauses?.push(ms)
+      },
+    })
+    return { service, first, second }
+  }
+
+  it('coleta as duas fontes, na ordem, com pausa também entre elas', async () => {
+    const pauses: number[] = []
+    const { service } = twoSources(
+      new Map([[today(), okResult(today())]]),
+      new Map([[today(), okResult(today(), 'cruzadaonline')]]),
+      { pauses },
+    )
+    const run = await service.collect()
+
+    expect(run.sources.map((entry) => entry.source)).toEqual(['oglobo', 'cruzadaonline'])
+    expect(run.sources.map((entry) => entry.report.saved)).toEqual([[today()], [today()]])
+    expect(pauses).toEqual([2000])
+    expect(await db.select().from(puzzles)).toHaveLength(2)
+  })
+
+  it('o limite de uso de uma fonte não interrompe a outra', async () => {
+    const { service, second } = twoSources(
+      new Map([[today(), { ok: false, reason: 'rate-limited' }]]),
+      new Map([[today(), okResult(today(), 'cruzadaonline')]]),
+    )
+    const [globo, cruzada] = (await service.collect()).sources
+
+    expect(globo?.report.stoppedBy).toBe('rate-limited')
+    expect(cruzada?.report.saved).toEqual([today()])
+    expect(second.calls).toEqual([today()])
+  })
+
+  it('um erro inesperado do adaptador vira falha daquela fonte e a coleta segue', async () => {
+    const { service } = twoSources(
+      new Map([[today(), okResult(today())]]),
+      new Map([[today(), okResult(today(), 'cruzadaonline')]]),
+      { throwOn: new Set([today()]) },
+    )
+    const [globo, cruzada] = (await service.collect()).sources
+
+    expect(globo?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
+    expect(cruzada?.report.saved).toEqual([today()])
+  })
+
+  it('a data guardada de uma fonte não conta como guardada na outra', async () => {
+    const globoOnly = twoSources(new Map([[today(), okResult(today())]]), new Map())
+    await globoOnly.service.collect()
+
+    const { service, first, second } = twoSources(
+      new Map([[today(), okResult(today())]]),
+      new Map([[today(), okResult(today(), 'cruzadaonline')]]),
+    )
+    const [globo, cruzada] = (await service.collect()).sources
+
+    expect(first.calls).toEqual([])
+    expect(globo?.report.skipped).toEqual([today()])
+    expect(second.calls).toEqual([today()])
+    expect(cruzada?.report.saved).toEqual([today()])
+  })
+
+  it('recusa duas fontes com o mesmo id', () => {
+    expect(() =>
+      createPuzzlesService({
+        db,
+        clock: clock.now,
+        sources: [fakeSource(), fakeSource()],
+        rateLimiter: createRateLimiter(createRateLimitRepository(db)),
+        limits: defaultRateLimits,
+      }),
+    ).toThrow('fonte repetida: oglobo')
   })
 })

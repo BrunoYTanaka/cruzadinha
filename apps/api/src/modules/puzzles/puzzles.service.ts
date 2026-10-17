@@ -2,13 +2,19 @@ import {
   validatePuzzleWithSolution,
   type Level,
   type Puzzle,
+  type PuzzleSourceId,
   type Solution,
 } from '@cruzadinha/shared'
 import { setTimeout as delay } from 'node:timers/promises'
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
 import { candidateDates, todayInSaoPaulo } from '../../lib/dates'
-import type { FetchFailureReason, FetchPuzzleSuccess, PuzzleSource } from '../../sources/types'
+import type {
+  FetchFailureReason,
+  FetchPuzzleResult,
+  FetchPuzzleSuccess,
+  PuzzleSource,
+} from '../../sources/types'
 import type { RateLimits } from '../rate-limit/limits'
 import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import {
@@ -23,7 +29,12 @@ export type GetPuzzleResult =
   | { ok: true; puzzleId: string; puzzle: Puzzle; solution: Solution }
   | { ok: false; reason: 'unavailable' }
   // `sourceReason` serve só para o log: nunca vai no corpo da resposta.
-  | { ok: false; reason: 'source-failed'; sourceReason: FetchFailureReason | 'inconsistent' }
+  | {
+      ok: false
+      reason: 'source-failed'
+      source: PuzzleSourceId
+      sourceReason: FetchFailureReason | 'inconsistent'
+    }
   | { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
 export type CollectReport = {
@@ -40,18 +51,29 @@ export type CollectReport = {
   pending: string[]
 }
 
+/** Uma execução da coleta: o relatório de cada fonte, na ordem em que foram coletadas. */
+export type CollectRun = {
+  sources: { source: PuzzleSourceId; report: CollectReport }[]
+}
+
 export const PAUSE_MS = 2_000
 
 export type PuzzlesService = {
-  collect(): Promise<CollectReport>
-  getByDate(level: Level, date: string, address: string): Promise<GetPuzzleResult>
+  collect(): Promise<CollectRun>
+  getByDate(
+    source: PuzzleSourceId,
+    level: Level,
+    date: string,
+    address: string,
+  ): Promise<GetPuzzleResult>
   getById(puzzleId: string): Promise<GetPuzzleResult>
 }
 
 export type PuzzlesDeps = {
   db: Database
   clock: Clock
-  source: PuzzleSource
+  /** Um adaptador por fonte; a coleta segue esta ordem. */
+  sources: readonly PuzzleSource[]
   rateLimiter: RateLimiter
   limits: RateLimits
   /** Dias anteriores a hoje que a coleta também busca (0 = só hoje). */
@@ -75,54 +97,89 @@ function deliver(stored: StoredPuzzle): GetPuzzleResult {
 }
 
 export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
-  const { db, clock, source, rateLimiter, limits, historyDays = 0, sleep = delay } = deps
+  const { db, clock, sources, rateLimiter, limits, historyDays = 0, sleep = delay } = deps
+  const bySource = new Map<PuzzleSourceId, PuzzleSource>()
+  for (const source of sources) {
+    if (bySource.has(source.id)) throw new Error(`fonte repetida: ${source.id}`)
+    bySource.set(source.id, source)
+  }
+
+  function adapterFor(id: PuzzleSourceId): PuzzleSource {
+    const source = bySource.get(id)
+    if (!source) throw new Error(`fonte sem adaptador: ${id}`)
+    return source
+  }
+
+  // A pausa vale entre quaisquer dois pedidos seguidos, inclusive de fontes diferentes.
+  let requested = false
+  async function pauseBeforeRequest() {
+    if (requested) await sleep(PAUSE_MS)
+    requested = true
+  }
+
+  async function collectSource(source: PuzzleSource): Promise<CollectReport> {
+    const level: Level = 'daily'
+    const candidates = candidateDates(todayInSaoPaulo(clock), historyDays)
+    const stored = await existingDates(db, { source: source.id, level, dates: candidates })
+    const report: CollectReport = {
+      saved: [],
+      skipped: candidates.filter((date) => stored.has(date)),
+      unavailable: [],
+      failed: [],
+      pending: [],
+    }
+    const missing = candidates.filter((date) => !stored.has(date))
+
+    for (const [index, date] of missing.entries()) {
+      // Uma requisição por data, com pausa entre elas para não pesar na fonte.
+      await pauseBeforeRequest()
+      let fetched: FetchPuzzleResult
+      try {
+        fetched = await source.fetchPuzzle(level, date)
+      } catch {
+        // Um erro inesperado de um adaptador não pode impedir a coleta das outras fontes.
+        report.failed.push({ date, reason: 'source-down' })
+        break
+      }
+      if (!fetched.ok) {
+        if (fetched.reason === 'unavailable') {
+          report.unavailable.push(date)
+        } else if (fetched.reason === 'rate-limited') {
+          report.stoppedBy = 'rate-limited'
+          report.pending = missing.slice(index)
+          break
+        } else {
+          report.failed.push({ date, reason: fetched.reason })
+        }
+        continue
+      }
+      if (!isConsistent(fetched)) {
+        report.failed.push({ date, reason: 'unexpected-format' })
+        continue
+      }
+      const saved = await insertPuzzleIfAbsent(db, {
+        puzzle: fetched.puzzle,
+        solution: fetched.solution,
+      })
+      // Outra execução pode ter gravado a data entre a consulta e agora.
+      ;(saved.inserted ? report.saved : report.skipped).push(date)
+    }
+    return report
+  }
 
   return {
     async collect() {
-      const level: Level = 'daily'
-      const candidates = candidateDates(todayInSaoPaulo(clock), historyDays)
-      const stored = await existingDates(db, { source: source.id, level, dates: candidates })
-      const report: CollectReport = {
-        saved: [],
-        skipped: candidates.filter((date) => stored.has(date)),
-        unavailable: [],
-        failed: [],
-        pending: [],
+      const run: CollectRun = { sources: [] }
+      requested = false
+      for (const source of sources) {
+        run.sources.push({ source: source.id, report: await collectSource(source) })
       }
-      const missing = candidates.filter((date) => !stored.has(date))
-
-      for (const [index, date] of missing.entries()) {
-        // Uma requisição por data, com pausa entre elas para não pesar na fonte.
-        if (index > 0) await sleep(PAUSE_MS)
-        const fetched = await source.fetchPuzzle(level, date)
-        if (!fetched.ok) {
-          if (fetched.reason === 'unavailable') {
-            report.unavailable.push(date)
-          } else if (fetched.reason === 'rate-limited') {
-            report.stoppedBy = 'rate-limited'
-            report.pending = missing.slice(index)
-            break
-          } else {
-            report.failed.push({ date, reason: fetched.reason })
-          }
-          continue
-        }
-        if (!isConsistent(fetched)) {
-          report.failed.push({ date, reason: 'unexpected-format' })
-          continue
-        }
-        const saved = await insertPuzzleIfAbsent(db, {
-          puzzle: fetched.puzzle,
-          solution: fetched.solution,
-        })
-        // Outra execução pode ter gravado a data entre a consulta e agora.
-        ;(saved.inserted ? report.saved : report.skipped).push(date)
-      }
-      return report
+      return run
     },
 
-    async getByDate(level, date, address) {
-      const stored = await findPuzzle(db, { source: source.id, level, date })
+    async getByDate(sourceId, level, date, address) {
+      const source = adapterFor(sourceId)
+      const stored = await findPuzzle(db, { source: sourceId, level, date })
       if (stored) return deliver(stored)
 
       if (date > todayInSaoPaulo(clock)) return { ok: false, reason: 'unavailable' }
@@ -144,10 +201,15 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       if (!fetched.ok) {
         return fetched.reason === 'unavailable'
           ? { ok: false, reason: 'unavailable' }
-          : { ok: false, reason: 'source-failed', sourceReason: fetched.reason }
+          : { ok: false, reason: 'source-failed', source: sourceId, sourceReason: fetched.reason }
       }
       if (!isConsistent(fetched)) {
-        return { ok: false, reason: 'source-failed', sourceReason: 'inconsistent' }
+        return {
+          ok: false,
+          reason: 'source-failed',
+          source: sourceId,
+          sourceReason: 'inconsistent',
+        }
       }
 
       const saved = await insertPuzzleIfAbsent(db, {

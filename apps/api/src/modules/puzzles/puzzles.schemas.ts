@@ -5,6 +5,7 @@ import {
   errorResponse,
   optionalSessionSecurity,
   retryAfterHeader,
+  sourceQueryProperty,
   toDocSchema,
 } from '../../docs/doc-schema'
 
@@ -38,12 +39,13 @@ export const getPuzzleByDateSchema = {
         description: 'Dia do puzzle, no formato AAAA-MM-DD.',
         examples: ['2026-10-13'],
       },
+      source: sourceQueryProperty,
     },
     required: ['date'],
   },
   response: {
     200: { description: 'Puzzle com a solução', ...toDocSchema(puzzleResponseSchema) },
-    400: errorResponse('`invalid-input`: `level` ou `date` inválidos.'),
+    400: errorResponse('`invalid-input`: `level`, `date` ou `source` inválidos.'),
     401: unauthenticated,
     404: unavailable,
     429: {

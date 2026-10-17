@@ -207,7 +207,10 @@ describe('documento OpenAPI', () => {
       expect(serialized).not.toContain(secret)
     }
     // Os exemplos do documento nunca trazem as letras de um puzzle (nem do exemplo do seed).
-    expect(serialized).not.toContain(JSON.stringify(buildSamplePuzzle('2026-10-13').solution.cells))
+    for (const source of ['oglobo', 'cruzadaonline'] as const) {
+      const { cells } = buildSamplePuzzle(source, '2026-10-13').solution
+      expect(serialized).not.toContain(JSON.stringify(cells))
+    }
     for (const forbidden of ['passwordHash', 'hash', 'tokenHash']) {
       expect(propertyNames(doc)).not.toContain(forbidden)
     }

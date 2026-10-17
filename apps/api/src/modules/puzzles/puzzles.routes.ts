@@ -1,4 +1,9 @@
-import { isoDateSchema, levelSchema, type PuzzleResponse } from '@cruzadinha/shared'
+import {
+  isoDateSchema,
+  levelSchema,
+  puzzleSourceQuerySchema,
+  type PuzzleResponse,
+} from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError, sendTooManyAttempts } from '../../http/errors'
@@ -14,6 +19,7 @@ export type PuzzlesRoutesOptions = {
 const querySchema = z.object({
   level: levelSchema.default('daily'),
   date: isoDateSchema,
+  source: puzzleSourceQuerySchema,
 })
 
 export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
@@ -29,7 +35,10 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
       return sendTooManyAttempts(reply, result.retryAfterSeconds)
     if (result.reason === 'source-failed') {
       // Só o motivo curto vai ao log: nunca token nem corpo da fonte.
-      request.log.warn({ reason: result.sourceReason }, 'falha ao buscar o puzzle na fonte')
+      request.log.warn(
+        { source: result.source, reason: result.sourceReason },
+        'falha ao buscar o puzzle na fonte',
+      )
       return sendError(reply, 502, 'puzzle-source-failed')
     }
     return sendError(reply, 404, 'puzzle-unavailable')
@@ -46,6 +55,7 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
         return sendError(reply, 400, 'invalid-input', fields)
       }
       const result = await puzzles.getByDate(
+        query.data.source,
         query.data.level,
         query.data.date,
         request.clientAddress,

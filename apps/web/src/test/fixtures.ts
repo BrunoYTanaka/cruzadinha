@@ -1,4 +1,12 @@
-import type { LibraryItem, Progress, Puzzle, PuzzleResponse, Solution } from '@cruzadinha/shared'
+import {
+  puzzleSourceNames,
+  type LibraryItem,
+  type Progress,
+  type Puzzle,
+  type PuzzleResponse,
+  type PuzzleSourceId,
+  type Solution,
+} from '@cruzadinha/shared'
 
 export const PUZZLE_ID = '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a'
 
@@ -71,11 +79,17 @@ export function makeSolution(rows: string[]): Solution {
 
 export function makePuzzleResponse(
   rows: string[],
-  options: { puzzleId?: string; date?: string } = {},
+  options: { puzzleId?: string; date?: string; source?: PuzzleSourceId } = {},
 ): PuzzleResponse {
+  const puzzle = makePuzzle(rows, options.date)
+  const source = options.source ?? puzzle.source
   return {
     puzzleId: options.puzzleId ?? PUZZLE_ID,
-    puzzle: makePuzzle(rows, options.date),
+    puzzle: {
+      ...puzzle,
+      source,
+      attribution: { ...puzzle.attribution, sourceName: puzzleSourceNames[source] },
+    },
     solution: makeSolution(rows),
   }
 }
@@ -96,6 +110,7 @@ export function makeLibraryItem(date: string, overrides: Partial<LibraryItem> = 
   const digits = date.replaceAll('-', '')
   return {
     puzzleId: `00000000-0000-4000-8000-0000${digits}`,
+    source: 'oglobo',
     date,
     level: 'daily',
     status: 'not_started',

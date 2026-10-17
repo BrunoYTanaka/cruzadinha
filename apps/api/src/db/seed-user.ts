@@ -1,3 +1,4 @@
+import { puzzleSourceIdSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { loadConfig, loadSeedConfig } from '../config'
 import { hashPassword } from '../lib/password'
 import { insertIfEmailFree } from '../modules/auth/users.repository'
@@ -15,7 +16,8 @@ export type SeedDeps = {
 }
 
 // Seed de desenvolvimento (FR-033): cria a conta de teste sem convite e nunca mexe numa existente.
-// Também deixa um puzzle de exemplo na data de hoje, sem rede e sem substituir um puzzle guardado.
+// Também deixa um puzzle de exemplo de cada fonte na data de hoje, sem rede e sem substituir um
+// puzzle guardado.
 export async function runSeed(
   env: Record<string, string | undefined>,
   deps: SeedDeps,
@@ -47,12 +49,15 @@ export async function runSeed(
     )
 
     const date = todayInSaoPaulo(deps.clock ?? systemClock)
-    const sample = await insertPuzzleIfAbsent(database.db, buildSamplePuzzle(date))
-    deps.stdout(
-      sample.inserted
-        ? `Puzzle de exemplo gravado: ${date}\n`
-        : `Já existe puzzle em ${date}; exemplo não gravado.\n`,
-    )
+    for (const source of puzzleSourceIdSchema.options) {
+      const name = puzzleSourceNames[source]
+      const sample = await insertPuzzleIfAbsent(database.db, buildSamplePuzzle(source, date))
+      deps.stdout(
+        sample.inserted
+          ? `Puzzle de exemplo gravado: ${date} (${name})\n`
+          : `Já existe puzzle em ${date} (${name}); exemplo não gravado.\n`,
+      )
+    }
     return 0
   } finally {
     await database.close()

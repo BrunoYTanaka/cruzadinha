@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { availableDateSchema, levelSchema, puzzleSchema, solutionSchema } from './schema'
+import {
+  availableDateSchema,
+  levelSchema,
+  puzzleSchema,
+  puzzleSourceIdSchema,
+  puzzleSourceNames,
+  puzzleSourceQuerySchema,
+  solutionSchema,
+} from './schema'
 
 const example = {
   source: 'oglobo',
@@ -71,6 +79,25 @@ describe('levelSchema', () => {
     for (const level of ['mini', 'express', 'expert', 'thematic', 'weekly']) {
       expect(levelSchema.safeParse(level).success).toBe(false)
     }
+  })
+})
+
+describe('puzzleSourceIdSchema', () => {
+  it('aceita oglobo e cruzadaonline e recusa outras fontes', () => {
+    expect(puzzleSourceIdSchema.safeParse('oglobo').success).toBe(true)
+    expect(puzzleSourceIdSchema.safeParse('cruzadaonline').success).toBe(true)
+    expect(puzzleSourceIdSchema.safeParse('publico').success).toBe(false)
+  })
+
+  it('na consulta, fonte não informada vale oglobo', () => {
+    expect(puzzleSourceQuerySchema.parse(undefined)).toBe('oglobo')
+    expect(puzzleSourceQuerySchema.parse('cruzadaonline')).toBe('cruzadaonline')
+    expect(puzzleSourceQuerySchema.safeParse('xyz').success).toBe(false)
+  })
+
+  it('tem um nome exibido para cada fonte', () => {
+    expect(Object.keys(puzzleSourceNames).sort()).toEqual([...puzzleSourceIdSchema.options].sort())
+    expect(puzzleSourceNames.cruzadaonline).toBe('Cruzada Online')
   })
 })
 

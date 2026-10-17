@@ -10,7 +10,7 @@ export function buildTestApp(options: {
   database: Database
   clock: Clock
   rateLimits?: RateLimits
-  puzzleSource?: PuzzleSource
+  puzzleSources?: readonly PuzzleSource[]
   /** Com um destino de log, o nível sobe para `error` para o teste ler o que foi registrado. */
   logStream?: NodeJS.WritableStream
   /** Variáveis extras para a configuração (por exemplo, `PROXY_SECRET`). */
