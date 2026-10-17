@@ -1,5 +1,5 @@
 {
-  "apps/api": "0.2.3",
-  "apps/web": "0.2.3",
-  "packages/shared": "0.5.0"
+  "apps/api": "0.3.0",
+  "apps/web": "0.3.0",
+  "packages/shared": "0.6.0"
 }
