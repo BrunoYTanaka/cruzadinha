@@ -5,7 +5,10 @@ import { makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { renderRoutes, resetSessionHandlers } from '../../test/render'
 import { DayRoute } from './DayRoute'
-import { SOURCE_DOWN_KEY } from './source-down'
+import { SOURCE_KEY } from './source-choice'
+import { sourceDownKey } from './source-down'
+
+const SOURCE_DOWN_KEY = sourceDownKey('oglobo')
 
 function Game() {
   return <p>Jogo aberto</p>
@@ -30,6 +33,56 @@ afterEach(() => {
   resetSessionHandlers()
 })
 
+describe('DayRoute com fonte (feature 014)', () => {
+  const cruzada = () =>
+    jsonResponse(200, makePuzzleResponse(TINY, { date: '2026-10-10', source: 'cruzadaonline' }))
+
+  it('?fonte= pede a fonte, vira a preferência e abre o jogo', async () => {
+    const { calls } = mockApi({ 'GET /api/puzzles': cruzada })
+    const { router } = renderRoutes(routes, ['/dia/2026-10-10?fonte=cruzadaonline'])
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
+    expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-10&source=cruzadaonline')
+    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+  })
+
+  it.each(['', '?fonte=xyz'])('sem fonte válida (%s) usa a preferência', async (query) => {
+    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    const { calls } = mockApi({ 'GET /api/puzzles': cruzada })
+    renderRoutes(routes, [`/dia/2026-10-10${query}`])
+    await screen.findByText('Jogo aberto')
+    expect(calls[0]?.url).toContain('&source=cruzadaonline')
+    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+  })
+
+  it('resposta de outra fonte (API anterior) não abre o jogo', async () => {
+    mockApi({
+      'GET /api/puzzles': () => jsonResponse(200, makePuzzleResponse(TINY, { date: '2026-10-10' })),
+    })
+    const { router, queryClient } = renderRoutes(routes, ['/dia/2026-10-10?fonte=cruzadaonline'])
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Esta fonte não está disponível agora',
+    )
+    expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/dia/2026-10-10')
+    expect(queryClient.getQueryData(['puzzle', PUZZLE_ID])).toBeUndefined()
+  })
+
+  it('404 e 502 marcam só a fonte pedida', async () => {
+    mockApi({ 'GET /api/puzzles': () => apiError(404, 'puzzle-unavailable') })
+    const first = renderRoutes(routes, ['/dia/2026-10-03?fonte=cruzadaonline'])
+    await screen.findByRole('alert')
+    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:cruzadaonline:2026-10-03')).toBe('1')
+    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:oglobo:2026-10-03')).toBeNull()
+    first.unmount()
+
+    mockApi({ 'GET /api/puzzles': () => apiError(502, 'puzzle-source-failed') })
+    renderRoutes(routes, ['/dia/2026-10-04?fonte=cruzadaonline'])
+    await screen.findByRole('alert')
+    expect(window.localStorage.getItem(sourceDownKey('cruzadaonline'))).not.toBeNull()
+    expect(window.localStorage.getItem(SOURCE_DOWN_KEY)).toBeNull()
+  })
+})
+
 describe('DayRoute', () => {
   it('em sucesso redireciona a /jogo/:id com replace e apaga o aviso da fonte', async () => {
     window.localStorage.setItem(SOURCE_DOWN_KEY, String(Date.now()))
@@ -40,7 +93,7 @@ describe('DayRoute', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Buscando a cruzada…')
     await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
     expect(await screen.findByText('Jogo aberto')).toBeInTheDocument()
-    expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-03')
+    expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-03&source=oglobo')
     expect(window.localStorage.getItem(SOURCE_DOWN_KEY)).toBeNull()
     // replace: voltar não devolve à tela de busca
     expect(router.state.historyAction).toBe('REPLACE')
@@ -51,7 +104,7 @@ describe('DayRoute', () => {
     renderRoutes(routes, ['/dia/2026-10-03'])
     expect(await screen.findByRole('alert')).toHaveTextContent('Não há cruzada neste dia.')
     expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute('href', '/')
-    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:2026-10-03')).toBe('1')
+    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:oglobo:2026-10-03')).toBe('1')
   })
 
   it('502 mostra "A fonte está fora do ar agora." e grava o aviso da biblioteca', async () => {

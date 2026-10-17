@@ -1,3 +1,4 @@
+import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
@@ -18,7 +19,9 @@ import { Calendar } from './Calendar'
 import styles from './LibraryPage.module.css'
 import { LibraryLegend } from './LibraryLegend'
 import { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from './library-width'
+import { useSourceChoice } from './source-choice'
 import { isSourceDown, readNoPuzzleDates } from './source-down'
+import { SourcePicker } from './SourcePicker'
 import { useLibraryWidth } from './useLibraryWidth'
 
 // Computador: o calendário fica largo e pode ser redimensionado pela alça da borda.
@@ -28,9 +31,10 @@ export function LibraryPage() {
   useDocumentTitle('Escolha um dia')
   const today = useMemo(() => todayInBrasilia(), [])
   const viewer = useViewer()
+  const [source, setSource] = useSourceChoice()
   const library = useQuery({
-    queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending'),
-    queryFn: () => (viewer ? libraryFor(viewer) : getLibrary()),
+    queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending', source),
+    queryFn: () => (viewer ? libraryFor(viewer, source) : getLibrary(source)),
     enabled: viewer !== undefined,
     // Com a API anterior, a biblioteca de visitante responde 401: um erro só, sem novas tentativas
     // (R19, feature 013).
@@ -40,20 +44,32 @@ export function LibraryPage() {
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
 
-  const items = useMemo(() => library.data?.items ?? [], [library.data])
+  // A API anterior ignora a fonte e só lista O Globo: um item de outra fonte nunca entra no mês.
+  const items = useMemo(
+    () => (library.data?.items ?? []).filter((item) => item.source === source),
+    [library.data, source],
+  )
   const view = useMemo(() => {
     const monthDates = Array.from(
       { length: 31 },
       (_, index) =>
         `${String(month.year).padStart(4, '0')}-${String(month.month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`,
     )
-    return buildMonth(month, today, items, readNoPuzzleDates(monthDates))
-  }, [month, today, items])
+    return buildMonth(month, today, items, readNoPuzzleDates(source, monthDates))
+  }, [month, today, items, source])
   const wide = useMediaQuery(LIBRARY_DESKTOP_QUERY)
   const pageRef = useRef<HTMLDivElement>(null)
   const size = useLibraryWidth(pageRef, { enabled: wide, ready: library.isSuccess })
 
-  if (library.isPending) return <LoadingState label="Carregando a biblioteca…" />
+  const picker = <SourcePicker value={source} onChange={setSource} />
+  if (library.isPending) {
+    return (
+      <div className={styles.page}>
+        {picker}
+        <LoadingState label="Carregando a biblioteca…" />
+      </div>
+    )
+  }
   if (library.isError) {
     if (viewer?.kind === 'guest' && library.error instanceof ApiRequestError) {
       if (library.error.status === 401) {
@@ -66,29 +82,33 @@ export function LibraryPage() {
     }
     const offline = library.error instanceof ApiRequestError && library.error.isOffline
     return (
-      <ErrorState
-        title={offline ? 'Sem conexão' : 'Não foi possível carregar a biblioteca'}
-        message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
-        onRetry={() => void library.refetch()}
-      />
+      <div className={styles.page}>
+        {picker}
+        <ErrorState
+          title={offline ? 'Sem conexão' : 'Não foi possível carregar a biblioteca'}
+          message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
+          onRetry={() => void library.refetch()}
+        />
+      </div>
     )
   }
 
   const todayItem = items.find((item) => item.date === today)
-  const todayPath = todayItem ? `/jogo/${todayItem.puzzleId}` : `/dia/${today}`
+  const todayPath = todayItem ? `/jogo/${todayItem.puzzleId}` : `/dia/${today}?fonte=${source}`
 
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
       <div className={styles.top}>
         <div>
           <h1 className={styles.title}>Escolha um dia</h1>
-          <p className={styles.lead}>Uma cruzada por dia.</p>
+          <p className={styles.lead}>Uma cruzada por dia de cada fonte.</p>
         </div>
         <Link to={todayPath} className={styles.today}>
           Jogar a de hoje
         </Link>
       </div>
-      {isSourceDown() ? (
+      {picker}
+      {isSourceDown(source) ? (
         <Notice variant="warning">
           Novas cruzadas não podem ser buscadas agora. As que já estão guardadas continuam
           disponíveis.
@@ -96,6 +116,7 @@ export function LibraryPage() {
       ) : null}
       <Calendar
         view={view}
+        source={source}
         canGoPrevious={compareMonths(month, first) > 0}
         canGoNext={compareMonths(month, last) < 0}
         onPrevious={() => setMonth((current) => addMonths(current, -1))}
@@ -108,8 +129,8 @@ export function LibraryPage() {
 }
 
 // Visitante: os dias vêm do servidor e a situação de cada um, do navegador (feature 013, FR-007).
-async function libraryFor(viewer: Viewer) {
-  const response = await getLibrary()
+async function libraryFor(viewer: Viewer, source: PuzzleSourceId) {
+  const response = await getLibrary(source)
   if (viewer.kind === 'user') return response
   return { items: mergeGuestLibrary(response.items, await guestStore.getAll()) }
 }

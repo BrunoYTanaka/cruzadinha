@@ -1,3 +1,4 @@
+import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Link } from 'react-router'
 import { formatElapsed, spokenElapsed } from '../../lib/time'
 import type { CalendarDay } from './calendar'
@@ -57,7 +58,15 @@ function spokenStatus(day: CalendarDay): string {
   }
 }
 
-export function DayCell({ day, month }: { day: CalendarDay; month: number }) {
+export function DayCell({
+  day,
+  month,
+  source,
+}: {
+  day: CalendarDay
+  month: number
+  source: PuzzleSourceId
+}) {
   const { state } = day
   const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}`
   const status = visibleStatus(day)
@@ -86,7 +95,7 @@ export function DayCell({ day, month }: { day: CalendarDay; month: number }) {
   }
   if (state.kind === 'fetchable') {
     return (
-      <Link to={`/dia/${day.date}`} className={classes} aria-label={label}>
+      <Link to={`/dia/${day.date}?fonte=${source}`} className={classes} aria-label={label}>
         {content}
       </Link>
     )

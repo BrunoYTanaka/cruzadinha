@@ -1,20 +1,25 @@
+import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
 
 // A biblioteca só lê o que está guardado e nunca consulta a fonte, então ela não sabe se a fonte
-// está fora do ar. O aviso nasce de uma busca de dia que falhou (502) e dura 10 minutos.
-export const SOURCE_DOWN_KEY = 'cruzadinha:source-down'
+// está fora do ar. O aviso nasce de uma busca de dia que falhou (502) e dura 10 minutos. Cada fonte
+// tem o próprio aviso: a queda de uma não esconde os dias buscáveis da outra (feature 014).
 export const SOURCE_DOWN_TTL_MS = 600_000
 
-export function markSourceDown(now: number = Date.now()): void {
-  writeStorage(SOURCE_DOWN_KEY, String(now))
+export function sourceDownKey(source: PuzzleSourceId): string {
+  return `cruzadinha:source-down:${source}`
 }
 
-export function clearSourceDown(): void {
-  removeStorage(SOURCE_DOWN_KEY)
+export function markSourceDown(source: PuzzleSourceId, now: number = Date.now()): void {
+  writeStorage(sourceDownKey(source), String(now))
 }
 
-export function isSourceDown(now: number = Date.now()): boolean {
-  const stored = readStorage(SOURCE_DOWN_KEY)
+export function clearSourceDown(source: PuzzleSourceId): void {
+  removeStorage(sourceDownKey(source))
+}
+
+export function isSourceDown(source: PuzzleSourceId, now: number = Date.now()): boolean {
+  const stored = readStorage(sourceDownKey(source))
   if (stored === null) return false
   const since = Number(stored)
   if (!Number.isFinite(since)) return false
@@ -22,16 +27,18 @@ export function isSourceDown(now: number = Date.now()): boolean {
 }
 
 // Dias em que a fonte respondeu que não há cruzada; lembrados enquanto a aba durar.
-const NO_PUZZLE_PREFIX = 'cruzadinha:no-puzzle:'
-
-export function markNoPuzzle(date: string): void {
-  writeStorage(`${NO_PUZZLE_PREFIX}${date}`, '1', 'session')
+export function noPuzzleKey(source: PuzzleSourceId, date: string): string {
+  return `cruzadinha:no-puzzle:${source}:${date}`
 }
 
-export function isNoPuzzle(date: string): boolean {
-  return readStorage(`${NO_PUZZLE_PREFIX}${date}`, 'session') === '1'
+export function markNoPuzzle(source: PuzzleSourceId, date: string): void {
+  writeStorage(noPuzzleKey(source, date), '1', 'session')
 }
 
-export function readNoPuzzleDates(dates: readonly string[]): Set<string> {
-  return new Set(dates.filter(isNoPuzzle))
+export function isNoPuzzle(source: PuzzleSourceId, date: string): boolean {
+  return readStorage(noPuzzleKey(source, date), 'session') === '1'
+}
+
+export function readNoPuzzleDates(source: PuzzleSourceId, dates: readonly string[]): Set<string> {
+  return new Set(dates.filter((date) => isNoPuzzle(source, date)))
 }

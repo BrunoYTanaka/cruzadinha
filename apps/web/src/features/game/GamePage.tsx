@@ -1,4 +1,4 @@
-import type { Puzzle, Word } from '@cruzadinha/shared'
+import type { Word } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useParams } from 'react-router'
@@ -36,6 +36,7 @@ import { useBoardSize } from './useBoardSize'
 import { useDesktopLayout } from './useDesktopLayout'
 import { useGame, type GameOwner } from './useGame'
 import { useOnScreenKeyboard } from './useOnScreenKeyboard'
+import { attributionLine } from './attribution'
 import { WordBar } from './WordBar'
 import type { PuzzleResponse } from '@cruzadinha/shared'
 
@@ -50,11 +51,6 @@ function formatDate(date: string): string {
     month: 'long',
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1)))
-}
-
-function attribution(puzzle: Puzzle): string {
-  const { sourceName, title, author, copyright } = puzzle.attribution
-  return ['Fonte: ' + sourceName, title, author, copyright].filter(Boolean).join(' · ')
 }
 
 // Carrega a cruzada e o progresso em paralelo: o da conta vem do servidor, o do visitante do
@@ -365,7 +361,9 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
           {onScreenKeyboard ? (
             <WordBar word={word} index={game.index} cells={state.cells} selected={state.selected} />
           ) : null}
-          {onScreenKeyboard ? <p className={styles.attribution}>{attribution(puzzle)}</p> : null}
+          {onScreenKeyboard ? (
+            <p className={styles.attribution}>{attributionLine(puzzle)}</p>
+          ) : null}
         </section>
         {onScreenKeyboard ? null : desktop ? (
           // Computador: tabuleiro e dicas formam um bloco centralizado. As dicas acompanham a altura
@@ -373,14 +371,14 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
           <aside className={styles.clues} aria-label="Dicas">
             <div className={styles.cluesInner}>
               {clueList}
-              <p className={styles.attribution}>{attribution(puzzle)}</p>
+              <p className={styles.attribution}>{attributionLine(puzzle)}</p>
             </div>
           </aside>
         ) : (
           <aside className={styles.clues} aria-label="Dicas">
             {bar}
             {clueList}
-            <p className={styles.attribution}>{attribution(puzzle)}</p>
+            <p className={styles.attribution}>{attributionLine(puzzle)}</p>
           </aside>
         )}
       </div>
