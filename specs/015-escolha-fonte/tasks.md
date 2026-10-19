@@ -67,7 +67,7 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T008 [P] [US1] Criar `apps/web/src/features/library/today-cards.test.ts` para `todayCard(source, items, today, { down, noPuzzle })` (data-model §3), com `makeLibraryItem` de `src/test/fixtures.ts` e `today = '2026-10-19'`:
+- [X] T008 [P] [US1] Criar `apps/web/src/features/library/today-cards.test.ts` para `todayCard(source, items, today, { down, noPuzzle })` (data-model §3), com `makeLibraryItem` de `src/test/fixtures.ts` e `today = '2026-10-19'`:
   - `not_started` → estado "Não iniciada", ação "Jogar", `href` `/jogo/<puzzleId>`;
   - `in_progress` com `elapsedMs: 522000` → "◐ Em jogo · 08:42", "Continuar"; com `elapsedMs: null` → "◐ Em jogo", sem tempo;
   - `completed` com `finishedMs: 987000` → "✓ Concluída · 16:27", "Ver"; com `finishedMs: null` → "✓ Concluída";
@@ -76,12 +76,12 @@ description: "Task list for feature 015: escolha da fonte mais visível"
   - sem item e `noPuzzle: true` → "Sem cruzada hoje", sem ação e `href: null`;
   - `spoken` traz o tempo por `spokenElapsed` (por exemplo "em andamento, 8 minutos e 42 segundos"; conferir o formato real em `src/lib/time.ts`);
   - item de outra data não conta como hoje.
-- [ ] T009 [P] [US1] Criar `apps/web/src/features/library/TodayCards.test.tsx`, renderizando `<TodayCards libraries={…} today="2026-10-19" />` dentro de um router de memória:
+- [X] T009 [P] [US1] Criar `apps/web/src/features/library/TodayCards.test.tsx`, renderizando `<TodayCards libraries={…} today="2026-10-19" />` dentro de um router de memória:
   - dois cartões na ordem de `puzzleSourceIdSchema.options`; cada cartão com destino é um único link (`getByRole('link', { name: /^O Globo: .*Continuar$/ })`) com o `href` certo;
   - "Sem cruzada hoje" não é link;
   - fonte com `query.isPending` mostra "Carregando…" com `aria-busy="true"`; com `query.isError` mostra "Não foi possível carregar." e o botão "Tentar de novo" chama `refetch`, e o outro cartão continua link (FR-014);
   - `expectNoA11yViolations` de `src/test/axe.ts`.
-- [ ] T010 [P] [US1] Em `apps/web/src/features/library/LibraryPage.test.tsx`, com `mockApi` respondendo `GET /api/library` por `source`:
+- [X] T010 [P] [US1] Em `apps/web/src/features/library/LibraryPage.test.tsx`, com `mockApi` respondendo `GET /api/library` por `source`:
   - `h1` "Hoje" e dois cartões; não existe mais o link "Jogar a de hoje";
   - visitante: os cartões mostram o estado vindo do IndexedDB (`guestStore`), como o calendário;
   - API anterior à feature 014 (resposta sem `source` nos itens, que vira `oglobo`, para qualquer `source` pedido): o cartão da Cruzada Online fica "Ainda não guardada", nunca com o puzzle do O Globo (SC-006);
@@ -90,14 +90,14 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Criar `apps/web/src/features/library/today-cards.ts` com `export type TodayCard = { source; name; kind: DayState['kind']; status: string; spoken: string; action: string | null; href: string | null }` e `export function todayCard(source, items, today, { down, noPuzzle })`, usando `dayState` (T003) e `formatElapsed`/`spokenElapsed` de `src/lib/time.ts`. Textos e destinos exatamente da tabela de data-model §3. T008 passa.
-- [ ] T012 [US1] Criar `apps/web/src/features/library/TodayCards.tsx` e `TodayCards.module.css` (contracts/ui.md §1, "Cartão"):
+- [X] T011 [US1] Criar `apps/web/src/features/library/today-cards.ts` com `export type TodayCard = { source; name; kind: DayState['kind']; status: string; spoken: string; action: string | null; href: string | null }` e `export function todayCard(source, items, today, { down, noPuzzle })`, usando `dayState` (T003) e `formatElapsed`/`spokenElapsed` de `src/lib/time.ts`. Textos e destinos exatamente da tabela de data-model §3. T008 passa.
+- [X] T012 [US1] Criar `apps/web/src/features/library/TodayCards.tsx` e `TodayCards.module.css` (contracts/ui.md §1, "Cartão"):
   - `<section aria-labelledby="today-title">` com `<h1 id="today-title">Hoje</h1>` e a data por extenso (`Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })`);
   - por fonte: carregando → `<div aria-busy="true">`; erro → `<div>` com o nome, "Não foi possível carregar." e `<Button>` "Tentar de novo" (`query.refetch()`); sucesso → `todayCard(...)` com `down: isSourceDown(source)` e `noPuzzle: isNoPuzzle(source, today)`; com `href`, `<Link>` do cartão inteiro com `aria-label={`${name}: ${spoken}. ${action}`}`; sem `href`, `<div>`;
   - pílula de estado com `--ok-tint`/`--ok` (concluída), `--warn-tint`/`--warn` (em jogo), `--pill`/`--ink` (os demais); ação com `--accent`/`--accent-ink`, altura mínima `var(--tap)`;
   - layout (research R6, FR-016): `display: grid; gap: 16px`, uma coluna; `@media (min-width: 600px)` `grid-template-columns: repeat(var(--source-count), minmax(0, 1fr))`, com `--source-count` no `style` da lista.
   - T009 passa.
-- [ ] T013 [US1] Em `apps/web/src/features/library/LibraryPage.tsx` (research R7):
+- [X] T013 [US1] Em `apps/web/src/features/library/LibraryPage.tsx` (research R7):
   - renderizar `<TodayCards libraries={libraries} today={today} />` no topo, antes do seletor;
   - remover o bloco `.top` (título "Escolha um dia", frase e o link "Jogar a de hoje") e o cálculo `todayItem`/`todayPath`; manter `useDocumentTitle('Escolha um dia')`;
   - o carregamento e o erro da fonte ativa passam a afetar só a área do calendário; os cartões aparecem sempre (FR-014);
