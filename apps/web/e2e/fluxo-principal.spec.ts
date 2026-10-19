@@ -18,8 +18,8 @@ test('cadastro sem convite, biblioteca, jogo, conclusão, modo leitura e jogar d
   await page.getByLabel('Senha').fill('uma-senha-longa-123')
   await page.getByRole('button', { name: 'Criar conta' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Escolha um dia' })).toBeVisible()
-  await page.getByRole('link', { name: /jogar a de hoje/i }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+  await page.getByRole('link', { name: /^O Globo: / }).click()
 
   const board = page.getByRole('grid')
   await expect(board).toBeVisible()

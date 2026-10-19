@@ -28,7 +28,7 @@ A v1 usava só o **O Globo**; a feature 014 acrescentou a **Cruzada Online** (ab
 
 ### Cruzada Online (feature 014)
 
-A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. O jogador escolhe a fonte no calendário (O Globo por padrão), e a atribuição de cada puzzle mostra "Cruzada Online".
+A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. A biblioteca abre com a seção "Hoje", um cartão por fonte com a situação do jogador e um toque para jogar, e o calendário troca de fonte por abas (a primeira da lista, O Globo, por padrão; feature 015). A tela do jogo mostra a fonte junto da data, e a atribuição de cada puzzle mostra "Cruzada Online".
 
 - Arquivo por dia: `https://static.publico.pt/s3/files/widgets/crosswords/prd/AAAAMMDD.xml`, sem login nem token.
 - Formato: XML do Crossword Compiler (células com coluna, linha, letra e número, ou bloco; palavras com o intervalo de células; dicas ligadas à palavra). Os metadados vêm vazios, e algumas dicas trazem um link de notícia, que não é guardado.
@@ -155,7 +155,7 @@ apps/web/src/
   app/            rotas, layout, quem está usando (visitante ou conta), provedor de tema
   features/
     auth/         login e cadastro
-    library/      calendário mensal dos dias (só o nível diário)
+    library/      "Hoje" com um cartão por fonte e o calendário mensal com abas de fonte
     game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro, ajudas, conclusão
     guest/        progresso do visitante no navegador (IndexedDB) e biblioteca do visitante
   game-logic/     lógica pura do tabuleiro, sem React (reducer testável)

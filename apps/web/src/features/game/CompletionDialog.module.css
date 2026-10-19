@@ -51,3 +51,13 @@
   display: grid;
   gap: 8px;
 }
+
+.other {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.link {
+  text-decoration: none;
+}

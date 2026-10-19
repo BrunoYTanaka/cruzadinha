@@ -149,7 +149,8 @@
 }
 
 /* Computador (feature 011): dias, números e textos acompanham a largura do calendário; a altura do dia
-   fica limitada para um mês de seis semanas caber na janela. */
+   fica limitada para um mês de seis semanas caber na janela. Os 440 px reservam o resto da página:
+   cabeçalho, a seção "Hoje" e as abas de fonte (feature 015), o título do mês e as margens. */
 @media (min-width: 861px) {
   .title {
     font-size: clamp(16px, 1.2cqi, 19px);
@@ -160,7 +161,7 @@
   }
 
   .day {
-    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 400px) / 6)), 112px);
+    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 440px) / 6)), 112px);
     padding: 10px 12px;
     font-size: clamp(14px, 1.25cqi, 20px);
   }

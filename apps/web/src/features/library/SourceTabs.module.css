@@ -1,0 +1,54 @@
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: var(--tap);
+  margin-bottom: -1px;
+  padding: 6px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--pill);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* A aba escolhida se liga ao calendário: mesma superfície, sem a borda de baixo e com a marca da
+   cor de ação no topo. */
+.selected {
+  border-bottom-color: var(--surface);
+  background: var(--surface);
+  box-shadow: inset 0 3px 0 var(--accent);
+}
+
+.name {
+  font-weight: 700;
+}
+
+.count {
+  color: var(--mute);
+  font-size: 13px;
+}
+
+/* Celular: as abas (até 3) dividem a largura numa linha (FR-016). */
+@media (max-width: 599px) {
+  .tabs {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+
+  .tab {
+    align-items: center;
+    padding: 6px 8px;
+    text-align: center;
+  }
+}

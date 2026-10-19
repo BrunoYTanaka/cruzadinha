@@ -8,7 +8,7 @@ test.beforeEach(async () => {
 
 async function openToday(page: Page) {
   await login(page)
-  await page.getByRole('link', { name: /jogar a de hoje/i }).click()
+  await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -68,7 +68,7 @@ for (const theme of ['light', 'dark'] as const) {
     await audit(page)
     await login(page)
     await audit(page)
-    await page.getByRole('link', { name: /jogar a de hoje/i }).click()
+    await page.getByRole('link', { name: /^O Globo: / }).click()
     await expect(page.getByRole('grid')).toBeVisible()
     await audit(page)
     await page.getByRole('button', { name: 'Legenda do tabuleiro' }).click()

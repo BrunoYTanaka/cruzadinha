@@ -107,8 +107,34 @@
   }
 }
 
-/* Título da página só para leitores de tela (o cabeçalho do site já mostra o nome). */
+/* Título da cruzada no começo da faixa de ferramentas: a fonte numa pílula e a data (feature 015).
+   O nome do site continua no cabeçalho. */
 .title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.source {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--pill);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.date {
+  white-space: nowrap;
+}
+
+/* "Cruzada de" só para leitores de tela: a faixa fica curta e cabe numa linha no computador. */
+.hidden {
   position: absolute;
   width: 1px;
   height: 1px;

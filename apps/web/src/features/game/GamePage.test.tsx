@@ -82,6 +82,15 @@ describe('GamePage', () => {
     expect(screen.getByText(/Fonte: O Globo/)).toBeInTheDocument()
   })
 
+  it('mostra o nome da fonte junto da data no topo e no título da aba (feature 015)', async () => {
+    openGame({
+      [PUZZLE]: () => jsonResponse(200, makePuzzleResponse(TINY, { source: 'cruzadaonline' })),
+    })
+    const title = await screen.findByRole('heading', { level: 1 })
+    expect(title).toHaveTextContent(/^Cruzada Online\s*Cruzada de 14 de outubro$/)
+    await waitFor(() => expect(document.title).toMatch(/Cruzada de 14 de outubro · Cruzada Online/))
+  })
+
   it('mostra a dica ativa e a lista de dicas no computador', async () => {
     openGame()
     await screen.findByRole('grid')

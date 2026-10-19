@@ -1,5 +1,6 @@
+import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { loadSourceChoice, saveSourceChoice, SOURCE_KEY } from './source-choice'
+import { DEFAULT_SOURCE, loadSourceChoice, saveSourceChoice, SOURCE_KEY } from './source-choice'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -9,6 +10,15 @@ afterEach(() => {
 describe('preferência de fonte', () => {
   it('sem valor guardado vale O Globo', () => {
     expect(loadSourceChoice()).toBe('oglobo')
+  })
+
+  it('a fonte padrão é a primeira da lista de fontes', () => {
+    expect(DEFAULT_SOURCE).toBe(puzzleSourceIdSchema.options[0])
+  })
+
+  it('fonte guardada que saiu da lista volta à padrão', () => {
+    window.localStorage.setItem(SOURCE_KEY, 'fonte-retirada')
+    expect(loadSourceChoice()).toBe(DEFAULT_SOURCE)
   })
 
   it('lê a fonte gravada', () => {

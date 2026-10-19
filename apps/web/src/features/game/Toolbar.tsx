@@ -14,10 +14,12 @@ type ToolbarProps = {
   helps?: ReactNode
   // Computador: "Tamanho padrão" do tabuleiro.
   sizeReset?: ReactNode
+  // Título da cruzada (fonte e data), no começo da faixa (feature 015).
+  title?: ReactNode
 }
 
-// Faixa entre o cabeçalho e o jogo: tempo, pausa, escolher outro dia, estado do salvamento e as
-// ajudas.
+// Faixa entre o cabeçalho e o jogo: título, tempo, pausa, escolher outro dia, estado do salvamento
+// e as ajudas.
 export function Toolbar({
   elapsedMs,
   paused,
@@ -27,9 +29,11 @@ export function Toolbar({
   saveStatus,
   helps,
   sizeReset,
+  title,
 }: ToolbarProps) {
   return (
     <div className={styles.strip} role="toolbar" aria-label="Ferramentas do jogo">
+      {title}
       <div className={styles.group}>
         <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
           <circle cx="12" cy="12" r="9" />

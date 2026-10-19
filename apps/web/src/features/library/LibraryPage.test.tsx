@@ -1,3 +1,4 @@
+import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -68,7 +69,7 @@ describe('LibraryPage', () => {
     expect(screen.getByText('✓ 06:52')).toBeInTheDocument()
     expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
-    expect(screen.getByText('Hoje')).toBeInTheDocument()
+    expect(within(screen.getByRole('table')).getByText('Hoje')).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Hoje, 14 de outubro, não iniciado' }),
     ).toBeInTheDocument()
@@ -86,19 +87,45 @@ describe('LibraryPage', () => {
     ).toHaveAttribute('href', '/dia/2026-10-01?fonte=oglobo')
   })
 
-  it('"Jogar a de hoje" abre o jogo de hoje quando guardado e a busca quando não', async () => {
+  it('mostra "Hoje" com um cartão por fonte, cada um um link para a cruzada do dia', async () => {
     library()
     const first = renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
-      'href',
-      '/jogo/00000000-0000-4000-8000-000020261014',
-    )
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hoje' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Jogar a de hoje' })).not.toBeInTheDocument()
+    expect(
+      await screen.findByRole('link', { name: 'O Globo: não iniciada. Jogar' }),
+    ).toHaveAttribute('href', '/jogo/00000000-0000-4000-8000-000020261014')
+    // A resposta só traz O Globo (como a API anterior à feature 014): a Cruzada Online não herda o
+    // puzzle de outra fonte.
+    expect(
+      screen.getByRole('link', { name: 'Cruzada Online: ainda não guardada. Jogar' }),
+    ).toHaveAttribute('href', '/dia/2026-10-14?fonte=cruzadaonline')
     first.unmount()
     library(items.slice(1))
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
-      'href',
-      '/dia/2026-10-14?fonte=oglobo',
+    expect(
+      await screen.findByRole('link', { name: 'O Globo: ainda não guardada. Jogar' }),
+    ).toHaveAttribute('href', '/dia/2026-10-14?fonte=oglobo')
+  })
+
+  it('a falha de uma fonte fica no cartão dela; a outra e o calendário seguem', async () => {
+    const { calls } = mockApi({
+      'GET /api/library': ({ url }) =>
+        new URL(url, 'http://x').searchParams.get('source') === 'cruzadaonline'
+          ? apiError(500, 'internal-error')
+          : jsonResponse(200, { items }),
+    })
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'O Globo: não iniciada. Jogar' })).toBeInTheDocument()
+    const failed = await screen.findByText('Não foi possível carregar.')
+    const card = failed.closest('li')!
+    await user.click(within(card).getByRole('button', { name: 'Tentar de novo' }))
+    await waitFor(() =>
+      expect(calls.filter((call) => call.url === '/api/library?source=cruzadaonline')).toHaveLength(
+        2,
+      ),
     )
   })
 
@@ -122,12 +149,13 @@ describe('LibraryPage', () => {
     const { calls } = mockApi({ 'GET /api/library': () => apiError(500, 'internal-error') })
     const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Não foi possível carregar a biblioteca',
-    )
-    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Não foi possível carregar a biblioteca')
+    // O cartão da fonte também oferece nova tentativa; aqui vale a do calendário.
+    await user.click(within(alert).getByRole('button', { name: 'Tentar de novo' }))
+    // Uma consulta por fonte (feature 015): a nova tentativa pede de novo a fonte do calendário.
     await waitFor(() =>
-      expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(2),
+      expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(2),
     )
   })
 
@@ -182,9 +210,9 @@ describe('LibraryPage', () => {
   describe('largura do calendário (feature 011)', () => {
     const KEY = 'cruzadinha:library-width'
     const handle = () => screen.getByRole('slider', { name: 'Largura do calendário' })
-    // A coluna da biblioteca: título > bloco do título > faixa do topo > página.
+    // A coluna da biblioteca: título > cabeçalho de "Hoje" > seção "Hoje" > página.
     const page = () =>
-      screen.getByRole('heading', { name: 'Escolha um dia' }).parentElement!.parentElement!
+      screen.getByRole('heading', { level: 1, name: 'Hoje' }).parentElement!.parentElement!
         .parentElement!
 
     afterEach(() => {
@@ -257,7 +285,7 @@ describe('LibraryPage', () => {
   })
 })
 
-describe('escolha da fonte (feature 014)', () => {
+describe('abas de fonte (features 014 e 015)', () => {
   const cruzadaItems = [
     makeLibraryItem('2026-10-12', {
       puzzleId: '00000000-0000-4000-8000-00000000c012',
@@ -285,13 +313,14 @@ describe('escolha da fonte (feature 014)', () => {
     const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(calls[0]?.url).toBe('/api/library?source=oglobo')
-    expect(screen.getByRole('button', { name: 'O Globo' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('tab', { name: /^O Globo/ })).toHaveAttribute('aria-selected', 'true')
+    const requests = calls.length
 
     await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
-    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
     expect(await screen.findByRole('heading', { name: 'setembro de 2026' })).toBeInTheDocument()
-    expect(calls.at(-1)?.url).toBe('/api/library?source=cruzadaonline')
+    // As duas fontes já vieram juntas: trocar de aba não pede de novo (feature 015).
+    expect(calls).toHaveLength(requests)
     expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
 
     await user.click(screen.getByRole('button', { name: 'Próximo mês' }))
@@ -306,14 +335,10 @@ describe('escolha da fonte (feature 014)', () => {
     const { calls } = bySource()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(calls[0]?.url).toBe('/api/library?source=cruzadaonline')
-    expect(screen.getByRole('button', { name: 'Cruzada Online' })).toHaveAttribute(
-      'aria-pressed',
+    expect(calls.map((call) => call.url)).toContain('/api/library?source=cruzadaonline')
+    expect(screen.getByRole('tab', { name: /^Cruzada Online/ })).toHaveAttribute(
+      'aria-selected',
       'true',
-    )
-    expect(screen.getByRole('link', { name: 'Jogar a de hoje' })).toHaveAttribute(
-      'href',
-      '/dia/2026-10-14?fonte=cruzadaonline',
     )
     expect(
       screen.getByRole('link', { name: '1 de outubro, não guardado, abre para buscar na fonte' }),
@@ -329,7 +354,7 @@ describe('escolha da fonte (feature 014)', () => {
     expect(
       screen.queryByText(/Novas cruzadas não podem ser buscadas agora/),
     ).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
     expect(
       await screen.findByText(/Novas cruzadas não podem ser buscadas agora/),
     ).toBeInTheDocument()
@@ -346,11 +371,32 @@ describe('escolha da fonte (feature 014)', () => {
     ).toBeInTheDocument()
   })
 
-  it('o seletor continua visível enquanto a biblioteca carrega', async () => {
+  it('as abas continuam visíveis enquanto a biblioteca carrega', async () => {
     mockApi({ 'GET /api/library': () => new Promise<Response>(() => {}) })
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('group', { name: 'Fonte da cruzada' })).toBeInTheDocument()
+    expect(await screen.findByRole('tablist', { name: 'Fonte do calendário' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Carregando a biblioteca…')
+  })
+
+  it('o calendário é o painel da aba escolhida', async () => {
+    bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.getByRole('tabpanel', { name: /^O Globo/ })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
+    expect(screen.getByRole('tabpanel', { name: /^Cruzada Online/ })).toBeInTheDocument()
+  })
+
+  it('cada aba conta as concluídas do mês exibido', async () => {
+    bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.getByRole('tab', { name: 'O Globo 1 concluída' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Cruzada Online 0 concluídas' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    expect(screen.getByRole('tab', { name: 'O Globo 0 concluídas' })).toBeInTheDocument()
   })
 })
 
@@ -429,6 +475,25 @@ describe('biblioteca do visitante (feature 013)', () => {
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
   })
 
+  it('o cartão de hoje do visitante mostra a situação guardada no navegador', async () => {
+    await guestStore.save({
+      puzzleId: publicItems[0]?.puzzleId ?? '',
+      date: '2026-10-14',
+      cells: [['A']],
+      elapsedMs: 65_000,
+      status: 'in_progress',
+      savedAt: '2026-10-14T14:00:00.000Z',
+      help: null,
+    })
+    mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(
+      await screen.findByRole('link', {
+        name: 'O Globo: em andamento, 1 minuto e 5 segundos. Continuar',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('na Cruzada Online, a situação do visitante vem do navegador pelo puzzle', async () => {
     window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
     const cruzadaId = '00000000-0000-4000-8000-00000000c012'
@@ -451,12 +516,32 @@ describe('biblioteca do visitante (feature 013)', () => {
     expect(await screen.findByText('◐ Em jogo')).toBeInTheDocument()
   })
 
+  it('as abas contam as concluídas do visitante a partir do navegador', async () => {
+    await guestStore.save({
+      puzzleId: publicItems[1]?.puzzleId ?? '',
+      date: '2026-10-13',
+      cells: [['A']],
+      elapsedMs: 412_000,
+      status: 'completed',
+      savedAt: '2026-10-13T14:00:00.000Z',
+      help: null,
+    })
+    mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(await screen.findByRole('tab', { name: 'O Globo 1 concluída' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Cruzada Online 0 concluídas' })).toBeInTheDocument()
+  })
+
   it('com a API anterior (401 sem sessão), pede para entrar em vez de travar', async () => {
     const { calls } = mockApi({
       'GET /api/library': () => apiError(401, 'unauthenticated'),
     })
     renderRoutes(guestRoutes, ['/'], asGuest())
     expect(await screen.findByText('Entre para ver a biblioteca')).toBeInTheDocument()
-    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(1)
+    // Um pedido por fonte e nenhuma nova tentativa.
+    expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(1)
+    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(
+      puzzleSourceIdSchema.options.length,
+    )
   })
 })

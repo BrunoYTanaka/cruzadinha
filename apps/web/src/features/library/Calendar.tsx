@@ -46,7 +46,14 @@ export function Calendar({
   for (let start = 0; start < cells.length; start += 7) weeks.push(cells.slice(start, start + 7))
 
   return (
-    <section className={styles.month} aria-labelledby="calendar-title">
+    // Painel da aba de fonte escolhida: o nome é o da aba e o mês entra como descrição (feature 015).
+    <section
+      id="source-panel"
+      role="tabpanel"
+      className={styles.month}
+      aria-labelledby={`source-tab-${source}`}
+      aria-describedby="calendar-title"
+    >
       <div className={styles.head}>
         <Button
           variant="ghost"
