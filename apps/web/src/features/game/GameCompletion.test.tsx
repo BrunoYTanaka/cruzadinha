@@ -1,8 +1,8 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { cellsFrom, makeProgress } from '../../test/fixtures'
+import { cellsFrom, makeLibraryItem, makeProgress } from '../../test/fixtures'
 import { openGame, PROGRESS, SAVE, setup, installGameTestLifecycle } from '../../test/game-harness'
-import { jsonResponse } from '../../test/http'
+import { apiError, jsonResponse } from '../../test/http'
 
 installGameTestLifecycle()
 
@@ -96,5 +96,72 @@ describe('conclusão', () => {
     openGame({ [PROGRESS]: () => jsonResponse(200, { progress: doneProgress() }) })
     await screen.findByRole('grid')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+describe('atalho para a outra fonte do dia (feature 015)', () => {
+  const LIBRARY = 'GET /api/library'
+  const sameDay = (status: 'not_started' | 'completed') =>
+    makeLibraryItem('2026-10-14', {
+      puzzleId: '00000000-0000-4000-8000-00000000c014',
+      source: 'cruzadaonline',
+      status,
+    })
+  const bySource =
+    (online: ReturnType<typeof makeLibraryItem>[]) =>
+    ({ url }: { url: string }) =>
+      jsonResponse(200, {
+        items:
+          new URL(url, 'http://x').searchParams.get('source') === 'cruzadaonline' ? online : [],
+      })
+
+  async function complete(user: ReturnType<typeof setup>) {
+    await screen.findByRole('grid')
+    await fillGrid(user)
+    await user.keyboard('{ArrowDown}A{ArrowDown}SOL')
+    return screen.findByRole('dialog', { name: 'Cruzada concluída' })
+  }
+
+  it('a biblioteca só é pedida ao concluir; a outra fonte não concluída vira atalho', async () => {
+    const user = setup()
+    const { calls } = openGame({
+      [SAVE]: () => jsonResponse(200, { progress: doneProgress() }),
+      [LIBRARY]: bySource([sameDay('not_started')]),
+    })
+    await screen.findByRole('grid')
+    expect(calls.some((call) => call.key === LIBRARY)).toBe(false)
+    await complete(user)
+    expect(
+      await screen.findByRole('link', { name: 'Jogar Cruzada Online deste dia' }),
+    ).toHaveAttribute('href', '/jogo/00000000-0000-4000-8000-00000000c014')
+  })
+
+  it('outra fonte já concluída não gera atalho', async () => {
+    const user = setup()
+    const { calls } = openGame({
+      [SAVE]: () => jsonResponse(200, { progress: doneProgress() }),
+      [LIBRARY]: bySource([sameDay('completed')]),
+    })
+    await complete(user)
+    await waitFor(() => expect(calls.some((call) => call.key === LIBRARY)).toBe(true))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50)
+    })
+    expect(screen.queryByRole('link', { name: /deste dia/ })).not.toBeInTheDocument()
+  })
+
+  it('biblioteca com erro: o diálogo aparece sem atalho e o tabuleiro segue', async () => {
+    const user = setup()
+    openGame({
+      [SAVE]: () => jsonResponse(200, { progress: doneProgress() }),
+      [LIBRARY]: () => apiError(500, 'internal-error'),
+    })
+    const dialog = await complete(user)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50)
+    })
+    expect(within(dialog).queryByRole('link', { name: /deste dia/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByRole('grid')).toBeInTheDocument()
   })
 })

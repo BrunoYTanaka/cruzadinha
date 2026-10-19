@@ -1,6 +1,7 @@
 import { useRef } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { Button } from '../../components/Button'
+import buttonStyles from '../../components/Button.module.css'
 import { Dialog } from '../../components/Dialog'
 import { formatElapsed, spokenElapsed } from '../../lib/time'
 import styles from './CompletionDialog.module.css'
@@ -17,6 +18,9 @@ type CompletionDialogProps = {
   isRecord: boolean
   // Visitante (feature 013): tudo fica no aparelho, então nunca há "vamos registrar".
   localOnly?: boolean
+  // Cruzada de outra fonte do mesmo dia, ainda não concluída (feature 015). Se chegar depois de a
+  // janela abrir, aparece sem tirar o foco de onde está.
+  otherSource?: { name: string; href: string } | null
 }
 
 // Aparece uma vez por conclusão, na hora, mesmo sem conexão.
@@ -29,16 +33,18 @@ export function CompletionDialog({
   helpsUsed,
   isRecord,
   localOnly = false,
+  otherSource = null,
 }: CompletionDialogProps) {
   const navigate = useNavigate()
   const primary = useRef<HTMLButtonElement>(null)
+  const shortcut = useRef<HTMLAnchorElement>(null)
   return (
     <Dialog
       open={open}
       onClose={onViewBoard}
       title="Cruzada concluída"
       description={`Você terminou em ${spokenElapsed(elapsedMs)}.`}
-      initialFocusRef={primary}
+      initialFocusRef={otherSource ? shortcut : primary}
     >
       <dl className={styles.stats}>
         <div className={styles.stat}>
@@ -62,8 +68,25 @@ export function CompletionDialog({
           Vamos registrar quando a conexão voltar.
         </p>
       )}
+      {otherSource ? (
+        <p className={styles.other}>Também há cruzada deste dia em {otherSource.name}.</p>
+      ) : null}
       <div className={styles.actions}>
-        <Button ref={primary} variant="primary" block onClick={() => void navigate('/')}>
+        {otherSource ? (
+          <Link
+            ref={shortcut}
+            to={otherSource.href}
+            className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.block} ${styles.link}`}
+          >
+            Jogar {otherSource.name} deste dia
+          </Link>
+        ) : null}
+        <Button
+          ref={primary}
+          variant={otherSource ? 'default' : 'primary'}
+          block
+          onClick={() => void navigate('/')}
+        >
           Voltar à biblioteca
         </Button>
         <Button block onClick={onViewBoard}>

@@ -1,4 +1,4 @@
-import type { Word } from '@cruzadinha/shared'
+import { puzzleSourceNames, type Word } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useParams } from 'react-router'
@@ -9,10 +9,14 @@ import { queryKeys } from '../../api/query-keys'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { config } from '../../config'
 import { activeWord } from '../../game-logic/navigation'
+import { todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { buildLoginPath } from '../auth/redirect'
 import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
 import { guestStore } from '../guest/guest-store'
+import { isNoPuzzle, isSourceDown } from '../library/source-down'
+import { otherSourceShortcut } from '../library/today-cards'
+import { useSourceLibraries } from '../library/useSourceLibraries'
 import { SessionExpiredNotice } from '../auth/SessionExpiredNotice'
 import { boardKeyToAction } from './board-keys'
 import { Board } from './Board'
@@ -86,7 +90,9 @@ export function GamePage() {
     refetchOnReconnect: false,
   })
   useDocumentTitle(
-    puzzleQuery.data ? `Cruzada de ${formatDate(puzzleQuery.data.puzzle.date)}` : 'Cruzada',
+    puzzleQuery.data
+      ? `Cruzada de ${formatDate(puzzleQuery.data.puzzle.date)} · ${puzzleSourceNames[puzzleQuery.data.puzzle.source]}`
+      : 'Cruzada',
   )
 
   const failure = puzzleQuery.error ?? progressQuery.error
@@ -160,6 +166,18 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
   const guest = owner.kind === 'guest'
   const storageAvailable = useGuestStorageAvailable()
   const [dialogClosed, setDialogClosed] = useState(false)
+  // A biblioteca das fontes só é pedida ao concluir, para o atalho da janela; em geral já está em
+  // cache. Ela nunca mostra carregamento nem erro aqui (feature 015, FR-011).
+  const libraries = useSourceLibraries({ enabled: completedHere })
+  const otherSource = completedHere
+    ? otherSourceShortcut(
+        puzzle.source,
+        puzzle.date,
+        todayInBrasilia(),
+        libraries.map((library) => ({ ...library, ready: library.query.isSuccess })),
+        { isDown: isSourceDown, isNoPuzzle: (source) => isNoPuzzle(source, puzzle.date) },
+      )
+    : null
   const [playAgainError, setPlayAgainError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [cluesOpen, setCluesOpen] = useState(false)
@@ -265,8 +283,13 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         } as React.CSSProperties
       }
     >
-      <h1 className={styles.title}>Cruzada de {formatDate(puzzle.date)}</h1>
       <Toolbar
+        title={
+          <h1 className={styles.title}>
+            <span className={styles.source}>{puzzleSourceNames[puzzle.source]}</span>{' '}
+            <span className={styles.date}>Cruzada de {formatDate(puzzle.date)}</span>
+          </h1>
+        }
         elapsedMs={clock.elapsedMs}
         paused={clock.paused}
         canPause={!readOnly}
@@ -398,6 +421,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         helpsUsed={state.usage.letters + state.usage.words}
         isRecord={isRecord}
         localOnly={guest}
+        otherSource={otherSource}
       />
       <LegendButton />
       <ClueSheet

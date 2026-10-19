@@ -25,6 +25,7 @@ function renderDialog(props: Partial<Parameters<typeof CompletionDialog>[0]> = {
         ),
       },
       { path: '/biblioteca', element: <p>Outra tela</p> },
+      { path: '/jogo/:id', element: <p>Outro jogo</p> },
     ],
     { initialEntries: ['/'] },
   )
@@ -69,5 +70,31 @@ describe('CompletionDialog', () => {
   it('não tem violações de acessibilidade', async () => {
     renderDialog()
     await expectNoA11yViolations(document.body)
+  })
+
+  describe('atalho para a outra fonte do dia (feature 015)', () => {
+    it('oferece jogar a outra fonte, com o foco nele', async () => {
+      const { router } = renderDialog({
+        otherSource: { name: 'Cruzada Online', href: '/jogo/x' },
+      })
+      const dialog = screen.getByRole('dialog', { name: 'Cruzada concluída' })
+      expect(dialog).toHaveTextContent('Também há cruzada deste dia em Cruzada Online.')
+      const link = screen.getByRole('link', { name: 'Jogar Cruzada Online deste dia' })
+      expect(link).toHaveAttribute('href', '/jogo/x')
+      expect(link).toHaveFocus()
+      expect(screen.getByRole('button', { name: 'Voltar à biblioteca' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Ver o tabuleiro' })).toBeInTheDocument()
+      await expectNoA11yViolations(document.body)
+      await userEvent.setup().click(link)
+      expect(router.state.location.pathname).toBe('/jogo/x')
+    })
+
+    it('sem outra fonte, fica como antes', async () => {
+      renderDialog()
+      expect(screen.queryByText(/Também há cruzada deste dia/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('link')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Voltar à biblioteca' })).toHaveFocus()
+      await expectNoA11yViolations(document.body)
+    })
   })
 })

@@ -95,3 +95,44 @@ export function completedInMonth(items: readonly LibraryItem[], month: YearMonth
 export function completedLabel(count: number): string {
   return count === 1 ? '1 concluída' : `${count} concluídas`
 }
+
+// Biblioteca de uma fonte vista pelo atalho de conclusão: `ready` só quando já carregou.
+export type ShortcutLibrary = {
+  source: PuzzleSourceId
+  name: string
+  ready: boolean
+  items: readonly LibraryItem[]
+}
+
+export type OtherSourceShortcut = { source: PuzzleSourceId; name: string; href: string }
+
+// Ao concluir, a cruzada da próxima fonte do mesmo dia, na ordem da lista, se ela existir e não
+// estiver concluída (feature 015, FR-011, data-model §5).
+export function otherSourceShortcut(
+  current: PuzzleSourceId,
+  date: string,
+  today: string,
+  libraries: readonly ShortcutLibrary[],
+  {
+    isDown,
+    isNoPuzzle,
+  }: {
+    isDown: (source: PuzzleSourceId) => boolean
+    isNoPuzzle: (source: PuzzleSourceId) => boolean
+  },
+): OtherSourceShortcut | null {
+  for (const library of libraries) {
+    if (library.source === current || !library.ready) continue
+    const byDate = new Map(library.items.map((item) => [item.date, item]))
+    const noPuzzle = isNoPuzzle(library.source) ? new Set([date]) : new Set<string>()
+    const state = dayState(date, today, byDate, noPuzzle)
+    const { source, name } = library
+    if (state.kind === 'not_started' || state.kind === 'in_progress') {
+      return { source, name, href: `/jogo/${state.puzzleId}` }
+    }
+    if (state.kind === 'fetchable' && !isDown(source)) {
+      return { source, name, href: `/dia/${date}?fonte=${source}` }
+    }
+  }
+  return null
+}

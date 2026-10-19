@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { makeLibraryItem } from '../../test/fixtures'
-import { completedInMonth, completedLabel, todayCard } from './today-cards'
+import type { PuzzleSourceId } from '@cruzadinha/shared'
+import { completedInMonth, completedLabel, otherSourceShortcut, todayCard } from './today-cards'
 
 const today = '2026-10-19'
 const fresh = { down: false, noPuzzle: false }
@@ -122,5 +123,69 @@ describe('completedLabel', () => {
     [5, '5 concluídas'],
   ])('%i → %s', (count, label) => {
     expect(completedLabel(count)).toBe(label)
+  })
+})
+
+describe('otherSourceShortcut', () => {
+  const date = '2026-10-18'
+  const fine = { isDown: () => false, isNoPuzzle: () => false }
+  const online = (items: ReturnType<typeof makeLibraryItem>[], ready = true) => ({
+    source: 'cruzadaonline' as PuzzleSourceId,
+    name: 'Cruzada Online',
+    ready,
+    items,
+  })
+  const globo = { source: 'oglobo' as PuzzleSourceId, name: 'O Globo', ready: true, items: [] }
+
+  it('oferece a outra fonte do dia quando não iniciada ou em andamento', () => {
+    const fresh = makeLibraryItem(date, { source: 'cruzadaonline' })
+    expect(otherSourceShortcut('oglobo', date, today, [globo, online([fresh])], fine)).toEqual({
+      source: 'cruzadaonline',
+      name: 'Cruzada Online',
+      href: `/jogo/${fresh.puzzleId}`,
+    })
+    const playing = makeLibraryItem(date, { source: 'cruzadaonline', status: 'in_progress' })
+    expect(otherSourceShortcut('oglobo', date, today, [globo, online([playing])], fine)).toEqual(
+      expect.objectContaining({ href: `/jogo/${playing.puzzleId}` }),
+    )
+  })
+
+  it('dia ainda não guardado leva à busca, a menos que a fonte esteja fora do ar', () => {
+    expect(otherSourceShortcut('oglobo', date, today, [globo, online([])], fine)).toEqual(
+      expect.objectContaining({ href: '/dia/2026-10-18?fonte=cruzadaonline' }),
+    )
+    expect(
+      otherSourceShortcut('oglobo', date, today, [globo, online([])], {
+        ...fine,
+        isDown: (source) => source === 'cruzadaonline',
+      }),
+    ).toBeNull()
+  })
+
+  it('concluída, sem cruzada ou no futuro não gera atalho', () => {
+    const done = makeLibraryItem(date, { source: 'cruzadaonline', status: 'completed' })
+    expect(otherSourceShortcut('oglobo', date, today, [globo, online([done])], fine)).toBeNull()
+    expect(
+      otherSourceShortcut('oglobo', date, today, [globo, online([])], {
+        ...fine,
+        isNoPuzzle: () => true,
+      }),
+    ).toBeNull()
+    expect(otherSourceShortcut('oglobo', '2026-10-20', today, [globo, online([])], fine)).toBeNull()
+  })
+
+  it('fonte que ainda carrega ou falhou é ignorada', () => {
+    expect(otherSourceShortcut('oglobo', date, today, [globo, online([], false)], fine)).toBeNull()
+  })
+
+  it('com três fontes, oferece a primeira não concluída na ordem, sem a atual', () => {
+    const third = { source: 'terceira' as PuzzleSourceId, name: 'Terceira', ready: true, items: [] }
+    const done = makeLibraryItem(date, { source: 'cruzadaonline', status: 'completed' })
+    expect(
+      otherSourceShortcut('oglobo', date, today, [globo, online([done]), third], fine),
+    ).toEqual(expect.objectContaining({ source: 'terceira', name: 'Terceira' }))
+    expect(
+      otherSourceShortcut('cruzadaonline', date, today, [globo, online([]), third], fine),
+    ).toEqual(expect.objectContaining({ source: 'oglobo' }))
   })
 })

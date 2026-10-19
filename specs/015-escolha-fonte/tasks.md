@@ -151,25 +151,25 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T023 [P] [US3] Em `apps/web/src/features/library/today-cards.test.ts`, testes de `otherSourceShortcut(current, date, today, libraries, { isDown, isNoPuzzle })` (data-model §5), com `libraries: { source; name; ready: boolean; items }[]`:
+- [X] T023 [P] [US3] Em `apps/web/src/features/library/today-cards.test.ts`, testes de `otherSourceShortcut(current, date, today, libraries, { isDown, isNoPuzzle })` (data-model §5), com `libraries: { source; name; ready: boolean; items }[]`:
   - atual `oglobo`, Cruzada Online `not_started` no dia → `{ source: 'cruzadaonline', name: 'Cruzada Online', href: '/jogo/<id>' }`; `in_progress` também gera atalho;
   - Cruzada Online sem item no dia (passado) → `href` `/dia/<date>?fonte=cruzadaonline`; se `isDown('cruzadaonline')` → `null`;
   - `completed`, `none` (`isNoPuzzle`) ou `future` → `null`;
   - fonte com `ready: false` (carregando ou erro) → ignorada;
   - com três fontes (lista falsa), devolve a primeira não concluída na ordem, ignorando a atual.
-- [ ] T024 [P] [US3] Em `apps/web/src/features/game/CompletionDialog.test.tsx`:
+- [X] T024 [P] [US3] Em `apps/web/src/features/game/CompletionDialog.test.tsx`:
   - com `otherSource={{ name: 'Cruzada Online', href: '/jogo/x' }}`: mostra "Também há cruzada deste dia em Cruzada Online.", o link "Jogar Cruzada Online deste dia" com foco inicial e `href` `/jogo/x`, e os botões "Voltar à biblioteca" e "Ver o tabuleiro";
   - sem `otherSource`: igual a hoje (foco em "Voltar à biblioteca");
   - `expectNoA11yViolations` nos dois casos.
-- [ ] T025 [P] [US3] Em `apps/web/src/features/game/GamePage.test.tsx` (com `openGame`/`openGuestGame` de `src/test/game-harness.tsx`):
+- [X] T025 [P] [US3] Em `apps/web/src/features/game/GamePage.test.tsx` (com `openGame`/`openGuestGame` de `src/test/game-harness.tsx`):
   - o `h1` contém o nome da fonte do puzzle antes de "Cruzada de …" e `document.title` termina em "· O Globo";
   - ao concluir com `GET /api/library?source=cruzadaonline` devolvendo um item `not_started` na data do puzzle, o diálogo mostra o atalho; com o item `completed`, não mostra; com a biblioteca respondendo 500, o diálogo aparece sem atalho e nada bloqueia o tabuleiro; antes de concluir, nenhum `GET /api/library` é feito pela tela do jogo.
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Em `apps/web/src/features/library/today-cards.ts`, implementar `otherSourceShortcut` reutilizando `dayState`. T023 passa.
-- [ ] T027 [US3] Em `apps/web/src/features/game/CompletionDialog.tsx` (+ `.module.css` se precisar), prop opcional `otherSource?: { name: string; href: string }`; com ela, a frase, o link primário (`<Link>` com a aparência de `Button variant="primary" block`, recebendo o `initialFocusRef`) e "Voltar à biblioteca" vira botão secundário; sem ela, sem mudança (contracts/ui.md §3). T024 passa.
-- [ ] T028 [US3] Em `apps/web/src/features/game/GamePage.tsx` e `GamePage.module.css` (o `h1`, o hook e o atalho ficam no componente interno `Game`, onde existem `puzzle` e `completedHere`; `GamePage` retorna antes dele em carregamento e erro, então nenhum hook novo vai em `GamePage`; o título do documento continua em `GamePage`, a partir de `puzzleQuery.data`):
+- [X] T026 [US3] Em `apps/web/src/features/library/today-cards.ts`, implementar `otherSourceShortcut` reutilizando `dayState`. T023 passa.
+- [X] T027 [US3] Em `apps/web/src/features/game/CompletionDialog.tsx` (+ `.module.css` se precisar), prop opcional `otherSource?: { name: string; href: string }`; com ela, a frase, o link primário (`<Link>` com a aparência de `Button variant="primary" block`, recebendo o `initialFocusRef`) e "Voltar à biblioteca" vira botão secundário; sem ela, sem mudança (contracts/ui.md §3). T024 passa.
+- [X] T028 [US3] Em `apps/web/src/features/game/GamePage.tsx` e `GamePage.module.css` (o `h1`, o hook e o atalho ficam no componente interno `Game`, onde existem `puzzle` e `completedHere`; `GamePage` retorna antes dele em carregamento e erro, então nenhum hook novo vai em `GamePage`; o título do documento continua em `GamePage`, a partir de `puzzleQuery.data`):
   - `h1`: `<span className={styles.source}>{puzzleSourceNames[puzzle.source]}</span>` antes de "Cruzada de {data}" (pílula visual com `--pill` e `--radius-*`; não usar o componente `Pill`, que é botão);
   - `useDocumentTitle`: "Cruzada de {data} · {nome da fonte}" quando o puzzle carregou;
   - chamar `useSourceLibraries({ enabled: completedHere })` (só pede as bibliotecas ao concluir; em geral já estão em cache, research R9) e passar `otherSource={otherSourceShortcut(puzzle.source, puzzle.date, todayInBrasilia(), …, { isDown: isSourceDown, isNoPuzzle: (s) => isNoPuzzle(s, puzzle.date) })}` ao `CompletionDialog`, com `ready = entry.query.isSuccess`;
