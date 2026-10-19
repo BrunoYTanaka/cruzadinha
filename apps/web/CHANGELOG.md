@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.3.0...web-v0.4.0) (2026-10-19)
+
+
+### Features
+
+* **web:** keep the game title short so the toolbar fits one line ([194ce17](https://github.com/BrunoYTanaka/cruzadinha/commit/194ce174c40e4fa7a3796859be8f96caf59fc8b0))
+* **web:** make every puzzle source visible and playable from the library ([32f5253](https://github.com/BrunoYTanaka/cruzadinha/commit/32f5253debf7cdc2cb8992fb87a5d2c86e9c173b))
+* **web:** show the puzzle source in the game and offer the other source on completion ([a535296](https://github.com/BrunoYTanaka/cruzadinha/commit/a535296609517010c00b59a2c1bd5af4b7f3ae85))
+* **web:** show today's puzzle of every source on the library ([ec31ba4](https://github.com/BrunoYTanaka/cruzadinha/commit/ec31ba483f768ade69f3ff4181eef2a8019aee5f))
+* **web:** switch the calendar source with accessible tabs ([455bb25](https://github.com/BrunoYTanaka/cruzadinha/commit/455bb25c4fa217dc245baaa9a5cc8f793428334d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.6.0 to 0.7.0
+
 ## [0.3.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.2.3...web-v0.3.0) (2026-10-17)
 
 
