@@ -1,4 +1,5 @@
 import { puzzleSourceNames, type LibraryItem, type PuzzleSourceId } from '@cruzadinha/shared'
+import { monthKey, type YearMonth } from '../../lib/dates'
 import { formatElapsed, spokenElapsed } from '../../lib/time'
 import { dayState, type DayState } from './calendar'
 
@@ -83,4 +84,14 @@ export function todayCard(
         href: null,
       }
   }
+}
+
+// Concluídas da fonte no mês exibido, para a aba (feature 015, data-model §4).
+export function completedInMonth(items: readonly LibraryItem[], month: YearMonth): number {
+  const prefix = `${monthKey(month)}-`
+  return items.filter((item) => item.status === 'completed' && item.date.startsWith(prefix)).length
+}
+
+export function completedLabel(count: number): string {
+  return count === 1 ? '1 concluída' : `${count} concluídas`
 }

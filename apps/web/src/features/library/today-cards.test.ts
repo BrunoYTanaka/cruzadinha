@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { makeLibraryItem } from '../../test/fixtures'
-import { todayCard } from './today-cards'
+import { completedInMonth, completedLabel, todayCard } from './today-cards'
 
 const today = '2026-10-19'
 const fresh = { down: false, noPuzzle: false }
@@ -92,5 +92,35 @@ describe('todayCard', () => {
   it('item de outro dia não conta como hoje', () => {
     const yesterday = makeLibraryItem('2026-10-18', { status: 'completed' })
     expect(todayCard('oglobo', [yesterday], today, fresh)).toMatchObject({ kind: 'fetchable' })
+  })
+})
+
+describe('completedInMonth', () => {
+  const october = { year: 2026, month: 10 }
+
+  it('conta só as concluídas do mês', () => {
+    const items = [
+      makeLibraryItem('2026-10-01', { status: 'completed' }),
+      makeLibraryItem('2026-10-31', { status: 'completed' }),
+      makeLibraryItem('2026-10-15', { status: 'in_progress' }),
+      makeLibraryItem('2026-10-16'),
+      makeLibraryItem('2026-09-30', { status: 'completed' }),
+      makeLibraryItem('2026-11-01', { status: 'completed' }),
+    ]
+    expect(completedInMonth(items, october)).toBe(2)
+  })
+
+  it('lista vazia dá zero', () => {
+    expect(completedInMonth([], october)).toBe(0)
+  })
+})
+
+describe('completedLabel', () => {
+  it.each([
+    [0, '0 concluídas'],
+    [1, '1 concluída'],
+    [5, '5 concluídas'],
+  ])('%i → %s', (count, label) => {
+    expect(completedLabel(count)).toBe(label)
   })
 })

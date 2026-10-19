@@ -285,7 +285,7 @@ describe('LibraryPage', () => {
   })
 })
 
-describe('escolha da fonte (feature 014)', () => {
+describe('abas de fonte (features 014 e 015)', () => {
   const cruzadaItems = [
     makeLibraryItem('2026-10-12', {
       puzzleId: '00000000-0000-4000-8000-00000000c012',
@@ -313,13 +313,14 @@ describe('escolha da fonte (feature 014)', () => {
     const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(calls[0]?.url).toBe('/api/library?source=oglobo')
-    expect(screen.getByRole('button', { name: 'O Globo' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('tab', { name: /^O Globo/ })).toHaveAttribute('aria-selected', 'true')
+    const requests = calls.length
 
     await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
-    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
     expect(await screen.findByRole('heading', { name: 'setembro de 2026' })).toBeInTheDocument()
-    expect(calls.at(-1)?.url).toBe('/api/library?source=cruzadaonline')
+    // As duas fontes já vieram juntas: trocar de aba não pede de novo (feature 015).
+    expect(calls).toHaveLength(requests)
     expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
 
     await user.click(screen.getByRole('button', { name: 'Próximo mês' }))
@@ -335,8 +336,8 @@ describe('escolha da fonte (feature 014)', () => {
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     expect(calls.map((call) => call.url)).toContain('/api/library?source=cruzadaonline')
-    expect(screen.getByRole('button', { name: 'Cruzada Online' })).toHaveAttribute(
-      'aria-pressed',
+    expect(screen.getByRole('tab', { name: /^Cruzada Online/ })).toHaveAttribute(
+      'aria-selected',
       'true',
     )
     expect(
@@ -353,7 +354,7 @@ describe('escolha da fonte (feature 014)', () => {
     expect(
       screen.queryByText(/Novas cruzadas não podem ser buscadas agora/),
     ).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Cruzada Online' }))
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
     expect(
       await screen.findByText(/Novas cruzadas não podem ser buscadas agora/),
     ).toBeInTheDocument()
@@ -370,11 +371,32 @@ describe('escolha da fonte (feature 014)', () => {
     ).toBeInTheDocument()
   })
 
-  it('o seletor continua visível enquanto a biblioteca carrega', async () => {
+  it('as abas continuam visíveis enquanto a biblioteca carrega', async () => {
     mockApi({ 'GET /api/library': () => new Promise<Response>(() => {}) })
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('group', { name: 'Fonte da cruzada' })).toBeInTheDocument()
+    expect(await screen.findByRole('tablist', { name: 'Fonte do calendário' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Carregando a biblioteca…')
+  })
+
+  it('o calendário é o painel da aba escolhida', async () => {
+    bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.getByRole('tabpanel', { name: /^O Globo/ })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
+    expect(screen.getByRole('tabpanel', { name: /^Cruzada Online/ })).toBeInTheDocument()
+  })
+
+  it('cada aba conta as concluídas do mês exibido', async () => {
+    bySource()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.getByRole('tab', { name: 'O Globo 1 concluída' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Cruzada Online 0 concluídas' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    expect(screen.getByRole('tab', { name: 'O Globo 0 concluídas' })).toBeInTheDocument()
   })
 })
 
@@ -492,6 +514,22 @@ describe('biblioteca do visitante (feature 013)', () => {
     })
     renderRoutes(guestRoutes, ['/'], asGuest())
     expect(await screen.findByText('◐ Em jogo')).toBeInTheDocument()
+  })
+
+  it('as abas contam as concluídas do visitante a partir do navegador', async () => {
+    await guestStore.save({
+      puzzleId: publicItems[1]?.puzzleId ?? '',
+      date: '2026-10-13',
+      cells: [['A']],
+      elapsedMs: 412_000,
+      status: 'completed',
+      savedAt: '2026-10-13T14:00:00.000Z',
+      help: null,
+    })
+    mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
+    renderRoutes(guestRoutes, ['/'], asGuest())
+    expect(await screen.findByRole('tab', { name: 'O Globo 1 concluída' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Cruzada Online 0 concluídas' })).toBeInTheDocument()
   })
 
   it('com a API anterior (401 sem sessão), pede para entrar em vez de travar', async () => {

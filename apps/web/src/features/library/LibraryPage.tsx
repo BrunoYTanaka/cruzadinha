@@ -15,7 +15,8 @@ import { LibraryLegend } from './LibraryLegend'
 import { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from './library-width'
 import { useSourceChoice } from './source-choice'
 import { isSourceDown, readNoPuzzleDates } from './source-down'
-import { SourcePicker } from './SourcePicker'
+import { SourceTabs } from './SourceTabs'
+import { completedInMonth } from './today-cards'
 import { TodayCards } from './TodayCards'
 import { useLibraryWidth } from './useLibraryWidth'
 import { libraryOf, useSourceLibraries } from './useSourceLibraries'
@@ -104,7 +105,15 @@ export function LibraryPage() {
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
       <TodayCards libraries={libraries} today={today} />
-      <SourcePicker value={source} onChange={setSource} />
+      <SourceTabs
+        value={source}
+        tabs={libraries.map((entry) => ({
+          source: entry.source,
+          name: entry.name,
+          count: entry.query.isSuccess ? completedInMonth(entry.items, month) : null,
+        }))}
+        onChange={setSource}
+      />
       {calendarArea}
     </div>
   )

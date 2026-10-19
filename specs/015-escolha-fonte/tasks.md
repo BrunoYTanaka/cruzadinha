@@ -117,27 +117,27 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T014 [P] [US2] Em `apps/web/src/features/library/today-cards.test.ts`, testes de `completedInMonth(items, { year: 2026, month: 10 })` (data-model §4): conta só `status === 'completed'` com data em outubro de 2026; ignora setembro e novembro; lista vazia → 0. E de `completedLabel(n)`: 0 → "0 concluídas", 1 → "1 concluída", 5 → "5 concluídas".
-- [ ] T015 [P] [US2] Criar `apps/web/src/features/library/SourceTabs.test.tsx` (research R4, contracts/ui.md §1, "Abas"):
+- [X] T014 [P] [US2] Em `apps/web/src/features/library/today-cards.test.ts`, testes de `completedInMonth(items, { year: 2026, month: 10 })` (data-model §4): conta só `status === 'completed'` com data em outubro de 2026; ignora setembro e novembro; lista vazia → 0. E de `completedLabel(n)`: 0 → "0 concluídas", 1 → "1 concluída", 5 → "5 concluídas".
+- [X] T015 [P] [US2] Criar `apps/web/src/features/library/SourceTabs.test.tsx` (research R4, contracts/ui.md §1, "Abas"):
   - `tablist` com nome "Fonte do calendário" e uma `tab` por fonte, na ordem da lista;
   - a ativa com `aria-selected="true"` e `tabindex="0"`, as outras `"false"` e `"-1"`; cada aba com `aria-controls="source-panel"`;
   - com contagens, a aba mostra "5 concluídas"; com `count: null` (carregando/erro), só o nome;
   - clique chama `onChange(source)`; → e ← chamam `onChange` com a vizinha, com volta nas pontas, e movem o foco; Home/End vão à primeira/última;
   - `expectNoA11yViolations`.
-- [ ] T016 [P] [US2] Em `apps/web/src/features/library/LibraryPage.test.tsx`:
+- [X] T016 [P] [US2] Em `apps/web/src/features/library/LibraryPage.test.tsx`:
   - escolher a aba "Cruzada Online" mostra os dias dela no mesmo mês (navegar para setembro antes e conferir que continua em setembro), sem novo pedido de biblioteca (contar chamadas no `mockApi`);
   - a escolha fica em `cruzadinha:source` e uma nova renderização abre nessa aba;
   - o calendário é `role="tabpanel"` com nome igual ao da aba ativa;
   - a aba mostra a contagem de concluídas do mês exibido e muda ao trocar de mês.
-- [ ] T017 [US2] Em `apps/web/src/features/library/LibraryPage.test.tsx` (mesmo arquivo de T016, depois dela), caso de visitante: com um item `completed` de outubro no IndexedDB (`guestStore`) para O Globo, a aba "O Globo" mostra "1 concluída" e a da Cruzada Online "0 concluídas" (FR-012).
+- [X] T017 [US2] Em `apps/web/src/features/library/LibraryPage.test.tsx` (mesmo arquivo de T016, depois dela), caso de visitante: com um item `completed` de outubro no IndexedDB (`guestStore`) para O Globo, a aba "O Globo" mostra "1 concluída" e a da Cruzada Online "0 concluídas" (FR-012).
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Em `apps/web/src/features/library/today-cards.ts`, implementar `completedInMonth(items, month)` e `completedLabel(n)`. T014 passa.
-- [ ] T019 [US2] Criar `apps/web/src/features/library/SourceTabs.tsx` e `SourceTabs.module.css`: props `{ value: PuzzleSourceId; tabs: { source; name; count: number | null }[]; onChange(source) }`; `<div role="tablist" aria-label="Fonte do calendário">`, cada `<button type="button" role="tab" id={`source-tab-${source}`} aria-controls="source-panel" aria-selected tabIndex>` com nome em negrito e `completedLabel(count)` quando `count !== null`; `onKeyDown` no tablist para ←/→/Home/End, chamando `onChange` e focando a aba nova (refs por fonte). Estilo: aba ativa com fundo `--surface` e marca de 3 px em `--accent`; inativas em `--pill`; altura mínima `var(--tap)`; abaixo de 600 px `grid-auto-flow: column; grid-auto-columns: 1fr` (FR-016). T015 passa.
-- [ ] T020 [US2] Em `apps/web/src/features/library/Calendar.tsx`, a `<section>` do mês ganha `id="source-panel"`, `role="tabpanel"`, `aria-labelledby={`source-tab-${source}`}` e `aria-describedby="calendar-title"` (o nome do painel é o da aba; o mês continua no `h2#calendar-title`, contracts/ui.md §1). Ajustar os testes existentes que dependam de `aria-labelledby="calendar-title"`.
-- [ ] T021 [US2] Em `apps/web/src/features/library/LibraryPage.tsx`, trocar `SourcePicker` por `<SourceTabs value={source} tabs={…} onChange={setSource} />`, com `count = completedInMonth(entry.items, month)` quando `entry.query.isSuccess` e `null` caso contrário; o `month` continua no estado da página ao trocar de aba (FR-009). T016 e T017 passam.
-- [ ] T022 [US2] Só depois de T021 (a página já não usa o componente): remover `apps/web/src/features/library/SourcePicker.tsx`, `SourcePicker.module.css` e `SourcePicker.test.tsx`. Rodar `npm run typecheck -w @cruzadinha/web`: verde.
+- [X] T018 [US2] Em `apps/web/src/features/library/today-cards.ts`, implementar `completedInMonth(items, month)` e `completedLabel(n)`. T014 passa.
+- [X] T019 [US2] Criar `apps/web/src/features/library/SourceTabs.tsx` e `SourceTabs.module.css`: props `{ value: PuzzleSourceId; tabs: { source; name; count: number | null }[]; onChange(source) }`; `<div role="tablist" aria-label="Fonte do calendário">`, cada `<button type="button" role="tab" id={`source-tab-${source}`} aria-controls="source-panel" aria-selected tabIndex>` com nome em negrito e `completedLabel(count)` quando `count !== null`; `onKeyDown` no tablist para ←/→/Home/End, chamando `onChange` e focando a aba nova (refs por fonte). Estilo: aba ativa com fundo `--surface` e marca de 3 px em `--accent`; inativas em `--pill`; altura mínima `var(--tap)`; abaixo de 600 px `grid-auto-flow: column; grid-auto-columns: 1fr` (FR-016). T015 passa.
+- [X] T020 [US2] Em `apps/web/src/features/library/Calendar.tsx`, a `<section>` do mês ganha `id="source-panel"`, `role="tabpanel"`, `aria-labelledby={`source-tab-${source}`}` e `aria-describedby="calendar-title"` (o nome do painel é o da aba; o mês continua no `h2#calendar-title`, contracts/ui.md §1). Ajustar os testes existentes que dependam de `aria-labelledby="calendar-title"`.
+- [X] T021 [US2] Em `apps/web/src/features/library/LibraryPage.tsx`, trocar `SourcePicker` por `<SourceTabs value={source} tabs={…} onChange={setSource} />`, com `count = completedInMonth(entry.items, month)` quando `entry.query.isSuccess` e `null` caso contrário; o `month` continua no estado da página ao trocar de aba (FR-009). T016 e T017 passam.
+- [X] T022 [US2] Só depois de T021 (a página já não usa o componente): remover `apps/web/src/features/library/SourcePicker.tsx`, `SourcePicker.module.css` e `SourcePicker.test.tsx`. Rodar `npm run typecheck -w @cruzadinha/web`: verde.
 
 **Checkpoint**: US1 e US2 juntas = alternativa A do mockup na biblioteca.
 
