@@ -38,7 +38,7 @@ O botão "Jogar a de hoje" e o seletor de botões da feature 014 deixam de exist
 
 ## 2. Tela do jogo (`/jogo/:puzzleId`)
 
-- `h1` visível no começo da faixa de ferramentas (antes ficava só para leitores de tela): `<span class="source">{nome da fonte}</span>` (pílula visual, fundo `--pill`; não é o componente `Pill`, que é botão) seguido de "Cruzada de {dia} de {mês}". Leitura: "O Globo Cruzada de 18 de outubro". A faixa já quebra linha em telas estreitas e o tabuleiro se ajusta ao espaço medido.
+- `h1` visível no começo da faixa de ferramentas (antes ficava só para leitores de tela): `<span class="source">{nome da fonte}</span>` (pílula visual, fundo `--pill`; não é o componente `Pill`, que é botão) seguido de "{dia} de {mês}" (o "Cruzada de" fica só para leitores de tela, para a faixa caber numa linha no computador). Leitura: "O Globo Cruzada de 18 de outubro". A faixa já quebra linha em telas estreitas e o tabuleiro se ajusta ao espaço medido.
 - Título do documento: "Cruzada de {dia} de {mês} · {nome da fonte}".
 - Linha de atribuição sem mudança.
 

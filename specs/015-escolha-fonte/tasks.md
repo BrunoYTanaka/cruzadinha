@@ -184,10 +184,10 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 - [X] T029 [P] Atualizar os specs Playwright que dependem do layout antigo (research R7): `apps/web/e2e/support.ts` (helpers que esperam o `h1` "Escolha um dia" ou clicam em "Jogar a de hoje" passam a esperar o `h1` "Hoje" e clicar no cartão da fonte), `fluxo-principal.spec.ts`, `visitante.spec.ts`, `tamanhos.spec.ts`, `espera-servidor.spec.ts`.
 - [X] T030 [P] Em `apps/web/e2e/fontes.spec.ts`: substituir o uso do seletor por abas (`getByRole('tab', { name: /Cruzada Online/ })`), cobrir os dois cartões de hoje abrindo o puzzle da fonte certa e o atalho do diálogo de conclusão; com `page.setViewportSize` em 360 x 640 e em 1280 x 800, conferir com `toBeInViewport()` que os cartões de todas as fontes e as abas aparecem sem rolar (SC-002) e que `document.documentElement.scrollWidth <= innerWidth` (FR-015); repetir a página da biblioteca com `page.emulateMedia({ colorScheme: 'dark' })`.
-- [ ] T031 [P] Atualizar `docs/design.md` (§2, parágrafo da Cruzada Online, e §5 `library/`): a escolha da fonte agora é pelos cartões de "Hoje" e pelas abas do calendário.
-- [ ] T032 [P] Atualizar `CLAUDE.md`, "Current state": acrescentar o item da feature 015 (cartões "Hoje" por fonte, `SourceTabs`, `useSourceLibraries` com `useQueries`, `dayState`/`today-cards.ts`, fonte no `h1` do jogo e atalho de conclusão, fonte padrão = primeira da lista, layout para 1 a 3 fontes) e trocar a menção a `SourcePicker` no item da feature 014.
-- [ ] T033 Rodar `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test` e `npm run build` na raiz; tudo verde.
-- [ ] T034 Rodar `npm run test:e2e -w @cruzadinha/web` contra a API e o Postgres locais com seed (CLAUDE.md, Commands) e seguir o roteiro manual de `specs/015-escolha-fonte/quickstart.md` (passos 1 a 8), em 360 px e 1280 px, nos temas claro e escuro.
+- [X] T031 [P] Atualizar `docs/design.md` (§2, parágrafo da Cruzada Online, e §5 `library/`): a escolha da fonte agora é pelos cartões de "Hoje" e pelas abas do calendário.
+- [X] T032 [P] Atualizar `CLAUDE.md`, "Current state": acrescentar o item da feature 015 (cartões "Hoje" por fonte, `SourceTabs`, `useSourceLibraries` com `useQueries`, `dayState`/`today-cards.ts`, fonte no `h1` do jogo e atalho de conclusão, fonte padrão = primeira da lista, layout para 1 a 3 fontes) e trocar a menção a `SourcePicker` no item da feature 014.
+- [X] T033 Rodar `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test` e `npm run build` na raiz; tudo verde.
+- [X] T034 Rodar `npm run test:e2e -w @cruzadinha/web` contra a API e o Postgres locais com seed (CLAUDE.md, Commands) e seguir o roteiro manual de `specs/015-escolha-fonte/quickstart.md` (passos 1 a 8), em 360 px e 1280 px, nos temas claro e escuro.
 
 ---
 
