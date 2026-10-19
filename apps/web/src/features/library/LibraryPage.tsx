@@ -1,18 +1,12 @@
-import type { PuzzleSourceId } from '@cruzadinha/shared'
-import { useQuery } from '@tanstack/react-query'
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiRequestError } from '../../api/client'
-import { getLibrary } from '../../api/library'
-import { mergeGuestLibrary } from '../guest/guest-library'
-import { guestStore } from '../guest/guest-store'
-import { queryKeys } from '../../api/query-keys'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { Notice } from '../../components/Notice'
 import { ResizeHandle, type ResizeHandleProps } from '../../components/ResizeHandle'
 import { addMonths, todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
-import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
+import { useViewer } from '../auth/useSession'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import { buildMonth, compareMonths, currentMonth, firstNavigableMonth } from './calendar'
 import { Calendar } from './Calendar'
@@ -23,6 +17,7 @@ import { useSourceChoice } from './source-choice'
 import { isSourceDown, readNoPuzzleDates } from './source-down'
 import { SourcePicker } from './SourcePicker'
 import { useLibraryWidth } from './useLibraryWidth'
+import { libraryOf, useSourceLibraries } from './useSourceLibraries'
 
 // Computador: o calendário fica largo e pode ser redimensionado pela alça da borda.
 export const LIBRARY_DESKTOP_QUERY = '(min-width: 861px)'
@@ -32,23 +27,15 @@ export function LibraryPage() {
   const today = useMemo(() => todayInBrasilia(), [])
   const viewer = useViewer()
   const [source, setSource] = useSourceChoice()
-  const library = useQuery({
-    queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending', source),
-    queryFn: () => (viewer ? libraryFor(viewer, source) : getLibrary(source)),
-    enabled: viewer !== undefined,
-    // Com a API anterior, a biblioteca de visitante responde 401: um erro só, sem novas tentativas
-    // (R19, feature 013).
-    retry: false,
-  })
+  const libraries = useSourceLibraries()
+  const active = libraryOf(libraries, source)
+  const library = active.query
   const [month, setMonth] = useState(() => currentMonth(today))
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
 
   // A API anterior ignora a fonte e só lista O Globo: um item de outra fonte nunca entra no mês.
-  const items = useMemo(
-    () => (library.data?.items ?? []).filter((item) => item.source === source),
-    [library.data, source],
-  )
+  const items = active.items
   const view = useMemo(() => {
     const monthDates = Array.from(
       { length: 31 },
@@ -126,13 +113,6 @@ export function LibraryPage() {
       <LibraryLegend />
     </div>
   )
-}
-
-// Visitante: os dias vêm do servidor e a situação de cada um, do navegador (feature 013, FR-007).
-async function libraryFor(viewer: Viewer, source: PuzzleSourceId) {
-  const response = await getLibrary(source)
-  if (viewer.kind === 'user') return response
-  return { items: mergeGuestLibrary(response.items, await guestStore.getAll()) }
 }
 
 // Alça da borda direita (a acessível) e a pegada do canto inferior direito, só visual.

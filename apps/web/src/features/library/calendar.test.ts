@@ -1,6 +1,6 @@
 import type { LibraryItem } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import { buildMonth, compareMonths, currentMonth, firstNavigableMonth } from './calendar'
+import { buildMonth, compareMonths, currentMonth, dayState, firstNavigableMonth } from './calendar'
 
 const today = '2026-10-14'
 
@@ -79,5 +79,37 @@ describe('limites de navegação', () => {
     expect(currentMonth(today)).toEqual({ year: 2026, month: 10 })
     expect(compareMonths({ year: 2025, month: 10 }, { year: 2026, month: 10 })).toBeLessThan(0)
     expect(compareMonths({ year: 2026, month: 10 }, { year: 2026, month: 10 })).toBe(0)
+  })
+})
+
+describe('dayState', () => {
+  const byDate = (...items: LibraryItem[]) => new Map(items.map((entry) => [entry.date, entry]))
+
+  it('item guardado: a situação vem da biblioteca, com o id do puzzle', () => {
+    const done = item('2026-10-10', { status: 'completed', finishedMs: 90_000 })
+    expect(dayState('2026-10-10', today, byDate(done), new Set())).toEqual({
+      kind: 'completed',
+      finishedMs: 90_000,
+      puzzleId: done.puzzleId,
+    })
+    const playing = item('2026-10-11', { status: 'in_progress' })
+    expect(dayState('2026-10-11', today, byDate(playing), new Set())).toEqual({
+      kind: 'in_progress',
+      puzzleId: playing.puzzleId,
+    })
+    const fresh = item('2026-10-12')
+    expect(dayState('2026-10-12', today, byDate(fresh), new Set())).toEqual({
+      kind: 'not_started',
+      puzzleId: fresh.puzzleId,
+    })
+  })
+
+  it('sem item: futuro, sem cruzada ou buscável (inclusive hoje)', () => {
+    expect(dayState('2026-10-15', today, byDate(), new Set())).toEqual({ kind: 'future' })
+    expect(dayState('2026-10-13', today, byDate(), new Set(['2026-10-13']))).toEqual({
+      kind: 'none',
+    })
+    expect(dayState('2026-10-13', today, byDate(), new Set())).toEqual({ kind: 'fetchable' })
+    expect(dayState(today, today, byDate(), new Set())).toEqual({ kind: 'fetchable' })
   })
 })

@@ -1,3 +1,4 @@
+import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -126,8 +127,9 @@ describe('LibraryPage', () => {
       'Não foi possível carregar a biblioteca',
     )
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    // Uma consulta por fonte (feature 015): a nova tentativa pede de novo a fonte do calendário.
     await waitFor(() =>
-      expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(2),
+      expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(2),
     )
   })
 
@@ -306,7 +308,7 @@ describe('escolha da fonte (feature 014)', () => {
     const { calls } = bySource()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(calls[0]?.url).toBe('/api/library?source=cruzadaonline')
+    expect(calls.map((call) => call.url)).toContain('/api/library?source=cruzadaonline')
     expect(screen.getByRole('button', { name: 'Cruzada Online' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -457,6 +459,10 @@ describe('biblioteca do visitante (feature 013)', () => {
     })
     renderRoutes(guestRoutes, ['/'], asGuest())
     expect(await screen.findByText('Entre para ver a biblioteca')).toBeInTheDocument()
-    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(1)
+    // Um pedido por fonte e nenhuma nova tentativa.
+    expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(1)
+    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(
+      puzzleSourceIdSchema.options.length,
+    )
   })
 })

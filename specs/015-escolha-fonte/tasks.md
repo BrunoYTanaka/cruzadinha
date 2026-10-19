@@ -34,7 +34,7 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 **Purpose**: branch.
 
-- [ ] T001 Criar a branch `feat/015-escolha-fonte` a partir de `main` (`git switch -c feat/015-escolha-fonte`) e versionar `specs/015-escolha-fonte/` num commit `docs: add feature 015 spec, plan and tasks`. Não incluir `specs/016-dica-riscada-ao-acertar/` (é outra feature).
+- [X] T001 Criar a branch `feat/015-escolha-fonte` a partir de `main` (`git switch -c feat/015-escolha-fonte`) e versionar `specs/015-escolha-fonte/` num commit `docs: add feature 015 spec, plan and tasks`. Não incluir `specs/016-dica-riscada-ao-acertar/` (é outra feature).
 
 ---
 
@@ -44,16 +44,16 @@ description: "Task list for feature 015: escolha da fonte mais visível"
 
 **⚠️ CRITICAL**: nenhuma história começa antes desta fase.
 
-- [ ] T002 [P] Em `apps/web/src/features/library/calendar.test.ts`, acrescentar testes de `dayState(date, today, byDate, noPuzzleDates)` exportada: item `completed` → `{ kind: 'completed', finishedMs, puzzleId }`; `in_progress` → `{ kind: 'in_progress', puzzleId }`; `not_started` → `{ kind: 'not_started', puzzleId }`; sem item e `date > today` → `future`; sem item, passado, em `noPuzzleDates` → `none`; sem item, passado ou hoje → `fetchable`.
-- [ ] T003 Em `apps/web/src/features/library/calendar.ts`, renomear `stateFor` para `dayState` e exportá-la, sem mudar o comportamento; `buildMonth` passa a chamá-la. T002 passa.
-- [ ] T004 [P] Em `apps/web/src/features/library/source-choice.test.ts`, acrescentar: `DEFAULT_SOURCE` é igual a `puzzleSourceIdSchema.options[0]`; com `cruzadinha:source` = `'fonte-retirada'`, `loadSourceChoice()` devolve `DEFAULT_SOURCE` (research R10, FR-008).
-- [ ] T005 Em `apps/web/src/features/library/source-choice.ts`, trocar `DEFAULT_SOURCE: PuzzleSourceId = 'oglobo'` por `puzzleSourceIdSchema.options[0]` (com comentário: a primeira fonte da lista é a padrão). T004 passa.
-- [ ] T006 Criar `apps/web/src/features/library/useSourceLibraries.ts` (research R1, R9):
+- [X] T002 [P] Em `apps/web/src/features/library/calendar.test.ts`, acrescentar testes de `dayState(date, today, byDate, noPuzzleDates)` exportada: item `completed` → `{ kind: 'completed', finishedMs, puzzleId }`; `in_progress` → `{ kind: 'in_progress', puzzleId }`; `not_started` → `{ kind: 'not_started', puzzleId }`; sem item e `date > today` → `future`; sem item, passado, em `noPuzzleDates` → `none`; sem item, passado ou hoje → `fetchable`.
+- [X] T003 Em `apps/web/src/features/library/calendar.ts`, renomear `stateFor` para `dayState` e exportá-la, sem mudar o comportamento; `buildMonth` passa a chamá-la. T002 passa.
+- [X] T004 [P] Em `apps/web/src/features/library/source-choice.test.ts`, acrescentar: `DEFAULT_SOURCE` é igual a `puzzleSourceIdSchema.options[0]`; com `cruzadinha:source` = `'fonte-retirada'`, `loadSourceChoice()` devolve `DEFAULT_SOURCE` (research R10, FR-008).
+- [X] T005 Em `apps/web/src/features/library/source-choice.ts`, trocar `DEFAULT_SOURCE: PuzzleSourceId = 'oglobo'` por `puzzleSourceIdSchema.options[0]` (com comentário: a primeira fonte da lista é a padrão). T004 passa.
+- [X] T006 Criar `apps/web/src/features/library/useSourceLibraries.ts` (research R1, R9):
   - mover `libraryFor(viewer, source)` de `LibraryPage.tsx` para cá (exportada), sem mudar o comportamento;
   - `export function useSourceLibraries({ enabled = true }: { enabled?: boolean } = {}): SourceLibrary[]`, com `useViewer()` e `useQueries` sobre `puzzleSourceIdSchema.options`, cada consulta com `queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending', source)`, `queryFn: () => (viewer ? libraryFor(viewer, source) : getLibrary(source))`, `enabled: enabled && viewer !== undefined`, `retry: false` (as mesmas opções de hoje em `LibraryPage.tsx`);
   - `SourceLibrary = { source: PuzzleSourceId; name: string; query: UseQueryResult<LibraryResponse>; items: LibraryItem[] }`, com `items` = `data?.items` filtrado por `item.source === source` (research R11) e `[]` sem dados;
   - sem `combine`: cada fonte mantém o próprio `isPending`, `isError`, `error` e `refetch` (FR-014).
-- [ ] T007 Em `apps/web/src/features/library/LibraryPage.tsx`, trocar o `useQuery` local por `useSourceLibraries()` e usar a entrada da fonte ativa para o calendário, mantendo todo o comportamento atual (seletor, carregamento, erro, 401 de visitante, aviso de fonte fora do ar). Rodar `cd apps/web && npx vitest run src/features/library`: tudo verde, sem mudar testes.
+- [X] T007 Em `apps/web/src/features/library/LibraryPage.tsx`, trocar o `useQuery` local por `useSourceLibraries()` e usar a entrada da fonte ativa para o calendário, mantendo todo o comportamento atual (seletor, carregamento, erro, 401 de visitante, aviso de fonte fora do ar). Rodar `cd apps/web && npx vitest run src/features/library`: tudo verde, sem mudar testes.
 
 **Checkpoint**: base pronta; nada visível mudou.
 

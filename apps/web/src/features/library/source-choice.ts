@@ -5,7 +5,14 @@ import { readStorage, writeStorage } from '../../lib/storage'
 // Fonte escolhida no calendário: preferência do aparelho, como o tema e os tamanhos (feature 014).
 export const SOURCE_KEY = 'cruzadinha:source'
 
-export const DEFAULT_SOURCE: PuzzleSourceId = 'oglobo'
+// A primeira fonte da lista é a padrão; uma fonte guardada que saiu da lista volta a ela (feature 015).
+export const DEFAULT_SOURCE: PuzzleSourceId = firstSource()
+
+function firstSource(): PuzzleSourceId {
+  const [first] = puzzleSourceIdSchema.options
+  if (first === undefined) throw new Error('a lista de fontes está vazia')
+  return first
+}
 
 export function loadSourceChoice(): PuzzleSourceId {
   const parsed = puzzleSourceIdSchema.safeParse(readStorage(SOURCE_KEY))

@@ -51,7 +51,9 @@ export function compareMonths(a: YearMonth, b: YearMonth): number {
   return a.year * 12 + a.month - (b.year * 12 + b.month)
 }
 
-function stateFor(
+// Situação de um dia, usada pelo calendário, pelos cartões de hoje e pelo atalho de conclusão
+// (feature 015).
+export function dayState(
   date: string,
   today: string,
   byDate: Map<string, LibraryItem>,
@@ -86,7 +88,7 @@ export function buildMonth(
       date,
       day,
       isToday: date === today,
-      state: stateFor(date, today, byDate, noPuzzleDates),
+      state: dayState(date, today, byDate, noPuzzleDates),
     })
   }
   return { year, month, leadingBlanks: firstWeekday({ year, month }), days }
