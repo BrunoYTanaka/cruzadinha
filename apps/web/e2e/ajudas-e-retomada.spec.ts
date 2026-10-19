@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { login, resetAndSeed } from './support'
+import { login, resetAndSeed, solutionLetters, solveFirstAcrossWord, typeWord } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -70,11 +70,35 @@ for (const theme of ['light', 'dark'] as const) {
     await audit(page)
     await page.getByRole('link', { name: /^O Globo: / }).click()
     await expect(page.getByRole('grid')).toBeVisible()
+    // Com uma dica riscada (feature 016), para o axe ver o estilo do risco no tema.
+    await solveFirstAcrossWord(page)
+    await expect(page.getByRole('button', { name: /, resolvida$/ })).toHaveCount(1)
     await audit(page)
     await page.getByRole('button', { name: 'Legenda do tabuleiro' }).click()
     await audit(page)
   })
 }
+
+test('visitante: só a dica da palavra certa fica riscada (feature 016)', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await expect(page.getByRole('grid')).toBeVisible()
+  const { puzzle, solution } = await solveFirstAcrossWord(page)
+  const [first, second] = puzzle.words.filter((word) => word.direction === 'across')
+  if (!first || !second) throw new Error('a cruzada de hoje deveria ter duas horizontais')
+  // As horizontais não se cruzam: a segunda fica completa e toda errada.
+  const wrong = solutionLetters(solution, second).map((letter) => (letter === 'A' ? 'B' : 'A'))
+  await typeWord(page, second, wrong)
+
+  await expect(page.getByRole('button', { name: /, resolvida$/ })).toHaveCount(1)
+  // A lista segue a ordem de `puzzle.words`: a primeira horizontal riscada, a segunda não.
+  const across = page
+    .getByRole('complementary', { name: 'Dicas' })
+    .getByRole('region', { name: 'Horizontais' })
+    .getByRole('button')
+  await expect(across.nth(0)).toHaveAccessibleName(/, resolvida$/)
+  await expect(across.nth(1)).not.toHaveAccessibleName(/resolvida/)
+})
 
 test('a grade cabe em 360 px sem rolagem horizontal', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 })
