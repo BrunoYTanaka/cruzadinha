@@ -14,12 +14,12 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
 }) => {
   const start = Date.now()
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Escolha um dia' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
   await expect(page.getByText('Visitante')).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)
   expect((await axe(page).analyze()).violations).toEqual([])
 
-  await page.getByRole('link', { name: /jogar a de hoje/i }).click()
+  await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByText('Salvo neste aparelho')).toBeVisible()
 
@@ -46,7 +46,7 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
   await dialog.getByRole('button', { name: 'Voltar à biblioteca' }).click()
   await expect(page.getByRole('link', { name: /concluído em/ }).first()).toBeVisible()
 
-  await page.getByRole('link', { name: /jogar a de hoje/i }).click()
+  await page.getByRole('link', { name: /^O Globo: / }).click()
   await page.getByRole('button', { name: 'Jogar de novo' }).click()
   await expect(page.getByText('0/4 Letra')).toBeVisible()
 

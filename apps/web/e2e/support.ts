@@ -84,7 +84,7 @@ export async function login(page: Page, email = SEED_EMAIL, password = SEED_PASS
   await page.getByLabel('E-mail').fill(email)
   await page.getByLabel('Senha').fill(password)
   await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.getByRole('heading', { name: 'Escolha um dia' }).waitFor()
+  await page.getByRole('heading', { level: 1, name: 'Hoje' }).waitFor()
 }
 
 type Solution = { cells: (string | null)[][] }
