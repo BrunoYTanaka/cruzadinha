@@ -287,7 +287,10 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         title={
           <h1 className={styles.title}>
             <span className={styles.source}>{puzzleSourceNames[puzzle.source]}</span>{' '}
-            <span className={styles.date}>Cruzada de {formatDate(puzzle.date)}</span>
+            <span className={styles.date}>
+              <span className={styles.hidden}>Cruzada de </span>
+              {formatDate(puzzle.date)}
+            </span>
           </h1>
         }
         elapsedMs={clock.elapsedMs}

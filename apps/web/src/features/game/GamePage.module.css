@@ -132,3 +132,14 @@
 .date {
   white-space: nowrap;
 }
+
+/* "Cruzada de" só para leitores de tela: a faixa fica curta e cabe numa linha no computador. */
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
