@@ -89,6 +89,12 @@
   text-decoration-thickness: 1px;
 }
 
+/* Ativa e riscada: o fundo da palavra ativa com o texto apagado fica abaixo de 4,5:1 no tema
+   escuro, então o texto volta à cor normal e o risco continua marcando a dica resolvida. */
+.active.done {
+  color: var(--ink);
+}
+
 .hidden {
   position: absolute;
   width: 1px;

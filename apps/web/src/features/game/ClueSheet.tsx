@@ -9,19 +9,19 @@ type ClueSheetProps = {
   onClose: () => void
   puzzle: Puzzle
   activeWord: Word | null
-  filled: ReadonlySet<string>
+  struck: ReadonlySet<string>
   onSelect: (word: Word) => void
 }
 
 // No celular a lista lateral não cabe: a tecla "Dicas" abre esta folha com todas as dicas.
-export function ClueSheet({ open, onClose, puzzle, activeWord, filled, onSelect }: ClueSheetProps) {
+export function ClueSheet({ open, onClose, puzzle, activeWord, struck, onSelect }: ClueSheetProps) {
   return (
     <Dialog open={open} onClose={onClose} title="Dicas" align="bottom" closeOnBackdrop>
       <div className={styles.body}>
         <ClueList
           puzzle={puzzle}
           activeWord={activeWord}
-          filled={filled}
+          struck={struck}
           onSelect={(word) => {
             onSelect(word)
             onClose()

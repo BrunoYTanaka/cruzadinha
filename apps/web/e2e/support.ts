@@ -94,11 +94,18 @@ export function typedLetter(letter: string): string {
   return letter === 'Ç' ? letter : letter.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-// A solução vem da própria API (o front a recebe junto da cruzada): o teste não a escreve à mão.
-export async function todaySolution(request: APIRequestContext): Promise<Solution['cells']> {
+type Word = { direction: 'across' | 'down'; row: number; col: number; length: number }
+type TodayPuzzle = { puzzle: { words: Word[] }; solution: Solution }
+
+// Puzzle e solução vêm da própria API (o front recebe os dois juntos): o teste não escreve o layout
+// nem as letras à mão. Usa o cookie do contexto, ou nenhum para o visitante.
+export async function todayPuzzle(request: APIRequestContext): Promise<TodayPuzzle> {
   const response = await request.get(`/api/puzzles?level=daily&date=${brasiliaToday()}`)
-  const body = (await response.json()) as { solution: Solution }
-  return body.solution.cells
+  return (await response.json()) as TodayPuzzle
+}
+
+export async function todaySolution(request: APIRequestContext): Promise<Solution['cells']> {
+  return (await todayPuzzle(request)).solution.cells
 }
 
 // Digita uma letra no tabuleiro. O teclado do Playwright é o americano e não tem a tecla Ç: ela
@@ -119,4 +126,35 @@ export async function fillSolution(page: Page, cells: (string | null)[][]): Prom
       await pressLetter(page, typedLetter(letter))
     }
   }
+}
+
+// Digita uma letra por célula da palavra, clicando em cada uma antes: a direção selecionada no
+// tabuleiro não importa.
+export async function typeWord(page: Page, word: Word, letters: string[]): Promise<void> {
+  for (const [offset, letter] of letters.entries()) {
+    const row = word.row + (word.direction === 'down' ? offset : 0)
+    const col = word.col + (word.direction === 'across' ? offset : 0)
+    await page
+      .getByRole('gridcell', { name: new RegExp(`^Linha ${row + 1}, coluna ${col + 1},`) })
+      .click()
+    await pressLetter(page, letter)
+  }
+}
+
+// Letras da solução numa palavra, já como o jogador as digita (sem acento).
+export function solutionLetters(solution: Solution, word: Word): string[] {
+  return Array.from({ length: word.length }, (_, offset) => {
+    const row = word.row + (word.direction === 'down' ? offset : 0)
+    const col = word.col + (word.direction === 'across' ? offset : 0)
+    return typedLetter(solution.cells[row]?.[col] ?? '')
+  })
+}
+
+// Acerta a primeira palavra horizontal da cruzada aberta (feature 016: a dica dela fica riscada).
+export async function solveFirstAcrossWord(page: Page): Promise<TodayPuzzle> {
+  const today = await todayPuzzle(page.request)
+  const word = today.puzzle.words.find((item) => item.direction === 'across')
+  if (!word) throw new Error('a cruzada de hoje deveria ter uma palavra horizontal')
+  await typeWord(page, word, solutionLetters(today.solution, word))
+  return today
 }

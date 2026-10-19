@@ -190,6 +190,7 @@ apps/web/src/
 9. Grade completa e correta marca o jogo como concluído. Grade completa e errada não mostra aviso.
 10. **Ajudas (v1 do front):** revelar letra (limite 4 por cruzada), revelar palavra (limite 2) e verificar (sem limite); os limites vêm de `VITE_HELP_LETTER_LIMIT` e `VITE_HELP_WORD_LIMIT` (lidos no build). A célula revelada fica travada e ganha um cantinho roxo; a verificação marca as certas de roxo e as erradas de vermelho. O uso de ajuda e as marcas ficam só no aparelho (`localStorage` por usuário e cruzada), sem enviar ao servidor; o melhor tempo conta normalmente com ajuda.
 11. A solução da fonte pode trazer letras acentuadas (Ã, É). A comparação e as ajudas usam a letra simples, a mesma que o jogador digita.
+12. Uma dica da lista fica riscada e apagada só quando a palavra está **certa** (completa e com as letras da solução, pela mesma comparação da conclusão); completa e errada, ela fica normal. O leitor de tela ouve ", resolvida". O risco sai só das letras e da solução: não conta como ajuda, não é salvo e não aparece no tabuleiro nem na barra da dica ativa. A regra fica em `game-logic/clue-strike.ts` com um modo (`StrikeMode`, hoje só "ao acertar") para uma futura preferência do jogador (feature 016).
 
 ### Progresso
 

@@ -70,6 +70,32 @@ describe('jogo do visitante (feature 013, US1)', () => {
     expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveTextContent('1/4')
   })
 
+  it('ao reabrir, só a palavra certa aparece riscada, sem pedir nada a mais (feature 016)', async () => {
+    const user = setup()
+    openGuestGame()
+    await screen.findByRole('grid')
+    await user.click(screen.getByRole('grid'))
+    // 1 horizontal certa (CAL); 1 vertical completa e errada (C, A, X).
+    await user.keyboard('CAL')
+    await user.click(screen.getByRole('gridcell', { name: 'Linha 2, coluna 1, vazia' }))
+    await user.keyboard('A')
+    await user.click(screen.getByRole('gridcell', { name: 'Linha 3, coluna 1, vazia' }))
+    await user.keyboard('X')
+    await waitFor(async () => expect((await stored())?.cells[2]?.[0]).toBe('X'))
+    cleanup()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50)
+    })
+
+    const { calls } = openGuestGame()
+    await screen.findByRole('grid')
+    expect(
+      screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^1 ?Dica 1 vertical$/ })).toBeInTheDocument()
+    expect(calls.map((call) => call.key)).toEqual([`GET /api/puzzles/${PUZZLE_ID}`])
+  })
+
   it('uma verificação que só marca células também fica guardada (FR-004)', async () => {
     const user = setup()
     openGuestGame()

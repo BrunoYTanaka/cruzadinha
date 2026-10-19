@@ -1,6 +1,6 @@
 import { puzzleSourceNames, type Word } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { getProgress } from '../../api/progress'
@@ -27,7 +27,7 @@ import { cellFromDrag, KEYBOARD_STEP, MIN_CELL } from './board-size'
 import { BoardSizeReset } from './BoardSizeReset'
 import { CompletionDialog } from './CompletionDialog'
 import { ReadModeBanner } from './ReadModeBanner'
-import { ClueList, wordKey } from './ClueList'
+import { ClueList } from './ClueList'
 import { ClueSheet } from './ClueSheet'
 import styles from './GamePage.module.css'
 import { HelpButtons } from './HelpButtons'
@@ -162,6 +162,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
     completedHere,
     playAgain,
     viewCompleted,
+    struck,
   } = useGame({ response, owner })
   const guest = owner.kind === 'guest'
   const storageAvailable = useGuestStorageAvailable()
@@ -202,16 +203,6 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
       .getElementById(`cell-${selectedRow}-${selectedCol}`)
       ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   }, [desktop, selectedRow, selectedCol])
-
-  const filled = useMemo(() => {
-    const done = new Set<string>()
-    for (const item of puzzle.words) {
-      if (game.index.cellsOf(item).every((cell) => state.cells[cell.row]?.[cell.col] != null)) {
-        done.add(wordKey(item))
-      }
-    }
-    return done
-  }, [puzzle.words, game.index, state.cells])
 
   const confirmed = state.completion === 'confirmed'
   const finishedMs =
@@ -268,7 +259,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
     <ClueList
       puzzle={puzzle}
       activeWord={word}
-      filled={filled}
+      struck={struck}
       onSelect={selectClue}
       fill={desktop}
     />
@@ -432,7 +423,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         onClose={() => setCluesOpen(false)}
         puzzle={puzzle}
         activeWord={word}
-        filled={filled}
+        struck={struck}
         onSelect={selectClue}
       />
     </div>
