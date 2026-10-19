@@ -1,27 +1,24 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useEffect, useRef } from 'react'
+import { wordKey } from '../../game-logic/clue-strike'
 import styles from './ClueList.module.css'
 
 type ClueListProps = {
   puzzle: Puzzle
   activeWord: Word | null
-  // Palavras já preenchidas, no formato "6across".
-  filled: ReadonlySet<string>
+  // Palavras resolvidas (completas e certas), no formato "6across".
+  struck: ReadonlySet<string>
   onSelect: (word: Word) => void
   // Computador: as listas ocupam a altura do pai e cada grupo rola por dentro, mantendo a dica
   // ativa visível.
   fill?: boolean
 }
 
-export function wordKey(word: Word): string {
-  return `${word.number}${word.direction}`
-}
-
 function Group({
   title,
   words,
   activeWord,
-  filled,
+  struck,
   onSelect,
 }: { title: string; words: Word[] } & Omit<ClueListProps, 'puzzle' | 'fill'>) {
   return (
@@ -31,7 +28,7 @@ function Group({
         {words.map((word) => {
           const active =
             activeWord?.number === word.number && activeWord.direction === word.direction
-          const done = filled.has(wordKey(word))
+          const done = struck.has(wordKey(word))
           return (
             <li key={wordKey(word)}>
               <button
@@ -42,7 +39,7 @@ function Group({
               >
                 <b className={styles.number}>{word.number}</b>
                 <span>{word.clue}</span>
-                {done ? <span className={styles.hidden}>, preenchida</span> : null}
+                {done ? <span className={styles.hidden}>, resolvida</span> : null}
               </button>
             </li>
           )
@@ -53,7 +50,7 @@ function Group({
 }
 
 // Horizontais e verticais; clicar numa dica seleciona a palavra no tabuleiro.
-export function ClueList({ puzzle, activeWord, filled, onSelect, fill = false }: ClueListProps) {
+export function ClueList({ puzzle, activeWord, struck, onSelect, fill = false }: ClueListProps) {
   const across = puzzle.words.filter((word) => word.direction === 'across')
   const down = puzzle.words.filter((word) => word.direction === 'down')
   const listsRef = useRef<HTMLDivElement>(null)
@@ -83,14 +80,14 @@ export function ClueList({ puzzle, activeWord, filled, onSelect, fill = false }:
         title="Horizontais"
         words={across}
         activeWord={activeWord}
-        filled={filled}
+        struck={struck}
         onSelect={onSelect}
       />
       <Group
         title="Verticais"
         words={down}
         activeWord={activeWord}
-        filled={filled}
+        struck={struck}
         onSelect={onSelect}
       />
     </div>

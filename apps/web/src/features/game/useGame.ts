@@ -12,6 +12,7 @@ import { ApiRequestError } from '../../api/client'
 import { getProgress, resetProgress, saveProgress } from '../../api/progress'
 import { config } from '../../config'
 import { removeStorage } from '../../lib/storage'
+import { struckWords, type StrikeMode } from '../../game-logic/clue-strike'
 import { isSolved } from '../../game-logic/completion'
 import type { GuestProgress } from '../../game-logic/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../game-logic/reducer'
@@ -21,6 +22,10 @@ import { guestStore as defaultGuestStore, type GuestStore } from '../guest/guest
 import { clearHelp, loadHelp, saveHelp } from './help-storage'
 import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from './save-queue'
 import { useClock } from './useClock'
+
+// Quando a dica fica riscada (feature 016). Único lugar que escolhe o modo; a preferência futura do
+// jogador entra aqui.
+const STRIKE_MODE: StrikeMode = 'solved'
 
 // Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
 // nunca leem nem gravam o lugar do outro (FR-011).
@@ -293,6 +298,10 @@ export function useGame({ response, owner }: UseGameArgs) {
   }, [puzzleId, stopClock, store])
 
   const send = useCallback((action: GameAction) => dispatch(action), [])
+  const struck = useMemo(
+    () => struckWords(game.index, state.cells, solution, STRIKE_MODE),
+    [game.index, state.cells, solution],
+  )
 
   return {
     game,
@@ -306,5 +315,6 @@ export function useGame({ response, owner }: UseGameArgs) {
     playAgain,
     viewCompleted,
     solved: isSolved(state.cells, solution),
+    struck,
   }
 }

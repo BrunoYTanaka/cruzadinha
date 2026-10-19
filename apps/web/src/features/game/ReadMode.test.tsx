@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { cellsFrom, makeProgress } from '../../test/fixtures'
 import { openGame, PROGRESS, RESET, setup, installGameTestLifecycle } from '../../test/game-harness'
@@ -25,6 +25,16 @@ describe('modo leitura', () => {
     expect(screen.getByRole('grid')).toHaveAttribute('aria-readonly', 'true')
     expect(screen.queryByRole('button', { name: /Revelar letra/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Jogar de novo' })).toBeInTheDocument()
+  })
+
+  it('no modo leitura todas as dicas aparecem riscadas (feature 016)', async () => {
+    openGame({ [PROGRESS]: () => jsonResponse(200, { progress: completed() }) })
+    await screen.findByRole('grid')
+    for (const name of ['Horizontais', 'Verticais']) {
+      const clues = within(screen.getByRole('region', { name })).getAllByRole('button')
+      expect(clues.length).toBeGreaterThan(0)
+      for (const clue of clues) expect(clue).toHaveAccessibleName(/, resolvida$/)
+    }
   })
 
   it('"Jogar de novo" reinicia no servidor e volta a jogar com a grade vazia', async () => {

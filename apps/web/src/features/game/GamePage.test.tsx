@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../../api/query-keys'
 import { clearExpired } from '../../app/session-expired'
 import { cellsFrom, makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
+import { expectNoA11yViolations } from '../../test/axe'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { desktop, mockMatchMedia, phone } from '../../test/media'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
@@ -467,6 +468,126 @@ describe('GamePage', () => {
       act(() => media.change(phone))
       expect(cellSize()).toBe('')
       expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":90}')
+    })
+  })
+
+  // Feature 016: a dica só fica riscada quando a palavra está certa. CAL / A#O / SOL: 1 horizontal
+  // CAL, 3 horizontal SOL, 1 vertical CAS, 2 vertical LOL.
+  describe('dica riscada só ao acertar (feature 016)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    const board = () => screen.getByRole('region', { name: 'Tabuleiro' })
+    const clues = () => screen.getByRole('complementary', { name: 'Dicas' })
+    const clue = (number: number, direction: 'horizontal' | 'vertical') =>
+      within(clues()).getByRole('button', {
+        name: new RegExp(`^${number} ?Dica ${number} ${direction}(, resolvida)?$`),
+      })
+
+    async function typeAt(
+      user: ReturnType<typeof setup>,
+      row: number,
+      col: number,
+      letter: string,
+    ) {
+      await user.click(
+        screen.getByRole('gridcell', { name: new RegExp(`^Linha ${row}, coluna ${col},`) }),
+      )
+      await user.keyboard(letter)
+    }
+
+    it('risca ao digitar a última letra certa e tira ao trocar uma letra; a barra ativa não risca', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      const { container } = openGame()
+      await screen.findByRole('grid')
+      await user.click(grid())
+      await user.keyboard('CA')
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal$/)
+      await user.keyboard('L')
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal, resolvida$/)
+      expect(clue(1, 'horizontal').className).toMatch(/done/)
+
+      await user.click(clue(1, 'horizontal'))
+      const bar = within(board()).getByText('Dica 1 horizontal')
+      expect(bar.closest('[class*="done"]')).toBeNull()
+      expect(within(board()).queryByText(/resolvida/)).toBeNull()
+      await expectNoA11yViolations(container)
+
+      await typeAt(user, 1, 2, 'X')
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal$/)
+      expect(clue(1, 'horizontal').className).not.toMatch(/done/)
+    })
+
+    it('palavra completa e errada fica sem risco; corrigir pelo cruzamento risca', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      await typeAt(user, 1, 1, 'C')
+      await typeAt(user, 2, 1, 'A')
+      await typeAt(user, 3, 1, 'X')
+      expect(clue(1, 'vertical')).toHaveAccessibleName(/^1 ?Dica 1 vertical$/)
+      expect(clue(1, 'vertical').className).not.toMatch(/done/)
+
+      await typeAt(user, 3, 1, 'S')
+      await typeAt(user, 3, 2, 'O')
+      await typeAt(user, 3, 3, 'L')
+      expect(clue(1, 'vertical')).toHaveAccessibleName(/^1 ?Dica 1 vertical, resolvida$/)
+      expect(clue(3, 'horizontal')).toHaveAccessibleName(/^3 ?Dica 3 horizontal, resolvida$/)
+    })
+
+    it('"revelar palavra" risca a dica sem gastar outra ajuda; "verificar" não muda os riscos', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      await user.click(grid())
+      await user.click(screen.getByRole('button', { name: /Revelar palavra/ }))
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal, resolvida$/)
+      expect(screen.getByRole('button', { name: /Revelar palavra/ })).toHaveAccessibleName(
+        /Revelar palavra: 1 de/,
+      )
+      expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveAccessibleName(
+        /Revelar letra: 0 de/,
+      )
+
+      await typeAt(user, 3, 1, 'S')
+      await typeAt(user, 3, 2, 'O')
+      await typeAt(user, 3, 3, 'X')
+      await user.click(screen.getByRole('button', { name: 'Verificar' }))
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal, resolvida$/)
+      expect(clue(3, 'horizontal')).toHaveAccessibleName(/^3 ?Dica 3 horizontal$/)
+    })
+
+    it('ao abrir com progresso salvo, os riscos já saem das letras guardadas', async () => {
+      mockMatchMedia(desktop)
+      openGame({
+        [PROGRESS]: () =>
+          jsonResponse(200, {
+            progress: makeProgress({ cells: cellsFrom(['CAL', 'A#.', 'X..']) }),
+          }),
+      })
+      await screen.findByRole('grid')
+      expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal, resolvida$/)
+      expect(clue(1, 'vertical')).toHaveAccessibleName(/^1 ?Dica 1 vertical$/)
+    })
+
+    it('no celular, a lista "Dicas" mostra a dica resolvida', async () => {
+      const user = setup()
+      mockMatchMedia(phone)
+      openGame()
+      await screen.findByRole('grid')
+      for (const letter of 'CAL') await user.click(screen.getByRole('button', { name: letter }))
+      await user.click(screen.getByRole('button', { name: 'Dicas' }))
+      const dialog = screen.getByRole('dialog', { name: 'Dicas' })
+      expect(
+        within(dialog).getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ }),
+      ).toBeInTheDocument()
+      expect(
+        within(dialog).getByRole('button', { name: /^1 ?Dica 1 vertical$/ }),
+      ).toBeInTheDocument()
     })
   })
 })

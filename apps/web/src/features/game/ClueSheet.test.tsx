@@ -20,7 +20,7 @@ function Harness({ onSelect = () => {} }: { onSelect?: (number: number) => void 
         onClose={() => setOpen(false)}
         puzzle={puzzle}
         activeWord={active}
-        filled={new Set(['1across'])}
+        struck={new Set(['1across'])}
         onSelect={(word) => onSelect(word.number)}
       />
     </div>
@@ -40,7 +40,7 @@ describe('ClueSheet', () => {
     await expectNoA11yViolations(document.body)
   })
 
-  it('destaca a dica ativa e marca as preenchidas', async () => {
+  it('destaca a dica ativa e marca as resolvidas', async () => {
     const user = userEvent.setup()
     render(<Harness />)
     await user.click(screen.getByRole('button', { name: 'Dicas' }))
@@ -50,7 +50,7 @@ describe('ClueSheet', () => {
       'true',
     )
     expect(
-      within(dialog).getByRole('button', { name: /Dica 1 horizontal.*preenchida/ }),
+      within(dialog).getByRole('button', { name: /Dica 1 horizontal.*resolvida/ }),
     ).toBeInTheDocument()
   })
 

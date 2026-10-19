@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { expectNoA11yViolations } from '../../test/axe'
 import { makePuzzleResponse, LAYOUT5 } from '../../test/fixtures'
 import { ClueList } from './ClueList'
 
@@ -26,9 +27,26 @@ afterEach(() => {
 
 describe('ClueList', () => {
   it('mantém horizontais e verticais separadas', () => {
-    render(<ClueList puzzle={puzzle} activeWord={null} filled={new Set()} onSelect={() => {}} />)
+    render(<ClueList puzzle={puzzle} activeWord={null} struck={new Set()} onSelect={() => {}} />)
     expect(screen.getByRole('region', { name: 'Horizontais' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Verticais' })).toBeInTheDocument()
+  })
+
+  it('risca só as dicas resolvidas e diz "resolvida" ao leitor de tela', async () => {
+    const { container } = render(
+      <ClueList
+        puzzle={puzzle}
+        activeWord={null}
+        struck={new Set(['1across'])}
+        onSelect={() => {}}
+      />,
+    )
+    const done = screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ })
+    expect(done.className).toMatch(/done/)
+    const other = screen.getByRole('button', { name: /^6 ?Dica 6 horizontal$/ })
+    expect(other.className).not.toMatch(/done/)
+    expect(screen.getAllByText(', resolvida')).toHaveLength(1)
+    await expectNoA11yViolations(container)
   })
 
   it('com fill, rola só o grupo da dica ativa, sem rolar a página', () => {
@@ -37,7 +55,7 @@ describe('ClueList', () => {
     const first = across[0]!
     const last = across[across.length - 1]!
     const { rerender } = render(
-      <ClueList puzzle={puzzle} activeWord={first} filled={new Set()} onSelect={() => {}} fill />,
+      <ClueList puzzle={puzzle} activeWord={first} struck={new Set()} onSelect={() => {}} fill />,
     )
     const group = screen.getByRole('region', { name: 'Horizontais' })
     const target = within(group).getByText(last.clue).closest('button')!
@@ -46,7 +64,7 @@ describe('ClueList', () => {
     group.scrollTop = 0
 
     rerender(
-      <ClueList puzzle={puzzle} activeWord={last} filled={new Set()} onSelect={() => {}} fill />,
+      <ClueList puzzle={puzzle} activeWord={last} struck={new Set()} onSelect={() => {}} fill />,
     )
     expect(group.scrollTop).toBe(80)
     expect(scrollIntoView).not.toHaveBeenCalled()
@@ -56,7 +74,7 @@ describe('ClueList', () => {
     const first = across[0]!
     const last = across[across.length - 1]!
     const { rerender } = render(
-      <ClueList puzzle={puzzle} activeWord={last} filled={new Set()} onSelect={() => {}} fill />,
+      <ClueList puzzle={puzzle} activeWord={last} struck={new Set()} onSelect={() => {}} fill />,
     )
     const group = screen.getByRole('region', { name: 'Horizontais' })
     const heading = within(group).getByRole('heading')
@@ -68,7 +86,7 @@ describe('ClueList', () => {
     group.scrollTop = 200
 
     rerender(
-      <ClueList puzzle={puzzle} activeWord={first} filled={new Set()} onSelect={() => {}} fill />,
+      <ClueList puzzle={puzzle} activeWord={first} struck={new Set()} onSelect={() => {}} fill />,
     )
     expect(group.scrollTop).toBe(180)
   })
@@ -77,13 +95,13 @@ describe('ClueList', () => {
     const first = across[0]!
     const last = across[across.length - 1]!
     const { rerender } = render(
-      <ClueList puzzle={puzzle} activeWord={first} filled={new Set()} onSelect={() => {}} />,
+      <ClueList puzzle={puzzle} activeWord={first} struck={new Set()} onSelect={() => {}} />,
     )
     const group = screen.getByRole('region', { name: 'Horizontais' })
     const target = within(group).getByText(last.clue).closest('button')!
     vi.spyOn(group, 'getBoundingClientRect').mockReturnValue(rect(0, 100))
     vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(rect(140, 180))
-    rerender(<ClueList puzzle={puzzle} activeWord={last} filled={new Set()} onSelect={() => {}} />)
+    rerender(<ClueList puzzle={puzzle} activeWord={last} struck={new Set()} onSelect={() => {}} />)
     expect(group.scrollTop).toBe(0)
   })
 })
