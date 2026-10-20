@@ -32,7 +32,7 @@ describe('ClueList', () => {
     expect(screen.getByRole('region', { name: 'Verticais' })).toBeInTheDocument()
   })
 
-  it('risca só as dicas resolvidas e diz "resolvida" ao leitor de tela', async () => {
+  it('marca só as dicas resolvidas, com o visto, e diz "resolvida" ao leitor de tela', async () => {
     const { container } = render(
       <ClueList
         puzzle={puzzle}
@@ -43,9 +43,30 @@ describe('ClueList', () => {
     )
     const done = screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ })
     expect(done.className).toMatch(/done/)
+    // Feature 017: o visto é decorativo; o leitor de tela ouve ", resolvida" uma vez só.
+    expect(done.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
     const other = screen.getByRole('button', { name: /^6 ?Dica 6 horizontal$/ })
     expect(other.className).not.toMatch(/done/)
+    expect(other.querySelector('svg')).toBeNull()
+    expect(container.querySelectorAll('svg')).toHaveLength(1)
     expect(screen.getAllByText(', resolvida')).toHaveLength(1)
+    await expectNoA11yViolations(container)
+  })
+
+  it('a dica resolvida que também é a ativa fica com as duas marcas e o visto', async () => {
+    const { container } = render(
+      <ClueList
+        puzzle={puzzle}
+        activeWord={across[0]!}
+        struck={new Set(['1across'])}
+        onSelect={() => {}}
+      />,
+    )
+    const done = screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ })
+    expect(done).toHaveAttribute('aria-current', 'true')
+    expect(done.className).toMatch(/active/)
+    expect(done.className).toMatch(/done/)
+    expect(done.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
     await expectNoA11yViolations(container)
   })
 

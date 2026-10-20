@@ -125,6 +125,9 @@ describe('GamePage', () => {
     await screen.findByRole('grid')
     await user.keyboard('C')
     expect(calls.filter((call) => call.key === SAVE)).toHaveLength(0)
+    // Feature 017: o salvamento não aparece na tela, nem antes nem depois do envio.
+    expect(screen.queryByText('Salvando…')).toBeNull()
+    expect(screen.queryByText('Salvo')).toBeNull()
     await act(() => vi.advanceTimersByTimeAsync(1600))
     const saves = calls.filter((call) => call.key === SAVE)
     expect(saves).toHaveLength(1)
@@ -132,7 +135,9 @@ describe('GamePage', () => {
       status: 'in_progress',
       cells: cellsFrom(['C..', '.#.', '...']),
     })
-    await waitFor(() => expect(screen.getByText('Salvo')).toBeInTheDocument())
+    await act(() => vi.advanceTimersByTimeAsync(0))
+    expect(screen.queryByText('Salvando…')).toBeNull()
+    expect(screen.queryByText('Salvo')).toBeNull()
   })
 
   it('um salvamento lento não cobre o tabuleiro com a espera do servidor (FR-011)', async () => {

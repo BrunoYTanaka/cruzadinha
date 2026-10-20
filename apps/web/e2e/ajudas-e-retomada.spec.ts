@@ -28,10 +28,16 @@ test('ajudas, recarregar mantendo tudo, rede caída e sessão expirada sem perde
   await expect(page.getByText('1/4 Letra')).toBeVisible()
   await page.getByRole('button', { name: /Revelar palavra/ }).click()
   await expect(page.getByText('1/2 Palavra')).toBeVisible()
+  // Espera o salvamento (feature 017: ele não aparece na tela) e recarrega: letras e ajudas continuam.
+  const saved = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PUT' &&
+      response.url().includes('/api/progress/') &&
+      response.ok(),
+    { timeout: 10_000 },
+  )
   await page.getByRole('button', { name: 'Verificar' }).click()
-
-  // Dá tempo ao salvamento e recarrega: letras e ajudas continuam.
-  await expect(page.getByText('Salvo')).toBeVisible({ timeout: 10_000 })
+  await saved
   await page.reload()
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByText('1/4 Letra')).toBeVisible()
@@ -70,7 +76,8 @@ for (const theme of ['light', 'dark'] as const) {
     await audit(page)
     await page.getByRole('link', { name: /^O Globo: / }).click()
     await expect(page.getByRole('grid')).toBeVisible()
-    // Com uma dica riscada (feature 016), para o axe ver o estilo do risco no tema.
+    // Com uma dica resolvida (fundo de sucesso e visto, feature 017), para o axe medir o texto sobre
+    // esse fundo no tema.
     await solveFirstAcrossWord(page)
     await expect(page.getByRole('button', { name: /, resolvida$/ })).toHaveCount(1)
     await audit(page)

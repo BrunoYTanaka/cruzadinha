@@ -39,7 +39,14 @@ function Group({
               >
                 <b className={styles.number}>{word.number}</b>
                 <span>{word.clue}</span>
-                {done ? <span className={styles.hidden}>, resolvida</span> : null}
+                {done ? (
+                  <>
+                    <span className={styles.hidden}>, resolvida</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.check}>
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  </>
+                ) : null}
               </button>
             </li>
           )

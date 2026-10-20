@@ -49,9 +49,9 @@ describe('ClueSheet', () => {
       'aria-current',
       'true',
     )
-    expect(
-      within(dialog).getByRole('button', { name: /Dica 1 horizontal.*resolvida/ }),
-    ).toBeInTheDocument()
+    const done = within(dialog).getByRole('button', { name: /Dica 1 horizontal.*resolvida/ })
+    // Feature 017: o mesmo visto da lista do computador.
+    expect(done.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
   })
 
   it('escolher uma dica seleciona a palavra e fecha a folha', async () => {

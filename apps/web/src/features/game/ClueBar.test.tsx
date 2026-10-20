@@ -37,4 +37,23 @@ describe('ClueBar', () => {
     const live = screen.getByText('Astro do dia').closest('[aria-live]')
     expect(live).toHaveAttribute('aria-live', 'polite')
   })
+
+  // Feature 017: a barra corta a dica longa com reticências só no CSS; o leitor de tela ouve tudo.
+  const longWord: Word = {
+    ...word,
+    number: 12,
+    clue:
+      'Dica inventada e comprida de propósito, que fala de um barco de papel atravessando um lago ' +
+      'inteiro numa tarde de vento, passando por patos, juncos e pontes de madeira até a outra margem',
+  }
+
+  it.each([
+    ['com anterior e próxima', { onPrevious: () => {}, onNext: () => {} }],
+    ['sem anterior e próxima', {}],
+  ])('%s, a região viva tem a dica longa inteira, sem reticências', (_, props) => {
+    const { container } = render(<ClueBar word={longWord} {...props} />)
+    const live = container.querySelector('[aria-live]')
+    expect(live?.textContent).toBe(`12 Horizontal${longWord.clue}`)
+    expect(live?.textContent).not.toContain('…')
+  })
 })
