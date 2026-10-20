@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   fillSolution,
@@ -245,6 +246,16 @@ test.describe('US2 no celular com teclado na tela', () => {
     await openToday(page)
     await walkWords(page, { boardFixed: true })
   })
+
+  // Feature 018: com toque não há mouse parado, então o balão da dica completa não aparece.
+  test('tocar na dica não abre o balão', async ({ page }) => {
+    await lengthenClues(page)
+    await openToday(page)
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    await activeClueText(page).tap()
+    await page.waitForTimeout(1_000)
+    await expect(page.getByTestId('full-clue')).toHaveCount(0)
+  })
 })
 
 function cell(page: Page, word: { row: number; col: number }) {
@@ -255,11 +266,11 @@ function cell(page: Page, word: { row: number; col: number }) {
 
 // Valor computado de uma propriedade num elemento de prova com `value` (um token do tema), para
 // comparar com o do elemento real sem escrever a cor do tema no teste.
-function probe(page: Page, property: 'background-color' | 'stroke', value: string) {
+function probe(page: Page, property: 'background-color' | 'stroke' | 'color', value: string) {
   return page.evaluate(
     ([name, token]) => {
       const element = document.createElement('div')
-      element.style.setProperty(name === 'stroke' ? 'stroke' : 'background-color', token)
+      element.style.setProperty(name, token)
       document.body.append(element)
       const computed = getComputedStyle(element).getPropertyValue(name)
       element.remove()
@@ -372,12 +383,15 @@ test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
       expect((await overflow(activeClue(page).locator('b'))).cut).toBe(false)
     }
 
+    // O tabuleiro mede o espaço de novo depois de mudar de tamanho: espera o layout assentar.
+    const settled = () =>
+      expect(() => expectBarFollowsGrid(page, height)).toPass({ timeout: 2_000 })
     await setCellSize(page, 'End')
-    await expectBarFollowsGrid(page, height)
+    await settled()
     await page.getByRole('button', { name: 'Tamanho padrão' }).click()
-    await expectBarFollowsGrid(page, height)
+    await settled()
     await page.setViewportSize({ width: 1000, height: 800 })
-    await expectBarFollowsGrid(page, height)
+    await settled()
   })
 
   test('a faixa de modo leitura segue a mesma regra', async ({ page }) => {
@@ -398,5 +412,105 @@ test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
         Number.parseFloat(getComputedStyle(section.parentElement ?? section).columnGap),
       )
     expectNear((await box(cluesAside(page))).x, banner.x + banner.width + gap)
+  })
+})
+
+// Feature 018: com o mouse parado sobre a dica cortada, um balão mostra a dica inteira.
+function fullClue(page: Page) {
+  return page.getByTestId('full-clue')
+}
+
+async function openFullClue(page: Page) {
+  await activeClueText(page).hover()
+  await expect(fullClue(page)).toHaveText(LONG_CLUE, { timeout: 1_000 })
+}
+
+test.describe('018 US3: dica completa ao parar o mouse', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await lengthenClues(page)
+  })
+
+  test('abre sem mover nada, atravessa o vão e fecha ao sair', async ({ page }) => {
+    await openToday(page)
+    // A cruzada abre na primeira palavra, de índice 0: a dica longa.
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    const boxes = async () =>
+      Promise.all([box(page.getByRole('grid')), box(clueBar(page)), box(cluesAside(page))])
+    const before = await boxes()
+
+    await openFullClue(page)
+    expect(await boxes()).toEqual(before)
+    const bar = await box(clueBar(page))
+    const balloon = await box(fullClue(page))
+    expectNear(balloon.width, bar.width)
+    expect(balloon.y).toBeGreaterThan(bar.y + bar.height)
+
+    // Da dica até o balão em passos, passando pelo vão entre os dois.
+    const text = await box(activeClueText(page))
+    const x = text.x + text.width / 2
+    await page.mouse.move(x, text.y + text.height / 2)
+    await page.mouse.move(x, balloon.y + balloon.height / 2, { steps: 20 })
+    await expect(fullClue(page)).toBeVisible()
+
+    await page.mouse.move(0, 0)
+    await expect(fullClue(page)).toHaveCount(0)
+    expect(await boxes()).toEqual(before)
+  })
+
+  test('Esc fecha sem mudar o Esc do tabuleiro, e trocar de palavra fecha', async ({ page }) => {
+    await openToday(page)
+    // Focar a grade não muda a seleção; clicar na célula selecionada trocaria a direção.
+    await page.getByRole('grid').focus()
+    await openFullClue(page)
+    await page.keyboard.press('Escape')
+    await expect(fullClue(page)).toHaveCount(0)
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('slider', { name: 'Tamanho do tabuleiro' })).toBeFocused()
+
+    await page.mouse.move(0, 0)
+    await openFullClue(page)
+    await page.getByRole('button', { name: 'Próxima dica' }).click()
+    await expect(fullClue(page)).toHaveCount(0)
+  })
+
+  test('dica curta: nenhum balão', async ({ page }) => {
+    await openToday(page)
+    const { puzzle } = await todayPuzzle(page.request)
+    await page.getByRole('grid').focus()
+    for (let step = 0; step < puzzle.words.length; step += 1) {
+      if ((await activeClueText(page).textContent()) !== LONG_CLUE) break
+      await page.keyboard.press('Tab')
+    }
+    await expect(activeClueText(page)).not.toHaveText(LONG_CLUE)
+    await activeClueText(page).hover()
+    await page.waitForTimeout(1_000)
+    await expect(fullClue(page)).toHaveCount(0)
+  })
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`cores do tema e acessibilidade com o balão aberto, tema ${theme}`, async ({ page }) => {
+      await page.addInitScript(
+        (value) => window.localStorage.setItem('cruzadinha:theme', value),
+        theme,
+      )
+      await openToday(page)
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+      await openFullClue(page)
+      // O axe pode pular conteúdo `aria-hidden`: as cores são conferidas contra os tokens.
+      expect(await css(fullClue(page), 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
+      expect(await css(fullClue(page), 'background-color')).toBe(
+        await probe(page, 'background-color', 'var(--surface)'),
+      )
+      const results = await new AxeBuilder({ page }).exclude('[role="grid"]').analyze()
+      expect(results.violations).toEqual([])
+    })
+  }
+
+  test('janela estreita sem teclado na tela: o balão também aparece', async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 900 })
+    await openToday(page)
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    await openFullClue(page)
   })
 })
