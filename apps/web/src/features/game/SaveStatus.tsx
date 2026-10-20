@@ -4,21 +4,22 @@ import { VisuallyHidden } from '../../components/VisuallyHidden'
 import type { SaveState } from './save-queue'
 import styles from './SaveStatus.module.css'
 
-const TEXT: Record<SaveState, string> = {
-  saved: 'Salvo',
-  saving: 'Salvando…',
+// Só os avisos de problema aparecem. O salvamento normal (`saved`, `saving`) não mostra nada: o texto
+// trocando a cada letra fazia a faixa de ferramentas pular (feature 017).
+const WARNING: Partial<Record<SaveState, string>> = {
   offline: 'Sem conexão, tentando de novo',
   'session-expired': 'Sessão expirada',
   'completed-elsewhere': 'Concluída em outro aparelho',
   'local-only': 'Não salvo: vale só nesta aba',
 }
 
-// Visitante (feature 013): o progresso fica só no navegador, e há um caminho para entrar.
-const GUEST_TEXT: Partial<Record<SaveState, string>> = { saved: 'Salvo neste aparelho' }
+// Visitante (feature 013): o progresso fica só no navegador, e há um caminho para entrar. O texto é
+// fixo, sem acompanhar os salvamentos.
+const GUEST_TEXT = 'Progresso só neste aparelho'
 const GUEST_ANNOUNCEMENT = 'Seu progresso fica salvo só neste aparelho.'
 
-// O texto visível muda a cada salvamento, mas não é uma região viva: um anúncio por salvamento
-// encheria o leitor de tela de ruído. Só a queda para "sem conexão" e a volta são anunciadas.
+// O texto visível não é uma região viva: um anúncio por mudança encheria o leitor de tela de ruído.
+// Só a queda para "sem conexão" e a volta são anunciadas.
 export function SaveStatus({
   state,
   guest,
@@ -41,15 +42,15 @@ export function SaveStatus({
       setAnnouncement('Conexão restabelecida')
     } else if (state !== 'saving') {
       setWasOffline(false)
-      setAnnouncement(state === 'local-only' ? TEXT['local-only'] : '')
+      setAnnouncement(state === 'local-only' ? (WARNING['local-only'] ?? '') : '')
     }
   }
+  const warning = WARNING[state]
+  const text = warning ?? (guest ? GUEST_TEXT : undefined)
   const warn = state === 'offline' || state === 'local-only'
   return (
     <>
-      <span className={`${styles.status} ${warn ? styles.warn : ''}`}>
-        {(guest ? GUEST_TEXT[state] : undefined) ?? TEXT[state]}
-      </span>
+      {text ? <span className={`${styles.status} ${warn ? styles.warn : ''}`}>{text}</span> : null}
       {guest ? (
         <Link to={guest.loginTo} className={styles.login}>
           Entrar para salvar na sua conta

@@ -9,8 +9,11 @@
   background: var(--surface);
 }
 
+/* O grupo quebra linha quando não cabe: no celular, o texto e o link do visitante passavam da
+   largura da tela e a página rolava na horizontal (feature 017). */
 .group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 0;

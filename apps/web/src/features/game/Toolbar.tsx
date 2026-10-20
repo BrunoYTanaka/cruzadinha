@@ -18,7 +18,7 @@ type ToolbarProps = {
   title?: ReactNode
 }
 
-// Faixa entre o cabeçalho e o jogo: título, tempo, pausa, escolher outro dia, estado do salvamento
+// Faixa entre o cabeçalho e o jogo: título, tempo, pausa, escolher outro dia, avisos do salvamento
 // e as ajudas.
 export function Toolbar({
   elapsedMs,
