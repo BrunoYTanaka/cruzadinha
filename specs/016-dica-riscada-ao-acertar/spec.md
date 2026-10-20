@@ -52,7 +52,7 @@ O jogador preenche uma palavra. Se todas as letras batem com a solução, a dica
 
 ### Functional Requirements
 
-- **FR-001**: Uma dica da lista MUST aparecer riscada e apagada (número incluído, como na feature 011) se e somente se todas as células da palavra têm letra e cada letra é igual à letra da solução, comparadas pela letra simples (sem acento), a mesma comparação usada para decidir a conclusão.
+- **FR-001**: Uma dica da lista MUST aparecer riscada e apagada (número incluído, como na feature 011) se e somente se todas as células da palavra têm letra e cada letra é igual à letra da solução, comparadas pela letra simples (sem acento), a mesma comparação usada para decidir a conclusão. _Nota (feature 017): a dica resolvida não fica mais riscada nem apagada; ganha fundo de sucesso e visto. A regra de quando ela é resolvida não muda._
 - **FR-002**: Uma palavra completa com ao menos uma letra diferente da solução MUST aparecer como uma dica não resolvida, sem nenhuma marca visual de "preenchida".
 - **FR-003**: O estado de cada dica MUST ser atualizado a cada mudança de letra (digitar, apagar, Delete, ajudas), tanto no computador quanto na lista do celular.
 - **FR-004**: O texto lido pelo leitor de tela numa dica riscada MUST dizer que a palavra está resolvida (o nome da dica termina com ", resolvida", no lugar do ", preenchida" de hoje).
