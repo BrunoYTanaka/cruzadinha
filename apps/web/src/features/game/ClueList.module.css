@@ -86,8 +86,13 @@
   background: var(--word);
 }
 
+/* Resolvida: riscada de novo (feature 019), com o fundo e o visto da 017 e o texto em --ink, sem
+   apagar, porque --mute sobre --word fica abaixo de 4,5:1 no tema escuro (feature 016). O risco não
+   chega ao visto nem ao ", resolvida", que são absolutos. */
 .done {
   background: var(--ok-tint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 /* Ativa e resolvida: mantém o fundo da palavra ativa, como qualquer dica ativa; o visto continua

@@ -191,6 +191,46 @@ describe('ClueBar', () => {
       expect(balloon()).toBeNull()
     })
 
+    // Feature 019: o balão abre acima da barra e só desce quando o topo dele sairia da janela. Sem
+    // layout no jsdom, o retângulo do balão é simulado; o resto mede como antes.
+    const rect = HTMLElement.prototype.getBoundingClientRect
+    function balloonTop(top: number) {
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        return this.dataset.testid === 'full-clue' ? new DOMRect(0, top, 200, 60) : rect.call(this)
+      })
+    }
+
+    it('abre acima da barra quando cabe na janela', () => {
+      cut()
+      balloonTop(50)
+      setup()
+      open()
+      expect(balloon()?.className).not.toMatch(/below/)
+    })
+
+    it('abre abaixo da barra quando o topo do balão sairia da janela', () => {
+      cut()
+      balloonTop(-10)
+      setup()
+      open()
+      expect(balloon()?.className).toMatch(/below/)
+    })
+
+    it('volta a abrir acima quando há espaço de novo', () => {
+      cut()
+      balloonTop(-10)
+      const { container } = setup()
+      open()
+      const bar = container.firstElementChild
+      if (!bar) throw new Error('a barra deveria estar na tela')
+      leave(bar)
+      balloonTop(50)
+      open()
+      expect(balloon()?.className).not.toMatch(/below/)
+    })
+
     it('é só visual: aria-hidden e uma única região viva, sem violações', async () => {
       cut()
       const { container } = setup()
