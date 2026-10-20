@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.5.0...web-v0.6.0) (2026-10-20)
+
+
+### Features
+
+* **web:** centre clue bar text and move full clue above the bar ([a61c2b2](https://github.com/BrunoYTanaka/cruzadinha/commit/a61c2b2815866e56eeead78faf1221c8aad593ea))
+* **web:** centre clue bar text, show full clue above the bar, strike solved clues ([4ff4d43](https://github.com/BrunoYTanaka/cruzadinha/commit/4ff4d43d1b74e43eb70d6801e17aab22c79ca372))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.9.0 to 0.10.0
+
 ## [0.5.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.4.1...web-v0.5.0) (2026-10-20)
 
 
