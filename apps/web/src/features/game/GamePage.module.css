@@ -64,6 +64,10 @@
 /* Computador (feature 011): tabuleiro e dicas num bloco centralizado, colados um ao outro. A classe
    vem de `useDesktopLayout`, a mesma condição da alça de tamanho. */
 .desktop {
+  /* Largura mínima da barra da dica: cabem anterior, próxima, "99 Horizontal" e um trecho da dica.
+     Só aparece em grades estreitas, como a amostra 5 x 5 com a alça no mínimo (feature 018). */
+  --clue-bar-min: 320px;
+
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -71,6 +75,13 @@
 
 .desktop .board {
   flex: none;
+}
+
+/* A barra da dica e a faixa de modo leitura têm a largura do tabuleiro e nunca o alargam: uma dica
+   longa não empurra a coluna de dicas (feature 018). */
+.desktop .board > :first-child {
+  contain: inline-size;
+  min-width: var(--clue-bar-min);
 }
 
 .desktop .clues {

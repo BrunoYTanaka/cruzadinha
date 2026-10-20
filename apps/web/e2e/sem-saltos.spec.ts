@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   fillSolution,
@@ -136,19 +137,58 @@ function overflow(locator: Locator) {
   })
 }
 
+function cluesAside(page: Page) {
+  return page.getByRole('complementary', { name: 'Dicas' })
+}
+
+// O primeiro item da coluna do tabuleiro: a barra da dica ou, na cruzada concluída, a faixa de modo
+// leitura (feature 018).
+function boardHead(page: Page) {
+  return page.getByRole('region', { name: 'Tabuleiro' }).locator(':scope > :first-child')
+}
+
+type Box = { x: number; y: number; width: number; height: number }
+
+// Diferença de no máximo 1 px: a centralização pode cair em meio pixel.
+function expectNear(received: number, expected: number) {
+  expect(Math.abs(received - expected)).toBeLessThanOrEqual(1)
+}
+
+// Mesma posição horizontal e mesma largura, com a tolerância de `expectNear`.
+function expectSameSpan(a: Box, b: Box) {
+  expectNear(a.x, b.x)
+  expectNear(a.width, b.width)
+}
+
+// Leva a alça do tabuleiro ao mínimo (Home) ou ao maior tamanho que cabe (End).
+async function setCellSize(page: Page, key: 'Home' | 'End') {
+  const handle = page.getByRole('slider', { name: 'Tamanho do tabuleiro' })
+  await handle.focus()
+  await page.keyboard.press(key)
+  if (key === 'Home') await expect(handle).toHaveAttribute('aria-valuenow', '30')
+}
+
 // Percorre todas as palavras com Tab (o tabuleiro cicla as palavras, feature 011) e confere, a cada
 // passo, que o tabuleiro não se move e a barra não muda de altura (SC-001). Na dica longa, o texto
-// fica numa linha com reticências e o número com a direção cabe inteiro (FR-007, SC-003).
-async function walkWords(page: Page, options: { boardFixed: boolean }) {
+// fica numa linha com reticências e o número com a direção cabe inteiro (FR-007, SC-003). Com
+// `matchGrid` (computador, feature 018), a barra tem a posição e a largura da grade e a coluna de
+// dicas não sai do lugar.
+async function walkWords(page: Page, options: { boardFixed: boolean; matchGrid?: boolean }) {
   const { puzzle } = await todayPuzzle(page.request)
   const grid = await box(page.getByRole('grid'))
   const bar = await box(clueBar(page))
+  // No celular com teclado na tela não há coluna de dicas.
+  const clues = options.matchGrid ? await box(cluesAside(page)) : null
   let longSeen = 0
   let shortSeen = 0
   for (let step = 0; step <= puzzle.words.length; step += 1) {
     if (step > 0) await page.keyboard.press('Tab')
     if (options.boardFixed) expect((await box(page.getByRole('grid'))).y).toBe(grid.y)
     expect((await box(clueBar(page))).height).toBe(bar.height)
+    if (clues) {
+      expectSameSpan(await box(clueBar(page)), await box(page.getByRole('grid')))
+      expect((await box(cluesAside(page))).x).toBe(clues.x)
+    }
     const text = activeClueText(page)
     const state = await overflow(text)
     expect(state.whiteSpace).toBe('nowrap')
@@ -178,7 +218,7 @@ test.describe('US2: a barra da dica ativa fica numa linha', () => {
     await lengthenClues(page)
     await openToday(page)
     // A cruzada abre com a primeira palavra horizontal escolhida: não há estado "sem célula".
-    await walkWords(page, { boardFixed: true })
+    await walkWords(page, { boardFixed: true, matchGrid: true })
   })
 
   // Entre 721 e 860 px, com mouse, não há teclado na tela e a barra fica na coluna de dicas, abaixo
@@ -206,6 +246,16 @@ test.describe('US2 no celular com teclado na tela', () => {
     await openToday(page)
     await walkWords(page, { boardFixed: true })
   })
+
+  // Feature 018: com toque não há mouse parado, então o balão da dica completa não aparece.
+  test('tocar na dica não abre o balão', async ({ page }) => {
+    await lengthenClues(page)
+    await openToday(page)
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    await activeClueText(page).tap()
+    await page.waitForTimeout(1_000)
+    await expect(page.getByTestId('full-clue')).toHaveCount(0)
+  })
 })
 
 function cell(page: Page, word: { row: number; col: number }) {
@@ -216,11 +266,11 @@ function cell(page: Page, word: { row: number; col: number }) {
 
 // Valor computado de uma propriedade num elemento de prova com `value` (um token do tema), para
 // comparar com o do elemento real sem escrever a cor do tema no teste.
-function probe(page: Page, property: 'background-color' | 'stroke', value: string) {
+function probe(page: Page, property: 'background-color' | 'stroke' | 'color', value: string) {
   return page.evaluate(
     ([name, token]) => {
       const element = document.createElement('div')
-      element.style.setProperty(name === 'stroke' ? 'stroke' : 'background-color', token)
+      element.style.setProperty(name, token)
       document.body.append(element)
       const computed = getComputedStyle(element).getPropertyValue(name)
       element.remove()
@@ -297,4 +347,170 @@ test('US3: no modo leitura todas as dicas aparecem resolvidas, com o visto', asy
   await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
   const clues = page.getByRole('complementary', { name: 'Dicas' })
   await expect(clues.getByRole('button').locator('svg')).toHaveCount(puzzle.words.length)
+})
+
+// Feature 018: no computador, a barra acompanha a grade; abaixo de 320 px usa uma largura mínima
+// fixa, centralizada sobre a grade.
+const CLUE_BAR_MIN = 320
+
+async function expectBarFollowsGrid(page: Page, height: number) {
+  const bar = await box(clueBar(page))
+  const grid = await box(page.getByRole('grid'))
+  expect(bar.height).toBe(height)
+  if (grid.width >= CLUE_BAR_MIN) {
+    expectSameSpan(bar, grid)
+  } else {
+    expectNear(bar.width, CLUE_BAR_MIN)
+    expectNear(bar.x + bar.width / 2, grid.x + grid.width / 2)
+  }
+}
+
+test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
+  test('mínimo, máximo, padrão e janela menor', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await lengthenClues(page)
+    await openToday(page)
+    const { puzzle } = await todayPuzzle(page.request)
+    const { height } = await box(clueBar(page))
+
+    // A amostra do seed é 5 x 5: no mínimo a grade fica com menos de 320 px.
+    await setCellSize(page, 'Home')
+    expect((await box(page.getByRole('grid'))).width).toBeLessThan(CLUE_BAR_MIN)
+    await page.getByRole('grid').focus()
+    for (let step = 0; step <= puzzle.words.length; step += 1) {
+      if (step > 0) await page.keyboard.press('Tab')
+      await expectBarFollowsGrid(page, height)
+      expect((await overflow(activeClue(page).locator('b'))).cut).toBe(false)
+    }
+
+    // O tabuleiro mede o espaço de novo depois de mudar de tamanho: espera o layout assentar.
+    const settled = () =>
+      expect(() => expectBarFollowsGrid(page, height)).toPass({ timeout: 2_000 })
+    await setCellSize(page, 'End')
+    await settled()
+    await page.getByRole('button', { name: 'Tamanho padrão' }).click()
+    await settled()
+    await page.setViewportSize({ width: 1000, height: 800 })
+    await settled()
+  })
+
+  test('a faixa de modo leitura segue a mesma regra', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await openToday(page)
+    const { solution } = await todayPuzzle(page.request)
+    await fillSolution(page, solution.cells)
+    await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
+    expectSameSpan(await box(boardHead(page)), await box(page.getByRole('grid')))
+
+    await setCellSize(page, 'Home')
+    const banner = await box(boardHead(page))
+    expectNear(banner.width, CLUE_BAR_MIN)
+    // A faixa não alarga a coluna além do mínimo: as dicas começam um `column-gap` depois dela.
+    const gap = await page
+      .getByRole('region', { name: 'Tabuleiro' })
+      .evaluate((section) =>
+        Number.parseFloat(getComputedStyle(section.parentElement ?? section).columnGap),
+      )
+    expectNear((await box(cluesAside(page))).x, banner.x + banner.width + gap)
+  })
+})
+
+// Feature 018: com o mouse parado sobre a dica cortada, um balão mostra a dica inteira.
+function fullClue(page: Page) {
+  return page.getByTestId('full-clue')
+}
+
+async function openFullClue(page: Page) {
+  await activeClueText(page).hover()
+  await expect(fullClue(page)).toHaveText(LONG_CLUE, { timeout: 1_000 })
+}
+
+test.describe('018 US3: dica completa ao parar o mouse', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await lengthenClues(page)
+  })
+
+  test('abre sem mover nada, atravessa o vão e fecha ao sair', async ({ page }) => {
+    await openToday(page)
+    // A cruzada abre na primeira palavra, de índice 0: a dica longa.
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    const boxes = async () =>
+      Promise.all([box(page.getByRole('grid')), box(clueBar(page)), box(cluesAside(page))])
+    const before = await boxes()
+
+    await openFullClue(page)
+    expect(await boxes()).toEqual(before)
+    const bar = await box(clueBar(page))
+    const balloon = await box(fullClue(page))
+    expectNear(balloon.width, bar.width)
+    expect(balloon.y).toBeGreaterThan(bar.y + bar.height)
+
+    // Da dica até o balão em passos, passando pelo vão entre os dois.
+    const text = await box(activeClueText(page))
+    const x = text.x + text.width / 2
+    await page.mouse.move(x, text.y + text.height / 2)
+    await page.mouse.move(x, balloon.y + balloon.height / 2, { steps: 20 })
+    await expect(fullClue(page)).toBeVisible()
+
+    await page.mouse.move(0, 0)
+    await expect(fullClue(page)).toHaveCount(0)
+    expect(await boxes()).toEqual(before)
+  })
+
+  test('Esc fecha sem mudar o Esc do tabuleiro, e trocar de palavra fecha', async ({ page }) => {
+    await openToday(page)
+    // Focar a grade não muda a seleção; clicar na célula selecionada trocaria a direção.
+    await page.getByRole('grid').focus()
+    await openFullClue(page)
+    await page.keyboard.press('Escape')
+    await expect(fullClue(page)).toHaveCount(0)
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('slider', { name: 'Tamanho do tabuleiro' })).toBeFocused()
+
+    await page.mouse.move(0, 0)
+    await openFullClue(page)
+    await page.getByRole('button', { name: 'Próxima dica' }).click()
+    await expect(fullClue(page)).toHaveCount(0)
+  })
+
+  test('dica curta: nenhum balão', async ({ page }) => {
+    await openToday(page)
+    const { puzzle } = await todayPuzzle(page.request)
+    await page.getByRole('grid').focus()
+    for (let step = 0; step < puzzle.words.length; step += 1) {
+      if ((await activeClueText(page).textContent()) !== LONG_CLUE) break
+      await page.keyboard.press('Tab')
+    }
+    await expect(activeClueText(page)).not.toHaveText(LONG_CLUE)
+    await activeClueText(page).hover()
+    await page.waitForTimeout(1_000)
+    await expect(fullClue(page)).toHaveCount(0)
+  })
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`cores do tema e acessibilidade com o balão aberto, tema ${theme}`, async ({ page }) => {
+      await page.addInitScript(
+        (value) => window.localStorage.setItem('cruzadinha:theme', value),
+        theme,
+      )
+      await openToday(page)
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+      await openFullClue(page)
+      // O axe pode pular conteúdo `aria-hidden`: as cores são conferidas contra os tokens.
+      expect(await css(fullClue(page), 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
+      expect(await css(fullClue(page), 'background-color')).toBe(
+        await probe(page, 'background-color', 'var(--surface)'),
+      )
+      const results = await new AxeBuilder({ page }).exclude('[role="grid"]').analyze()
+      expect(results.violations).toEqual([])
+    })
+  }
+
+  test('janela estreita sem teclado na tela: o balão também aparece', async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 900 })
+    await openToday(page)
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    await openFullClue(page)
+  })
 })

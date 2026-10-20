@@ -1,4 +1,5 @@
 .bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -36,6 +37,38 @@
   font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* A dica inteira num balão logo abaixo da barra, por cima do tabuleiro e fora do fluxo, para nada
+   se mover ao abrir (feature 018). Fica acima da alça (1) e da capa de pausa (3), abaixo da
+   legenda (5). */
+.full {
+  position: absolute;
+  top: calc(100% + 4px);
+  /* -1px cobre a borda da barra: o balão fica com a largura dela de borda a borda. */
+  right: -1px;
+  left: -1px;
+  z-index: 4;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+  font-size: 15px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Ponte invisível sobre o vão de 4 px (mais a borda): o mouse que desce da dica para o balão não
+   sai da barra nem do balão, e o balão continua aberto. */
+.full::before {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: 5px;
+  content: '';
 }
 
 /* Computador: a barra acima do tabuleiro, como no mockup, com anterior e próxima nas pontas. */
