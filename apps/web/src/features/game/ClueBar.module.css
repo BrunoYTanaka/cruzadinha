@@ -8,6 +8,9 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
+  /* A largura vem de quem contém a barra, nunca da dica: com a dica numa linha, uma dica longa
+     alargaria a coluna do tabuleiro além da janela. */
+  contain: inline-size;
 }
 
 .live {
@@ -19,14 +22,20 @@
 }
 
 .number {
+  flex: none;
   color: var(--accent);
   white-space: nowrap;
 }
 
+/* A dica fica numa linha, cortada com reticências, para a barra não mudar de altura e o tabuleiro
+   não se mover ao trocar de palavra (feature 017). A região viva continua com o texto inteiro. */
 .text {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
   font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Computador: a barra acima do tabuleiro, como no mockup, com anterior e próxima nas pontas. */
