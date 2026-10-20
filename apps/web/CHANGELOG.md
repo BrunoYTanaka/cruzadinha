@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.4.1...web-v0.5.0) (2026-10-20)
+
+
+### Features
+
+* **web:** game screen without layout shift ([786c61b](https://github.com/BrunoYTanaka/cruzadinha/commit/786c61b4d03d803283c4f379c734076511d03307))
+* **web:** keep the active clue bar on one line ([2dbcd82](https://github.com/BrunoYTanaka/cruzadinha/commit/2dbcd8298898771777409191cdb65e2a1d7b71b2))
+* **web:** keep the clue bar as wide as the board ([7e428c8](https://github.com/BrunoYTanaka/cruzadinha/commit/7e428c801aab93db4818f6e6165f432ae6b6355e))
+* **web:** keep the clue bar as wide as the board and show the full clue on hover ([ff5dc39](https://github.com/BrunoYTanaka/cruzadinha/commit/ff5dc39a7375e7738c5b34d20db24306ad1c5edd))
+* **web:** mark a solved clue with a success background and a check ([46aae34](https://github.com/BrunoYTanaka/cruzadinha/commit/46aae34cc7b6c2f3f73b7abbc101ef63cc3b1cea))
+* **web:** show the full clue when hovering a cut clue ([447f002](https://github.com/BrunoYTanaka/cruzadinha/commit/447f0026bdb6e9adb7633bc3f16f1090b80fe408))
+* **web:** stop showing the save state while it works ([ea90f07](https://github.com/BrunoYTanaka/cruzadinha/commit/ea90f07b132fa910e4c3cfd23df58b4dcb2ed745))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.8.0 to 0.9.0
+
 ## [0.4.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.4.0...web-v0.4.1) (2026-10-19)
 
 
