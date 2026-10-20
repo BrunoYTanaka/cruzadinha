@@ -21,7 +21,7 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
 
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
-  await expect(page.getByText('Salvo neste aparelho')).toBeVisible()
+  await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 
   const solution = await todaySolution(page.request)
   const first = (solution[0] ?? []).filter((letter): letter is string => Boolean(letter))

@@ -36,7 +36,7 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(page.getByRole('gridcell', { name: /^Linha 3, coluna 3, letra Ç/ })).toBeVisible()
   await page.getByRole('button', { name: 'Verificar' }).click()
   await expect(page.getByText('Verificado: nenhuma letra errada')).toBeAttached()
-  await expect(page.getByText('Salvo neste aparelho')).toBeVisible()
+  await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 
   await page.goto('/')
   await expect(page.getByRole('link', { name: /^Cruzada Online: em andamento/ })).toBeVisible()
