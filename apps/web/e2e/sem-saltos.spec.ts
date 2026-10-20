@@ -288,7 +288,7 @@ function css(locator: Locator, property: string) {
 }
 
 for (const theme of ['light', 'dark'] as const) {
-  test(`US3: a dica resolvida ganha fundo de sucesso e visto, sem mexer na lista, tema ${theme}`, async ({
+  test(`US3: a dica resolvida fica riscada, com fundo de sucesso e visto, sem mexer na lista, tema ${theme}`, async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
@@ -315,7 +315,9 @@ for (const theme of ['light', 'dark'] as const) {
     const check = first.locator('svg')
     await expect(check).toBeVisible()
     expect(await heights()).toEqual(before)
-    expect(await css(first, 'text-decoration-line')).toBe('none')
+    // Riscada de novo (feature 019), com o texto na cor normal, sem ficar apagada.
+    expect(await css(first, 'text-decoration-line')).toBe('line-through')
+    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
     expect(await css(first, 'background-color')).toBe(
       await probe(page, 'background-color', 'var(--ok-tint)'),
     )
@@ -330,16 +332,23 @@ for (const theme of ['light', 'dark'] as const) {
       await probe(page, 'background-color', 'var(--word)'),
     )
     await expect(check).toBeVisible()
+    expect(await css(first, 'text-decoration-line')).toBe('line-through')
+    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
+    // A barra da dica acima do tabuleiro nunca fica riscada (FR-014).
+    expect(await css(clueBar(page), 'text-decoration-line')).toBe('none')
 
-    // Desfeita: o visto some e nada muda de altura.
+    // Desfeita: o risco e o visto somem e nada muda de altura.
     await page.keyboard.press('Delete')
     await expect(first).not.toHaveAccessibleName(/resolvida/)
     await expect(first.locator('svg')).toHaveCount(0)
+    expect(await css(first, 'text-decoration-line')).toBe('none')
     expect(await heights()).toEqual(before)
   })
 }
 
-test('US3: no modo leitura todas as dicas aparecem resolvidas, com o visto', async ({ page }) => {
+test('US3: no modo leitura todas as dicas aparecem resolvidas, riscadas e com o visto', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await openToday(page)
   const { puzzle, solution } = await todayPuzzle(page.request)
@@ -347,6 +356,9 @@ test('US3: no modo leitura todas as dicas aparecem resolvidas, com o visto', asy
   await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
   const clues = page.getByRole('complementary', { name: 'Dicas' })
   await expect(clues.getByRole('button').locator('svg')).toHaveCount(puzzle.words.length)
+  for (const clue of await clues.getByRole('button').all()) {
+    expect(await css(clue, 'text-decoration-line')).toBe('line-through')
+  }
 })
 
 // Feature 018: no computador, a barra acompanha a grade; abaixo de 320 px usa uma largura mínima
@@ -415,6 +427,85 @@ test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
   })
 })
 
+type TextLine = { baseline: number; xCenter: number }
+
+// Centro ótico da barra no computador (feature 019): o meio das minúsculas do número e da dica, do
+// topo do "x" à linha de base, comparado com o meio da barra e o centro das setas. A linha de base
+// vem de um marcador de altura zero alinhado a ela; a altura do "x", do canvas com a mesma fonte.
+async function xHeightCenter(page: Page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready
+  })
+  return activeClue(page).evaluate((live) => {
+    const bar = live.parentElement
+    const number = live.querySelector('b')
+    const clue = live.querySelector('span')
+    const context = document.createElement('canvas').getContext('2d')
+    if (!bar || !number || !clue || !context) throw new Error('a barra deveria ter número e dica')
+    const middle = (element: Element) => {
+      const rect = element.getBoundingClientRect()
+      return rect.top + rect.height / 2
+    }
+    const line = (element: Element): TextLine => {
+      const marker = document.createElement('span')
+      marker.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline'
+      element.prepend(marker)
+      const baseline = marker.getBoundingClientRect().top
+      marker.remove()
+      const style = getComputedStyle(element)
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+      return { baseline, xCenter: baseline - context.measureText('x').actualBoundingBoxAscent / 2 }
+    }
+    return {
+      barCenter: middle(bar),
+      arrowCenters: [...bar.querySelectorAll('button svg')].map(middle),
+      number: line(number),
+      clue: line(clue),
+      numberX: number.getBoundingClientRect().x,
+    }
+  })
+}
+
+test.describe('019 US1: a dica fica no meio da altura da barra', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`centro ótico no meio da barra e das setas em todas as palavras, tema ${theme}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 })
+      await page.addInitScript(
+        (value) => window.localStorage.setItem('cruzadinha:theme', value),
+        theme,
+      )
+      await lengthenClues(page)
+      await openToday(page)
+      const { puzzle } = await todayPuzzle(page.request)
+      let first: Awaited<ReturnType<typeof xHeightCenter>> | null = null
+      let longSeen = 0
+      let shortSeen = 0
+      for (let step = 0; step <= puzzle.words.length; step += 1) {
+        if (step > 0) await page.keyboard.press('Tab')
+        const metrics = await xHeightCenter(page)
+        expect(metrics.arrowCenters).toHaveLength(2)
+        for (const line of [metrics.number, metrics.clue]) {
+          expect(Math.abs(line.xCenter - metrics.barCenter)).toBeLessThanOrEqual(0.5)
+          for (const arrow of metrics.arrowCenters) {
+            expect(Math.abs(line.xCenter - arrow)).toBeLessThanOrEqual(0.5)
+          }
+        }
+        expect(Math.abs(metrics.number.baseline - metrics.clue.baseline)).toBeLessThanOrEqual(0.1)
+        // Sem salto entre dicas: mesma linha de base e mesmo começo à esquerda (SC-002, SC-004).
+        first ??= metrics
+        expect(Math.abs(metrics.clue.baseline - first.clue.baseline)).toBeLessThanOrEqual(0.1)
+        expect(Math.abs(metrics.numberX - first.numberX)).toBeLessThanOrEqual(0.1)
+        if ((await activeClueText(page).textContent()) === LONG_CLUE) longSeen += 1
+        else shortSeen += 1
+      }
+      expect(longSeen).toBeGreaterThan(0)
+      expect(shortSeen).toBeGreaterThan(0)
+    })
+  }
+})
+
 // Feature 018: com o mouse parado sobre a dica cortada, um balão mostra a dica inteira.
 function fullClue(page: Page) {
   return page.getByTestId('full-clue')
@@ -431,22 +522,32 @@ test.describe('018 US3: dica completa ao parar o mouse', () => {
     await lengthenClues(page)
   })
 
-  test('abre sem mover nada, atravessa o vão e fecha ao sair', async ({ page }) => {
+  test('abre acima da barra sem mover nada, atravessa o vão subindo e fecha ao sair', async ({
+    page,
+  }) => {
     await openToday(page)
     // A cruzada abre na primeira palavra, de índice 0: a dica longa.
     await expect(activeClueText(page)).toHaveText(LONG_CLUE)
     const boxes = async () =>
-      Promise.all([box(page.getByRole('grid')), box(clueBar(page)), box(cluesAside(page))])
+      Promise.all([
+        box(page.getByRole('grid')),
+        box(clueBar(page)),
+        box(cluesAside(page)),
+        box(page.getByRole('heading', { level: 1 })),
+      ])
     const before = await boxes()
 
     await openFullClue(page)
     expect(await boxes()).toEqual(before)
     const bar = await box(clueBar(page))
     const balloon = await box(fullClue(page))
+    const grid = await box(page.getByRole('grid'))
     expectNear(balloon.width, bar.width)
-    expect(balloon.y).toBeGreaterThan(bar.y + bar.height)
+    // Acima da barra, a 4 px dela, sem cobrir a grade (feature 019).
+    expectNear(balloon.y + balloon.height + 4, bar.y)
+    expect(balloon.y + balloon.height).toBeLessThanOrEqual(grid.y)
 
-    // Da dica até o balão em passos, passando pelo vão entre os dois.
+    // Da dica até o balão em passos, subindo pelo vão entre os dois.
     const text = await box(activeClueText(page))
     const x = text.x + text.width / 2
     await page.mouse.move(x, text.y + text.height / 2)
@@ -507,10 +608,38 @@ test.describe('018 US3: dica completa ao parar o mouse', () => {
     })
   }
 
-  test('janela estreita sem teclado na tela: o balão também aparece', async ({ page }) => {
+  test('sem espaço acima, o balão abre abaixo', async ({ page }) => {
+    await openToday(page)
+    await expect(activeClueText(page)).toHaveText(LONG_CLUE)
+    // Espaço extra no fim só neste teste, para a página rolar qualquer que seja a cruzada.
+    await page.evaluate(() => {
+      document.body.style.paddingBottom = '2000px'
+    })
+    const top = await clueBar(page).evaluate((bar) => {
+      window.scrollBy(0, bar.getBoundingClientRect().top - 8)
+      return bar.getBoundingClientRect().top
+    })
+    expect(top).toBeGreaterThanOrEqual(0)
+    expect(top).toBeLessThanOrEqual(20)
+
+    await openFullClue(page)
+    const bar = await box(clueBar(page))
+    const balloon = await box(fullClue(page))
+    expect(balloon.y).toBeGreaterThanOrEqual(bar.y + bar.height)
+    expect(balloon.y).toBeGreaterThanOrEqual(0)
+  })
+
+  // Na janela estreita a barra fica abaixo do tabuleiro: o balão continua abaixo dela, como na
+  // feature 018, para não cobrir a grade (feature 019, FR-018).
+  test('janela estreita sem teclado na tela: o balão aparece abaixo da barra', async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 900 })
     await openToday(page)
     await expect(activeClueText(page)).toHaveText(LONG_CLUE)
     await openFullClue(page)
+    const bar = await box(clueBar(page))
+    const balloon = await box(fullClue(page))
+    const grid = await box(page.getByRole('grid'))
+    expect(balloon.y).toBeGreaterThanOrEqual(bar.y + bar.height)
+    expect(balloon.y).toBeGreaterThanOrEqual(grid.y + grid.height)
   })
 })

@@ -39,9 +39,10 @@
   white-space: nowrap;
 }
 
-/* A dica inteira num balão logo abaixo da barra, por cima do tabuleiro e fora do fluxo, para nada
-   se mover ao abrir (feature 018). Fica acima da alça (1) e da capa de pausa (3), abaixo da
-   legenda (5). */
+/* A dica inteira num balão logo abaixo da barra, fora do fluxo, para nada se mover ao abrir
+   (feature 018). Fica acima da alça (1) e da capa de pausa (3), abaixo da legenda (5). Abaixo
+   continua valendo para a barra sem botões, que na janela estreita fica abaixo do tabuleiro; no
+   computador o balão sobe (`.navigable .full`). */
 .full {
   position: absolute;
   top: calc(100% + 4px);
@@ -86,6 +87,38 @@
 
 .navigable .text {
   font-size: 17px;
+}
+
+/* Número e dica na mesma linha de base, subindo 1 px até o meio das minúsculas ficar no meio da
+   barra e na altura das setas (centro ótico, feature 019). O `translate` não muda o layout nem a
+   altura da barra. */
+.navigable .live {
+  align-items: baseline;
+  translate: 0 -1px;
+}
+
+/* No computador o balão abre acima da barra, por cima da faixa de ferramentas, para o tabuleiro
+   ficar à vista (feature 019, no lugar do "logo abaixo" da 018). A ponte vai para baixo dele. */
+.navigable .full {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.navigable .full::before {
+  top: 100%;
+  bottom: auto;
+}
+
+/* Recuo quando o balão não cabe acima na janela (página rolada ou janela baixa): volta à posição
+   da feature 018. */
+.navigable .full.below {
+  top: calc(100% + 4px);
+  bottom: auto;
+}
+
+.navigable .full.below::before {
+  top: auto;
+  bottom: 100%;
 }
 
 .step {

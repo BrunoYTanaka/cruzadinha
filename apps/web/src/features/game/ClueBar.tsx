@@ -1,5 +1,5 @@
 import type { Word } from '@cruzadinha/shared'
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
 import { wordKey } from '../../game-logic/clue-strike'
 import styles from './ClueBar.module.css'
 
@@ -19,16 +19,28 @@ type ClueBarProps = {
 
 // A dica da palavra ativa, acima do tabuleiro. É uma região viva: quando a seleção muda de
 // palavra, o leitor de tela anuncia a nova dica. Uma dica cortada pelas reticências aparece
-// inteira num balão quando o mouse para sobre ela (feature 018).
+// inteira num balão quando o mouse para sobre ela (feature 018): acima da barra no computador,
+// abaixo na barra sem botões, que na janela estreita fica abaixo do tabuleiro (feature 019).
 export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
   const navigable = onPrevious !== undefined && onNext !== undefined
   // A chave da palavra para a qual o balão abriu: outra palavra ativa o fecha sozinha.
   const [openFor, setOpenFor] = useState<string | null>(null)
+  // Lado da barra em que o balão abre; só muda algo no computador, onde o padrão é acima.
+  const [placement, setPlacement] = useState<'above' | 'below'>('above')
+  const balloon = useRef<HTMLDivElement>(null)
   const text = useRef<HTMLSpanElement>(null)
   const timer = useRef<number | undefined>(undefined)
   const open = word !== null && openFor === wordKey(word)
 
   useEffect(() => () => window.clearTimeout(timer.current), [])
+
+  // Mede antes da pintura: se o topo do balão sairia da janela, ele abre abaixo da barra, e nunca
+  // aparece cortado (FR-016).
+  useLayoutEffect(() => {
+    const element = balloon.current
+    if (!open || !element) return
+    if (element.getBoundingClientRect().top < 0) setPlacement('below')
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -48,7 +60,10 @@ export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
     window.clearTimeout(timer.current)
     timer.current = window.setTimeout(() => {
       const span = text.current
-      if (span && span.scrollWidth > span.clientWidth) setOpenFor(key)
+      if (span && span.scrollWidth > span.clientWidth) {
+        setPlacement('above')
+        setOpenFor(key)
+      }
     }, HOVER_DELAY_MS)
   }
 
@@ -82,7 +97,12 @@ export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
   // Só visual: a região viva já anuncia a dica inteira.
   const full =
     open && word ? (
-      <div className={styles.full} aria-hidden="true" data-testid="full-clue">
+      <div
+        ref={balloon}
+        className={placement === 'below' ? `${styles.full} ${styles.below}` : styles.full}
+        aria-hidden="true"
+        data-testid="full-clue"
+      >
         {word.clue}
       </div>
     ) : null
