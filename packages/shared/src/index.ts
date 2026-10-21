@@ -44,6 +44,23 @@ export {
   type LibraryStatus,
 } from './library/schema'
 export {
+  defaultSettings,
+  helpLimitSchema,
+  parseSettings,
+  parseStoredSettings,
+  saveSettingsRequestSchema,
+  settingsEnvelopeSchema,
+  settingsSchema,
+  sourceIdFormatSchema,
+  strikeModeSchema,
+  themeSettingSchema,
+  type SaveSettingsRequest,
+  type Settings,
+  type SettingsEnvelope,
+  type StrikeModeSetting,
+  type ThemeSetting,
+} from './settings/schema'
+export {
   cellsMatchGrid,
   progressCellsSchema,
   progressEnvelopeSchema,
