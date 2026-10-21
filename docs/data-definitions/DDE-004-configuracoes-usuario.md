@@ -2,9 +2,10 @@
 
 ## Changelog
 
-| Version | Date       | Changes                                |
-| ------- | ---------- | -------------------------------------- |
-| `0.0.1` | 2026-10-21 | - Versão inicial derivada da spec 021. |
+| Version | Date       | Changes                                                    |
+| ------- | ---------- | ---------------------------------------------------------- |
+| `0.0.2` | 2026-10-21 | - Limites da gravação na conta e regra do visitante (021). |
+| `0.0.1` | 2026-10-21 | - Versão inicial derivada da spec 021.                     |
 
 ## Scope
 
@@ -17,6 +18,7 @@ Cobre as configurações da pessoa no Cruzadinha guardadas na conta: tema, limit
 | [specs/021-configuracoes-usuario/spec.md](../../specs/021-configuracoes-usuario/spec.md) (FR-007 a FR-015)      | Spec | As configurações e seus valores                                      |
 | [specs/021-configuracoes-usuario/spec.md](../../specs/021-configuracoes-usuario/spec.md) (FR-020 a FR-026, US3) | Spec | Guarda na conta, mudança mais recente, isolamento, limites e remoção |
 | [specs/021-configuracoes-usuario/data-model.md](../../specs/021-configuracoes-usuario/data-model.md)            | Plan | Campos, validação campo a campo e transições                         |
+| [specs/021-configuracoes-usuario/research.md](../../specs/021-configuracoes-usuario/research.md) (R6)           | Plan | Valores dos limites de tamanho e de frequência                       |
 
 ## Entity Summary
 
@@ -38,6 +40,8 @@ Cobre as configurações da pessoa no Cruzadinha guardadas na conta: tema, limit
 | updated_at | Data e hora da última alteração          | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                                                                                                                                                                                                                                                                                                                            |
 
 A chave é o próprio `user_id`: um registro por usuário, sem coluna a mais.
+
+Cada gravação na conta tem corpo de até 4 KB e conta no limite de 120 gravações por hora por endereço de rede, registradas como `SETTINGS_SAVE` em `RateLimitAttempt` ([DDE-001](./DDE-001-banco-auth-convites.md)) (FR-024). O visitante nunca envia configurações ao servidor: as dele ficam só no aparelho (FR-021).
 
 ### User
 

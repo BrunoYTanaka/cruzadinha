@@ -10,8 +10,8 @@ erDiagram
 
     USER_SETTINGS {
         uuid user_id PK, FK
-        json settings
-        datetime saved_at
+        json settings "theme, helpLetters, helpWords, strikeMode, defaultSource, directToGame, boardCellSize, libraryWidth"
+        datetime saved_at "momento da mudança no aparelho; vale o mais recente"
         datetime created_at
         datetime updated_at
     }
