@@ -1,10 +1,10 @@
 # Cruzadinha
 
-Site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria; o Cruzadinha entrega uma experiência única de jogo: tabuleiro, teclado, dicas e navegação, em tema claro ou escuro, com o progresso salvo entre dispositivos.
+Site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria; o Cruzadinha entrega uma experiência única de jogo: tabuleiro, teclado, dicas e navegação, em tema claro ou escuro, com o progresso salvo no aparelho ou, com conta, entre dispositivos.
 
-A primeira fonte é o jogo de palavras cruzadas do **O Globo**, com escolha de nível e de data. É um projeto de portfólio, pequeno e privado, com foco na experiência de jogar e na qualidade do código.
+As fontes são as palavras cruzadas do **O Globo** e a **Cruzada Online**, do jornal Público, com escolha de data. É um projeto de portfólio, pequeno, aberto a quem tem o endereço e fora dos buscadores, com foco na experiência de jogar e na qualidade do código.
 
-> **Estado atual:** o jogo está completo (login por convite, calendário, tabuleiro, ajudas e progresso entre aparelhos) e a implantação está descrita em [docs/deploy.md](docs/deploy.md).
+> **Estado atual:** o jogo está completo: joga-se sem conta, com o progresso no aparelho, ou com conta, com progresso e configurações entre aparelhos; o cadastro fica fechado por padrão e o autor cria contas pela linha de comando. Há calendário por fonte, tabuleiro, ajudas e configurações, e a implantação está descrita em [docs/deploy.md](docs/deploy.md).
 
 ## Stack
 
@@ -58,20 +58,21 @@ O Vite encaminha `/api` para `API_PROXY_TARGET` (padrão `http://localhost:3000`
 
 Rode a partir da raiz do repositório:
 
-| Comando                                            | O que faz                                                              |
-| -------------------------------------------------- | ---------------------------------------------------------------------- |
-| `npm ci`                                           | Instala as dependências de todos os workspaces.                        |
-| `npm run dev -w @cruzadinha/api`                   | Sobe a API em modo watch.                                              |
-| `npm run dev -w @cruzadinha/web`                   | Sobe o site com o servidor de desenvolvimento do Vite.                 |
-| `npm run format` / `npm run format:check`          | Formata ou verifica a formatação com Prettier.                         |
-| `npm run lint`                                     | Roda o ESLint.                                                         |
-| `npm run typecheck`                                | Verifica os tipos em todos os workspaces.                              |
-| `npm test`                                         | Roda os testes unitários em todos os workspaces.                       |
-| `npm run test:int`                                 | Roda os testes de integração com Postgres em container (exige Docker). |
-| `npm run db:migrate -w @cruzadinha/api`            | Aplica as migrações do banco.                                          |
-| `npm run db:seed -w @cruzadinha/api`               | Cria o usuário de teste do `.env` (só em desenvolvimento).             |
-| `npm run cli -w @cruzadinha/api -- invites create` | Cria um convite (também `list` e `revoke <id>`).                       |
-| `npm run build`                                    | Gera o build de todos os workspaces.                                   |
+| Comando                                                          | O que faz                                                                         |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `npm ci`                                                         | Instala as dependências de todos os workspaces.                                   |
+| `npm run dev -w @cruzadinha/api`                                 | Sobe a API em modo watch.                                                         |
+| `npm run dev -w @cruzadinha/web`                                 | Sobe o site com o servidor de desenvolvimento do Vite.                            |
+| `npm run format` / `npm run format:check`                        | Formata ou verifica a formatação com Prettier.                                    |
+| `npm run lint`                                                   | Roda o ESLint.                                                                    |
+| `npm run typecheck`                                              | Verifica os tipos em todos os workspaces.                                         |
+| `npm test`                                                       | Roda os testes unitários em todos os workspaces.                                  |
+| `npm run test:int`                                               | Roda os testes de integração com Postgres em container (exige Docker).            |
+| `npm run db:migrate -w @cruzadinha/api`                          | Aplica as migrações do banco.                                                     |
+| `npm run db:seed -w @cruzadinha/api`                             | Cria o usuário de teste do `.env` e um puzzle de exemplo (só em desenvolvimento). |
+| `npm run cli -w @cruzadinha/api -- users create --email <email>` | Cria uma conta, mesmo com o cadastro fechado (a senha é pedida sem eco).          |
+| `npm run cli -w @cruzadinha/api -- puzzles collect`              | Guarda o puzzle do dia de cada fonte e o histórico que faltar.                    |
+| `npm run build`                                                  | Gera o build de todos os workspaces.                                              |
 
 Para rodar um único arquivo de teste, entre no workspace: `cd apps/api && npx vitest run src/config.test.ts`.
 
@@ -95,4 +96,4 @@ O projeto segue um fluxo orientado a especificações com o [GitHub Spec Kit](ht
 
 Distribuído sob a licença MIT. Veja [LICENSE](LICENSE).
 
-Os puzzles pertencem às suas respectivas fontes; este projeto não é afiliado ao O Globo.
+Os puzzles pertencem às suas respectivas fontes; este projeto não é afiliado ao O Globo nem ao Público.

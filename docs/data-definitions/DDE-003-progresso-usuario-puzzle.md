@@ -4,12 +4,13 @@
 
 | Version | Date       | Changes                                                                                   |
 | ------- | ---------- | ----------------------------------------------------------------------------------------- |
+| `0.0.3` | 2026-10-21 | - Configurações fora do progresso, na DDE-004 (021).                                      |
 | `0.0.2` | 2026-10-20 | - Nota sobre o progresso do visitante, guardado só no aparelho e fora deste modelo (013). |
 | `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 008 (com a clarificação do recorde).                    |
 
 ## Scope
 
-Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individual de cada jogador em cada cruzada. Suporta salvar e retomar letras e tempo entre dispositivos, concluir um puzzle guardando o tempo de término, manter o melhor tempo e a data em que foi obtido, reiniciar do zero e isolar o progresso de cada usuário. `User` e `Puzzle` já são definidos nas [DDE-001](./DDE-001-banco-auth-convites.md) e [DDE-002](./DDE-002-coleta-puzzles.md); aqui aparecem só com a chave, para fechar os relacionamentos. O progresso do visitante (feature 013) não faz parte deste modelo: fica só no navegador do aparelho, nunca é enviado ao servidor e nunca é lido, gravado ou mostrado como o progresso de uma conta. Seus campos estão na spec 013.
+Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individual de cada jogador em cada cruzada. Suporta salvar e retomar letras e tempo entre dispositivos, concluir um puzzle guardando o tempo de término, manter o melhor tempo e a data em que foi obtido, reiniciar do zero e isolar o progresso de cada usuário. `User` e `Puzzle` já são definidos nas [DDE-001](./DDE-001-banco-auth-convites.md) e [DDE-002](./DDE-002-coleta-puzzles.md); aqui aparecem só com a chave, para fechar os relacionamentos. O progresso do visitante (feature 013) não faz parte deste modelo: fica só no navegador do aparelho, nunca é enviado ao servidor e nunca é lido, gravado ou mostrado como o progresso de uma conta. Seus campos estão na spec 013. As configurações da pessoa, inclusive os limites de ajuda, não fazem parte do progresso: ficam na [DDE-004](./DDE-004-configuracoes-usuario.md).
 
 ## Source Artifacts
 
@@ -19,6 +20,7 @@ Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individua
 | [specs/008-progresso-usuario-puzzle/spec.md](../../specs/008-progresso-usuario-puzzle/spec.md) (FR-007 a FR-010, US2) | Spec | Conclusão com tempo de término, recorde com data, reinício e ordem dos salvamentos |
 | [specs/008-progresso-usuario-puzzle/spec.md](../../specs/008-progresso-usuario-puzzle/spec.md) (FR-011 a FR-014, US3) | Spec | Isolamento por usuário, sessão obrigatória e remoção em cascata                    |
 | [specs/013-jogo-sem-login/spec.md](../../specs/013-jogo-sem-login/spec.md) (FR-004, FR-011, FR-012)                   | Spec | Progresso do visitante só no aparelho e separado do da conta                       |
+| [specs/021-configuracoes-usuario/spec.md](../../specs/021-configuracoes-usuario/spec.md) (FR-008, FR-020)             | Spec | Limites de ajuda e demais configurações guardados à parte do progresso             |
 
 ## Entity Summary
 

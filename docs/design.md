@@ -9,7 +9,7 @@ Um site de palavras cruzadas que reúne puzzles de sites existentes numa interfa
 
 - **Uso:** projeto de portfólio, site pequeno, aberto a quem tem o endereço e fora dos buscadores. Joga-se sem conta (o progresso fica no navegador) ou com conta (o progresso fica salvo entre dispositivos), feature 013.
 - **Foco:** a experiência de jogar (tabuleiro, teclado, dicas, navegação) e a qualidade do código.
-- **Sucesso:** o usuário entra, escolhe uma data do O Globo, joga numa interface agradável em claro ou escuro, e o progresso fica salvo entre dispositivos.
+- **Sucesso:** o usuário entra, escolhe uma cruzada e uma data, joga numa interface agradável em claro ou escuro, e o progresso fica salvo entre dispositivos.
 
 ### Fora do escopo da v1
 
@@ -87,9 +87,15 @@ apps/api/src/
   config.ts          variáveis de ambiente validadas com Zod
   db/                conexão, schema e migrações (Drizzle)
   modules/
-    auth/            cadastro, login, logout, sessão, limite de tentativas
+    auth/            cadastro, login, logout, sessão
     puzzles/         rotas e cache (o formato interno fica em packages/shared)
     progress/        salvar e ler o progresso
+    health/          saúde, versão e commit no ar
+    library/         biblioteca: puzzles guardados com a situação de quem pede
+    rate-limit/      limites de tentativas guardados no banco
+    settings/        configurações da conta
+  docs/              documentação OpenAPI, só fora de produção
+  http/              guarda do repasse (segredo e endereço de quem acessa)
   sources/
     types.ts         interface PuzzleSource
     oglobo/          única parte que conhece a Agilmente: pedido, token,
@@ -112,18 +118,21 @@ Próximo do ipuz, mas só com o que o jogo usa:
 - **Palavras:** posição inicial, direção, número e tamanho.
 - **Dicas:** texto associado a cada palavra.
 - **Metadados:** fonte, nível e data.
-- A resposta correta fica em campo separado e vai ao navegador junto do puzzle, só para usuário logado, para o front controlar as dicas (feature 007, constituição 3.0.0).
+- A resposta correta fica em campo separado e vai ao navegador junto do puzzle, para quem tem sessão e para o visitante, para o front controlar as dicas (features 007 e 013).
 
 ### Modelo de dados (Postgres)
 
-| Tabela          | Campos                                                                                                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`         | `id`, `email` (único), `password_hash`, `created_at`                                                                                                                         |
-| `invites`       | `id`, `code_hash`, `created_by` (nulo se criado pela CLI), `created_at`, `expires_at`, `used_by`, `used_at`, `revoked_at`                                                    |
-| `sessions`      | `id_hash`, `user_id`, `expires_at`                                                                                                                                           |
-| `puzzles`       | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                                                          |
-| `progress`      | `user_id`, `puzzle_id` (chave composta), `cells` (JSON), `elapsed_ms`, `status`, `saved_at`, `completed_at`, `finished_ms`, `best_ms`, `best_at`, `created_at`, `updated_at` |
-| `user_settings` | `user_id` (chave e FK com `ON DELETE CASCADE`), `settings` (JSON), `saved_at`, `created_at`, `updated_at` (feature 021)                                                      |
+As colunas, os valores permitidos e os relacionamentos de cada tabela estão nas data definitions, com um diagrama por data definition em `entity-relationship-diagrams/`.
+
+| Tabela                | Para que serve                                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `users`               | Contas ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                                                                    |
+| `sessions`            | Sessões abertas no login, guardadas só como hash ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                          |
+| `invites`             | Convites do cadastro antigo, sem uso desde a feature 013 e removidos no lançamento B ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))      |
+| `rate_limit_attempts` | Tentativas sujeitas a limite: login, cadastro, busca na fonte e gravação de configurações ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md)) |
+| `puzzles`             | Um puzzle por fonte, nível e data, com a parte pública e a solução separadas ([DDE-002](data-definitions/DDE-002-coleta-puzzles.md))                   |
+| `progress`            | Progresso de cada conta em cada puzzle ([DDE-003](data-definitions/DDE-003-progresso-usuario-puzzle.md))                                               |
+| `user_settings`       | Configurações da conta ([DDE-004](data-definitions/DDE-004-configuracoes-usuario.md))                                                                  |
 
 As configurações (tema, limites de ajuda, modo de riscar, cruzada padrão, ir direto ao jogo, tamanho do tabuleiro e largura do calendário) ficam no aparelho (`localStorage`, chave `cruzadinha:settings`) para todos e, para quem tem conta, também em `user_settings` (feature 021).
 
@@ -139,16 +148,18 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - Pede no máximo um puzzle por nível e data, com pausa entre pedidos, e para ao receber sinal de limite de uso.
 - Grava só o formato interno (dados e solução), não a resposta bruta da fonte, para guardar apenas o necessário para jogar.
 
-**Busca sob demanda:** se alguém pedir uma data que não está no banco, não é futura e a fonte ainda tiver, a API busca na hora e grava, como fallback da coleta. Cada ida à fonte conta num limite persistido por endereço (30 por hora), para um usuário logado não martelar a fonte.
+**Busca sob demanda:** se alguém pedir uma data que não está no banco, não é futura e a fonte ainda tiver, a API busca na hora e grava, como fallback da coleta. Cada ida à fonte conta num limite persistido por endereço (30 por hora), com ou sem conta, para ninguém martelar a fonte (feature 013).
 
 ### Endpoints (visão geral)
 
-- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
-- `POST /api/invites`, `GET /api/invites` (os do próprio usuário)
-- `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
-- `GET /api/library` (até 366 puzzles já guardados, do mais recente ao mais antigo, com a situação do usuário — não iniciado, em andamento ou concluído — e os tempos dele; só lê o que está guardado, nunca consulta a fonte)
-- `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo)
-- `GET /api/settings`, `PUT /api/settings` (configurações da conta; vale a mudança mais recente pelo `savedAt` do aparelho; 120 gravações por hora por endereço; feature 021)
+- `GET /api/health` (aberta; versão e commit no ar)
+- `POST /api/auth/register` (aberta, só com o cadastro ligado), `GET /api/auth/registration` (aberta; diz se o cadastro está aberto), `POST /api/auth/login` (aberta), `POST /api/auth/logout` (aberta; sem sessão também responde 204), `GET /api/auth/me` (sessão)
+- `GET /api/puzzles?source=&level=&date=`, `GET /api/puzzles/:id` (visitante ou conta)
+- `GET /api/library?source=` (visitante ou conta; até 366 puzzles já guardados da fonte, do mais recente ao mais antigo, com a situação de quem pede — não iniciado, em andamento ou concluído — e os tempos; sem conta, todos vêm não iniciados; só lê o que está guardado, nunca consulta a fonte)
+- `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo) (sessão)
+- `GET /api/settings`, `PUT /api/settings` (sessão; configurações da conta; vale a mudança mais recente pelo `savedAt` do aparelho; 120 gravações por hora por endereço; feature 021)
+
+Fora de produção, a API também serve a documentação OpenAPI em `/api/docs/`.
 
 ## 5. Front (`apps/web`)
 
