@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.6.0...web-v0.7.0) (2026-10-21)
+
+
+### Features
+
+* add user settings with theme, help limits and default source ([c7217b3](https://github.com/BrunoYTanaka/cruzadinha/commit/c7217b345685b7f74c019d7c27b2e01cb1b93354))
+* **web:** add settings dialog with theme, help limits and default source ([1d1dee7](https://github.com/BrunoYTanaka/cruzadinha/commit/1d1dee7b73d7e69e8cfbc426519cab7e608bfaf0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.10.0 to 0.11.0
+
 ## [0.6.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.5.0...web-v0.6.0) (2026-10-20)
 
 

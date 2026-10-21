@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.3.4...api-v0.4.0) (2026-10-21)
+
+
+### Features
+
+* add user settings with theme, help limits and default source ([c7217b3](https://github.com/BrunoYTanaka/cruzadinha/commit/c7217b345685b7f74c019d7c27b2e01cb1b93354))
+* **api:** store user settings per account ([3776e40](https://github.com/BrunoYTanaka/cruzadinha/commit/3776e40b786a08e8ee41512dc17e6cdc0fd39236))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.10.0 to 0.11.0
+
 ## [0.3.4](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.3.3...api-v0.3.4) (2026-10-20)
 
 
