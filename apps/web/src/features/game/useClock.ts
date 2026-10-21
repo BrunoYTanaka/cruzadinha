@@ -13,7 +13,8 @@ type UseClock = {
 }
 
 // Liga o relógio ao React: acompanha a visibilidade da aba e atualiza a tela uma vez por segundo.
-export function useClock(initialMs: number, active: boolean): UseClock {
+// `suspended` para o relógio sem a capa de pausa (modal de configurações aberta, feature 021).
+export function useClock(initialMs: number, active: boolean, suspended = false): UseClock {
   const clockRef = useRef<Clock | null>(null)
   if (clockRef.current === null) clockRef.current = createClock({ initialMs })
   const [elapsedMs, setElapsedMs] = useState(initialMs)
@@ -32,6 +33,13 @@ export function useClock(initialMs: number, active: boolean): UseClock {
       window.clearInterval(timer)
     }
   }, [active])
+
+  useEffect(() => {
+    const clock = clockRef.current
+    if (!clock) return
+    clock.setSuspended(suspended)
+    setElapsedMs(clock.elapsedMs())
+  }, [suspended])
 
   const pause = useCallback(() => {
     clockRef.current?.pause()

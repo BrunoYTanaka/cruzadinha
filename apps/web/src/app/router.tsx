@@ -8,6 +8,7 @@ import { LibraryPage } from '../features/library/LibraryPage'
 import { ServerWake } from '../features/status/ServerWake'
 import { StatusPage } from '../features/status/StatusPage'
 import { AppLayout } from './AppLayout'
+import { directPlayLoader } from './direct-play'
 import { NotFoundPage } from './NotFoundPage'
 import { RouteError } from './RouteError'
 import { viewerLoader } from './viewer'
@@ -39,7 +40,8 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
             {
               loader: viewerLoader(queryClient),
               children: [
-                { path: '/', element: <LibraryPage /> },
+                // "Ir direto ao jogo" decide antes de desenhar o calendário (feature 021).
+                { path: '/', element: <LibraryPage />, loader: directPlayLoader(queryClient) },
                 { path: '/dia/:date', element: <DayRoute /> },
                 {
                   path: '/jogo/:puzzleId',

@@ -239,6 +239,7 @@ describe('timing and speed', () => {
     loginAddress: { max: 1000, windowMinutes: 15 },
     register: { max: 1000, windowMinutes: 60 },
     puzzleFetch: { max: 1000, windowMinutes: 60 },
+    settingsSave: { max: 1000, windowMinutes: 60 },
   }
 
   function mean(values: number[]): number {

@@ -4,11 +4,18 @@ import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../test/axe'
 import { LAYOUT5, makePuzzle } from '../../test/fixtures'
+import type { StrikeMode } from '../../game-logic/clue-strike'
 import { ClueSheet } from './ClueSheet'
 
 const puzzle = makePuzzle(LAYOUT5)
 
-function Harness({ onSelect = () => {} }: { onSelect?: (number: number) => void }) {
+function Harness({
+  onSelect = () => {},
+  strikeMode,
+}: {
+  onSelect?: (number: number) => void
+  strikeMode?: StrikeMode
+}) {
   const [open, setOpen] = useState(false)
   const active =
     puzzle.words.find((word) => word.number === 6 && word.direction === 'across') ?? null
@@ -21,6 +28,7 @@ function Harness({ onSelect = () => {} }: { onSelect?: (number: number) => void 
         puzzle={puzzle}
         activeWord={active}
         struck={new Set(['1across'])}
+        strikeMode={strikeMode}
         onSelect={(word) => onSelect(word.number)}
       />
     </div>
@@ -52,6 +60,16 @@ describe('ClueSheet', () => {
     const done = within(dialog).getByRole('button', { name: /Dica 1 horizontal.*resolvida/ })
     // Feature 017: o mesmo visto da lista do computador.
     expect(done.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
+  })
+
+  it('ao preencher, a folha só risca, sem visto (feature 021)', async () => {
+    const user = userEvent.setup()
+    render(<Harness strikeMode="filled" />)
+    await user.click(screen.getByRole('button', { name: 'Dicas' }))
+    const dialog = screen.getByRole('dialog', { name: 'Dicas' })
+    const marked = within(dialog).getByRole('button', { name: /Dica 1 horizontal, preenchida$/ })
+    expect(marked.querySelector('svg')).toBeNull()
+    expect(marked.className).toMatch(/struck/)
   })
 
   it('escolher uma dica seleciona a palavra e fecha a folha', async () => {

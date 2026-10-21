@@ -1,13 +1,15 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useEffect, useRef } from 'react'
-import { wordKey } from '../../game-logic/clue-strike'
+import { wordKey, type StrikeMode } from '../../game-logic/clue-strike'
 import styles from './ClueList.module.css'
 
 type ClueListProps = {
   puzzle: Puzzle
   activeWord: Word | null
-  // Palavras resolvidas (completas e certas), no formato "6across".
+  // Palavras riscadas, no formato "6across": resolvidas (completas e certas) no modo `solved`,
+  // completas no modo `filled` (feature 021).
   struck: ReadonlySet<string>
+  strikeMode?: StrikeMode
   onSelect: (word: Word) => void
   // Computador: as listas ocupam a altura do pai e cada grupo rola por dentro, mantendo a dica
   // ativa visível.
@@ -19,8 +21,11 @@ function Group({
   words,
   activeWord,
   struck,
+  strikeMode = 'solved',
   onSelect,
 }: { title: string; words: Word[] } & Omit<ClueListProps, 'puzzle' | 'fill'>) {
+  // Ao preencher, a dica só fica riscada: sem fundo de sucesso e sem visto, porque pode estar errada.
+  const solved = strikeMode === 'solved'
   return (
     <section aria-label={title} className={styles.group}>
       <h2 className={styles.heading}>{title}</h2>
@@ -28,18 +33,19 @@ function Group({
         {words.map((word) => {
           const active =
             activeWord?.number === word.number && activeWord.direction === word.direction
-          const done = struck.has(wordKey(word))
+          const marked = struck.has(wordKey(word))
+          const mark = marked ? (solved ? styles.done : styles.struck) : ''
           return (
             <li key={wordKey(word)}>
               <button
                 type="button"
-                className={`${styles.clue} ${active ? styles.active : ''} ${done ? styles.done : ''}`}
+                className={`${styles.clue} ${active ? styles.active : ''} ${mark}`}
                 aria-current={active ? 'true' : undefined}
                 onClick={() => onSelect(word)}
               >
                 <b className={styles.number}>{word.number}</b>
                 <span>{word.clue}</span>
-                {done ? (
+                {marked && solved ? (
                   <>
                     <span className={styles.hidden}>, resolvida</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.check}>
@@ -47,6 +53,7 @@ function Group({
                     </svg>
                   </>
                 ) : null}
+                {marked && !solved ? <span className={styles.hidden}>, preenchida</span> : null}
               </button>
             </li>
           )
@@ -57,7 +64,14 @@ function Group({
 }
 
 // Horizontais e verticais; clicar numa dica seleciona a palavra no tabuleiro.
-export function ClueList({ puzzle, activeWord, struck, onSelect, fill = false }: ClueListProps) {
+export function ClueList({
+  puzzle,
+  activeWord,
+  struck,
+  strikeMode,
+  onSelect,
+  fill = false,
+}: ClueListProps) {
   const across = puzzle.words.filter((word) => word.direction === 'across')
   const down = puzzle.words.filter((word) => word.direction === 'down')
   const listsRef = useRef<HTMLDivElement>(null)
@@ -88,6 +102,7 @@ export function ClueList({ puzzle, activeWord, struck, onSelect, fill = false }:
         words={across}
         activeWord={activeWord}
         struck={struck}
+        strikeMode={strikeMode}
         onSelect={onSelect}
       />
       <Group
@@ -95,6 +110,7 @@ export function ClueList({ puzzle, activeWord, struck, onSelect, fill = false }:
         words={down}
         activeWord={activeWord}
         struck={struck}
+        strikeMode={strikeMode}
         onSelect={onSelect}
       />
     </div>

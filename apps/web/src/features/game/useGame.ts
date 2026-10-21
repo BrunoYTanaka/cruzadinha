@@ -16,16 +16,14 @@ import { struckWords, type StrikeMode } from '../../game-logic/clue-strike'
 import { isSolved } from '../../game-logic/completion'
 import type { GuestProgress } from '../../game-logic/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../game-logic/reducer'
-import type { GameState } from '../../game-logic/state'
+import type { GameLimits, GameState } from '../../game-logic/state'
 import { createGuestSaveQueue } from '../guest/guest-save-queue'
 import { guestStore as defaultGuestStore, type GuestStore } from '../guest/guest-store'
+import { useSettingsOpen } from '../settings/settings-open'
+import { useSettings } from '../settings/settings-store'
 import { clearHelp, loadHelp, saveHelp } from './help-storage'
 import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from './save-queue'
 import { useClock } from './useClock'
-
-// Quando a dica fica riscada (feature 016). Único lugar que escolhe o modo; a preferência futura do
-// jogador entra aqui.
-const STRIKE_MODE: StrikeMode = 'solved'
 
 // Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
 // nunca leem nem gravam o lugar do outro (FR-011).
@@ -116,7 +114,16 @@ export function useGame({ response, owner }: UseGameArgs) {
     if (hasHelp(snapshot)) saveHelp(userId, puzzleId, snapshot)
   }, [usage, marks, locked, userId, puzzleId])
 
-  const clock = useClock(source.elapsedMs, state.mode === 'playing')
+  // Configurações (feature 021): limites de ajuda e modo de riscar valem na hora; a modal aberta
+  // suspende o relógio.
+  const settings = useSettings()
+  const settingsOpen = useSettingsOpen()
+  const limits: GameLimits = useMemo(
+    () => ({ letters: settings.helpLetters, words: settings.helpWords }),
+    [settings.helpLetters, settings.helpWords],
+  )
+  const strikeMode: StrikeMode = settings.strikeMode
+  const clock = useClock(source.elapsedMs, state.mode === 'playing', settingsOpen)
   const { readElapsedMs, stop: stopClock } = clock
 
   const queue: SaveQueue = useMemo(() => {
@@ -297,10 +304,19 @@ export function useGame({ response, owner }: UseGameArgs) {
     }
   }, [puzzleId, stopClock, store])
 
-  const send = useCallback((action: GameAction) => dispatch(action), [])
+  // As ajudas usam os limites das configurações no momento do pedido.
+  const send = useCallback(
+    (action: GameAction) =>
+      dispatch(
+        action.type === 'revealLetter' || action.type === 'revealWord'
+          ? { ...action, limits: action.limits ?? limits }
+          : action,
+      ),
+    [limits],
+  )
   const struck = useMemo(
-    () => struckWords(game.index, state.cells, solution, STRIKE_MODE),
-    [game.index, state.cells, solution],
+    () => struckWords(game.index, state.cells, solution, strikeMode),
+    [game.index, state.cells, solution, strikeMode],
   )
 
   return {
@@ -316,5 +332,7 @@ export function useGame({ response, owner }: UseGameArgs) {
     viewCompleted,
     solved: isSolved(state.cells, solution),
     struck,
+    strikeMode,
+    limits,
   }
 }

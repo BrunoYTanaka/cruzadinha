@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { resetSettingsStore } from '../settings/settings-store'
 import {
   clampWidth,
   clearLibraryWidth,
-  LIBRARY_WIDTH_KEY,
   loadLibraryWidth,
   saveLibraryWidth,
   widthFromDrag,
@@ -34,12 +34,19 @@ describe('clampWidth', () => {
 })
 
 describe('preferência guardada', () => {
-  it('grava, lê e apaga {"width": N}', () => {
+  it('grava, lê e apaga a largura nas configurações', () => {
     saveLibraryWidth(1200)
-    expect(window.localStorage.getItem(LIBRARY_WIDTH_KEY)).toBe('{"width":1200}')
+    expect(loadLibraryWidth()).toBe(1200)
+    resetSettingsStore()
     expect(loadLibraryWidth()).toBe(1200)
     clearLibraryWidth()
     expect(loadLibraryWidth()).toBeNull()
+  })
+
+  it('lê a escolha antiga {"width": N} na migração', () => {
+    window.localStorage.setItem('cruzadinha:library-width', '{"width":1200}')
+    resetSettingsStore()
+    expect(loadLibraryWidth()).toBe(1200)
   })
 
   it.each([
@@ -48,8 +55,9 @@ describe('preferência guardada', () => {
     ['abaixo de 720', '{"width":719}'],
     ['acima de 1600', '{"width":1601}'],
     ['não inteiro', '{"width":1000.5}'],
-  ])('%s vira ajuste automático', (_name, raw) => {
-    window.localStorage.setItem(LIBRARY_WIDTH_KEY, raw)
+  ])('escolha antiga com %s vira ajuste automático', (_name, raw) => {
+    window.localStorage.setItem('cruzadinha:library-width', raw)
+    resetSettingsStore()
     expect(loadLibraryWidth()).toBeNull()
   })
 
@@ -57,6 +65,7 @@ describe('preferência guardada', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('bloqueado')
     })
+    resetSettingsStore()
     expect(loadLibraryWidth()).toBeNull()
   })
 })

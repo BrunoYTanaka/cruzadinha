@@ -57,7 +57,7 @@ O jogador preenche uma palavra. Se todas as letras batem com a solução, a dica
 - **FR-003**: O estado de cada dica MUST ser atualizado a cada mudança de letra (digitar, apagar, Delete, ajudas), tanto no computador quanto na lista do celular.
 - **FR-004**: O texto lido pelo leitor de tela numa dica riscada MUST dizer que a palavra está resolvida (o nome da dica termina com ", resolvida", no lugar do ", preenchida" de hoje).
 - **FR-005**: Para quem tem conta e para visitante, a regra MUST ser a mesma e MUST NOT salvar nem enviar dado novo: o estado vem só das letras e da solução já carregadas.
-- **FR-006**: A decisão "esta dica fica riscada?" MUST ficar numa regra única, com o modo atual ("ao acertar") como único valor desta feature, de forma que uma futura preferência do jogador ("ao preencher", "ao acertar", "nunca") troque só o modo, sem mudar as telas.
+- **FR-006**: A decisão "esta dica fica riscada?" MUST ficar numa regra única, com o modo atual ("ao acertar") como único valor desta feature, de forma que uma futura preferência do jogador ("ao preencher", "ao acertar", "nunca") troque só o modo, sem mudar as telas. _Nota (feature 021): o modo "ao preencher" (`filled`) foi acrescentado e é escolhido nas configurações ("Riscar a dica só quando acerta" desligado); nele a dica fica só riscada, sem fundo de sucesso e sem visto, e o leitor de tela ouve ", preenchida"._
 - **FR-007**: O risco da dica MUST NOT contar como uso de ajuda nem mudar tempo, conclusão ou recorde.
 
 ### Key Entities

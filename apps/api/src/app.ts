@@ -20,6 +20,8 @@ import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
 import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
 import { createPuzzlesService } from './modules/puzzles/puzzles.service'
+import { settingsRoutes } from './modules/settings/settings.routes'
+import { createSettingsService } from './modules/settings/settings.service'
 import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
 import { createOgloboSource } from './sources/oglobo/oglobo'
 import type { PuzzleSource } from './sources/types'
@@ -108,5 +110,12 @@ export function buildApp({
   app.register(progressRoutes, { progress, requireSession })
   const library = createLibraryService({ db: database })
   app.register(libraryRoutes, { library, optionalSession })
+  const settings = createSettingsService({
+    db: database,
+    clock,
+    rateLimiter,
+    limits: rateLimits,
+  })
+  app.register(settingsRoutes, { settings, requireSession })
   return app
 }

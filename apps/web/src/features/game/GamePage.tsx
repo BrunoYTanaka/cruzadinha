@@ -7,7 +7,6 @@ import { getProgress } from '../../api/progress'
 import { getPuzzleById } from '../../api/puzzles'
 import { queryKeys } from '../../api/query-keys'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
-import { config } from '../../config'
 import { activeWord } from '../../game-logic/navigation'
 import { todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
@@ -163,6 +162,8 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
     playAgain,
     viewCompleted,
     struck,
+    strikeMode,
+    limits,
   } = useGame({ response, owner })
   const guest = owner.kind === 'guest'
   const storageAvailable = useGuestStorageAvailable()
@@ -260,6 +261,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
       puzzle={puzzle}
       activeWord={word}
       struck={struck}
+      strikeMode={strikeMode}
       onSelect={selectClue}
       fill={desktop}
     />
@@ -300,7 +302,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
           readOnly ? null : (
             <HelpButtons
               usage={state.usage}
-              limits={config.helpLimits}
+              limits={limits}
               lastHelp={state.lastHelp}
               disabled={clock.paused}
               onLetter={() => help('revealLetter')}
@@ -424,6 +426,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         puzzle={puzzle}
         activeWord={word}
         struck={struck}
+        strikeMode={strikeMode}
         onSelect={selectClue}
       />
     </div>

@@ -1,6 +1,7 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { Button } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
+import type { StrikeMode } from '../../game-logic/clue-strike'
 import { ClueList } from './ClueList'
 import styles from './ClueSheet.module.css'
 
@@ -10,11 +11,20 @@ type ClueSheetProps = {
   puzzle: Puzzle
   activeWord: Word | null
   struck: ReadonlySet<string>
+  strikeMode?: StrikeMode
   onSelect: (word: Word) => void
 }
 
 // No celular a lista lateral não cabe: a tecla "Dicas" abre esta folha com todas as dicas.
-export function ClueSheet({ open, onClose, puzzle, activeWord, struck, onSelect }: ClueSheetProps) {
+export function ClueSheet({
+  open,
+  onClose,
+  puzzle,
+  activeWord,
+  struck,
+  strikeMode,
+  onSelect,
+}: ClueSheetProps) {
   return (
     <Dialog open={open} onClose={onClose} title="Dicas" align="bottom" closeOnBackdrop>
       <div className={styles.body}>
@@ -22,6 +32,7 @@ export function ClueSheet({ open, onClose, puzzle, activeWord, struck, onSelect 
           puzzle={puzzle}
           activeWord={activeWord}
           struck={struck}
+          strikeMode={strikeMode}
           onSelect={(word) => {
             onSelect(word)
             onClose()

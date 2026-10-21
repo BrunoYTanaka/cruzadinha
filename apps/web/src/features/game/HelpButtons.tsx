@@ -4,7 +4,7 @@ import type { GameLimits, HelpResult } from '../../game-logic/state'
 import styles from './HelpButtons.module.css'
 
 type HelpButtonsProps = {
-  usage: GameLimits
+  usage: { letters: number; words: number }
   limits: GameLimits
   lastHelp: HelpResult | null
   disabled?: boolean
@@ -48,38 +48,41 @@ export function HelpButtons({
   onWord,
   onVerify,
 }: HelpButtonsProps) {
-  const lettersLeft = limits.letters - usage.letters
-  const wordsLeft = limits.words - usage.words
-  const lettersOut = lettersLeft <= 0
-  const wordsOut = wordsLeft <= 0
+  // Sem limite (feature 021) a ajuda nunca esgota e o contador mostra ∞.
+  const lettersOut = limits.letters !== null && usage.letters >= limits.letters
+  const wordsOut = limits.words !== null && usage.words >= limits.words
   return (
     <>
       <Pill
         className={styles.help}
         aria-disabled={disabled || lettersOut || undefined}
         aria-label={
-          lettersOut
-            ? `Revelar letra: limite de ${limits.letters} atingido`
-            : `Revelar letra: ${usage.letters} de ${limits.letters} usadas`
+          limits.letters === null
+            ? `Revelar letra: sem limite, ${usage.letters} usadas`
+            : lettersOut
+              ? `Revelar letra: limite de ${limits.letters} atingido`
+              : `Revelar letra: ${usage.letters} de ${limits.letters} usadas`
         }
         onClick={disabled || lettersOut ? undefined : onLetter}
       >
         <span aria-hidden="true">
-          {usage.letters}/{limits.letters} Letra
+          {usage.letters}/{limits.letters ?? '∞'} Letra
         </span>
       </Pill>
       <Pill
         className={styles.help}
         aria-disabled={disabled || wordsOut || undefined}
         aria-label={
-          wordsOut
-            ? `Revelar palavra: limite de ${limits.words} atingido`
-            : `Revelar palavra: ${usage.words} de ${limits.words} usadas`
+          limits.words === null
+            ? `Revelar palavra: sem limite, ${usage.words} usadas`
+            : wordsOut
+              ? `Revelar palavra: limite de ${limits.words} atingido`
+              : `Revelar palavra: ${usage.words} de ${limits.words} usadas`
         }
         onClick={disabled || wordsOut ? undefined : onWord}
       >
         <span aria-hidden="true">
-          {usage.words}/{limits.words} Palavra
+          {usage.words}/{limits.words ?? '∞'} Palavra
         </span>
       </Pill>
       <Pill

@@ -2,9 +2,9 @@ import type { Solution, Word } from '@cruzadinha/shared'
 import { plainLetter } from './letters'
 import type { PuzzleIndex } from './navigation'
 
-// Quando uma dica da lista fica riscada. Hoje só "ao acertar"; a preferência futura do jogador
-// acrescenta 'filled' (ao preencher) e 'never' a esta união, sem mudar as telas.
-export type StrikeMode = 'solved'
+// Quando uma dica da lista fica riscada: "ao acertar" (padrão) ou "ao preencher", escolhido nas
+// configurações (feature 021).
+export type StrikeMode = 'solved' | 'filled'
 
 // Chave de uma palavra nas listas de dicas: "6across".
 export function wordKey(word: Word): string {
@@ -25,6 +25,11 @@ export function isWordSolved(
   })
 }
 
+// Toda célula da palavra tem uma letra, certa ou errada.
+export function isWordFilled(index: PuzzleIndex, cells: (string | null)[][], word: Word): boolean {
+  return index.cellsOf(word).every(({ row, col }) => cells[row]?.[col] != null)
+}
+
 export function struckWords(
   index: PuzzleIndex,
   cells: (string | null)[][],
@@ -37,6 +42,10 @@ export function struckWords(
         index.puzzle.words
           .filter((word) => isWordSolved(index, cells, solution, word))
           .map(wordKey),
+      )
+    case 'filled':
+      return new Set(
+        index.puzzle.words.filter((word) => isWordFilled(index, cells, word)).map(wordKey),
       )
   }
 }

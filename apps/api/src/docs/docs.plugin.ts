@@ -32,6 +32,7 @@ export default fp(async (app) => {
           name: 'library',
           description: 'Puzzles guardados com a situação do usuário, sem consultar a fonte',
         },
+        { name: 'settings', description: 'Configurações da conta (tema, ajudas, cruzada padrão)' },
       ],
       components: {
         securitySchemes: {

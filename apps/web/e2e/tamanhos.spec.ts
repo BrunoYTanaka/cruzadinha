@@ -6,8 +6,35 @@ import { login, resetAndSeed } from './support'
 // tiradas da feature 010 (main) antes da mudança.
 const BASELINE_PHONE = { cell: 64, grid: 328, calendar: 328, dayHeight: 56 }
 const BASELINE_DESKTOP_CALENDAR = 1008
-const BOARD_KEY = 'cruzadinha:board-size'
-const LIBRARY_KEY = 'cruzadinha:library-width'
+// Tamanho do tabuleiro e largura do calendário ficam nas configurações (feature 021).
+const SETTINGS_KEY = 'cruzadinha:settings'
+type SizeField = 'boardCellSize' | 'libraryWidth'
+
+function storedSize(page: Page, field: SizeField): Promise<unknown> {
+  return page.evaluate(
+    ([key, name]) => {
+      const raw = localStorage.getItem(key)
+      const record = raw ? (JSON.parse(raw) as { settings?: Record<string, unknown> }) : null
+      return record?.settings?.[name] ?? null
+    },
+    [SETTINGS_KEY, field] as const,
+  )
+}
+
+function storeSize(page: Page, field: SizeField, value: number): Promise<void> {
+  return page.evaluate(
+    ([key, name, size]) => {
+      const raw = localStorage.getItem(key)
+      const record = raw
+        ? (JSON.parse(raw) as { v: number; settings: Record<string, unknown>; savedAt: string })
+        : { v: 1, settings: {}, savedAt: new Date(0).toISOString() }
+      record.settings[name] = size
+      record.savedAt = new Date().toISOString()
+      localStorage.setItem(key, JSON.stringify(record))
+    },
+    [SETTINGS_KEY, field, value] as const,
+  )
+}
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -99,7 +126,7 @@ test.describe('alça do tabuleiro', () => {
     expect(Math.abs((await cellWidth(page)) - max)).toBeLessThanOrEqual(1)
 
     await page.getByRole('button', { name: 'Tamanho padrão' }).click()
-    expect(await page.evaluate((key) => localStorage.getItem(key), BOARD_KEY)).toBeNull()
+    expect(await storedSize(page, 'boardCellSize')).toBeNull()
     await expect.poll(() => cellWidth(page)).toBeCloseTo(start, 0)
     await expect(page.getByRole('button', { name: 'Tamanho padrão' })).toBeDisabled()
   })
@@ -113,9 +140,7 @@ test.describe('alça do tabuleiro', () => {
     await page.keyboard.press('ArrowRight')
     await expect(handle).toHaveAttribute('aria-valuenow', '40')
     await expect(handle).toHaveAttribute('aria-valuetext', /^Tamanho do tabuleiro 40 de \d+$/)
-    expect(await page.evaluate((key) => localStorage.getItem(key), BOARD_KEY)).toBe(
-      '{"cellSize":40}',
-    )
+    expect(await storedSize(page, 'boardCellSize')).toBe(40)
   })
 
   test('do tabuleiro, Tab fica nas palavras e Esc + Tab chega à alça', async ({ page }) => {
@@ -132,14 +157,12 @@ test.describe('alça do tabuleiro', () => {
 
   test('a escolha não muda quando não cabe e volta ao alargar', async ({ page }) => {
     await openToday(page)
-    await page.evaluate((key) => localStorage.setItem(key, '{"cellSize":110}'), BOARD_KEY)
+    await storeSize(page, 'boardCellSize', 110)
     await page.reload()
     await expect(page.getByRole('grid')).toBeVisible()
     await page.setViewportSize({ width: 900, height: 1080 })
     await noHorizontalScroll(page)
-    expect(await page.evaluate((key) => localStorage.getItem(key), BOARD_KEY)).toBe(
-      '{"cellSize":110}',
-    )
+    expect(await storedSize(page, 'boardCellSize')).toBe(110)
     await page.setViewportSize({ width: 1920, height: 1080 })
     await expect.poll(() => cellWidth(page)).toBeCloseTo(110, 0)
   })
@@ -147,10 +170,7 @@ test.describe('alça do tabuleiro', () => {
   test('sem rolagem horizontal de 861 a 2560 px, com 30 e 110 px', async ({ page }) => {
     await openToday(page)
     for (const cellSize of [30, 110]) {
-      await page.evaluate(
-        ([key, value]) => localStorage.setItem(key, JSON.stringify({ cellSize: value })),
-        [BOARD_KEY, cellSize] as const,
-      )
+      await storeSize(page, 'boardCellSize', cellSize)
       for (const width of [861, 2560]) {
         await page.setViewportSize({ width, height: 1080 })
         await page.reload()
@@ -163,7 +183,7 @@ test.describe('alça do tabuleiro', () => {
   test('valor guardado inválido abre no padrão, sem erro', async ({ page }) => {
     await openToday(page)
     const start = await cellWidth(page)
-    await page.evaluate((key) => localStorage.setItem(key, '{"cellSize":999}'), BOARD_KEY)
+    await storeSize(page, 'boardCellSize', 999)
     await page.reload()
     await expect(page.getByRole('grid')).toBeVisible()
     expect(Math.abs((await cellWidth(page)) - start)).toBeLessThanOrEqual(1)
@@ -225,7 +245,7 @@ test.describe('biblioteca no computador', () => {
     expect(await calendarWidth(page)).toBeLessThanOrEqual(1600)
 
     await handle.dblclick()
-    expect(await page.evaluate((key) => localStorage.getItem(key), LIBRARY_KEY)).toBeNull()
+    expect(await storedSize(page, 'libraryWidth')).toBeNull()
     await expect.poll(() => calendarWidth(page)).toBeCloseTo(auto, 0)
   })
 
@@ -247,14 +267,12 @@ test.describe('biblioteca no computador', () => {
 
   test('a largura guardada não muda quando não cabe e volta ao alargar', async ({ page }) => {
     await login(page)
-    await page.evaluate((key) => localStorage.setItem(key, '{"width":1600}'), LIBRARY_KEY)
+    await storeSize(page, 'libraryWidth', 1600)
     await page.reload()
     await expect(calendar(page)).toBeVisible()
     await page.setViewportSize({ width: 900, height: 1080 })
     await noHorizontalScroll(page)
-    expect(await page.evaluate((key) => localStorage.getItem(key), LIBRARY_KEY)).toBe(
-      '{"width":1600}',
-    )
+    expect(await storedSize(page, 'libraryWidth')).toBe(1600)
     await page.setViewportSize({ width: 861, height: 1080 })
     await noHorizontalScroll(page)
     await page.setViewportSize({ width: 1920, height: 1080 })

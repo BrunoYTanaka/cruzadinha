@@ -4,6 +4,7 @@
 
 | Version | Date       | Changes                                                                                                                                                                         |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.0.3` | 2026-10-21 | - Ação SETTINGS_SAVE (021).                                                                                                                                                     |
 | `0.0.2` | 2026-10-20 | - Cadastro só com e-mail e senha, atrás de chave, e conta criada pelo autor (013). - Convites e INVITE_CREATE sem uso até o lançamento B (013). - Ação PUZZLE_FETCH (006, 013). |
 | `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 004 (com as clarificações de 2026-10-13)                                                                                                      |
 
@@ -81,14 +82,14 @@ No cadastro antigo, a situação do convite não era guardada: era derivada dos 
 
 ### RateLimitAttempt
 
-| Field                 | Description                      | Data Type | Mandatory | Notes                                                                                                                            |
-| --------------------- | -------------------------------- | --------- | --------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| rate_limit_attempt_id | Identificador único da tentativa | UUID      | Yes       | PK                                                                                                                               |
-| action                | Ação limitada                    | Text      | Yes       | Valores permitidos: LOGIN, REGISTER, PUZZLE_FETCH, INVITE_CREATE; INVITE_CREATE sem uso desde a feature 013, sai no lançamento B |
-| key_type              | Tipo da chave limitada           | Text      | Yes       | Valores permitidos: EMAIL, NETWORK_ADDRESS                                                                                       |
-| key_value             | Valor da chave limitada          | Text      | Yes       | E-mail normalizado ou endereço de rede; nunca guarda senha nem código de convite                                                 |
-| created_at            | Instante da tentativa            | Date      | Yes       | Preenchido pelo banco; UTC; base da janela do limite                                                                             |
-| updated_at            | Data e hora da última alteração  | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                                                                           |
+| Field                 | Description                      | Data Type | Mandatory | Notes                                                                                                                                                                              |
+| --------------------- | -------------------------------- | --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rate_limit_attempt_id | Identificador único da tentativa | UUID      | Yes       | PK                                                                                                                                                                                 |
+| action                | Ação limitada                    | Text      | Yes       | Valores permitidos: LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE, INVITE_CREATE; SETTINGS_SAVE desde a feature 021; INVITE_CREATE sem uso desde a feature 013, sai no lançamento B |
+| key_type              | Tipo da chave limitada           | Text      | Yes       | Valores permitidos: EMAIL, NETWORK_ADDRESS                                                                                                                                         |
+| key_value             | Valor da chave limitada          | Text      | Yes       | E-mail normalizado ou endereço de rede; nunca guarda senha nem código de convite                                                                                                   |
+| created_at            | Instante da tentativa            | Date      | Yes       | Preenchido pelo banco; UTC; base da janela do limite                                                                                                                               |
+| updated_at            | Data e hora da última alteração  | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                                                                                                                             |
 
 No login só as tentativas falhas são registradas (uma por e-mail e uma por endereço de rede). No cadastro, toda tentativa é registrada por endereço de rede (spec 013, FR-014). Na busca de um puzzle na fonte, toda busca é registrada por endereço de rede, também para o visitante (spec 013, FR-003). Registros fora da janela são ignorados na contagem. Não há vínculo com `User`, porque o e-mail tentado pode não ter conta.
 

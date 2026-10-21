@@ -190,3 +190,63 @@ describe('solução com letras acentuadas (a fonte traz Ã, É...)', () => {
     expect(state.cells[0]?.[1]).toBe('A')
   })
 })
+
+describe('limites configuráveis (feature 021)', () => {
+  it('limite null nunca esgota', () => {
+    const many = { usage: { letters: 98, words: 50 } } as GameState
+    expect(canRevealLetter(many, { letters: null, words: null })).toBe(true)
+    expect(canRevealWord(many, { letters: null, words: null })).toBe(true)
+  })
+
+  it('limite numérico compara com o uso', () => {
+    const used = { usage: { letters: 3, words: 1 } } as GameState
+    expect(canRevealLetter(used, { letters: 4, words: 1 })).toBe(true)
+    expect(canRevealWord(used, { letters: 4, words: 1 })).toBe(false)
+  })
+
+  it('usa os limites recebidos no pedido em vez dos do início da partida', () => {
+    const { state } = play(
+      [
+        select(0, 0),
+        { type: 'revealLetter', limits: { letters: null, words: 1 } },
+        select(0, 1),
+        { type: 'revealLetter', limits: { letters: null, words: 1 } },
+        select(0, 2),
+        { type: 'revealLetter', limits: { letters: null, words: 1 } },
+      ],
+      { letters: 1, words: 1 },
+    )
+    expect(state.usage.letters).toBe(3)
+    expect(state.lastHelp?.kind).toBe('letter')
+  })
+
+  it('baixar o limite abaixo do uso não desfaz nada e esgota a ajuda', () => {
+    const { state, game } = play([
+      select(0, 0),
+      { type: 'revealLetter', limits: { letters: 6, words: 2 } },
+      select(0, 1),
+      { type: 'revealLetter', limits: { letters: 6, words: 2 } },
+      select(0, 2),
+      { type: 'revealLetter', limits: { letters: 6, words: 2 } },
+    ])
+    const after = game.reducer(game.reducer(state, select(0, 3)), {
+      type: 'revealLetter',
+      limits: { letters: 2, words: 2 },
+    })
+    expect(after.usage.letters).toBe(3)
+    expect(after.cells[0]?.slice(0, 3)).toEqual(['C', 'A', 'S'])
+    expect(after.locked[0]?.slice(0, 3)).toEqual([true, true, true])
+    expect(after.marks['0,0']).toBe('helped')
+    expect(after.cells[0]?.[3]).toBeNull()
+    expect(after.lastHelp?.kind).toBe('letter-limit')
+  })
+
+  it('revelar palavra também respeita o limite do pedido', () => {
+    const { state } = play(
+      [select(0, 0), { type: 'revealWord', limits: { letters: 0, words: 0 } }],
+      { letters: 2, words: 5 },
+    )
+    expect(state.usage.words).toBe(0)
+    expect(state.lastHelp?.kind).toBe('word-limit')
+  })
+})

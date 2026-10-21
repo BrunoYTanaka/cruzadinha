@@ -45,6 +45,31 @@ describe('createClock', () => {
     expect(clock.elapsedMs()).toBe(3_000)
   })
 
+  it('suspenso (modal de configurações) para sem contar como pausa do jogador (feature 021)', () => {
+    const { clock, advance } = makeClock()
+    clock.start()
+    advance(1_000)
+    clock.setSuspended(true)
+    advance(30_000)
+    expect(clock.elapsedMs()).toBe(1_000)
+    expect(clock.isRunning()).toBe(false)
+    expect(clock.isPaused()).toBe(false)
+    clock.setSuspended(false)
+    advance(1_000)
+    expect(clock.elapsedMs()).toBe(2_000)
+  })
+
+  it('fechar a modal não desfaz a pausa do jogador', () => {
+    const { clock, advance } = makeClock()
+    clock.start()
+    clock.pause()
+    clock.setSuspended(true)
+    clock.setSuspended(false)
+    advance(5_000)
+    expect(clock.elapsedMs()).toBe(0)
+    expect(clock.isPaused()).toBe(true)
+  })
+
   it('para ao pausar e só retoma quando a pessoa retoma', () => {
     const { clock, advance } = makeClock()
     clock.start()

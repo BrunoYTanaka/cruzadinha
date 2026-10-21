@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { resetSettingsStore } from '../settings/settings-store'
 import {
-  BOARD_SIZE_KEY,
   cellFor,
   cellFromDrag,
   clearBoardSize,
@@ -84,13 +84,19 @@ describe('cellFromDrag', () => {
 })
 
 describe('preferência guardada', () => {
-  it('grava, lê e apaga {"cellSize": N}', () => {
+  it('grava, lê e apaga o tamanho nas configurações', () => {
     saveBoardSize(90)
-    expect(window.localStorage.getItem(BOARD_SIZE_KEY)).toBe('{"cellSize":90}')
+    expect(loadBoardSize()).toBe(90)
+    resetSettingsStore()
     expect(loadBoardSize()).toBe(90)
     clearBoardSize()
-    expect(window.localStorage.getItem(BOARD_SIZE_KEY)).toBeNull()
     expect(loadBoardSize()).toBeNull()
+  })
+
+  it('lê a escolha antiga {"cellSize": N} na migração', () => {
+    window.localStorage.setItem('cruzadinha:board-size', '{"cellSize":72}')
+    resetSettingsStore()
+    expect(loadBoardSize()).toBe(72)
   })
 
   it.each([
@@ -100,8 +106,9 @@ describe('preferência guardada', () => {
     ['abaixo de 30', '{"cellSize":29}'],
     ['acima de 110', '{"cellSize":111}'],
     ['não inteiro', '{"cellSize":80.5}'],
-  ])('%s vira padrão', (_name, raw) => {
-    window.localStorage.setItem(BOARD_SIZE_KEY, raw)
+  ])('escolha antiga com %s vira padrão', (_name, raw) => {
+    window.localStorage.setItem('cruzadinha:board-size', raw)
+    resetSettingsStore()
     expect(loadBoardSize()).toBeNull()
   })
 
@@ -112,6 +119,7 @@ describe('preferência guardada', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('cheio')
     })
+    resetSettingsStore()
     expect(loadBoardSize()).toBeNull()
     expect(() => saveBoardSize(90)).not.toThrow()
   })

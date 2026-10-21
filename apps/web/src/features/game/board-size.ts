@@ -1,5 +1,4 @@
-import { z } from 'zod'
-import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
+import { getSettings, updateSettings } from '../settings/settings-store'
 
 // Tamanho da célula do tabuleiro no computador. Regra de layout, não de jogo: fica fora do
 // `game-logic`, em funções puras testadas sem navegador.
@@ -8,10 +7,6 @@ export const MIN_CELL = 30
 export const MAX_CELL = 110
 // Passo das setas na alça do tabuleiro.
 export const KEYBOARD_STEP = 10
-export const BOARD_SIZE_KEY = 'cruzadinha:board-size'
-
-// A chave guarda só o tamanho escolhido, em px por célula.
-const boardSizeSchema = z.object({ cellSize: z.number().int().min(MIN_CELL).max(MAX_CELL) })
 
 function clampCell(value: number): number {
   return Math.min(MAX_CELL, Math.max(MIN_CELL, value))
@@ -75,21 +70,15 @@ export function cellFromDrag({
   return Math.round(startCell + change)
 }
 
+// Escolha guardada nas configurações (feature 021); `null` é o tamanho que cabe.
 export function loadBoardSize(): number | null {
-  const raw = readStorage(BOARD_SIZE_KEY)
-  if (raw === null) return null
-  try {
-    const parsed = boardSizeSchema.safeParse(JSON.parse(raw) as unknown)
-    return parsed.success ? parsed.data.cellSize : null
-  } catch {
-    return null
-  }
+  return getSettings().boardCellSize
 }
 
 export function saveBoardSize(cellSize: number): void {
-  writeStorage(BOARD_SIZE_KEY, JSON.stringify({ cellSize }))
+  updateSettings({ boardCellSize: Math.min(MAX_CELL, Math.max(MIN_CELL, Math.round(cellSize))) })
 }
 
 export function clearBoardSize(): void {
-  removeStorage(BOARD_SIZE_KEY)
+  updateSettings({ boardCellSize: null })
 }

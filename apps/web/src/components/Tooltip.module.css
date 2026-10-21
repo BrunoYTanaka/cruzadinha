@@ -1,0 +1,30 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Cores invertidas do tema (texto --surface sobre --ink): contraste alto nos dois temas. */
+.tip {
+  position: absolute;
+  left: 50%;
+  z-index: 60;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  translate: -50% 0;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+}
+
+.below {
+  top: calc(100% + 6px);
+}
+
+.above {
+  bottom: calc(100% + 6px);
+}

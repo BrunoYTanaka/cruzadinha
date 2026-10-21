@@ -6,6 +6,7 @@ import {
 } from '@cruzadinha/shared'
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
+import { savedAtTooFar } from '../../lib/saved-at'
 import { findPuzzleById } from '../puzzles/puzzles.repository'
 import {
   ensureRow,
@@ -18,18 +19,11 @@ import {
 
 export type { ProgressState } from './progress.repository'
 
-// Tolerância para relógios de dispositivos adiantados (spec, Assumptions).
-const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000
-
 export type SaveDecision =
   | { kind: 'apply'; next: ProgressState }
   | { kind: 'unchanged' }
   | { kind: 'progress-completed' }
   | { kind: 'invalid-saved-at' }
-
-export function savedAtTooFar(savedAt: string, now: Date): boolean {
-  return new Date(savedAt).getTime() > now.getTime() + MAX_CLOCK_SKEW_MS
-}
 
 const sameCells = (a: ProgressCells, b: ProgressCells) => JSON.stringify(a) === JSON.stringify(b)
 
