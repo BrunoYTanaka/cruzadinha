@@ -1,22 +1,22 @@
-import { readStorage, writeStorage } from '../lib/storage'
+import type { ThemeSetting } from '@cruzadinha/shared'
+import { getSettings, subscribeSettings, updateSettings } from '../features/settings/settings-store'
 
-export type Theme = 'auto' | 'light' | 'dark'
+export type Theme = ThemeSetting
 
-export const THEME_KEY = 'cruzadinha:theme'
-
-const THEMES: readonly Theme[] = ['auto', 'light', 'dark']
-
-export function isTheme(value: unknown): value is Theme {
-  return typeof value === 'string' && (THEMES as readonly string[]).includes(value)
-}
-
+// Escolha guardada nas configurações (feature 021).
 export function readTheme(): Theme {
-  const stored = readStorage(THEME_KEY)
-  return isTheme(stored) ? stored : 'auto'
+  return getSettings().theme
 }
 
 export function saveTheme(theme: Theme): void {
-  writeStorage(THEME_KEY, theme)
+  updateSettings({ theme })
+}
+
+// Mantém o `data-theme` igual à configuração. Toda mudança passa por aqui sem animação; a troca
+// animada do botão de tema acontece dentro de uma View Transition, que captura esta aplicação.
+export function installThemeSync(root: HTMLElement = document.documentElement): () => void {
+  applyTheme(readTheme(), root)
+  return subscribeSettings((record) => applyTheme(record.settings.theme, root))
 }
 
 // `auto` não define atributo: a preferência do sistema decide pelos tokens.
@@ -30,5 +30,5 @@ export function nextTheme(theme: Theme): Theme {
 }
 
 export function themeLabel(theme: Theme): string {
-  return theme === 'auto' ? 'Auto' : theme === 'light' ? 'Claro' : 'Escuro'
+  return theme === 'auto' ? 'Automático' : theme === 'light' ? 'Claro' : 'Escuro'
 }

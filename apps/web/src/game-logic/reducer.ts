@@ -50,8 +50,9 @@ export type GameAction =
   | { type: 'nextWord' }
   | { type: 'previousWord' }
   | { type: 'selectWord'; number: number; direction: Direction }
-  | { type: 'revealLetter' }
-  | { type: 'revealWord' }
+  // `limits` vem das configurações no momento do pedido (feature 021); sem ele vale o do início.
+  | { type: 'revealLetter'; limits?: GameLimits }
+  | { type: 'revealWord'; limits?: GameLimits }
   | { type: 'verify' }
   | { type: 'hydrate'; cells: (string | null)[][]; help?: HelpSnapshot | null }
   | { type: 'confirmCompletion' }
@@ -153,9 +154,9 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
 
     switch (action.type) {
       case 'revealLetter':
-        return finish(revealLetter(state, solution, limits))
+        return finish(revealLetter(state, solution, action.limits ?? limits))
       case 'revealWord':
-        return finish(revealWord(state, index, solution, limits))
+        return finish(revealWord(state, index, solution, action.limits ?? limits))
       case 'verify':
         return verify(state, solution)
       case 'select': {

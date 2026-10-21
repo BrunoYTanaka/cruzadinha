@@ -1,15 +1,10 @@
-import { z } from 'zod'
-import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
+import { getSettings, updateSettings } from '../settings/settings-store'
 
 // Largura do calendário no computador, escolhida pela alça da borda.
 export const MIN_WIDTH = 720
 export const MAX_WIDTH = 1600
 // Passo das setas na alça do calendário.
 export const KEYBOARD_STEP = 40
-export const LIBRARY_WIDTH_KEY = 'cruzadinha:library-width'
-
-// A chave guarda só a largura escolhida, em px.
-const libraryWidthSchema = z.object({ width: z.number().int().min(MIN_WIDTH).max(MAX_WIDTH) })
 
 // O calendário fica centralizado: a borda anda metade do que ele cresce, então o deslocamento conta
 // em dobro para a alça acompanhar o ponteiro.
@@ -25,21 +20,15 @@ export function clampWidth(value: number, available: number): number {
   return Math.round(Math.min(max, Math.max(MIN_WIDTH, value)))
 }
 
+// Escolha guardada nas configurações (feature 021); `null` é o ajuste automático.
 export function loadLibraryWidth(): number | null {
-  const raw = readStorage(LIBRARY_WIDTH_KEY)
-  if (raw === null) return null
-  try {
-    const parsed = libraryWidthSchema.safeParse(JSON.parse(raw) as unknown)
-    return parsed.success ? parsed.data.width : null
-  } catch {
-    return null
-  }
+  return getSettings().libraryWidth
 }
 
 export function saveLibraryWidth(width: number): void {
-  writeStorage(LIBRARY_WIDTH_KEY, JSON.stringify({ width }))
+  updateSettings({ libraryWidth: Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(width))) })
 }
 
 export function clearLibraryWidth(): void {
-  removeStorage(LIBRARY_WIDTH_KEY)
+  updateSettings({ libraryWidth: null })
 }

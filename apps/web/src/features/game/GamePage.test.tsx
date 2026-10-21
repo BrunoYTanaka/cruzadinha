@@ -8,6 +8,9 @@ import { expectNoA11yViolations } from '../../test/axe'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { desktop, mockMatchMedia, phone } from '../../test/media'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
+import { setSettingsOpen } from '../settings/settings-open'
+import { updateSettings } from '../settings/settings-store'
+import { loadBoardSize } from './board-size'
 import { GamePage } from './GamePage'
 import { useMeasuredSpace } from './useMeasuredSpace'
 
@@ -388,11 +391,11 @@ describe('GamePage', () => {
       await screen.findByRole('grid')
       handle().focus()
       await user.keyboard('{ArrowRight}')
-      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":84}')
+      expect(loadBoardSize()).toBe(84)
       expect(cellSize()).toBe('84px')
       expect(handle()).toHaveAttribute('aria-valuetext', 'Tamanho do tabuleiro 84 de 110')
       await user.click(reset())
-      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(loadBoardSize()).toBeNull()
       expect(cellSize()).toBe('74px')
       expect(reset()).toBeDisabled()
     })
@@ -404,7 +407,7 @@ describe('GamePage', () => {
       await screen.findByRole('grid')
       expect(cellSize()).toBe('100px')
       fireEvent.doubleClick(handle())
-      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(loadBoardSize()).toBeNull()
       expect(cellSize()).toBe('74px')
     })
 
@@ -459,7 +462,7 @@ describe('GamePage', () => {
       expect(screen.queryByRole('slider')).toBeNull()
       expect(screen.queryByRole('button', { name: 'Tamanho padrão' })).toBeNull()
       expect(cellSize()).toBe('')
-      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":90}')
+      expect(loadBoardSize()).toBe(90)
     })
 
     it('ao passar do celular para o computador, a escolha guardada volta a valer', async () => {
@@ -472,12 +475,105 @@ describe('GamePage', () => {
       expect(cellSize()).toBe('90px')
       act(() => media.change(phone))
       expect(cellSize()).toBe('')
-      expect(window.localStorage.getItem(KEY)).toBe('{"cellSize":90}')
+      expect(loadBoardSize()).toBe(90)
     })
   })
 
   // Feature 016: a dica só fica riscada quando a palavra está certa. CAL / A#O / SOL: 1 horizontal
   // CAL, 3 horizontal SOL, 1 vertical CAS, 2 vertical LOL.
+  describe('configurações ao vivo (feature 021)', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('mudar o limite de letras com a partida aberta muda as ajudas na hora', async () => {
+      const user = setup()
+      openGame()
+      await screen.findByRole('grid')
+      act(() => updateSettings({ helpLetters: 1 }))
+      expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveAccessibleName(
+        'Revelar letra: 0 de 1 usadas',
+      )
+      await user.click(screen.getByRole('gridcell', { name: /^Linha 1, coluna 1,/ }))
+      await user.click(screen.getByRole('button', { name: /Revelar letra/ }))
+      expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveAccessibleName(
+        'Revelar letra: limite de 1 atingido',
+      )
+      act(() => updateSettings({ helpLetters: null }))
+      expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveAccessibleName(
+        'Revelar letra: sem limite, 1 usadas',
+      )
+    })
+
+    it('reduzir o limite abaixo do usado mantém as letras reveladas (FR-009)', async () => {
+      const user = setup()
+      openGame()
+      await screen.findByRole('grid')
+      act(() => updateSettings({ helpLetters: 3 }))
+      for (const col of [1, 2]) {
+        await user.click(
+          screen.getByRole('gridcell', { name: new RegExp(`^Linha 1, coluna ${col},`) }),
+        )
+        await user.click(screen.getByRole('button', { name: /Revelar letra/ }))
+      }
+      act(() => updateSettings({ helpLetters: 1 }))
+      expect(
+        screen.getByRole('gridcell', { name: /^Linha 1, coluna 1, letra C/ }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('gridcell', { name: /^Linha 1, coluna 2, letra A/ }),
+      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Revelar letra/ })).toHaveAccessibleName(
+        'Revelar letra: limite de 1 atingido',
+      )
+    })
+
+    it('trocar o modo de riscar muda a lista na hora, sem mudar a altura reservada', async () => {
+      const user = setup()
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      await user.click(grid())
+      await user.keyboard('CXL')
+      const clues = screen.getByRole('complementary', { name: 'Dicas' })
+      const first = () => within(clues).getByRole('button', { name: /^1 ?Dica 1 horizontal/ })
+      expect(first()).toHaveAccessibleName(/^1 ?Dica 1 horizontal$/)
+      act(() => updateSettings({ strikeMode: 'filled' }))
+      expect(first()).toHaveAccessibleName(/^1 ?Dica 1 horizontal, preenchida$/)
+      expect(first().className).toMatch(/struck/)
+      expect(first().querySelector('svg')).toBeNull()
+      act(() => updateSettings({ strikeMode: 'solved' }))
+      expect(first()).toHaveAccessibleName(/^1 ?Dica 1 horizontal$/)
+    })
+
+    it('a modal aberta suspende o relógio sem a capa de pausa e fechar retoma', async () => {
+      openGame()
+      await screen.findByRole('grid')
+      await act(() => vi.advanceTimersByTimeAsync(3000))
+      act(() => setSettingsOpen(true))
+      const frozen = screen.getByRole('timer').textContent
+      await act(() => vi.advanceTimersByTimeAsync(5000))
+      expect(screen.getByRole('timer')).toHaveTextContent(frozen ?? '')
+      expect(screen.queryByText('Jogo pausado')).not.toBeInTheDocument()
+      act(() => setSettingsOpen(false))
+      await act(() => vi.advanceTimersByTimeAsync(3000))
+      expect(screen.getByRole('timer').textContent).not.toBe(frozen)
+    })
+
+    it('se o jogador pausou antes, fechar a modal mantém a pausa e a capa', async () => {
+      const user = setup()
+      openGame()
+      await screen.findByRole('grid')
+      await user.click(screen.getByRole('button', { name: 'Pausar' }))
+      act(() => setSettingsOpen(true))
+      act(() => setSettingsOpen(false))
+      const frozen = screen.getByRole('timer').textContent
+      await act(() => vi.advanceTimersByTimeAsync(5000))
+      expect(screen.getByRole('timer')).toHaveTextContent(frozen ?? '')
+      expect(screen.getByText('Jogo pausado')).toBeInTheDocument()
+    })
+  })
+
   describe('dica riscada só ao acertar (feature 016)', () => {
     afterEach(() => {
       vi.unstubAllGlobals()

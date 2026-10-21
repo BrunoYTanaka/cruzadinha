@@ -11,7 +11,8 @@ import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../.
 import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../guest/guest-store'
 import { LibraryPage } from './LibraryPage'
-import { SOURCE_KEY } from './source-choice'
+import { loadLibraryWidth } from './library-width'
+import { getSettings, updateSettings } from '../settings/settings-store'
 import { sourceDownKey } from './source-down'
 
 const SOURCE_DOWN_KEY = sourceDownKey('oglobo')
@@ -236,12 +237,12 @@ describe('LibraryPage', () => {
       await screen.findByRole('heading', { name: 'outubro de 2026' })
       handle().focus()
       await user.keyboard('{ArrowLeft}')
-      expect(window.localStorage.getItem(KEY)).toBe('{"width":1560}')
+      expect(loadLibraryWidth()).toBe(1560)
       expect(page().style.getPropertyValue('--library-width')).toBe(
         'calc(1560px + 2 * var(--gutter))',
       )
       fireEvent.doubleClick(handle())
-      expect(window.localStorage.getItem(KEY)).toBeNull()
+      expect(loadLibraryWidth()).toBeNull()
       expect(page().style.getPropertyValue('--library-width')).toBe('')
     })
 
@@ -269,7 +270,7 @@ describe('LibraryPage', () => {
       expect(page().style.getPropertyValue('--library-width')).toBe(
         'calc(1000px + 2 * var(--gutter))',
       )
-      expect(window.localStorage.getItem(KEY)).toBe('{"width":1000}')
+      expect(loadLibraryWidth()).toBe(1000)
     })
 
     it('a pegada de canto não aparece para o leitor de tela nem no Tab', async () => {
@@ -321,7 +322,8 @@ describe('abas de fonte (features 014 e 015)', () => {
     expect(await screen.findByRole('heading', { name: 'setembro de 2026' })).toBeInTheDocument()
     // As duas fontes já vieram juntas: trocar de aba não pede de novo (feature 015).
     expect(calls).toHaveLength(requests)
-    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+    // A aba não é preferência: a cruzada padrão continua a mesma (feature 021).
+    expect(getSettings().defaultSource).toBe('oglobo')
 
     await user.click(screen.getByRole('button', { name: 'Próximo mês' }))
     expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
@@ -330,8 +332,8 @@ describe('abas de fonte (features 014 e 015)', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('a preferência gravada abre direto na fonte escolhida', async () => {
-    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+  it('a cruzada padrão abre direto na fonte escolhida', async () => {
+    updateSettings({ defaultSource: 'cruzadaonline' })
     const { calls } = bySource()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
@@ -361,7 +363,7 @@ describe('abas de fonte (features 014 e 015)', () => {
   })
 
   it('itens de outra fonte (API anterior) não entram no calendário', async () => {
-    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    updateSettings({ defaultSource: 'cruzadaonline' })
     library()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
@@ -495,7 +497,7 @@ describe('biblioteca do visitante (feature 013)', () => {
   })
 
   it('na Cruzada Online, a situação do visitante vem do navegador pelo puzzle', async () => {
-    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+    updateSettings({ defaultSource: 'cruzadaonline' })
     const cruzadaId = '00000000-0000-4000-8000-00000000c012'
     await guestStore.save({
       puzzleId: cruzadaId,
@@ -543,5 +545,29 @@ describe('biblioteca do visitante (feature 013)', () => {
     expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(
       puzzleSourceIdSchema.options.length,
     )
+  })
+})
+
+describe('aviso de "Ir direto ao jogo" (feature 021)', () => {
+  it('mostra o motivo devolvido pelo loader, com o nome da cruzada, e fecha', async () => {
+    library()
+    const user = userEvent.setup()
+    renderRoutes(
+      [
+        {
+          path: '/',
+          element: <LibraryPage />,
+          loader: () => ({
+            directPlay: { kind: 'stay', reason: 'completed', name: 'Cruzada Online' },
+          }),
+        },
+      ],
+      ['/'],
+      withAccount(),
+    )
+    const notice = await screen.findByText('Cruzada Online: a cruzada de hoje já foi concluída.')
+    expect(notice).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Fechar' }))
+    expect(screen.queryByText('Cruzada Online: a cruzada de hoje já foi concluída.')).toBeNull()
   })
 })

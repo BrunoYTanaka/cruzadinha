@@ -7,9 +7,15 @@
     <title>Cruzadinha</title>
     <meta name="color-scheme" content="light dark" />
     <script>
-      // Aplica a escolha de tema antes da primeira pintura, para não piscar branco.
+      // Aplica a escolha de tema antes da primeira pintura, para não piscar branco. Lê as
+      // configurações (feature 021) e, sem elas, a chave antiga.
       try {
-        var t = localStorage.getItem('cruzadinha:theme')
+        var t = null
+        try {
+          var s = JSON.parse(localStorage.getItem('cruzadinha:settings'))
+          if (s && s.v === 1 && s.settings) t = s.settings.theme
+        } catch (e) {}
+        if (t === null || t === undefined) t = localStorage.getItem('cruzadinha:theme')
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
       } catch (e) {}
     </script>

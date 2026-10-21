@@ -15,6 +15,8 @@ type DialogProps = {
   initialFocusRef?: RefObject<HTMLElement | null>
   closeOnBackdrop?: boolean
   align?: 'center' | 'bottom'
+  // Botão "Fechar" (X) ao lado do título, para diálogos sem ação final (feature 021).
+  closeButton?: boolean
 }
 
 // Diálogo acessível: `role="dialog"`, título e descrição ligados, foco preso, `Esc` fecha e o foco
@@ -28,6 +30,7 @@ export function Dialog({
   initialFocusRef,
   closeOnBackdrop = false,
   align = 'center',
+  closeButton = false,
 }: DialogProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -110,9 +113,27 @@ export function Dialog({
         tabIndex={-1}
         className={styles.panel}
       >
-        <h2 id={titleId} className={styles.title}>
-          {title}
-        </h2>
+        {closeButton ? (
+          <div className={styles.header}>
+            <h2 id={titleId} className={styles.title}>
+              {title}
+            </h2>
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Fechar"
+              onClick={() => onCloseRef.current()}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <h2 id={titleId} className={styles.title}>
+            {title}
+          </h2>
+        )}
         {description ? (
           <p id={descriptionId} className={styles.description}>
             {description}

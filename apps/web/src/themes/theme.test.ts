@@ -1,23 +1,35 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { applyTheme, nextTheme, readTheme, saveTheme, themeLabel, THEME_KEY } from './theme'
+import { resetSettingsStore, SETTINGS_KEY } from '../features/settings/settings-store'
+import { applyTheme, installThemeSync, nextTheme, readTheme, saveTheme, themeLabel } from './theme'
 
 afterEach(() => {
   vi.restoreAllMocks()
   window.localStorage.clear()
+  resetSettingsStore()
   document.documentElement.removeAttribute('data-theme')
 })
 
 describe('theme', () => {
   it('começa em automático e ignora valores inválidos', () => {
     expect(readTheme()).toBe('auto')
-    window.localStorage.setItem(THEME_KEY, 'roxo')
+    window.localStorage.setItem('cruzadinha:theme', 'roxo')
+    resetSettingsStore()
     expect(readTheme()).toBe('auto')
   })
 
-  it('grava e lê a escolha', () => {
+  it('grava e lê a escolha nas configurações', () => {
     saveTheme('dark')
-    expect(window.localStorage.getItem(THEME_KEY)).toBe('dark')
+    expect(window.localStorage.getItem(SETTINGS_KEY)).toContain('"theme":"dark"')
     expect(readTheme()).toBe('dark')
+  })
+
+  it('installThemeSync aplica o tema atual e acompanha as mudanças', () => {
+    saveTheme('dark')
+    const stop = installThemeSync()
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+    saveTheme('auto')
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
+    stop()
   })
 
   it('aplica data-theme só quando há escolha explícita', () => {
@@ -29,12 +41,12 @@ describe('theme', () => {
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false)
   })
 
-  it('alterna auto, claro, escuro e volta', () => {
-    expect(nextTheme('auto')).toBe('light')
+  it('alterna claro, escuro, automático e volta (feature 021)', () => {
     expect(nextTheme('light')).toBe('dark')
     expect(nextTheme('dark')).toBe('auto')
+    expect(nextTheme('auto')).toBe('light')
     expect([themeLabel('auto'), themeLabel('light'), themeLabel('dark')]).toEqual([
-      'Auto',
+      'Automático',
       'Claro',
       'Escuro',
     ])

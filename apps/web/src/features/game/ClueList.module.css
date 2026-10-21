@@ -101,6 +101,13 @@
   background: var(--word);
 }
 
+/* Ao preencher (feature 021): só o risco, sem fundo nem visto, porque a palavra pode estar errada.
+   O espaço do visto continua reservado pelo padding de .clue. */
+.struck {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
 /* Visto no fim da linha, centrado na primeira linha do texto: 6 px de padding mais meia linha
    (altura de linha 1,5), menos metade do visto. */
 .check {

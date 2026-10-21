@@ -70,6 +70,24 @@ describe('ClueList', () => {
     await expectNoA11yViolations(container)
   })
 
+  it('ao preencher, só risca: sem fundo de sucesso, sem visto e diz "preenchida" (feature 021)', async () => {
+    const { container } = render(
+      <ClueList
+        puzzle={puzzle}
+        activeWord={null}
+        struck={new Set(['1across'])}
+        strikeMode="filled"
+        onSelect={() => {}}
+      />,
+    )
+    const marked = screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, preenchida$/ })
+    expect(marked.className).toMatch(/struck/)
+    expect(marked.className).not.toMatch(/done/)
+    expect(container.querySelectorAll('svg')).toHaveLength(0)
+    expect(screen.queryByText(', resolvida')).toBeNull()
+    await expectNoA11yViolations(container)
+  })
+
   it('com fill, rola só o grupo da dica ativa, sem rolar a página', () => {
     const scrollIntoView = vi.fn()
     Element.prototype.scrollIntoView = scrollIntoView

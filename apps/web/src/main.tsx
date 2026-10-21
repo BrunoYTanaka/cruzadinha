@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router'
 import { ApiRequestError } from './api/client'
 import { installReloadAfterDeploy } from './app/reload-after-deploy'
 import { createAppRouter } from './app/router'
+import { installThemeSync } from './themes/theme'
 import './themes/fonts.css'
 import './themes/tokens.css'
 import './themes/light.css'
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 })
 
 installReloadAfterDeploy(window)
+installThemeSync()
 
 const router = createAppRouter(queryClient)
 

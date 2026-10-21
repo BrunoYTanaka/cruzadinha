@@ -1,0 +1,51 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 16px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: icon-in 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.fill {
+  fill: currentColor;
+}
+
+/* O ícone novo gira e cresce até o lugar; quem pede menos movimento só vê a troca. */
+@keyframes icon-in {
+  0% {
+    opacity: 0;
+    transform: rotate(-120deg) scale(0.2);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(12deg) scale(1.08);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none;
+  }
+}

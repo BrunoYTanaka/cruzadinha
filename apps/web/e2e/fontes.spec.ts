@@ -43,11 +43,13 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
   await expect(todayCell(page, 'não iniciado')).toBeVisible()
 
-  // Abas: a escolha muda o calendário, fica guardada e as setas também trocam.
+  // Abas: a escolha muda o calendário e as setas também trocam. A aba não fica guardada: ao
+  // recarregar, o calendário abre na cruzada padrão (feature 021).
   await cruzada.click()
   await expect(todayCell(page, 'em andamento')).toBeVisible()
   await page.reload()
-  await expect(cruzada).toHaveAttribute('aria-selected', 'true')
+  await expect(globo).toHaveAttribute('aria-selected', 'true')
+  await cruzada.click()
   await cruzada.focus()
   await page.keyboard.press('ArrowRight')
   await expect(globo).toHaveAttribute('aria-selected', 'true')

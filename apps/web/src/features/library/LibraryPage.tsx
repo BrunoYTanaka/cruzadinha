@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, useLoaderData } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
+import { directPlayMessage, isDirectPlayData } from '../../app/direct-play'
 import { Notice } from '../../components/Notice'
 import { ResizeHandle, type ResizeHandleProps } from '../../components/ResizeHandle'
 import { addMonths, todayInBrasilia } from '../../lib/dates'
@@ -29,6 +30,10 @@ export function LibraryPage() {
   const today = useMemo(() => todayInBrasilia(), [])
   const viewer = useViewer()
   const [source, setSource] = useSourceChoice()
+  // Motivo de "Ir direto ao jogo" não ter saído do calendário (feature 021).
+  const loaderData: unknown = useLoaderData()
+  const directPlay = isDirectPlayData(loaderData) ? loaderData.directPlay : null
+  const [directPlayClosed, setDirectPlayClosed] = useState(false)
   const libraries = useSourceLibraries()
   const active = libraryOf(libraries, source)
   const library = active.query
@@ -104,6 +109,9 @@ export function LibraryPage() {
 
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
+      {directPlay && !directPlayClosed ? (
+        <Notice onDismiss={() => setDirectPlayClosed(true)}>{directPlayMessage(directPlay)}</Notice>
+      ) : null}
       <TodayCards libraries={libraries} today={today} />
       <SourceTabs
         value={source}

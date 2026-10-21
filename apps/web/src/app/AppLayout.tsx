@@ -4,8 +4,10 @@ import { Button } from '../components/Button'
 import { Notice } from '../components/Notice'
 import { buildLoginPath } from '../features/auth/redirect'
 import { sessionQueryOptions, useLogoutMutation } from '../features/auth/useSession'
+import { SettingsButton } from '../features/settings/SettingsButton'
+import { SettingsDialog } from '../features/settings/SettingsDialog'
+import { useSettingsSync } from '../features/settings/settings-sync'
 import { useServerReady } from '../features/status/useSlowServer'
-import { ThemeToggle } from '../themes/ThemeToggle'
 import styles from './AppLayout.module.css'
 import { clearEnded, useSessionEnded } from './session-ended'
 
@@ -20,6 +22,8 @@ export function AppLayout() {
   const onAuthPage = location.pathname === '/login' || location.pathname === '/cadastro'
   const sessionEnded = useSessionEnded()
   const loginPath = buildLoginPath(location.pathname + location.search)
+  // Configurações na conta (feature 021): liga para quem entrou, desliga para visitante.
+  useSettingsSync()
   return (
     <div className={styles.shell}>
       <a href="#conteudo" className={styles.skip}>
@@ -30,7 +34,7 @@ export function AppLayout() {
           Cruzadinha
         </Link>
         <div className={styles.actions}>
-          <ThemeToggle />
+          <SettingsButton />
           {session.data ? (
             <>
               <span className={`${styles.who} ${styles.email}`}>{session.data.user.email}</span>
@@ -66,6 +70,7 @@ export function AppLayout() {
       <main id="conteudo" className={styles.main} tabIndex={-1}>
         <Outlet />
       </main>
+      <SettingsDialog />
     </div>
   )
 }

@@ -1,13 +1,14 @@
 import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { DEFAULT_SOURCE, loadSourceChoice, saveSourceChoice, SOURCE_KEY } from './source-choice'
+import { getSettings, resetSettingsStore, updateSettings } from '../settings/settings-store'
+import { DEFAULT_SOURCE, loadSourceChoice, saveSourceChoice } from './source-choice'
 
 afterEach(() => {
   vi.restoreAllMocks()
   window.localStorage.clear()
 })
 
-describe('preferência de fonte', () => {
+describe('cruzada padrão (feature 021)', () => {
   it('sem valor guardado vale O Globo', () => {
     expect(loadSourceChoice()).toBe('oglobo')
   })
@@ -16,21 +17,32 @@ describe('preferência de fonte', () => {
     expect(DEFAULT_SOURCE).toBe(puzzleSourceIdSchema.options[0])
   })
 
-  it('fonte guardada que saiu da lista volta à padrão', () => {
-    window.localStorage.setItem(SOURCE_KEY, 'fonte-retirada')
-    expect(loadSourceChoice()).toBe(DEFAULT_SOURCE)
-  })
-
-  it('lê a fonte gravada', () => {
+  it('lê e grava a cruzada padrão nas configurações', () => {
     saveSourceChoice('cruzadaonline')
-    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+    expect(getSettings().defaultSource).toBe('cruzadaonline')
     expect(loadSourceChoice()).toBe('cruzadaonline')
   })
 
-  it.each(['publico', '{"source":"oglobo"', ''])('valor inválido (%s) vale O Globo', (value) => {
-    window.localStorage.setItem(SOURCE_KEY, value)
-    expect(loadSourceChoice()).toBe('oglobo')
+  it('fonte desconhecida vale como a primeira, sem regravar o valor (FR-012b)', () => {
+    updateSettings({ defaultSource: 'nova-fonte' })
+    expect(loadSourceChoice()).toBe(DEFAULT_SOURCE)
+    expect(getSettings().defaultSource).toBe('nova-fonte')
   })
+
+  it('migra a escolha antiga cruzadinha:source', () => {
+    window.localStorage.setItem('cruzadinha:source', 'cruzadaonline')
+    resetSettingsStore()
+    expect(loadSourceChoice()).toBe('cruzadaonline')
+  })
+
+  it.each(['publico', '{"source":"oglobo"', ''])(
+    'escolha antiga inválida (%s) vale O Globo',
+    (value) => {
+      window.localStorage.setItem('cruzadinha:source', value)
+      resetSettingsStore()
+      expect(loadSourceChoice()).toBe('oglobo')
+    },
+  )
 
   it('armazenamento que lança não quebra a leitura nem a gravação', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
@@ -39,7 +51,8 @@ describe('preferência de fonte', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('bloqueado')
     })
+    resetSettingsStore()
     expect(() => saveSourceChoice('cruzadaonline')).not.toThrow()
-    expect(loadSourceChoice()).toBe('oglobo')
+    expect(loadSourceChoice()).toBe('cruzadaonline')
   })
 })

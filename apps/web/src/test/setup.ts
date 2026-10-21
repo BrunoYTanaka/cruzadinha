@@ -3,6 +3,8 @@ import 'fake-indexeddb/auto'
 import { cleanup } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, beforeEach } from 'vitest'
+import { setSettingsOpen } from '../features/settings/settings-open'
+import { resetSettingsStore } from '../features/settings/settings-store'
 
 // O axe tenta usar canvas para ler cores de ícones; o jsdom não tem e avisa a cada teste.
 // Os arquivos em ambiente node (Function, plugin de versão) não têm HTMLCanvasElement.
@@ -10,9 +12,12 @@ if (typeof HTMLCanvasElement !== 'undefined') {
   HTMLCanvasElement.prototype.getContext = () => null
 }
 
-// IndexedDB vazio a cada teste (progresso de visitante, feature 013).
+// IndexedDB vazio a cada teste (progresso de visitante, feature 013); as configurações (feature 021)
+// são relidas do armazenamento do teste.
 beforeEach(() => {
   globalThis.indexedDB = new IDBFactory()
+  resetSettingsStore()
+  setSettingsOpen(false)
 })
 
 afterEach(() => {

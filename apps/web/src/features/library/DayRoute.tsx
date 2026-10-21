@@ -9,18 +9,17 @@ import { ErrorState, LoadingState } from '../../app/ErrorState'
 import { NotFoundPage } from '../../app/NotFoundPage'
 import { parseIsoDate, todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
-import { loadSourceChoice, saveSourceChoice } from './source-choice'
+import { loadSourceChoice } from './source-choice'
 import { clearSourceDown, markNoPuzzle, markSourceDown } from './source-down'
 
 export function DayRoute() {
   const { date } = useParams()
   const [params] = useSearchParams()
-  // `?fonte=` válido vale e vira a preferência; sem ele (ou inválido), vale a preferência.
+  // `?fonte=` válido vale só para esta busca; sem ele (ou inválido), vale a cruzada padrão. A
+  // cruzada padrão só muda nas configurações (feature 021).
   const [source] = useState<PuzzleSourceId>(() => {
     const requested = puzzleSourceIdSchema.safeParse(params.get('fonte'))
-    if (!requested.success) return loadSourceChoice()
-    saveSourceChoice(requested.data)
-    return requested.data
+    return requested.success ? requested.data : loadSourceChoice()
   })
   if (!date || !parseIsoDate(date)) return <NotFoundPage />
   return <FetchDay date={date} source={source} />

@@ -49,6 +49,23 @@ describe('HelpButtons', () => {
     expect(onLetter).not.toHaveBeenCalled()
   })
 
+  it('sem limite mostra ∞, diz no nome e nunca esgota (feature 021)', async () => {
+    const user = userEvent.setup()
+    const { onLetter } = setup({
+      usage: { letters: 50, words: 3 },
+      limits: { letters: null, words: null },
+    })
+    expect(screen.getByText('50/∞ Letra')).toBeInTheDocument()
+    expect(screen.getByText('3/∞ Palavra')).toBeInTheDocument()
+    const button = screen.getByRole('button', { name: 'Revelar letra: sem limite, 50 usadas' })
+    expect(button).not.toHaveAttribute('aria-disabled')
+    expect(
+      screen.getByRole('button', { name: 'Revelar palavra: sem limite, 3 usadas' }),
+    ).not.toHaveAttribute('aria-disabled')
+    await user.click(button)
+    expect(onLetter).toHaveBeenCalledOnce()
+  })
+
   it('anuncia o resultado em uma região aria-live', () => {
     setup({ lastHelp: { seq: 1, kind: 'verify', count: 2 } })
     expect(screen.getByRole('status')).toHaveTextContent('Verificado: 2 letras erradas')

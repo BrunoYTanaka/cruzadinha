@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cellsFrom, makePuzzle, makeSolution, TINY } from '../test/fixtures'
-import { isWordSolved, struckWords, wordKey } from './clue-strike'
+import { isWordFilled, isWordSolved, struckWords, wordKey } from './clue-strike'
 import { buildIndex } from './navigation'
 
 // CAL / A#O / SOL: 1 horizontal CAL, 3 horizontal SOL, 1 vertical CAS, 2 vertical LOL.
@@ -75,5 +75,24 @@ describe('struckWords', () => {
     const keys = struckWords(buildIndex(big), cellsFrom(rows), makeSolution(rows), 'solved')
     expect(keys.size).toBe(30)
     expect(keys).toEqual(new Set(big.words.map(wordKey)))
+  })
+})
+
+describe('modo ao preencher (feature 021)', () => {
+  const filled = (rows: string[]) => struckWords(index, cellsFrom(rows), solution, 'filled')
+
+  it('isWordFilled aceita qualquer letra em todas as células', () => {
+    expect(isWordFilled(index, cellsFrom(['CXL', '.#.', '...']), word('1across'))).toBe(true)
+    expect(isWordFilled(index, cellsFrom(['CA.', '.#.', '...']), word('1across'))).toBe(false)
+  })
+
+  it('risca palavras completas, certas ou erradas, e não as incompletas', () => {
+    expect(filled(['...', '.#.', '...'])).toEqual(new Set())
+    // 1 horizontal certa, 1 vertical (C, A, X) completa e errada, 3 horizontal incompleta.
+    expect(filled(['CAL', 'A#.', 'X..'])).toEqual(new Set(['1across', '1down']))
+  })
+
+  it('o modo ao acertar continua igual', () => {
+    expect(struck(['CAL', 'A#.', 'X..'])).toEqual(new Set(['1across']))
   })
 })

@@ -5,7 +5,7 @@ import { makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { renderRoutes, resetSessionHandlers } from '../../test/render'
 import { DayRoute } from './DayRoute'
-import { SOURCE_KEY } from './source-choice'
+import { getSettings, updateSettings } from '../settings/settings-store'
 import { sourceDownKey } from './source-down'
 
 const SOURCE_DOWN_KEY = sourceDownKey('oglobo')
@@ -37,21 +37,21 @@ describe('DayRoute com fonte (feature 014)', () => {
   const cruzada = () =>
     jsonResponse(200, makePuzzleResponse(TINY, { date: '2026-10-10', source: 'cruzadaonline' }))
 
-  it('?fonte= pede a fonte, vira a preferência e abre o jogo', async () => {
+  it('?fonte= pede a fonte e abre o jogo, sem mudar a cruzada padrão (feature 021)', async () => {
     const { calls } = mockApi({ 'GET /api/puzzles': cruzada })
     const { router } = renderRoutes(routes, ['/dia/2026-10-10?fonte=cruzadaonline'])
     await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
     expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-10&source=cruzadaonline')
-    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+    expect(getSettings().defaultSource).toBe('oglobo')
   })
 
-  it.each(['', '?fonte=xyz'])('sem fonte válida (%s) usa a preferência', async (query) => {
-    window.localStorage.setItem(SOURCE_KEY, 'cruzadaonline')
+  it.each(['', '?fonte=xyz'])('sem fonte válida (%s) usa a cruzada padrão', async (query) => {
+    updateSettings({ defaultSource: 'cruzadaonline' })
     const { calls } = mockApi({ 'GET /api/puzzles': cruzada })
     renderRoutes(routes, [`/dia/2026-10-10${query}`])
     await screen.findByText('Jogo aberto')
     expect(calls[0]?.url).toContain('&source=cruzadaonline')
-    expect(window.localStorage.getItem(SOURCE_KEY)).toBe('cruzadaonline')
+    expect(getSettings().defaultSource).toBe('cruzadaonline')
   })
 
   it('resposta de outra fonte (API anterior) não abre o jogo', async () => {

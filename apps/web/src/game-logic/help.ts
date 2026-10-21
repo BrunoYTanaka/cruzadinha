@@ -23,12 +23,15 @@ function withResult(
   }
 }
 
+// Reduzir o limite abaixo do uso só esgota a ajuda; nada já revelado é desfeito (FR-009).
+const withinLimit = (used: number, limit: number | null) => limit === null || used < limit
+
 export function canRevealLetter(state: GameState, limits: GameLimits): boolean {
-  return state.usage.letters < limits.letters
+  return withinLimit(state.usage.letters, limits.letters)
 }
 
 export function canRevealWord(state: GameState, limits: GameLimits): boolean {
-  return state.usage.words < limits.words
+  return withinLimit(state.usage.words, limits.words)
 }
 
 // Troca uma célula: letra certa, travada e com a marca de ajuda (roxa).

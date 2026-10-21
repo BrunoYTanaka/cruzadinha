@@ -10,7 +10,8 @@ export type HelpResult = {
   // verify: letras erradas encontradas; word: células reveladas.
   count: number
 }
-export type GameLimits = { letters: number; words: number }
+// `null` é "sem limite" (feature 021).
+export type GameLimits = { letters: number | null; words: number | null }
 
 export type GameState = {
   // Letras do jogador: mesmas dimensões da grade; maiúsculas A–Z e Ç; `null` em bloco ou vazia.
