@@ -1,6 +1,6 @@
 {
   "name": "@cruzadinha/api",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,7 +18,7 @@
     "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts"
   },
   "dependencies": {
-    "@cruzadinha/shared": "0.10.0",
+    "@cruzadinha/shared": "0.11.0",
     "@fastify/cookie": "11.1",
     "@fastify/swagger": "9.9",
     "@fastify/swagger-ui": "6.1",
