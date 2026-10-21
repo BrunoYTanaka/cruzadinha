@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.7.0...web-v0.7.1) (2026-10-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.11.0 to 0.12.0
+
 ## [0.7.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.6.0...web-v0.7.0) (2026-10-21)
 
 

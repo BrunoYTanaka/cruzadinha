@@ -1,6 +1,6 @@
 {
   "name": "@cruzadinha/web",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@cruzadinha/shared": "0.11.0",
+    "@cruzadinha/shared": "0.12.0",
     "@fontsource/roboto": "^5.3.0",
     "@fontsource/roboto-mono": "^5.3.0",
     "@tanstack/react-query": "^5.104.2",
