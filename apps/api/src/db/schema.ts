@@ -71,7 +71,13 @@ export const invites = pgTable(
   ],
 )
 
-export const rateLimitActions = ['LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH'] as const
+export const rateLimitActions = [
+  'LOGIN',
+  'REGISTER',
+  'INVITE_CREATE',
+  'PUZZLE_FETCH',
+  'SETTINGS_SAVE',
+] as const
 export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS'] as const
 
 export const rateLimitAttempts = pgTable(
@@ -93,7 +99,7 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH', 'SETTINGS_SAVE')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
@@ -165,3 +171,14 @@ export const progress = pgTable(
     ),
   ],
 )
+
+// Configurações da pessoa (feature 021): uma linha por usuário. `settings` é jsonb relido pelo Zod
+// campo a campo; `saved_at` é o momento da mudança no aparelho e decide qual versão vale.
+export const userSettings = pgTable('user_settings', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.userId, { onDelete: 'cascade' }),
+  settings: jsonb('settings').$type<unknown>().notNull(),
+  savedAt: instant('saved_at').notNull(),
+  ...timestamps,
+})

@@ -33,6 +33,7 @@ describe('rate limiter', () => {
       loginAddress: { max: 20, windowMinutes: 15 },
       register: { max: 10, windowMinutes: 60 },
       puzzleFetch: { max: 30, windowMinutes: 60 },
+      settingsSave: { max: 120, windowMinutes: 60 },
     })
   })
 })

@@ -91,11 +91,13 @@ const catalog = [
   'GET /api/progress/{puzzleId}',
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
+  'GET /api/settings',
   'POST /api/auth/login',
   'POST /api/auth/logout',
   'POST /api/auth/register',
   'POST /api/progress/{puzzleId}/reset',
   'PUT /api/progress/{puzzleId}',
+  'PUT /api/settings',
 ]
 
 let app: FastifyInstance | undefined
@@ -166,7 +168,9 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'puzzles', 'progress', 'library']).toContain(op.tags?.[0])
+      expect(['health', 'auth', 'puzzles', 'progress', 'library', 'settings']).toContain(
+        op.tags?.[0],
+      )
       expect(op.summary).toBeTruthy()
     }
   })
@@ -252,6 +256,8 @@ describe('sessão', () => {
     'GET /api/progress/{puzzleId}',
     'PUT /api/progress/{puzzleId}',
     'POST /api/progress/{puzzleId}/reset',
+    'GET /api/settings',
+    'PUT /api/settings',
   ]
   // Abertas a visitantes (feature 013): a sessão é opcional.
   const optionalSessionOperations = [
