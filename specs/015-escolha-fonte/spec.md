@@ -98,7 +98,7 @@ Na tela do jogo, o nome da fonte aparece junto da data no topo (não só na linh
 - **FR-005**: Abrir um cartão de puzzle ainda não guardado MUST usar o mesmo caminho de busca do calendário (inclusive os avisos de fonte fora do ar, sem cruzada e limite de pedidos).
 - **FR-006**: O botão "Jogar a de hoje" atual MUST sair, já que os cartões o substituem.
 - **FR-007**: O seletor de fonte do calendário MUST virar um conjunto de abas acessível (anuncia a aba selecionada, setas trocam de aba, um só ponto de parada do Tab) e cada aba MUST mostrar quantas cruzadas daquela fonte o jogador concluiu no mês exibido.
-- **FR-008**: A aba escolhida MUST continuar sendo uma preferência do aparelho, lida da mesma chave da feature 014; sem escolha guardada, ou se a fonte guardada não estiver mais na lista, MUST valer a primeira fonte da lista (hoje O Globo).
+- **FR-008**: A aba escolhida MUST continuar sendo uma preferência do aparelho, lida da mesma chave da feature 014; sem escolha guardada, ou se a fonte guardada não estiver mais na lista, MUST valer a primeira fonte da lista (hoje O Globo). _Nota (feature 021): a aba deixou de ser preferência. O calendário abre na cruzada padrão das configurações (`defaultSource`, com a mesma volta à primeira fonte quando desconhecida), e trocar de aba vale só durante a visita._
 - **FR-009**: Trocar de aba MUST manter o mês exibido e MUST NOT recarregar a página.
 - **FR-010**: A tela do jogo MUST mostrar o nome da fonte junto da data no topo.
 - **FR-011**: O diálogo de conclusão MUST oferecer abrir a cruzada da outra fonte do mesmo dia quando ela existir (guardada ou buscável) e não estiver concluída; com mais de duas fontes, MUST oferecer a primeira não concluída na ordem das fontes.

@@ -33,7 +33,7 @@ erDiagram
 
     RATE_LIMIT_ATTEMPT {
         uuid rate_limit_attempt_id PK
-        string action "LOGIN, REGISTER, PUZZLE_FETCH, INVITE_CREATE (sem uso)"
+        string action "LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE, INVITE_CREATE (sem uso)"
         string key_type
         string key_value
         datetime created_at

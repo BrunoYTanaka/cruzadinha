@@ -28,7 +28,7 @@ A v1 usava só o **O Globo**; a feature 014 acrescentou a **Cruzada Online** (ab
 
 ### Cruzada Online (feature 014)
 
-A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. A biblioteca abre com a seção "Hoje", um cartão por fonte com a situação do jogador e um toque para jogar, e o calendário troca de fonte por abas (a primeira da lista, O Globo, por padrão; feature 015). A tela do jogo mostra a fonte junto da data, e a atribuição de cada puzzle mostra "Cruzada Online".
+A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. A biblioteca abre com a seção "Hoje", um cartão por fonte com a situação do jogador e um toque para jogar, e o calendário troca de fonte por abas (feature 015). O calendário abre na cruzada padrão escolhida nas configurações (a primeira da lista, O Globo, se ninguém escolheu); a aba trocada vale só durante a visita. Com "Ir direto ao jogo" ligado, abrir o endereço raiz leva à cruzada de hoje da cruzada padrão, ou mostra o calendário com o motivo (concluída, sem cruzada hoje, fonte fora do ar) (feature 021). A tela do jogo mostra a fonte junto da data, e a atribuição de cada puzzle mostra "Cruzada Online".
 
 - Arquivo por dia: `https://static.publico.pt/s3/files/widgets/crosswords/prd/AAAAMMDD.xml`, sem login nem token.
 - Formato: XML do Crossword Compiler (células com coluna, linha, letra e número, ou bloco; palavras com o intervalo de células; dicas ligadas à palavra). Os metadados vêm vazios, e algumas dicas trazem um link de notícia, que não é guardado.
@@ -116,15 +116,16 @@ Próximo do ipuz, mas só com o que o jogo usa:
 
 ### Modelo de dados (Postgres)
 
-| Tabela     | Campos                                                                                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | `id`, `email` (único), `password_hash`, `created_at`                                                                                                                         |
-| `invites`  | `id`, `code_hash`, `created_by` (nulo se criado pela CLI), `created_at`, `expires_at`, `used_by`, `used_at`, `revoked_at`                                                    |
-| `sessions` | `id_hash`, `user_id`, `expires_at`                                                                                                                                           |
-| `puzzles`  | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                                                          |
-| `progress` | `user_id`, `puzzle_id` (chave composta), `cells` (JSON), `elapsed_ms`, `status`, `saved_at`, `completed_at`, `finished_ms`, `best_ms`, `best_at`, `created_at`, `updated_at` |
+| Tabela          | Campos                                                                                                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`         | `id`, `email` (único), `password_hash`, `created_at`                                                                                                                         |
+| `invites`       | `id`, `code_hash`, `created_by` (nulo se criado pela CLI), `created_at`, `expires_at`, `used_by`, `used_at`, `revoked_at`                                                    |
+| `sessions`      | `id_hash`, `user_id`, `expires_at`                                                                                                                                           |
+| `puzzles`       | `id`, `source`, `level`, `date`, `data` (JSON), `solution` (JSON); único em `(source, level, date)`                                                                          |
+| `progress`      | `user_id`, `puzzle_id` (chave composta), `cells` (JSON), `elapsed_ms`, `status`, `saved_at`, `completed_at`, `finished_ms`, `best_ms`, `best_at`, `created_at`, `updated_at` |
+| `user_settings` | `user_id` (chave e FK com `ON DELETE CASCADE`), `settings` (JSON), `saved_at`, `created_at`, `updated_at` (feature 021)                                                      |
 
-O tema (claro, escuro ou automático) fica só no aparelho (`localStorage`), sem coluna em `users`.
+As configurações (tema, limites de ajuda, modo de riscar, cruzada padrão, ir direto ao jogo, tamanho do tabuleiro e largura do calendário) ficam no aparelho (`localStorage`, chave `cruzadinha:settings`) para todos e, para quem tem conta, também em `user_settings` (feature 021).
 
 ### Cache
 
@@ -147,6 +148,7 @@ O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, com
 - `GET /api/puzzles?level=&date=`, `GET /api/puzzles/:id`
 - `GET /api/library` (até 366 puzzles já guardados, do mais recente ao mais antigo, com a situação do usuário — não iniciado, em andamento ou concluído — e os tempos dele; só lê o que está guardado, nunca consulta a fonte)
 - `GET /api/progress/:puzzleId`, `PUT /api/progress/:puzzleId` (salvar e concluir), `POST /api/progress/:puzzleId/reset` (jogar de novo do zero, mantendo o melhor tempo)
+- `GET /api/settings`, `PUT /api/settings` (configurações da conta; vale a mudança mais recente pelo `savedAt` do aparelho; 120 gravações por hora por endereço; feature 021)
 
 ## 5. Front (`apps/web`)
 
@@ -171,8 +173,8 @@ apps/web/src/
 ### Modo claro e escuro
 
 - Padrão: segue `prefers-color-scheme`, sem piscar branco ao carregar.
-- Um botão no cabeçalho alterna entre automático, claro e escuro.
-- A escolha é aplicada na hora e guardada só neste aparelho (`localStorage`); um script no `index.html` a aplica antes da primeira pintura.
+- A escolha fica na modal de configurações, aberta pela engrenagem do cabeçalho (com tooltip "Configurações"): um botão único com ícone alterna claro → escuro → automático. O ícone gira até o do tema novo e a página troca num círculo que cresce a partir do botão (View Transition, 450 ms); quem pede menos movimento ao aparelho vê a troca sem animação, e a animação não bloqueia cliques (feature 021).
+- A escolha é aplicada na hora e guardada nas configurações (`cruzadinha:settings`; para quem tem conta, também na conta); um script no `index.html` a aplica antes da primeira pintura.
 - Critério de aceite: nos dois modos, bloco, célula selecionada, palavra ativa e letra preenchida têm contraste claro entre si.
 
 ## 6. Regras
@@ -188,16 +190,16 @@ apps/web/src/
 7. Células de bloco não são selecionáveis.
 8. Ao completar uma palavra, o cursor **fica na última letra**.
 9. Grade completa e correta marca o jogo como concluído. Grade completa e errada não mostra aviso.
-10. **Ajudas (v1 do front):** revelar letra (limite 4 por cruzada), revelar palavra (limite 2) e verificar (sem limite); os limites vêm de `VITE_HELP_LETTER_LIMIT` e `VITE_HELP_WORD_LIMIT` (lidos no build). A célula revelada fica travada e ganha um cantinho roxo; a verificação marca as certas de roxo e as erradas de vermelho. O uso de ajuda e as marcas ficam só no aparelho (`localStorage` por usuário e cruzada), sem enviar ao servidor; o melhor tempo conta normalmente com ajuda.
+10. **Ajudas (v1 do front):** revelar letra (limite 4 por cruzada), revelar palavra (limite 2) e verificar (sem limite); `VITE_HELP_LETTER_LIMIT` e `VITE_HELP_WORD_LIMIT` (lidos no build) são o padrão, e a pessoa escolhe outro número (0 a 99) ou "sem limite" para cada uma nas configurações. Mudar o limite com a partida aberta vale na hora; baixar abaixo do já usado só esgota a ajuda (feature 021). A célula revelada fica travada e ganha um cantinho roxo; a verificação marca as certas de roxo e as erradas de vermelho. O uso de ajuda e as marcas ficam só no aparelho (`localStorage` por usuário e cruzada), sem enviar ao servidor; o melhor tempo conta normalmente com ajuda.
 11. A solução da fonte pode trazer letras acentuadas (Ã, É). A comparação e as ajudas usam a letra simples, a mesma que o jogador digita.
-12. Uma dica da lista fica marcada como resolvida só quando a palavra está **certa** (completa e com as letras da solução, pela mesma comparação da conclusão); completa e errada, ela fica normal. A dica resolvida fica riscada (feature 019), com o fundo de sucesso do tema (`--ok-tint`) e um visto (✓) verde (`--ok`) no fim da linha (feature 017), e o texto continua na cor normal, sem ficar apagado; a dica ativa e resolvida mantém o fundo da palavra ativa e o visto. Toda dica reserva à direita o espaço do visto, então resolver ou desfazer não muda a quebra de linha nem a altura da lista. O risco e o visto são decorativos: o leitor de tela ouve ", resolvida". A marca sai só das letras e da solução: não conta como ajuda, não é salvo e não aparece no tabuleiro nem na barra da dica ativa. A regra fica em `game-logic/clue-strike.ts` com um modo (`StrikeMode`, hoje só "ao acertar") para uma futura preferência do jogador (feature 016).
+12. Uma dica da lista fica marcada como resolvida só quando a palavra está **certa** (completa e com as letras da solução, pela mesma comparação da conclusão); completa e errada, ela fica normal. A dica resolvida fica riscada (feature 019), com o fundo de sucesso do tema (`--ok-tint`) e um visto (✓) verde (`--ok`) no fim da linha (feature 017), e o texto continua na cor normal, sem ficar apagado; a dica ativa e resolvida mantém o fundo da palavra ativa e o visto. Toda dica reserva à direita o espaço do visto, então resolver ou desfazer não muda a quebra de linha nem a altura da lista. O risco e o visto são decorativos: o leitor de tela ouve ", resolvida". A marca sai só das letras e da solução: não conta como ajuda, não é salvo e não aparece no tabuleiro nem na barra da dica ativa. A regra fica em `game-logic/clue-strike.ts` com um modo (`StrikeMode`). Nas configurações, desligar "Riscar a dica só quando acerta" passa ao modo "ao preencher": a dica completa, certa ou errada, fica só riscada, sem fundo de sucesso e sem visto, e o leitor de tela ouve ", preenchida" (feature 021).
 13. A barra da dica ativa fica sempre numa linha, com a altura de sempre: a dica que não cabe termina em reticências, com o número e a direção inteiros, e o tabuleiro não se move ao trocar de palavra. No computador, o texto fica alinhado à esquerda e no centro ótico da barra: o meio das minúsculas (do topo do "x" à linha de base) fica no meio da altura dela e na altura das setas anterior e próxima, com o número e a dica na mesma linha de base (feature 019). O leitor de tela ouve a dica inteira, e ela aparece completa na lista de dicas ou na barra de letras acima do teclado do celular (feature 017).
 14. No computador, a barra da dica ativa (e a faixa de modo leitura, que ocupa o lugar dela) tem a largura do tabuleiro: a dica nunca alarga a coluna nem empurra as colunas de dicas. Num tabuleiro com menos de 320 px (poucas colunas e a alça perto do mínimo), a barra fica com 320 px, centralizada sobre ele, para caberem as setas, o número e a direção. Com o mouse parado meio segundo sobre uma dica cortada, um balão logo acima da barra mostra a dica inteira, por cima da faixa de ferramentas, sem cobrir o tabuleiro e sem mover nada (feature 019); se não couber acima na janela (página rolada), ele abre abaixo da barra. Na janela estreita sem teclado na tela, em que a barra fica abaixo do tabuleiro, o balão abre abaixo dela; ele some quando o mouse sai da barra e do balão, com Esc ou ao trocar de palavra. Não aparece com toque nem quando a dica cabe, e é só visual (o leitor de tela já ouve a dica inteira) (feature 018).
 
 ### Progresso
 
 10. O progresso é salvo automaticamente (com debounce) e ao sair da página. Se o salvamento falhar, as letras ficam guardadas localmente e o envio é repetido. O salvamento que dá certo não aparece na tela (sem "Salvando…" nem "Salvo"), para a faixa de ferramentas não pular; só os avisos de problema aparecem (sem conexão, sessão expirada, concluída em outro aparelho, não salvo). O visitante vê o texto fixo "Progresso só neste aparelho" e o link para entrar (feature 017).
-11. O cronômetro corre com a aba ativa e pausa ao trocar de aba.
+11. O cronômetro corre com a aba ativa e pausa ao trocar de aba. A modal de configurações aberta também o suspende, sem a capa de pausa e sem desfazer uma pausa feita pelo jogador (feature 021).
 12. Um puzzle concluído abre em modo leitura, com a opção de jogar de novo do zero. O melhor tempo é guardado.
 13. Cada usuário só enxerga o próprio progresso.
 
