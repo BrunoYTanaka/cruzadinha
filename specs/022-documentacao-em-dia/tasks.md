@@ -173,6 +173,8 @@ Nenhuma. Cada história trabalha sobre arquivos que já existem.
 - [X] T019 Rodar os passos 1 a 7 de `specs/022-documentacao-em-dia/quickstart.md` e corrigir o que falhar
 - [X] T020 Commitar em `docs/022-documentacao-em-dia` com `docs: bring design, readme and data definitions up to date` (corpo curto citando as features 013, 014 e 021 e a spec 022) e, se o autor pedir, abrir o PR para `main` com título no mesmo formato, resumo e plano de teste (`.claude/rules/git-conventions.md`)
 
+- [X] T021 Em `docs/entity-relationship-diagrams/ERD-004-configuracoes-usuario.md` (achado na revisão do PR): o atributo `settings` de `USER_SETTINGS` ganha o comentário com os campos do documento JSON da DDE-004 (`theme, helpLetters, helpWords, strikeMode, defaultSource, directToGame, boardCellSize, libraryWidth`) e `saved_at` ganha o comentário "momento da mudança no aparelho; vale o mais recente", no padrão dos comentários do ERD-001; entidades, colunas e relacionamento sem mudança
+
 ---
 
 ## Dependencies & Execution Order

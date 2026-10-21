@@ -136,7 +136,7 @@ Quem já conhecia a versão anterior abre o changelog de cada data definition al
 
 ### Edge Cases
 
-- **Documento sem mudança**: a DDE-002, os quatro ERDs, o `docs/deploy.md` e o `docs/versionamento.md` já batem com o sistema e não mudam. Se a conferência mostrar um campo ou relacionamento que precisa mudar num ERD, o ERD muda junto com a sua DDE (FR-007).
+- **Documento sem mudança**: a DDE-002, os ERDs 001 a 003, o `docs/deploy.md` e o `docs/versionamento.md` já batem com o sistema e não mudam. Se a conferência mostrar um campo ou relacionamento que precisa mudar num ERD, o ERD muda junto com a sua DDE (FR-007). O ERD-004 ganha só comentários: os campos do documento JSON `settings`, que a DDE-004 lista e o diagrama não mostrava (achado na revisão do PR).
 - **Trechos históricos do design**: a seção 10 ("Ordem sugerida da implementação") e o "Fora do escopo da v1" registram decisões da época; ficam como estão, porque não descrevem o sistema atual como regra.
 - **Seção a completar do `deploy.md`** (tarefa T060 da feature 012): depende de medições em produção e fica fora desta feature.
 - **Relacionamentos entre documentos**: a ligação `User` → `UserSettings` continua só na DDE-004 e no ERD-004; a DDE-001 aponta para ela no escopo, sem repetir a entidade nem ganhar relacionamento novo (um diagrama por data definition).
