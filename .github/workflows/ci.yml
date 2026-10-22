@@ -1,7 +1,10 @@
 name: CI
 
 on:
+  # Branches com PR rodam só pelo `pull_request`; o `push` fica para a main (o deploy.yml espera
+  # o CI de um push na main).
   push:
+    branches: [main]
   pull_request:
 
 env:
@@ -38,8 +41,15 @@ jobs:
       - run: npm run test:int
 
   e2e:
+    name: e2e (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Cada fatia tem o próprio Postgres e a própria API: os testes esvaziam as tabelas, então
+    # não podem dividir um banco.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     services:
       postgres:
         image: postgres:17-alpine
@@ -82,14 +92,24 @@ jobs:
           done
           cat api.log
           exit 1
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: apps/web
+      # Com o navegador em cache falta só as bibliotecas do sistema.
+      - run: npx playwright install-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
         working-directory: apps/web
       # O Playwright gera o site e o serve com `vite preview` (o proxy `/api` aponta para a API).
-      - run: npm run test:e2e -w @cruzadinha/web
+      - run: npm run test:e2e -w @cruzadinha/web -- --shard=${{ matrix.shard }}/3
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: apps/web/playwright-report
           retention-days: 7
 
