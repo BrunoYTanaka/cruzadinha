@@ -158,8 +158,8 @@ description: "Task list for feature 024: ajustes de layout e animação nas conf
 - [X] T022 [P] Atualizar `CLAUDE.md` com o item "Feature 024 (ajustes de layout e animação nas configurações e no botão de tema) changed only `apps/web`", no mesmo estilo e tamanho dos itens das features anteriores, descrevendo `clampShift`/`--tip-shift`, os rótulos empilhados do `ThemeButton`, o container query de 400 px, a largura de 460 px da modal e o `thumb` do seletor.
 - [X] T023 [P] Atualizar `docs/design.md` onde descreve o balão, o botão de tema e a modal de configurações, se houver trecho afetado (conferir com `grep -n "balão\|Tooltip\|tema\|Cruzada padrão" docs/design.md`); sem trecho afetado, nada a fazer.
 - [X] T024 Rodar `npm run format:check && npm run lint && npm run typecheck && npm test` na raiz e corrigir o que falhar.
-- [ ] T025 Rodar `npm run test:e2e -w @cruzadinha/web` completo (inclui `botoes.spec.ts`, `configuracoes.spec.ts`, `sem-saltos.spec.ts` e o novo arquivo) e conferir os cenários do `quickstart.md` à mão em 360 e 1280 px, nos dois temas.
-- [ ] T026 Commits em inglês, Conventional Commits, sem atribuição de IA (regra do `CLAUDE.md`): `fix(web)` para os cinco ajustes (a issue os trata como defeitos; o release-please dá bump de patch só no site), com o teste de cada história no mesmo commit ou antes dele em `test(web)`, e `docs` para `CLAUDE.md` e `docs/design.md`. Branch e PR seguem `.claude/rules/git-conventions.md`.
+- [X] T025 Rodar `npm run test:e2e -w @cruzadinha/web` completo (inclui `botoes.spec.ts`, `configuracoes.spec.ts`, `sem-saltos.spec.ts` e o novo arquivo) e conferir os cenários do `quickstart.md` à mão em 360 e 1280 px, nos dois temas.
+- [X] T026 Commits em inglês, Conventional Commits, sem atribuição de IA (regra do `CLAUDE.md`): `fix(web)` para os cinco ajustes (a issue os trata como defeitos; o release-please dá bump de patch só no site), com o teste de cada história no mesmo commit ou antes dele em `test(web)`, e `docs` para `CLAUDE.md` e `docs/design.md`. Branch e PR seguem `.claude/rules/git-conventions.md`.
 
 ---
 
