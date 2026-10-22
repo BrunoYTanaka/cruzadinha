@@ -90,6 +90,28 @@ describe('ThemeButton', () => {
     expect(after).toHaveAttribute('aria-hidden', 'true')
   })
 
+  // Largura fixa (feature 024): os três rótulos ficam na mesma célula e só o atual aparece, então o
+  // botão tem sempre a largura do mais largo. O CSS esconde os outros por `data-active`.
+  it('reserva o espaço dos três rótulos e marca só o do tema atual', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<ThemeButton />)
+    const labels = () => [...container.querySelectorAll('button [data-label]')]
+    expect(labels().map((label) => label.textContent)).toEqual(['Automático', 'Claro', 'Escuro'])
+    const active = () =>
+      labels()
+        .filter((label) => label.hasAttribute('data-active'))
+        .map((label) => label.textContent)
+    expect(active()).toEqual(['Claro'])
+    await user.click(screen.getByRole('button'))
+    expect(active()).toEqual(['Escuro'])
+    // O nome acessível vem do aria-label: os rótulos repetidos ficam fora da árvore de acessibilidade.
+    expect(container.querySelector('button [data-label]')?.parentElement).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
+    expect(screen.getByRole('button')).toHaveAccessibleName('Tema: escuro. Mudar para automático')
+  })
+
   it('não tem violações de acessibilidade', async () => {
     const { container } = render(<ThemeButton />)
     await expectNoA11yViolations(container)

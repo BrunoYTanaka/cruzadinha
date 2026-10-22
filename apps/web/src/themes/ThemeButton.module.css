@@ -6,6 +6,19 @@
   border-radius: 999px;
 }
 
+.label {
+  display: grid;
+}
+
+/* Todos na mesma célula; os inativos só reservam a largura (visibility mantém a caixa). */
+.label > span {
+  grid-area: 1 / 1;
+}
+
+.label > span:not([data-active]) {
+  visibility: hidden;
+}
+
 .icon {
   flex: none;
   width: 26px;

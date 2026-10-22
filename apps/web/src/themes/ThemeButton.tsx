@@ -8,6 +8,9 @@ import { nextTheme, themeLabel, type Theme } from './theme'
 import { startThemeTransition } from './theme-transition'
 import styles from './ThemeButton.module.css'
 
+// Ordem fixa dos rótulos empilhados; não é a ordem do ciclo (`nextTheme`).
+const THEMES: Theme[] = ['auto', 'light', 'dark']
+
 function ThemeIcon({ theme }: { theme: Theme }) {
   // Remonta a cada tema (`key` no uso) para a animação de entrada do ícone tocar de novo.
   switch (theme) {
@@ -62,7 +65,15 @@ export function ThemeButton() {
           onClick={onClick}
         >
           <ThemeIcon key={theme} theme={theme} />
-          <span aria-hidden="true">{themeLabel(theme)}</span>
+          {/* Os três rótulos na mesma célula: o botão tem sempre a largura do mais largo, e só o do
+              tema atual aparece (feature 024). O nome acessível vem do aria-label. */}
+          <span aria-hidden="true" className={styles.label}>
+            {THEMES.map((option) => (
+              <span key={option} data-label data-active={option === theme ? '' : undefined}>
+                {themeLabel(option)}
+              </span>
+            ))}
+          </span>
         </button>
       </Tooltip>
       <VisuallyHidden role="status" aria-live="polite">
