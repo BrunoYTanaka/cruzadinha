@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.8.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.8.1...web-v0.8.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **web:** give full-page error screens a level-one heading ([2c8678c](https://github.com/BrunoYTanaka/cruzadinha/commit/2c8678cb05f0649da649238ad116758b7b109072))
+* **web:** give full-page error screens a level-one heading ([cf32afd](https://github.com/BrunoYTanaka/cruzadinha/commit/cf32afda142680e415cb6a9f3c9c8b05fe4643a8)), closes [#46](https://github.com/BrunoYTanaka/cruzadinha/issues/46)
+* **web:** keep the settings switch at 30 px and align the restore button ([bc58ede](https://github.com/BrunoYTanaka/cruzadinha/commit/bc58ede0d4333ae9c3943f3a9a8e159fde182bcd))
+* **web:** keep the settings switch at 30 px and align the restore button ([1c164c0](https://github.com/BrunoYTanaka/cruzadinha/commit/1c164c031370e3f8fc6d242757d0ff742d6d5da6)), closes [#51](https://github.com/BrunoYTanaka/cruzadinha/issues/51)
+* **web:** measure the tooltip again when its size changes ([b43b89f](https://github.com/BrunoYTanaka/cruzadinha/commit/b43b89f1bacc370da3af7d8f5dc6d409414bd236))
+* **web:** measure the tooltip again when its size changes ([0e5517e](https://github.com/BrunoYTanaka/cruzadinha/commit/0e5517e90b647aca5cde9f27fc8ee00f4cd66f41))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.15.0 to 0.16.0
+
 ## [0.8.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.8.0...web-v0.8.1) (2026-10-22)
 
 
