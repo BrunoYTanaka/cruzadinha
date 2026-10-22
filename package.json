@@ -17,6 +17,8 @@
     "test": "npm run test --workspaces --if-present",
     "test:int": "npm run test:int --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
+    "check:ids": "node scripts/check-unique-ids.mjs",
+    "check:ids:remote": "node scripts/check-unique-ids.mjs --remote",
     "prepare": "husky"
   },
   "devDependencies": {
