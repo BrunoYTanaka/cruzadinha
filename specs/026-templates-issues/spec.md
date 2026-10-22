@@ -1,6 +1,6 @@
 # Feature Specification: Templates de issues para feature, bug, documentação e manutenção
 
-**Feature Branch**: `chore/025-templates-issues`
+**Feature Branch**: `chore/026-templates-issues`
 
 **Created**: 2026-10-22
 
