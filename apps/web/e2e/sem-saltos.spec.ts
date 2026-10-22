@@ -1,9 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
+  box,
+  css,
+  expectNear,
   fillSolution,
   login,
   pressLetter,
+  probe,
   resetAndSeed,
   solveFirstAcrossWord,
   todayPuzzle,
@@ -31,12 +35,6 @@ async function lengthenClues(page: Page) {
     }
     await route.fulfill({ response, json })
   })
-}
-
-async function box(locator: Locator) {
-  const value = await locator.boundingBox()
-  if (!value) throw new Error(`o elemento ${String(locator)} não está na tela`)
-  return value
 }
 
 async function openToday(page: Page) {
@@ -149,11 +147,6 @@ function boardHead(page: Page) {
 
 type Box = { x: number; y: number; width: number; height: number }
 
-// Diferença de no máximo 1 px: a centralização pode cair em meio pixel.
-function expectNear(received: number, expected: number) {
-  expect(Math.abs(received - expected)).toBeLessThanOrEqual(1)
-}
-
 // Mesma posição horizontal e mesma largura, com a tolerância de `expectNear`.
 function expectSameSpan(a: Box, b: Box) {
   expectNear(a.x, b.x)
@@ -262,29 +255,6 @@ function cell(page: Page, word: { row: number; col: number }) {
   return page.getByRole('gridcell', {
     name: new RegExp(`^Linha ${word.row + 1}, coluna ${word.col + 1},`),
   })
-}
-
-// Valor computado de uma propriedade num elemento de prova com `value` (um token do tema), para
-// comparar com o do elemento real sem escrever a cor do tema no teste.
-function probe(page: Page, property: 'background-color' | 'stroke' | 'color', value: string) {
-  return page.evaluate(
-    ([name, token]) => {
-      const element = document.createElement('div')
-      element.style.setProperty(name, token)
-      document.body.append(element)
-      const computed = getComputedStyle(element).getPropertyValue(name)
-      element.remove()
-      return computed
-    },
-    [property, value] as const,
-  )
-}
-
-function css(locator: Locator, property: string) {
-  return locator.evaluate(
-    (element, name) => getComputedStyle(element).getPropertyValue(name),
-    property,
-  )
 }
 
 for (const theme of ['light', 'dark'] as const) {

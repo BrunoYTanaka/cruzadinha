@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
-import type { APIRequestContext, Page } from '@playwright/test'
+import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
 import postgres from 'postgres'
 
 const repoRoot = join(import.meta.dirname, '..', '..', '..')
@@ -157,4 +157,43 @@ export async function solveFirstAcrossWord(page: Page): Promise<TodayPuzzle> {
   if (!word) throw new Error('a cruzada de hoje deveria ter uma palavra horizontal')
   await typeWord(page, word, solutionLetters(today.solution, word))
   return today
+}
+
+// Medidas usadas pelos testes de layout (features 017 a 019 e 023).
+export async function box(locator: Locator) {
+  const value = await locator.boundingBox()
+  if (!value) throw new Error(`o elemento ${String(locator)} não está na tela`)
+  return value
+}
+
+// Diferença de no máximo 1 px: a centralização pode cair em meio pixel.
+export function expectNear(received: number, expected: number) {
+  expect(Math.abs(received - expected)).toBeLessThanOrEqual(1)
+}
+
+// Valor computado de uma propriedade num elemento de prova com `value` (um token do tema), para
+// comparar com o do elemento real sem escrever a cor do tema no teste.
+export function probe(
+  page: Page,
+  property: 'background-color' | 'stroke' | 'color',
+  value: string,
+) {
+  return page.evaluate(
+    ([name, token]) => {
+      const element = document.createElement('div')
+      element.style.setProperty(name, token)
+      document.body.append(element)
+      const computed = getComputedStyle(element).getPropertyValue(name)
+      element.remove()
+      return computed
+    },
+    [property, value] as const,
+  )
+}
+
+export function css(locator: Locator, property: string) {
+  return locator.evaluate(
+    (element, name) => getComputedStyle(element).getPropertyValue(name),
+    property,
+  )
 }
