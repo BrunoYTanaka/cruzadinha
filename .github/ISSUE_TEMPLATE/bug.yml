@@ -1,0 +1,53 @@
+name: Bug
+description: Algo não funciona como deveria.
+title: '[Bug]: '
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Não cole senhas, cookies de sessão, conteúdo do `.env`, dados pessoais nem puzzles inteiros da fonte. Se precisar mostrar um log, apague esses dados antes.
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição do problema
+      description: O que está errado? Diga em uma ou duas frases, e em que tela ou parte do projeto acontece.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      description: Passo a passo, do começo, para que outra pessoa veja o mesmo problema e possa escrever um teste que falha.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamento esperado
+      description: O que deveria acontecer.
+    validations:
+      required: true
+  - type: textarea
+    id: atual
+    attributes:
+      label: Comportamento atual
+      description: O que acontece de fato, incluindo a mensagem de erro, se houver.
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente e versão
+      description: 'Versão do site (`/version.json`) e da API (`/api/health`), navegador e sistema, e se foi como visitante ou logado. Para CI ou deploy, diga a área.'
+      placeholder: 'Site 0.9.0, API 0.8.0, Firefox 140 no Linux, visitante'
+  - type: textarea
+    id: evidencias
+    attributes:
+      label: Evidências
+      description: Prints (arraste a imagem aqui) e logs. Coloque logs entre três crases (```) para manter a formatação.

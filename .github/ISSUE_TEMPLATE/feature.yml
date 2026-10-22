@@ -1,0 +1,33 @@
+name: Feature / melhoria
+description: Propor uma funcionalidade nova ou uma melhoria.
+title: '[Feature]: '
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto do problema
+      description: Qual dificuldade ou necessidade existe hoje, e para quem.
+    validations:
+      required: true
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo da funcionalidade
+      description: O que a pessoa passa a conseguir fazer depois que isso existir.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceitação
+      description: 'Um item por linha, no formato `- [ ] critério verificável`. Exemplo: `- [ ] A pessoa consegue desfazer a última ação`.'
+      value: '- [ ] '
+    validations:
+      required: true
+  - type: textarea
+    id: impactos
+    attributes:
+      label: Impactos esperados
+      description: O que muda para quem usa, para a API, para os dados ou para outras partes do projeto.
