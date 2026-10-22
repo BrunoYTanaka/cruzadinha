@@ -1,4 +1,12 @@
-import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from 'react'
+import { clampShift } from './tooltip-position'
 import styles from './Tooltip.module.css'
 
 type TooltipProps = {
@@ -9,9 +17,11 @@ type TooltipProps = {
 }
 
 // Balão curto sobre um botão de ícone (feature 021): aparece com o mouse parado em cima ou com o
-// foco do teclado, nunca com toque, e fecha com Esc. Não muda o layout (posição absoluta).
+// foco do teclado, nunca com toque, e fecha com Esc. Não muda o layout (posição absoluta). Fica
+// centrado no alvo e só se desloca na horizontal o que precisar para caber na janela (feature 024).
 export function Tooltip({ label, placement = 'below', children }: TooltipProps) {
   const [open, setOpen] = useState(false)
+  const tipRef = useRef<HTMLSpanElement>(null)
 
   // Esc fecha o balão sem parar o evento: o diálogo ou o tabuleiro em volta ainda o recebem.
   useEffect(() => {
@@ -22,6 +32,22 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open])
+
+  // Mede o balão sem deslocamento e grava o que falta para caber. É direto no DOM, antes da
+  // pintura: não há estado novo, então não há laço de render nem piscada. O resize recalcula.
+  useLayoutEffect(() => {
+    const tip = tipRef.current
+    if (!open || !tip) return
+    const place = () => {
+      tip.style.setProperty('--tip-shift', '0px')
+      const { left, width } = tip.getBoundingClientRect()
+      const shift = clampShift(left, width, document.documentElement.clientWidth)
+      tip.style.setProperty('--tip-shift', `${shift}px`)
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [open, label])
 
   const onPointerEnter = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') setOpen(true)
@@ -38,6 +64,7 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
       {children}
       {open ? (
         <span
+          ref={tipRef}
           data-tooltip
           aria-hidden="true"
           className={`${styles.tip} ${placement === 'above' ? styles.above : styles.below}`}

@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../test/axe'
 import { Tooltip } from './Tooltip'
 
@@ -62,5 +64,69 @@ describe('Tooltip', () => {
     expect(tip()).toHaveAttribute('aria-hidden', 'true')
     expect(screen.getAllByRole('button', { name: 'Configurações' })).toHaveLength(1)
     await expectNoA11yViolations(container)
+  })
+
+  describe('posição dentro da janela (feature 024)', () => {
+    const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+      if (clientWidth) Object.defineProperty(Element.prototype, 'clientWidth', clientWidth)
+    })
+
+    // O jsdom não faz layout: a caixa do balão e a largura da janela são simuladas.
+    function mockLayout(box: { left: number; width: number }, viewport: number) {
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        const { left, width } = this.hasAttribute('data-tooltip') ? box : { left: 0, width: 0 }
+        return {
+          left,
+          width,
+          right: left + width,
+          top: 0,
+          bottom: 0,
+          height: 0,
+          x: left,
+          y: 0,
+        } as DOMRect
+      })
+      Object.defineProperty(Element.prototype, 'clientWidth', {
+        configurable: true,
+        value: viewport,
+      })
+    }
+
+    const shift = () => (tip() as HTMLElement).style.getPropertyValue('--tip-shift')
+
+    it('desloca para a esquerda o balão que passa da borda direita', async () => {
+      mockLayout({ left: 330, width: 100 }, 400)
+      const user = userEvent.setup()
+      setup()
+      await user.tab()
+      expect(shift()).toBe('-38px')
+    })
+
+    it('não desloca o balão que cabe', async () => {
+      mockLayout({ left: 100, width: 100 }, 400)
+      const user = userEvent.setup()
+      setup()
+      await user.tab()
+      expect(shift()).toBe('0px')
+    })
+
+    it('com texto longo, a caixa tem largura máxima da janela menos a margem', async () => {
+      mockLayout({ left: 8, width: 120 }, 320)
+      const user = userEvent.setup()
+      render(
+        <Tooltip label={'Mudar para um texto muito longo '.repeat(2)}>
+          <button type="button">x</button>
+        </Tooltip>,
+      )
+      await user.tab()
+      const css = readFileSync(resolve(__dirname, 'Tooltip.module.css'), 'utf8')
+      expect(css).toMatch(/max-width:\s*calc\(100vw - 16px\)/)
+      expect(css).toMatch(/white-space:\s*normal/)
+    })
   })
 })

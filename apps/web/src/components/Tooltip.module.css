@@ -3,6 +3,7 @@
   display: inline-flex;
 }
 
+/* --tip-shift: deslocamento horizontal que o Tooltip.tsx mede para o balão caber na janela. */
 /* Cores invertidas do tema (texto --surface sobre --ink): contraste alto nos dois temas. */
 .tip {
   position: absolute;
@@ -15,9 +16,12 @@
   font-size: 13px;
   font-weight: 500;
   line-height: 1.3;
-  white-space: nowrap;
+  /* Só quebra o texto quando a janela é mais estreita que ele (feature 024). */
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  white-space: normal;
   pointer-events: none;
-  translate: -50% 0;
+  translate: calc(-50% + var(--tip-shift, 0px)) 0;
   box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
 }
 
