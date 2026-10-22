@@ -95,12 +95,18 @@ describe.each(CONTROLS)('estados de %s %s', (file, name) => {
     for (const rule of stateRules) expect(rule.body).not.toMatch(/#[0-9a-f]{3,8}\b|rgb\(|hsl\(/i)
   })
 
-  it('as transições do arquivo duram no máximo 150 ms', () => {
+  // O limite de 150 ms vale para o retorno de mouse e pressionado. O destaque deslizante do seletor
+  // da cruzada padrão (`.thumb`, feature 024) é um movimento de troca e tem o seu próprio teto de
+  // 300 ms (FR-012), conferido abaixo e no e2e `ajustes-configuracoes.spec.ts`.
+  const SLIDE = '.thumb'
+  const limitFor = (selector: string) => (selector === SLIDE ? 300 : 150)
+
+  it('as transições do arquivo duram no máximo 150 ms (300 ms no destaque deslizante)', () => {
     for (const rule of all) {
       for (const [, property, value] of rule.body.matchAll(/(transition(?:-duration)?):([^;]+)/g)) {
         for (const [, amount, unit] of (value ?? '').matchAll(/(\d*\.?\d+)(ms|s)\b/g)) {
           const ms = Number(amount) * (unit === 's' ? 1000 : 1)
-          expect(ms, `${property} em ${rule.selector}`).toBeLessThanOrEqual(150)
+          expect(ms, `${property} em ${rule.selector}`).toBeLessThanOrEqual(limitFor(rule.selector))
         }
       }
     }

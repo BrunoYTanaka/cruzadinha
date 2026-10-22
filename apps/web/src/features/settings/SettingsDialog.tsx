@@ -1,5 +1,5 @@
 import { puzzleSourceIdSchema, puzzleSourceNames, type Settings } from '@cruzadinha/shared'
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type CSSProperties, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Button, buttonClass } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
@@ -115,6 +115,9 @@ function LimitControl({
   )
 }
 
+// Variáveis CSS do destaque do seletor, tipadas para o `style` do React.
+type GroupStyle = CSSProperties & { '--i': number; '--count': number }
+
 export type SourceOption = { id: string; name: string }
 
 const SOURCE_OPTIONS: SourceOption[] = puzzleSourceIdSchema.options.map((id) => ({
@@ -134,8 +137,23 @@ export function SourcePicker({
 }) {
   const name = useId()
   if (sources.length <= 3) {
+    // O destaque desliza até a fonte marcada (feature 024): só precisa do índice e da quantidade.
+    // Um valor desconhecido vale como a primeira fonte (FR-012b). Com 1 fonte não há para onde ir.
+    const index = Math.max(
+      0,
+      sources.findIndex((source) => source.id === value),
+    )
+    const style: GroupStyle = { '--i': index, '--count': sources.length }
     return (
-      <div role="group" aria-label="Cruzada padrão" className={styles.segment}>
+      <div
+        role="group"
+        aria-label="Cruzada padrão"
+        className={sources.length > 1 ? styles.segment : `${styles.segment} ${styles.single}`}
+        style={style}
+      >
+        {sources.length > 1 ? (
+          <span data-thumb aria-hidden="true" className={styles.thumb} />
+        ) : null}
         {sources.map((source) => (
           <button
             key={source.id}
@@ -181,7 +199,13 @@ export function SettingsDialog() {
   const defaultName = puzzleSourceNames[defaultSource]
 
   return (
-    <Dialog open={open} onClose={() => setSettingsOpen(false)} title="Configurações" closeButton>
+    <Dialog
+      open={open}
+      onClose={() => setSettingsOpen(false)}
+      title="Configurações"
+      closeButton
+      size="wide"
+    >
       <div className={styles.body}>
         <Row
           title="Tema"
@@ -268,7 +292,7 @@ export function SettingsDialog() {
               para levar para outros.
             </span>
           )}
-          <Button variant="quiet" onClick={restoreDefaults}>
+          <Button variant="quiet" className={styles.restore} onClick={restoreDefaults}>
             Restaurar padrões
           </Button>
         </div>

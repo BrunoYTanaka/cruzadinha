@@ -184,7 +184,7 @@ apps/web/src/
 ### Modo claro e escuro
 
 - Padrão: segue `prefers-color-scheme`, sem piscar branco ao carregar.
-- A escolha fica na modal de configurações, aberta pela engrenagem do cabeçalho (com tooltip "Configurações"): um botão único com ícone alterna claro → escuro → automático. O ícone gira até o do tema novo e a página troca num círculo que cresce a partir do botão (View Transition, 450 ms); quem pede menos movimento ao aparelho vê a troca sem animação, e a animação não bloqueia cliques (feature 021).
+- A escolha fica na modal de configurações, aberta pela engrenagem do cabeçalho (com tooltip "Configurações"): um botão único com ícone alterna claro → escuro → automático. O ícone gira até o do tema novo e a página troca num círculo que cresce a partir do botão (View Transition, 450 ms); quem pede menos movimento ao aparelho vê a troca sem animação, e a animação não bloqueia cliques (feature 021). O botão tem sempre a largura do rótulo mais largo (Automático), então alternar o tema não mexe na linha. O balão de qualquer botão de ícone fica inteiro dentro da janela: centralizado no botão quando cabe, deslocado na horizontal só o que precisar quando não cabe, como no caso da engrenagem sozinha à direita do cabeçalho enquanto a sessão carrega (feature 024).
 - A escolha é aplicada na hora e guardada nas configurações (`cruzadinha:settings`; para quem tem conta, também na conta); um script no `index.html` a aplica antes da primeira pintura.
 - Critério de aceite: nos dois modos, bloco, célula selecionada, palavra ativa e letra preenchida têm contraste claro entre si.
 

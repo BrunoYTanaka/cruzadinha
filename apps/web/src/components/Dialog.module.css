@@ -28,6 +28,10 @@
   box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
 }
 
+.wide {
+  max-width: 460px;
+}
+
 .bottom .panel {
   max-width: none;
   border-bottom-left-radius: 0;

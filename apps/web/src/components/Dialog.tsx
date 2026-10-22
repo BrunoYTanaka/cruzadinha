@@ -16,6 +16,8 @@ type DialogProps = {
   initialFocusRef?: RefObject<HTMLElement | null>
   closeOnBackdrop?: boolean
   align?: 'center' | 'bottom'
+  // Largura do painel: `wide` chega a 460 px em vez de 420 px (feature 024).
+  size?: 'default' | 'wide'
   // Botão "Fechar" (X) ao lado do título, para diálogos sem ação final (feature 021).
   closeButton?: boolean
 }
@@ -31,6 +33,7 @@ export function Dialog({
   initialFocusRef,
   closeOnBackdrop = false,
   align = 'center',
+  size = 'default',
   closeButton = false,
 }: DialogProps) {
   const titleId = useId()
@@ -112,7 +115,7 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={styles.panel}
+        className={size === 'wide' ? `${styles.panel} ${styles.wide}` : styles.panel}
       >
         {closeButton ? (
           <div className={styles.header}>

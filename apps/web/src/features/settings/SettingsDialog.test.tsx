@@ -154,6 +154,50 @@ describe('cruzada padrão e ir direto ao jogo (US2)', () => {
     await expectNoA11yViolations(container)
   })
 
+  // Destaque deslizante (feature 024): o contêiner guarda o índice da fonte marcada e a quantidade.
+  describe('destaque do seletor', () => {
+    const names = (count: number) =>
+      ['a', 'b', 'c'].slice(0, count).map((id) => ({ id, name: `Fonte ${id}` }))
+    const group = () => screen.getByRole('group', { name: 'Cruzada padrão' })
+    const thumb = (container: HTMLElement) => container.querySelector('[data-thumb]')
+
+    it('com 2 e 3 fontes, --i acompanha a fonte marcada e --count a quantidade', () => {
+      const { container, rerender } = render(
+        <SourcePicker sources={names(3)} value="b" onChange={() => {}} />,
+      )
+      expect(group().style.getPropertyValue('--i')).toBe('1')
+      expect(group().style.getPropertyValue('--count')).toBe('3')
+      expect(thumb(container)).toHaveAttribute('aria-hidden', 'true')
+      rerender(<SourcePicker sources={names(3)} value="c" onChange={() => {}} />)
+      expect(group().style.getPropertyValue('--i')).toBe('2')
+      rerender(<SourcePicker sources={names(2)} value="a" onChange={() => {}} />)
+      expect(group().style.getPropertyValue('--i')).toBe('0')
+      expect(group().style.getPropertyValue('--count')).toBe('2')
+    })
+
+    it('escolher outra fonte chama onChange e o índice segue o valor', async () => {
+      const user = userEvent.setup()
+      const onChange = vi.fn()
+      const { rerender } = render(<SourcePicker sources={names(2)} value="a" onChange={onChange} />)
+      await user.click(screen.getByRole('button', { name: 'Fonte b' }))
+      expect(onChange).toHaveBeenCalledWith('b')
+      rerender(<SourcePicker sources={names(2)} value="b" onChange={onChange} />)
+      expect(group().style.getPropertyValue('--i')).toBe('1')
+    })
+
+    it('um valor desconhecido vale como a primeira fonte', () => {
+      render(<SourcePicker sources={names(2)} value="zzz" onChange={() => {}} />)
+      expect(group().style.getPropertyValue('--i')).toBe('0')
+    })
+
+    it('com 1 fonte não há destaque', () => {
+      const { container } = render(
+        <SourcePicker sources={names(1)} value="a" onChange={() => {}} />,
+      )
+      expect(thumb(container)).toBeNull()
+    })
+  })
+
   it('o switch "Ir direto ao jogo" cita a cruzada padrão', async () => {
     const { user, dialog } = await openSettings()
     act(() => updateSettings({ defaultSource: 'cruzadaonline' }))
