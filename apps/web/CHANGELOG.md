@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.8.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.7.2...web-v0.8.0) (2026-10-22)
+
+
+### Features
+
+* **web:** make buttons look like buttons and set them apart from links ([f79dc29](https://github.com/BrunoYTanaka/cruzadinha/commit/f79dc297ef46f5c24d03636a643fe07aa84e0646))
+* **web:** make buttons look like buttons and set them apart from links ([9626471](https://github.com/BrunoYTanaka/cruzadinha/commit/96264719a4bd472abc7ed8c5c0ed849a0f1d15ba)), closes [#41](https://github.com/BrunoYTanaka/cruzadinha/issues/41)
+
+
+### Bug Fixes
+
+* **web:** fix layout and animation in settings, theme button and tooltips ([33f6d6f](https://github.com/BrunoYTanaka/cruzadinha/commit/33f6d6f4e023713ff6b1c8639d2638fa56a241d0))
+* **web:** keep the theme button the same size in every state ([8fca325](https://github.com/BrunoYTanaka/cruzadinha/commit/8fca3253bf66b689d94f6771bda8d5411ab9247d))
+* **web:** keep tooltips inside the window ([5673a6e](https://github.com/BrunoYTanaka/cruzadinha/commit/5673a6efdf37e5660f16d84a5c7a1d59e8b3f651))
+* **web:** tidy the settings dialog layout and animate the default source ([1364a5b](https://github.com/BrunoYTanaka/cruzadinha/commit/1364a5beb7c1413fd5b0a3af57fdbec06b6954b5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.13.0 to 0.14.0
+
 ## [0.7.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.7.1...web-v0.7.2) (2026-10-21)
 
 
