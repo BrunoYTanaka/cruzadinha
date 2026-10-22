@@ -8,7 +8,7 @@ Não há dados persistidos. As entidades da spec viram a estrutura dos arquivos.
 | --- | --- |
 | `name` | único entre os templates; é o nome no seletor |
 | `description` | uma linha, aparece no seletor |
-| `title` | prefixo `fix: `, `feat: `, `docs: ` ou `chore: ` |
+| `title` | prefixo `[Bug]: `, `[Feature]: `, `[Docs]: ` ou `[Chore]: ` |
 | `labels` | etiqueta existente no repositório; vazio para chore |
 | `body` | lista ordenada de campos |
 

@@ -1,6 +1,6 @@
 name: Bug
 description: Algo não funciona como deveria.
-title: 'fix: '
+title: '[Bug]: '
 labels:
   - bug
 body:

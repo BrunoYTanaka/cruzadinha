@@ -14,6 +14,12 @@ Hoje o repositório não tem nenhum template de issue: quem abre uma issue vê u
 
 Esta mudança não altera o site nem a API: só adiciona arquivos de configuração do GitHub.
 
+## Clarifications
+
+### Session 2026-10-22
+
+- Q: Que prefixo de título os formulários devem sugerir, e deve haver um ID estilo Jira? → A: Prefixos entre colchetes (`[Bug]: `, `[Feature]: `, `[Docs]: `, `[Chore]: `), sem ID no título; o número da issue do GitHub (`#43`) é o identificador e é referenciado em branches, commits e PRs.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Abrir uma issue de bug com o que é preciso para reproduzir (Priority: P1)
@@ -115,7 +121,7 @@ Quem abre uma nova issue vê uma lista curta e clara com os quatro tipos, cada u
 - **FR-004**: O repositório MUST oferecer um template de issue para **manutenção/chore** com os campos: objetivo da tarefa, impacto no projeto e riscos e validação.
 - **FR-005**: Cada campo MUST ter um rótulo e uma instrução curta (uma ou duas frases, com exemplo quando ajudar) dizendo o que escrever.
 - **FR-006**: Os campos sem os quais a issue não é acionável MUST ser obrigatórios, e os demais opcionais, conforme a tabela abaixo.
-- **FR-007**: Cada template MUST sugerir um título com prefixo padronizado, com os mesmos nomes dos tipos de commit do projeto: `feat:`, `fix:`, `docs:` e `chore:`, seguido de um espaço.
+- **FR-007**: Cada template MUST sugerir um título com prefixo padronizado, no formato de colchetes usado por projetos open source: `[Bug]: `, `[Feature]: `, `[Docs]: ` e `[Chore]: `, seguido de um espaço. Os prefixos diferem de propósito dos tipos de commit (`fix:`, `feat:`), que ficam para commits e PRs.
 - **FR-008**: Cada template MUST aplicar automaticamente a etiqueta correspondente que já existe no repositório: `enhancement` (feature), `bug` (bug) e `documentation` (documentação).
 - **FR-009**: O template de feature MUST pedir os critérios de aceitação como lista de itens marcáveis, no mesmo formato usado nas issues do projeto.
 - **FR-010**: A página de nova issue MUST listar os quatro tipos, cada um com nome e descrição de uma linha, e nenhum campo de um tipo MUST aparecer em outro.
@@ -153,6 +159,6 @@ Quem abre uma nova issue vê uma lista curta e clara com os quatro tipos, cada u
 - Não existe etiqueta `chore` no repositório e criar etiquetas está fora do escopo; a issue de chore recebe só o prefixo de título.
 - Abrir issue em branco continua permitido, para casos que não cabem nos quatro tipos (por exemplo, uma pergunta rápida); não há link externo de contato nem de suporte.
 - O campo de ambiente/versão do bug aceita texto livre, com uma dica dos valores úteis: versão do site e da API (visíveis em `/api/health` e `version.json`), navegador e sistema, e se o problema acontece como visitante ou logado.
-- Os prefixos de título (`feat:`, `fix:`, `docs:`, `chore:`) são sugestões pré-preenchidas que a pessoa pode editar; o GitHub não impede um título diferente.
+- Os prefixos de título (`[Feature]: `, `[Bug]: `, `[Docs]: `, `[Chore]: `) são sugestões pré-preenchidas que a pessoa pode editar; o GitHub não impede um título diferente.
 - Todo o trabalho acontece em arquivos de configuração e documentação, sem alterar `apps/` nem `packages/`; por isso, segundo o fluxo do projeto, a mudança entra como `chore`/`docs` e não gera versão do site nem da API.
 - Os templates só têm efeito depois do merge na branch principal (`main`); a verificação final é feita na página de nova issue do repositório.
