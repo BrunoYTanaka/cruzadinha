@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -105,6 +105,32 @@ describe('Tooltip', () => {
       setup()
       await user.tab()
       expect(shift()).toBe('-38px')
+    })
+
+    // Quando a fonte da página termina de carregar depois que o balão abriu, a largura do texto
+    // muda sem o tamanho da janela mudar: o balão precisa ser medido de novo.
+    it('mede de novo quando o balão muda de tamanho sem a janela mudar', async () => {
+      const callbacks: ResizeObserverCallback[] = []
+      class FakeResizeObserver {
+        constructor(callback: ResizeObserverCallback) {
+          callbacks.push(callback)
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+      vi.stubGlobal('ResizeObserver', FakeResizeObserver)
+      const layout = { left: 330, width: 100 }
+      mockLayout(layout, 400)
+      const user = userEvent.setup()
+      setup()
+      await user.tab()
+      expect(shift()).toBe('-38px')
+
+      layout.width = 110
+      act(() => callbacks.forEach((callback) => callback([], {} as ResizeObserver)))
+      expect(shift()).toBe('-48px')
+      vi.unstubAllGlobals()
     })
 
     it('não desloca o balão que cabe', async () => {
