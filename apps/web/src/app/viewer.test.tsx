@@ -127,6 +127,7 @@ describe('viewerLoader e useViewer', () => {
     const queryClient = makeQueryClient()
     renderRoutes(routesFor(queryClient), ['/'], queryClient)
     await screen.findByText(`é ${aUser.email}`)
+    await waitFor(() => expect(calls.some((call) => call.key === 'GET /api/settings')).toBe(true))
     const before = calls.length
     await user.keyboard(
       '{ArrowUp}{ArrowUp}{ArrowDown}{ArrowDown}{ArrowLeft}{ArrowRight}{ArrowLeft}{ArrowRight}ba',
