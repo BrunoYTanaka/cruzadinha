@@ -1,8 +1,8 @@
 # Implementation Plan: Templates de issues para feature, bug, documentação e manutenção
 
-**Branch**: `chore/025-templates-issues` | **Date**: 2026-10-22 | **Spec**: [spec.md](spec.md)
+**Branch**: `chore/026-templates-issues` | **Date**: 2026-10-22 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/025-templates-issues/spec.md`
+**Input**: Feature specification from `/specs/026-templates-issues/spec.md`
 
 ## Summary
 
@@ -50,7 +50,7 @@ Pós-design: sem violações; Complexity Tracking não se aplica.
 ### Documentation (this feature)
 
 ```text
-specs/025-templates-issues/
+specs/026-templates-issues/
 ├── plan.md
 ├── research.md
 ├── data-model.md

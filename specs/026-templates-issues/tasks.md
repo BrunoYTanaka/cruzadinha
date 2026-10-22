@@ -5,7 +5,7 @@ description: "Task list for issue templates"
 
 # Tasks: Templates de issues para feature, bug, documentação e manutenção
 
-**Input**: Design documents from `/specs/025-templates-issues/`
+**Input**: Design documents from `/specs/026-templates-issues/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/issue-forms.md, quickstart.md
 
