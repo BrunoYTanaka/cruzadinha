@@ -2,7 +2,7 @@
 
 **Branch**: `fix/tela-de-erro-do-dia-sem-titulo-h1` | **Date**: 2026-10-22 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/025-erro-com-titulo-h1/spec.md`
+**Input**: Feature specification from `/specs/027-erro-com-titulo-h1/spec.md`
 
 ## Summary
 
@@ -54,7 +54,7 @@ Resultado: sem violações que exijam a tabela de Complexity Tracking.
 ### Documentation (this feature)
 
 ```text
-specs/025-erro-com-titulo-h1/
+specs/027-erro-com-titulo-h1/
 ├── plan.md
 ├── research.md
 ├── data-model.md

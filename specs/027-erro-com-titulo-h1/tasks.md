@@ -1,11 +1,11 @@
 ---
 
-description: "Task list for feature 025: telas de erro com título de nível 1"
+description: "Task list for feature 027: telas de erro com título de nível 1"
 ---
 
 # Tasks: Telas de erro com título de nível 1
 
-**Input**: Design documents from `/specs/025-erro-com-titulo-h1/`
+**Input**: Design documents from `/specs/027-erro-com-titulo-h1/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/error-state-heading.md, quickstart.md
 
@@ -33,9 +33,9 @@ description: "Task list for feature 025: telas de erro com título de nível 1"
 
 **Purpose**: medir a aparência atual para provar SC-004 depois.
 
-- [X] T001 Com `npm run dev -w @cruzadinha/web`, medir (DevTools ou `getComputedStyle`) `font-size`, `font-weight`, `margin` e a caixa do título na tela do dia com a fonte falhando (bloquear `/api/puzzles`), nos temas claro e escuro, e anotar os valores em `specs/025-erro-com-titulo-h1/research.md` numa nova seção 7 ("Aparência antes da mudança").
+- [X] T001 Com `npm run dev -w @cruzadinha/web`, medir (DevTools ou `getComputedStyle`) `font-size`, `font-weight`, `margin` e a caixa do título na tela do dia com a fonte falhando (bloquear `/api/puzzles`), nos temas claro e escuro, e anotar os valores em `specs/027-erro-com-titulo-h1/research.md` numa nova seção 7 ("Aparência antes da mudança").
 
-- [X] T002 Consultar a documentação atual via Context7 MCP (regra da constituição) antes de escrever o e2e: `@axe-core/playwright` (`AxeBuilder`, `exclude`, `disableRules`) e Playwright (`page.route`, `page.clock`, `emulateMedia`, `getByRole` com `level`), confirmando as versões instaladas em `apps/web/package.json`; anotar em `specs/025-erro-com-titulo-h1/research.md`, seção 7, o que foi confirmado.
+- [X] T002 Consultar a documentação atual via Context7 MCP (regra da constituição) antes de escrever o e2e: `@axe-core/playwright` (`AxeBuilder`, `exclude`, `disableRules`) e Playwright (`page.route`, `page.clock`, `emulateMedia`, `getByRole` com `level`), confirmando as versões instaladas em `apps/web/package.json`; anotar em `specs/027-erro-com-titulo-h1/research.md`, seção 7, o que foi confirmado.
 
 ---
 
@@ -77,7 +77,7 @@ description: "Task list for feature 025: telas de erro com título de nível 1"
 - [X] T012 [P] [US2] Em `apps/web/src/app/RouteError.tsx`, passar `level={1}` aos 2 usos de `ErrorState`.
 - [X] T013 [P] [US2] Em `apps/web/src/features/library/LibraryPage.tsx`, passar `level={1}` ao `ErrorState` "Entre para ver a biblioteca".
 - [X] T014 [P] [US2] Em `apps/web/src/features/status/ServerWake.tsx`, trocar o `<h2 id="server-wake-title" …>` por `<h1 …>`, mantendo `id`, `className`, `ref` e `tabIndex`.
-- [X] T015 [US2] Rodar `grep -rn "<ErrorState" apps/web/src` e confirmar que todo uso tem `level` e que `apps/web/src/app/NotFoundPage.tsx` segue `h1` (a tabela da seção 1 de `specs/025-erro-com-titulo-h1/research.md` já lista os usos; corrigi-la só se a conferência divergir).
+- [X] T015 [US2] Rodar `grep -rn "<ErrorState" apps/web/src` e confirmar que todo uso tem `level` e que `apps/web/src/app/NotFoundPage.tsx` segue `h1` (a tabela da seção 1 de `specs/027-erro-com-titulo-h1/research.md` já lista os usos; corrigi-la só se a conferência divergir).
 
 **Checkpoint**: T007 a T010 passam; `npm run typecheck -w @cruzadinha/web` só falha em `LibraryPage.tsx` (falta o `level` do calendário, tratado na US3).
 
@@ -112,8 +112,8 @@ description: "Task list for feature 025: telas de erro com título de nível 1"
 
 ## Phase 7: Polish & cross-cutting
 
-- [X] T021 [P] Atualizar o `CLAUDE.md` com um item "Feature 025 (telas de erro com `h1`)" no bloco "Current state": `ErrorState` exige `level` (1 = página inteira, 2 = dentro de página com `h1`), `ServerWake` virou `h1`, o e2e de botões não desativa mais `page-has-heading-one`, e a regra "um `h1` por página" para telas novas.
-- [X] T022 Rodar da raiz `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build`; corrigir o que falhar. Rodar também o e2e completo do site (`npm run test:e2e -w @cruzadinha/web`) para confirmar que nenhum teste das features 010 a 024 quebrou (SC-005), e executar o roteiro de `specs/025-erro-com-titulo-h1/quickstart.md`.
+- [X] T021 [P] Atualizar o `CLAUDE.md` com um item "Feature 027 (telas de erro com `h1`)" no bloco "Current state": `ErrorState` exige `level` (1 = página inteira, 2 = dentro de página com `h1`), `ServerWake` virou `h1`, o e2e de botões não desativa mais `page-has-heading-one`, e a regra "um `h1` por página" para telas novas.
+- [X] T022 Rodar da raiz `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build`; corrigir o que falhar. Rodar também o e2e completo do site (`npm run test:e2e -w @cruzadinha/web`) para confirmar que nenhum teste das features 010 a 024 quebrou (SC-005), e executar o roteiro de `specs/027-erro-com-titulo-h1/quickstart.md`.
 - [ ] T023 Commitar com `fix(web): give full-page error screens a level-one heading` (corpo explicando o `level`; sem trailer de IA) e abrir o PR para `main` com resumo e plano de teste, seguindo `.claude/rules/git-conventions.md` (não usar a skill `open-mr`). Mencionar "Closes #46". Se a branch atual não seguir `fix/<slug>` (regra do `CLAUDE.md`), renomeá-la localmente antes do push.
 
 ---
