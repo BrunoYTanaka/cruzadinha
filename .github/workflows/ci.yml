@@ -44,6 +44,9 @@ jobs:
     name: e2e (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Imagem oficial do Playwright: navegador e bibliotecas já vêm nela, sem `apt-get` (que chegou a
+    # levar 10 min no runner). A versão precisa ser a do `@playwright/test` em package-lock.json.
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
     # Cada fatia tem o próprio Postgres e a própria API: os testes esvaziam as tabelas, então
     # não podem dividir um banco.
     strategy:
@@ -57,15 +60,13 @@ jobs:
           POSTGRES_USER: cruzadinha
           POSTGRES_PASSWORD: cruzadinha
           POSTGRES_DB: cruzadinha
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U cruzadinha"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgres://cruzadinha:cruzadinha@localhost:5432/cruzadinha
+      DATABASE_URL: postgres://cruzadinha:cruzadinha@postgres:5432/cruzadinha
       NODE_ENV: development
       PORT: 3000
       HOST: 127.0.0.1
@@ -87,23 +88,11 @@ jobs:
         run: |
           npm run dev -w @cruzadinha/api > api.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -fs http://localhost:3000/api/health && exit 0
+            node -e "fetch('http://localhost:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))" && exit 0
             sleep 1
           done
           cat api.log
           exit 1
-      - uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - run: npx playwright install --with-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        working-directory: apps/web
-      # Com o navegador em cache falta só as bibliotecas do sistema.
-      - run: npx playwright install-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        working-directory: apps/web
       # O Playwright gera o site e o serve com `vite preview` (o proxy `/api` aponta para a API).
       - run: npm run test:e2e -w @cruzadinha/web -- --shard=${{ matrix.shard }}/3
       - uses: actions/upload-artifact@v4
