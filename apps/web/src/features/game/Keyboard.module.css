@@ -27,6 +27,10 @@
   font-weight: 500;
 }
 
+.key:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
+}
+
 .wide {
   flex: 1.6 1 0;
   max-width: 62px;

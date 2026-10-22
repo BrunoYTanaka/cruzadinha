@@ -55,14 +55,24 @@
   background: var(--surface);
   color: var(--ink);
   box-sizing: border-box;
+  transition:
+    border-color 120ms,
+    background-image 120ms;
 }
 
 .link {
   text-decoration: none;
 }
 
-.link:hover {
-  border-color: var(--accent);
+/* Cartão que é link (feature 023): borda de destaque com o mouse e a camada de pressionado. */
+@media (hover: hover) {
+  .link:hover {
+    border-color: var(--accent);
+  }
+}
+
+.link:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 .body {

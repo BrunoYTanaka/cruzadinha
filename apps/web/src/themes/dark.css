@@ -30,6 +30,11 @@
 
     --pill: #2c3038;
     --scrollbar: #6e7581;
+
+    --control: #24272d;
+    --control-line: #6e7581;
+    --hover-overlay: rgb(236 238 242 / 0.1);
+    --press-overlay: rgb(236 238 242 / 0.18);
   }
 }
 
@@ -62,4 +67,9 @@
 
   --pill: #2c3038;
   --scrollbar: #6e7581;
+
+  --control: #24272d;
+  --control-line: #6e7581;
+  --hover-overlay: rgb(236 238 242 / 0.1);
+  --press-overlay: rgb(236 238 242 / 0.18);
 }

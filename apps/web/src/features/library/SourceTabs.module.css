@@ -14,18 +14,33 @@
   padding: 6px 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  background: var(--pill);
+  background-color: var(--pill);
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 120ms,
+    background-image 120ms;
+}
+
+/* Mouse por cima e pressionado (feature 023): a camada fica por cima do fundo e se soma à aba
+   escolhida, sem apagar a marca. */
+@media (hover: hover) {
+  .tab:hover {
+    background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+  }
+}
+
+.tab:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 /* A aba escolhida se liga ao calendário: mesma superfície, sem a borda de baixo e com a marca da
    cor de ação no topo. */
 .selected {
   border-bottom-color: var(--surface);
-  background: var(--surface);
+  background-color: var(--surface);
   box-shadow: inset 0 3px 0 var(--accent);
 }
 

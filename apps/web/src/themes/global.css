@@ -1,20 +1,69 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Camadas (feature 023): os estilos de elemento ficam em `reset` e as classes compartilhadas dos
+   botões (Button.module.css) em `components`. As classes de cada componente, fora de camada, vencem
+   as duas sem depender da ordem em que os arquivos CSS chegam à página. */
+@layer reset, components;
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: 15px;
-  line-height: 1.5;
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  button,
+  input {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    min-height: var(--tap);
+    cursor: pointer;
+  }
+
+  button:disabled,
+  button[aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  /* Link de texto (feature 023): sublinhado, e o sublinhado engrossa com o mouse e ao pressionar.
+     Nunca ganha fundo nem contorno; um link com aparência de botão usa `buttonClass`, que vence esta
+     camada. Um link com cor própria fora de camada mantém a cor ao ser pressionado. */
+  a {
+    color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    a:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  a:active {
+    color: var(--ink);
+    text-decoration-thickness: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
 }
 
 /* Barra de rolagem fina e com as cores do tema, igual nos navegadores. `scrollbar-color` é
@@ -54,37 +103,10 @@ body {
   display: none !important;
 }
 
-button,
-input {
-  font: inherit;
-  color: inherit;
-}
-
-button {
-  min-height: var(--tap);
-  cursor: pointer;
-}
-
-button:disabled,
-button[aria-disabled='true'] {
-  cursor: not-allowed;
-}
-
 /* O contorno de foco aparece só para teclado e nunca fica escondido. */
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
-}
-
-a {
-  color: var(--accent);
-  text-underline-offset: 3px;
-}
-
-h1,
-h2,
-h3 {
-  text-wrap: balance;
 }
 
 /* Troca de tema pelo botão das configurações (feature 021): a página nova cresce num círculo a

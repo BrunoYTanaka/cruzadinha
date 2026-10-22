@@ -58,11 +58,14 @@
   min-height: 40px;
   /* À direita, o espaço do visto existe em toda dica: resolver ou desfazer não muda onde o texto
      quebra nem a altura da lista (feature 017, FR-013). */
-  padding: 6px 36px 6px 10px;
-  border: 0;
+  /* A borda transparente (feature 023) aparece com cores forçadas; o padding perde 1 px em cada lado
+     para o texto não mudar de lugar nem de quebra. */
+  padding: 5px 35px 5px 9px;
+  border: 1px solid transparent;
   border-radius: 8px;
-  background: transparent;
+  background-color: transparent;
   color: var(--ink);
+  transition: background-image 120ms;
   font-size: 16px;
   text-align: left;
   overflow-wrap: anywhere;
@@ -83,14 +86,14 @@
 }
 
 .active {
-  background: var(--word);
+  background-color: var(--word);
 }
 
 /* Resolvida: riscada de novo (feature 019), com o fundo e o visto da 017 e o texto em --ink, sem
    apagar, porque --mute sobre --word fica abaixo de 4,5:1 no tema escuro (feature 016). O risco não
    chega ao visto nem ao ", resolvida", que são absolutos. */
 .done {
-  background: var(--ok-tint);
+  background-color: var(--ok-tint);
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
@@ -98,7 +101,19 @@
 /* Ativa e resolvida: mantém o fundo da palavra ativa, como qualquer dica ativa; o visto continua
    marcando que ela está resolvida. */
 .active.done {
-  background: var(--word);
+  background-color: var(--word);
+}
+
+/* Mouse por cima só na dica sem destaque, para não se confundir com a ativa nem com a resolvida;
+   pressionado em todas (feature 023). */
+@media (hover: hover) {
+  .clue:not(.active, .done):hover {
+    background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+  }
+}
+
+.clue:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 /* Ao preencher (feature 021): só o risco, sem fundo nem visto, porque a palavra pode estar errada.
@@ -108,12 +123,12 @@
   text-decoration-thickness: 1px;
 }
 
-/* Visto no fim da linha, centrado na primeira linha do texto: 6 px de padding mais meia linha
+/* Visto no fim da linha, centrado na primeira linha do texto: 5 px de padding mais meia linha
    (altura de linha 1,5), menos metade do visto. */
 .check {
   position: absolute;
-  top: calc(6px + 0.75em - 9px);
-  right: 10px;
+  top: calc(5px + 0.75em - 9px);
+  right: 9px;
   width: 18px;
   height: 18px;
   fill: none;

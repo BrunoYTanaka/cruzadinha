@@ -1,5 +1,6 @@
 import type { Word } from '@cruzadinha/shared'
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
+import { buttonClass } from '../../components/Button'
 import { wordKey } from '../../game-logic/clue-strike'
 import styles from './ClueBar.module.css'
 
@@ -21,6 +22,9 @@ type ClueBarProps = {
 // palavra, o leitor de tela anuncia a nova dica. Uma dica cortada pelas reticências aparece
 // inteira num balão quando o mouse para sobre ela (feature 018): acima da barra no computador,
 // abaixo na barra sem botões, que na janela estreita fica abaixo do tabuleiro (feature 019).
+// Anterior e próxima são botões de ícone (feature 023).
+const step = `${buttonClass({ variant: 'icon' })} ${styles.step}`
+
 export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
   const navigable = onPrevious !== undefined && onNext !== undefined
   // A chave da palavra para a qual o balão abriu: outra palavra ativa o fecha sozinha.
@@ -116,13 +120,13 @@ export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
   }
   return (
     <div className={`${styles.bar} ${styles.navigable}`} onPointerLeave={onBarLeave}>
-      <button type="button" className={styles.step} aria-label="Dica anterior" onClick={onPrevious}>
+      <button type="button" className={step} aria-label="Dica anterior" onClick={onPrevious}>
         <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
           <path d="M15 5l-7 7 7 7" />
         </svg>
       </button>
       {live}
-      <button type="button" className={styles.step} aria-label="Próxima dica" onClick={onNext}>
+      <button type="button" className={step} aria-label="Próxima dica" onClick={onNext}>
         <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
           <path d="M9 5l7 7-7 7" />
         </svg>

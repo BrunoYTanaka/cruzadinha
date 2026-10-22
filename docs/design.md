@@ -188,6 +188,35 @@ apps/web/src/
 - A escolha é aplicada na hora e guardada nas configurações (`cruzadinha:settings`; para quem tem conta, também na conta); um script no `index.html` a aplica antes da primeira pintura.
 - Critério de aceite: nos dois modos, bloco, célula selecionada, palavra ativa e letra preenchida têm contraste claro entre si.
 
+### Botões e links (feature 023)
+
+Quatro tipos de botão, definidos uma vez (`Button` e `buttonClass()` em `components/`):
+
+- **Principal**: fundo na cor de destaque. É a ação mais importante do bloco, e há no máximo um por formulário ou modal.
+- **Secundário**: fundo `--control` e contorno `--control-line`. É o padrão para as demais ações, inclusive as pílulas de ajuda, o botão de tema e os passos − e +.
+- **Discreto**: só o contorno `--control-line`, sem fundo. Serve para ações de baixa ênfase ("Sair", "Restaurar padrões", fechar um aviso) e continua com cara de botão.
+- **Ícone**: sem fundo nem contorno em repouso. Inclui a engrenagem, o fechar das modais, os botões da barra do jogo e as setas da barra da dica.
+
+O contorno dos botões de texto tem pelo menos 3:1 contra o fundo em volta, nos dois temas. Um botão com forma própria (pílula, círculo da legenda, quadrado do − e +) muda só medidas e forma; cores e estados vêm sempre do tipo.
+
+Estados:
+
+- **Mouse por cima**: uma camada translúcida (`--hover-overlay`) por cima do fundo. Só aparece em aparelhos com mouse, para não ficar presa depois de um toque.
+- **Pressionado**: uma camada mais forte (`--press-overlay`), também no toque.
+- **Foco pelo teclado**: o contorno de 3 px de sempre, inteiro em qualquer estado.
+- **Desativado**: opacidade 0,6 e cursor de indisponível, sem reagir ao mouse.
+- Nenhum estado muda tamanho ou posição. Quem pede menos movimento vê a troca sem transição.
+- Com cores forçadas, todo botão mostra o contorno, porque tem borda de 1 px (transparente nos de ícone).
+
+Link × botão:
+
+- **Link de texto**: sublinhado na cor de destaque. O sublinhado engrossa com o mouse e ao pressionar, e o link nunca ganha fundo nem contorno.
+- **Botões**: nunca sublinhados. Fora o principal, não usam a cor de destaque no texto.
+- **Link com papel de botão** ("Entrar" do cabeçalho do visitante, voltar da barra do jogo, atalho da modal de conclusão): usa a aparência do tipo inteira.
+- **Cartões "Hoje" e dias do calendário**: continuam cartões. Ganham borda de destaque com o mouse e a camada de pressionado.
+- **Controles com estado próprio** (abas das fontes, cruzada padrão, chave liga/desliga, linhas da lista de dicas): mantêm o selecionado e somam as camadas de mouse e pressionado. Na lista de dicas, o mouse por cima só aparece na dica sem destaque.
+- **Fora desta linguagem**: o tabuleiro e a alça de redimensionar. O teclado na tela só ganha o pressionado.
+
 ## 6. Regras
 
 ### Jogo

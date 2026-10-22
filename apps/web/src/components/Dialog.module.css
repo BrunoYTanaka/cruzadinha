@@ -54,18 +54,11 @@
   margin-right: -10px;
 }
 
+/* Botão de ícone (feature 023): cores e estados vêm do tipo. */
 .close {
-  display: inline-flex;
   flex: none;
-  align-items: center;
-  justify-content: center;
   width: var(--tap);
   height: var(--tap);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
 }
 
 .close svg {

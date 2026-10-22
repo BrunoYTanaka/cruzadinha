@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
+import { buttonClass } from './Button'
 import styles from './Dialog.module.css'
 
 const FOCUSABLE =
@@ -120,7 +121,7 @@ export function Dialog({
             </h2>
             <button
               type="button"
-              className={styles.close}
+              className={`${buttonClass({ variant: 'icon' })} ${styles.close}`}
               aria-label="Fechar"
               onClick={() => onCloseRef.current()}
             >

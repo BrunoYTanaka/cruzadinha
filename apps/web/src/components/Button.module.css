@@ -1,33 +1,84 @@
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: var(--tap);
-  padding: 0 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 500;
-}
+/* Os quatro tipos de botão (feature 023). Ficam na camada `components` (ordem declarada também em
+   global.css): a classe própria de um componente, fora de camada, muda só medidas e forma e vence
+   estas regras sem depender da ordem dos arquivos. */
+@layer reset, components;
 
-.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
+@layer components {
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--tap);
+    padding: 0 18px;
+    /* Borda em todos os tipos, transparente no de ícone: com cores forçadas o sistema a pinta e o
+       limite do botão continua visível. */
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 120ms,
+      background-image 120ms,
+      border-color 120ms,
+      color 120ms,
+      box-shadow 120ms;
+  }
 
-.ghost {
-  border-color: transparent;
-}
+  .primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
 
-.block {
-  width: 100%;
-}
+  .secondary {
+    background: var(--control);
+    border-color: var(--control-line);
+    color: var(--ink);
+  }
 
-.button[aria-disabled='true'],
-.button:disabled {
-  opacity: 0.6;
+  .quiet {
+    background: transparent;
+    border-color: var(--control-line);
+    color: var(--ink);
+  }
+
+  .icon {
+    padding: 0;
+    background: transparent;
+    border-color: transparent;
+    color: var(--ink);
+  }
+
+  .small {
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .block {
+    width: 100%;
+  }
+
+  /* Mouse por cima e pressionado (feature 023): uma camada translúcida por cima do fundo, que serve
+     a qualquer fundo. O mouse por cima só com ponteiro que passa por cima, para não ficar preso
+     depois de um toque; o desativado não muda. */
+  @media (hover: hover) {
+    .button:not(:disabled, [aria-disabled='true']):hover {
+      background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+    }
+  }
+
+  .button:not(:disabled, [aria-disabled='true']):active {
+    background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
+  }
+
+  .button:disabled,
+  .button[aria-disabled='true'] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }

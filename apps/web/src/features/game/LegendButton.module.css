@@ -9,13 +9,12 @@
   gap: 8px;
 }
 
+/* Principal redondo (feature 023): cores e estados vêm do tipo. */
 .button {
   width: 44px;
   height: 44px;
-  border: 0;
+  padding: 0;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-ink);
   font-size: 20px;
   font-weight: 700;
   box-shadow: 0 2px 8px rgb(0 0 0 / 25%);

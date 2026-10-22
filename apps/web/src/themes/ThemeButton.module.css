@@ -1,16 +1,9 @@
+/* Secundário em forma de pílula (feature 023): cores e estados vêm do tipo. */
 .button {
-  display: inline-flex;
-  align-items: center;
   gap: 8px;
   min-height: 48px;
   padding: 0 16px 0 12px;
-  border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--bg);
-  color: var(--ink);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
 }
 
 .icon {

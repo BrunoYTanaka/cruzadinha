@@ -1,6 +1,7 @@
 import { useState, type MouseEvent } from 'react'
 import { flushSync } from 'react-dom'
 import { Tooltip } from '../components/Tooltip'
+import { buttonClass } from '../components/Button'
 import { VisuallyHidden } from '../components/VisuallyHidden'
 import { updateSettings, useSettings } from '../features/settings/settings-store'
 import { nextTheme, themeLabel, type Theme } from './theme'
@@ -56,7 +57,7 @@ export function ThemeButton() {
       <Tooltip label={`Mudar para ${themeLabel(next).toLowerCase()}`} placement="above">
         <button
           type="button"
-          className={styles.button}
+          className={`${buttonClass()} ${styles.button}`}
           aria-label={`Tema: ${themeLabel(theme).toLowerCase()}. Mudar para ${themeLabel(next).toLowerCase()}`}
           onClick={onClick}
         >

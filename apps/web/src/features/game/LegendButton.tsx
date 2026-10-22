@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { buttonClass } from '../../components/Button'
 import styles from './LegendButton.module.css'
 
 const ITEMS: { className: string; label: string }[] = [
@@ -47,7 +48,7 @@ export function LegendButton() {
       ) : null}
       <button
         type="button"
-        className={styles.button}
+        className={`${buttonClass({ variant: 'primary' })} ${styles.button}`}
         aria-label="Legenda do tabuleiro"
         aria-expanded={open}
         aria-controls={open ? id : undefined}

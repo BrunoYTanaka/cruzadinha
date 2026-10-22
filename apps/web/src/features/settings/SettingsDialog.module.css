@@ -58,22 +58,12 @@
   gap: 6px;
 }
 
+/* Secundário quadrado (feature 023): cores, desativado e estados vêm do tipo. */
 .step {
   width: var(--tap);
   height: var(--tap);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
+  padding: 0;
   font-size: 20px;
-  cursor: pointer;
-}
-
-.step:disabled {
-  color: var(--mute);
-  cursor: default;
-  opacity: 0.6;
 }
 
 .value {
@@ -106,31 +96,45 @@
   width: 52px;
   height: 30px;
   padding: 0;
-  border: 0;
+  /* Borda transparente: com cores forçadas o limite aparece (feature 023). A bola fica 1 px mais
+     para dentro para continuar no mesmo lugar. */
+  border: 1px solid transparent;
   border-radius: 999px;
-  background: var(--line);
+  background-color: var(--line);
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background-color 120ms,
+    background-image 120ms;
 }
 
 .switch[aria-checked='true'] {
-  background: var(--accent);
+  background-color: var(--accent);
+}
+
+@media (hover: hover) {
+  .switch:hover {
+    background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+  }
+}
+
+.switch:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 .knob {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
   background: var(--surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
-  transition: left 0.2s;
+  transition: left 120ms;
 }
 
 .switch[aria-checked='true'] .knob {
-  left: 25px;
+  left: 24px;
   background: var(--accent-ink);
 }
 
@@ -156,18 +160,32 @@
   min-width: 0;
   min-height: var(--tap);
   padding: 0 8px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: transparent;
+  background-color: transparent;
   color: var(--ink);
   font: inherit;
   font-weight: 500;
   cursor: pointer;
+  transition:
+    background-color 120ms,
+    background-image 120ms;
 }
 
 .segmentButton[aria-pressed='true'] {
-  background: var(--surface);
+  background-color: var(--surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+}
+
+/* Mouse por cima e pressionado (feature 023), somados ao segmento escolhido. */
+@media (hover: hover) {
+  .segmentButton:hover {
+    background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+  }
+}
+
+.segmentButton:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 /* Mais de 3 fontes: uma por linha. */

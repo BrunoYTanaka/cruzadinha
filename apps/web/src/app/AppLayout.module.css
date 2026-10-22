@@ -36,6 +36,13 @@
   font-weight: 700;
   letter-spacing: -0.01em;
   text-decoration: none;
+  transition: color 120ms;
+}
+
+@media (hover: hover) {
+  .brand:hover {
+    color: var(--accent);
+  }
 }
 
 .actions {
@@ -64,12 +71,9 @@
   white-space: nowrap;
 }
 
+/* "Entrar" do visitante: link com aparência de botão discreto, como o "Sair" (feature 023). */
 .login {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
   padding: 0 12px;
-  font-weight: 500;
 }
 
 .notice {
