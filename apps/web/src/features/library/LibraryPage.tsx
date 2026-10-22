@@ -64,7 +64,7 @@ export function LibraryPage() {
     library.error.status === 401
   ) {
     return (
-      <ErrorState title="Entre para ver a biblioteca">
+      <ErrorState level={1} title="Entre para ver a biblioteca">
         <Link to="/login">Entrar</Link>
       </ErrorState>
     )
@@ -79,6 +79,7 @@ export function LibraryPage() {
     const offline = library.error instanceof ApiRequestError && library.error.isOffline
     calendarArea = (
       <ErrorState
+        level={2}
         title={offline ? 'Sem conexão' : 'Não foi possível carregar a biblioteca'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={() => void library.refetch()}

@@ -22,6 +22,8 @@ export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
 }
 
 type ErrorStateProps = {
+  // 1 quando o erro é a página inteira (o título é o h1); 2 dentro de uma página que já tem h1.
+  level: 1 | 2
   title?: string
   message?: string
   onRetry?: () => void
@@ -32,6 +34,7 @@ type ErrorStateProps = {
 }
 
 export function ErrorState({
+  level,
   title = 'Algo deu errado',
   message,
   onRetry,
@@ -39,9 +42,10 @@ export function ErrorState({
   waitSeconds,
   children,
 }: ErrorStateProps) {
+  const Heading = level === 1 ? 'h1' : 'h2'
   return (
     <section role="alert" className={styles.error}>
-      <h2 className={styles.title}>{title}</h2>
+      <Heading className={styles.title}>{title}</Heading>
       {message ? <p className={styles.message}>{message}</p> : null}
       {waitSeconds !== undefined ? (
         <p className={styles.message}>Tente de novo em {formatWait(waitSeconds)}.</p>

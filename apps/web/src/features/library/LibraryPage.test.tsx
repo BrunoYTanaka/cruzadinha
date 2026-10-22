@@ -152,6 +152,11 @@ describe('LibraryPage', () => {
     renderRoutes(routes, ['/'], withAccount())
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('Não foi possível carregar a biblioteca')
+    // A página já tem o h1 "Hoje": o erro do calendário entra como h2 (feature 027).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Hoje')
+    expect(within(alert).getByRole('heading', { level: 2 })).toHaveTextContent(
+      'Não foi possível carregar a biblioteca',
+    )
     // O cartão da fonte também oferece nova tentativa; aqui vale a do calendário.
     await user.click(within(alert).getByRole('button', { name: 'Tentar de novo' }))
     // Uma consulta por fonte (feature 015): a nova tentativa pede de novo a fonte do calendário.
@@ -169,6 +174,10 @@ describe('LibraryPage', () => {
     )
     renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Hoje')
+    expect(within(screen.getByRole('alert')).getByRole('heading', { level: 2 })).toHaveTextContent(
+      'Sem conexão',
+    )
   })
 
   it('o aviso da fonte só aparece por 10 minutos e não esconde o que está guardado', async () => {
@@ -540,6 +549,9 @@ describe('biblioteca do visitante (feature 013)', () => {
     })
     renderRoutes(guestRoutes, ['/'], asGuest())
     expect(await screen.findByText('Entre para ver a biblioteca')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Entre para ver a biblioteca',
+    )
     // Um pedido por fonte e nenhuma nova tentativa.
     expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(1)
     expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(

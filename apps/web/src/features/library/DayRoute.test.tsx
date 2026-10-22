@@ -103,6 +103,7 @@ describe('DayRoute', () => {
     mockApi({ 'GET /api/puzzles': () => apiError(404, 'puzzle-unavailable') })
     renderRoutes(routes, ['/dia/2026-10-03'])
     expect(await screen.findByRole('alert')).toHaveTextContent('Não há cruzada neste dia.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Não há cruzada neste dia.')
     expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute('href', '/')
     expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:oglobo:2026-10-03')).toBe('1')
   })
@@ -111,6 +112,9 @@ describe('DayRoute', () => {
     mockApi({ 'GET /api/puzzles': () => apiError(502, 'puzzle-source-failed') })
     renderRoutes(routes, ['/dia/2026-10-03'])
     expect(await screen.findByRole('alert')).toHaveTextContent('A fonte está fora do ar agora.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'A fonte está fora do ar agora.',
+    )
     expect(screen.getByRole('alert')).toHaveTextContent('Tente mais tarde.')
     expect(window.localStorage.getItem(SOURCE_DOWN_KEY)).not.toBeNull()
   })
@@ -122,6 +126,7 @@ describe('DayRoute', () => {
     })
     renderRoutes(routes, ['/dia/2026-10-03'])
     expect(await screen.findByRole('alert')).toHaveTextContent('Muitas buscas seguidas.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Muitas buscas seguidas.')
     expect(screen.getByRole('alert')).toHaveTextContent('Tente de novo em 2 min.')
   })
 
@@ -143,6 +148,7 @@ describe('DayRoute', () => {
     const { calls } = mockApi({})
     renderRoutes(routes, ['/dia/2026-10-20'])
     expect(await screen.findByRole('alert')).toHaveTextContent('Esse dia ainda não chegou')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Esse dia ainda não chegou')
     expect(calls).toHaveLength(0)
   })
 

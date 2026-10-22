@@ -455,8 +455,8 @@ async function expectSelectedKept(page: Page, control: Locator) {
 // O contraste dos estados do tabuleiro é uma exceção assumida (feature 010, FR-026).
 const axe = (page: Page) => new AxeBuilder({ page }).exclude('[role="grid"]')
 
-async function expectNoAxeViolations(page: Page, disabledRules: string[] = []) {
-  expect((await axe(page).disableRules(disabledRules).analyze()).violations).toEqual([])
+async function expectNoAxeViolations(page: Page) {
+  expect((await axe(page).analyze()).violations).toEqual([])
 }
 
 async function failSourceRequests(page: Page) {
@@ -576,9 +576,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
       await failSourceRequests(page)
       await page.goto(`/dia/${yesterday()}?fonte=oglobo`)
       await expect(page.getByRole('button', { name: 'Tentar de novo' })).toBeVisible()
-      // A tela de erro do dia só tem `h2` desde a feature 010: falta antiga, alheia aos botões
-      // (SC-005 pede zero violações novas).
-      await expectNoAxeViolations(page, ['page-has-heading-one'])
+      await expectNoAxeViolations(page)
     })
   }
 })

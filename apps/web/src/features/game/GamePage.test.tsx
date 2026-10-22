@@ -106,6 +106,7 @@ describe('GamePage', () => {
   it('404 mostra "Cruzada não encontrada." com volta à biblioteca', async () => {
     openGame({ [PUZZLE]: () => apiError(404, 'puzzle-unavailable') })
     expect(await screen.findByRole('alert')).toHaveTextContent('Cruzada não encontrada.')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cruzada não encontrada.')
     expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute('href', '/')
   })
 
@@ -117,6 +118,7 @@ describe('GamePage', () => {
         online ? jsonResponse(200, makePuzzleResponse(TINY)) : Promise.reject(new TypeError('x')),
     })
     expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sem conexão')
     online = true
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(await screen.findByRole('grid')).toBeInTheDocument()
