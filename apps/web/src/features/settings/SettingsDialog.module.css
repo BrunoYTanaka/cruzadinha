@@ -109,6 +109,9 @@
   flex: none;
   width: 52px;
   height: 30px;
+  /* A regra global de toque (`button { min-height: var(--tap) }`, na camada reset) vencia o
+     `height` e esticava o trilho para 44 px; o ::before abaixo devolve a área de toque. */
+  min-height: 0;
   padding: 0;
   /* Borda transparente: com cores forçadas o limite aparece (feature 023). A bola fica 1 px mais
      para dentro para continuar no mesmo lugar. */
@@ -119,6 +122,14 @@
   transition:
     background-color 120ms,
     background-image 120ms;
+}
+
+/* Área de toque de 44 px, transparente e fora da caixa medida. O `inset` conta a partir da caixa de
+   preenchimento (28 px, dentro da borda de 1 px): 28 + 8 + 8 = 44 px, e -1 px dos lados cobre a borda. */
+.switch::before {
+  content: '';
+  position: absolute;
+  inset: -8px -1px;
 }
 
 .switch[aria-checked='true'] {
@@ -150,12 +161,6 @@
 .switch[aria-checked='true'] .knob {
   left: 24px;
   background: var(--accent-ink);
-}
-
-/* O tipo discreto tem 18 px de padding e 1 px de borda: a margem negativa leva o texto à margem
-   das outras linhas (feature 024); a área de clique e o hover continuam do tamanho do tipo. */
-.restore {
-  margin-inline-start: -19px;
 }
 
 .footer {

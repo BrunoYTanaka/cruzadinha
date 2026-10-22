@@ -145,14 +145,13 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
         expectNear(first.x + first.width, content.right)
         expectNear(second.x + second.width, content.right)
 
-        // "Restaurar padrões": o texto começa na margem esquerda do conteúdo (SC-008).
+        // "Restaurar padrões": a caixa visível, com o contorno, começa na margem esquerda do
+        // conteúdo e nunca antes dela (feature 025, SC-004; substitui a regra do texto da 024).
         const restore = dialog.getByRole('button', { name: 'Restaurar padrões' })
-        const textLeft = await restore.evaluate((button) => {
-          const range = document.createRange()
-          range.selectNodeContents(button)
-          return range.getBoundingClientRect().left
-        })
-        expectNear(textLeft, content.left)
+        const restoreBox = await box(restore)
+        expectNear(restoreBox.x, content.left)
+        expect(restoreBox.x).toBeGreaterThanOrEqual(content.left - 0.5)
+        expect(restoreBox.height).toBeGreaterThanOrEqual(44)
 
         // Seletor: mesma altura e mesma largura entre os botões (SC-004).
         const sources = await dialog
@@ -204,6 +203,10 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
     expect(overflow).toBeLessThanOrEqual(0)
     const restore = dialog.getByRole('button', { name: 'Restaurar padrões' })
     await expect(restore).toBeVisible()
+    const left = await dialog.evaluate(
+      (element) => element.querySelector('[class*="body"]')!.getBoundingClientRect().left,
+    )
+    expect((await box(restore)).x).toBeGreaterThanOrEqual(left - 0.5)
   })
 })
 
@@ -388,4 +391,82 @@ test.describe('US5: toque', () => {
       })
       .toBeLessThanOrEqual(1)
   })
+})
+
+// Feature 025: o interruptor mantém o trilho de 30 px e a área de toque de 44 px (issue #51).
+test.describe('F025-US1: interruptor com o desenho certo', () => {
+  // `dy` é a distância vertical a partir do centro do interruptor.
+  const hitsSwitch = (toggle: Locator, dy: number) =>
+    toggle.evaluate((element, offset) => {
+      const rect = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2 + offset,
+      )
+      return hit !== null && element.contains(hit)
+    }, dy)
+
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const width of [320, 360, 1280]) {
+      test(`tema ${scheme}, janela em ${width} px`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme })
+        await page.setViewportSize({ width, height: 900 })
+        await page.goto('/')
+        const dialog = await openSettings(page)
+        const switches = dialog.getByRole('switch')
+        await expect(switches).toHaveCount(2)
+
+        for (const index of [0, 1]) {
+          const toggle = switches.nth(index)
+          // No meio da área visível: a faixa de toque de 44 px também precisa estar na tela.
+          await toggle.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+          let knobOffset: number | null = null
+          // Duas passadas: desligado e ligado (ou o inverso).
+          for (const pass of [0, 1]) {
+            if (pass === 1) await toggle.click()
+            const track = await box(toggle)
+            expect(Math.abs(track.height - 30)).toBeLessThanOrEqual(0.5)
+            expect(Math.abs(track.width - 52)).toBeLessThanOrEqual(0.5)
+
+            const knob = await box(toggle.locator('[class*="knob"]'))
+            const offset = knob.y + knob.height / 2 - (track.y + track.height / 2)
+            expect(Math.abs(offset)).toBeLessThanOrEqual(0.5)
+            if (knobOffset !== null) expect(Math.abs(offset - knobOffset)).toBeLessThanOrEqual(0.5)
+            knobOffset = offset
+          }
+
+          await toggle.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+          // Faixa de toque de 44 px: dentro (±21) pega o interruptor, fora (±24) não.
+          expect(await hitsSwitch(toggle, -21)).toBe(true)
+          expect(await hitsSwitch(toggle, 21)).toBe(true)
+          expect(await hitsSwitch(toggle, -24)).toBe(false)
+          expect(await hitsSwitch(toggle, 24)).toBe(false)
+
+          // Um clique real a 20 px do centro alterna o interruptor.
+          const before = await toggle.getAttribute('aria-checked')
+          const track = await box(toggle)
+          await page.mouse.click(track.x + track.width / 2, track.y + track.height / 2 + 20)
+          await expect(toggle).toHaveAttribute('aria-checked', before === 'true' ? 'false' : 'true')
+        }
+
+        // A faixa de toque não cobre nenhum outro controle do diálogo.
+        const covered = await dialog.evaluate((element) => {
+          const found: string[] = []
+          for (const control of element.querySelectorAll<HTMLElement>(
+            'button:not([role="switch"]), input, a[href]',
+          )) {
+            control.scrollIntoView({ block: 'center' })
+            const rect = control.getBoundingClientRect()
+            const hit = document.elementFromPoint(
+              rect.left + rect.width / 2,
+              rect.top + rect.height / 2,
+            )
+            if (hit?.closest('[role="switch"]')) found.push(control.textContent || control.tagName)
+          }
+          return found
+        })
+        expect(covered).toEqual([])
+      })
+    }
+  }
 })

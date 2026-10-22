@@ -69,7 +69,7 @@ Quem abre as configurações vê os interruptores, o botão "Restaurar padrões"
 **Acceptance Scenarios**:
 
 1. **Given** a modal de configurações em qualquer largura, **When** a pessoa olha os interruptores ("Riscar a dica só quando acerta" e "Ir direto ao jogo"), **Then** os dois têm o mesmo tamanho e o mesmo acabamento, e a borda direita de ambos coincide com a borda direita da área de conteúdo da modal.
-2. **Given** a modal de configurações em qualquer largura, **When** a pessoa olha o botão "Restaurar padrões", **Then** o texto dele começa na mesma margem esquerda das demais linhas, sem recuo.
+2. **Given** a modal de configurações em qualquer largura, **When** a pessoa olha o botão "Restaurar padrões", **Then** o texto dele começa na mesma margem esquerda das demais linhas, sem recuo. *(Substituído pela feature 025: a caixa visível do botão fica na margem.)*
 3. **Given** a modal de configurações em uma janela larga, **When** a pessoa olha o seletor, **Then** os botões ficam lado a lado, com a mesma altura e a mesma largura, alinhados com as demais linhas da modal.
 4. **Given** a modal em um celular estreito (360 px), **When** a pessoa olha o seletor, **Then** os nomes das fontes aparecem inteiros, sem cortar, sobrepor nem estourar a modal, e a modal não ganha rolagem lateral.
 5. **Given** uma fonte com nome longo, **When** o seletor é mostrado, **Then** o nome quebra em linhas ou se ajusta sem desalinhar os demais botões.
@@ -130,7 +130,7 @@ Quem escolhe outra cruzada padrão vê a marca de "selecionada" deslizar e mudar
 - **FR-004**: O botão de tema MUST ter a mesma largura e a mesma altura nos três estados (automático, claro, escuro), em todas as larguras de tela e nos dois temas.
 - **FR-005**: A troca de estado do botão de tema MUST NOT mudar a posição nem o tamanho de nenhum outro item da linha "Tema" nem da modal.
 - **FR-006**: O nome acessível e o texto visível do botão de tema MUST continuar indicando o estado atual, e a animação do ícone e a transição de tema (feature 021) MUST seguir como hoje.
-- **FR-006a**: Os interruptores da modal MUST ter o mesmo tamanho, a mesma borda direita e o mesmo acabamento (borda, cor de ligado e de desligado) entre si, e o botão "Restaurar padrões" MUST ficar alinhado à mesma margem das demais linhas.
+- **FR-006a**: Os interruptores da modal MUST ter o mesmo tamanho, a mesma borda direita e o mesmo acabamento (borda, cor de ligado e de desligado) entre si, e o botão "Restaurar padrões" MUST ficar alinhado à mesma margem das demais linhas. *(Substituído pela feature 025: a caixa visível do botão fica na margem.)*
 - **FR-007**: Os botões do seletor da cruzada padrão MUST ter altura e alinhamento iguais entre si e com as demais linhas da modal, sem texto cortado, sobreposto ou fora da modal, em todas as larguras de 320 px em diante e com 1 a 3 fontes.
 - **FR-008**: O seletor MUST se adaptar a nomes de fonte longos e a textos maiores (zoom de 200 %) sem rolagem lateral na modal e sem desalinhar os botões.
 - **FR-009**: Em telas largas, a opção "Sem limite" MUST ficar alinhada à direita da linha de cada ajuda, no mesmo ponto nas linhas de letras e de palavras.
@@ -154,7 +154,7 @@ Nenhuma. A feature não cria nem altera dados.
 - **SC-002**: A largura e a altura do botão de tema são idênticas (diferença de 0 px) nos três estados, nos dois temas e nas larguras de desktop e de celular.
 - **SC-003**: Ao alternar o botão de tema pelos três estados, nenhum item vizinho na linha "Tema" muda de posição (diferença de até 1 px, margem de medição).
 - **SC-004**: Em larguras de 320 px a 1920 px, os botões do seletor da cruzada padrão têm a mesma altura (diferença de até 1 px), não há texto cortado e a modal não tem rolagem lateral.
-- **SC-008**: Em larguras de 320 px a 1920 px, os dois interruptores têm o mesmo tamanho e a borda direita de ambos fica a no máximo 1 px da borda direita da área de conteúdo, e o texto de "Restaurar padrões" fica a no máximo 1 px da margem esquerda das demais linhas.
+- **SC-008**: Em larguras de 320 px a 1920 px, os dois interruptores têm o mesmo tamanho e a borda direita de ambos fica a no máximo 1 px da borda direita da área de conteúdo, e o texto de "Restaurar padrões" fica a no máximo 1 px da margem esquerda das demais linhas. *(Substituído pela feature 025: a caixa visível do botão fica na margem.)*
 - **SC-005**: Em janelas de desktop, "Sem limite" fica a no máximo 1 px da borda direita da área de conteúdo, nas duas linhas de ajuda.
 - **SC-006**: A transição do destaque do seletor dura entre 100 ms e 300 ms e não ocorre com movimento reduzido.
 - **SC-007**: Nenhum teste existente de acessibilidade, contraste ou botões da feature 023 deixa de passar, e as telas alteradas não têm violações do verificador automático nos dois temas.
