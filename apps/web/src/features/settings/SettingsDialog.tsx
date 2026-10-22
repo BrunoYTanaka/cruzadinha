@@ -292,7 +292,7 @@ export function SettingsDialog() {
               para levar para outros.
             </span>
           )}
-          <Button variant="quiet" className={styles.restore} onClick={restoreDefaults}>
+          <Button variant="quiet" onClick={restoreDefaults}>
             Restaurar padrões
           </Button>
         </div>
