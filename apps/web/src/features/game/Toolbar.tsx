@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { buttonClass } from '../../components/Button'
 import { formatElapsed, spokenElapsed } from '../../lib/time'
 import styles from './Toolbar.module.css'
 
@@ -20,6 +21,9 @@ type ToolbarProps = {
 
 // Faixa entre o cabeçalho e o jogo: título, tempo, pausa, escolher outro dia, avisos do salvamento
 // e as ajudas.
+// Pausa e o link de voltar são botões de ícone (feature 023).
+const iconButton = `${buttonClass({ variant: 'icon' })} ${styles.iconButton}`
+
 export function Toolbar({
   elapsedMs,
   paused,
@@ -49,7 +53,7 @@ export function Toolbar({
         {canPause ? (
           <button
             type="button"
-            className={styles.iconButton}
+            className={iconButton}
             aria-label={paused ? 'Continuar' : 'Pausar'}
             aria-pressed={paused}
             onClick={paused ? onResume : onPause}
@@ -60,7 +64,7 @@ export function Toolbar({
           </button>
         ) : null}
         <span className={styles.separator} aria-hidden="true" />
-        <Link to="/" className={styles.iconButton} aria-label="Escolher outro dia">
+        <Link to="/" className={iconButton} aria-label="Escolher outro dia">
           <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
             <rect x="4" y="5" width="16" height="15" rx="2" />
             <path d="M4 10h16M9 3v4M15 3v4" />

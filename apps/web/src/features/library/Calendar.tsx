@@ -56,7 +56,6 @@ export function Calendar({
     >
       <div className={styles.head}>
         <Button
-          variant="ghost"
           className={styles.nav}
           onClick={onPrevious}
           disabled={!canGoPrevious}
@@ -68,7 +67,6 @@ export function Calendar({
           {title}
         </h2>
         <Button
-          variant="ghost"
           className={styles.nav}
           onClick={onNext}
           disabled={!canGoNext}

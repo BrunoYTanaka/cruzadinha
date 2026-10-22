@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
-import { Button } from '../components/Button'
+import { Button, buttonClass } from '../components/Button'
 import { Notice } from '../components/Notice'
 import { buildLoginPath } from '../features/auth/redirect'
 import { sessionQueryOptions, useLogoutMutation } from '../features/auth/useSession'
@@ -38,7 +38,7 @@ export function AppLayout() {
           {session.data ? (
             <>
               <span className={`${styles.who} ${styles.email}`}>{session.data.user.email}</span>
-              <Button variant="ghost" onClick={() => logout.mutate()} disabled={logout.isPending}>
+              <Button variant="quiet" onClick={() => logout.mutate()} disabled={logout.isPending}>
                 Sair
               </Button>
             </>
@@ -47,7 +47,10 @@ export function AppLayout() {
             <>
               <span className={styles.who}>Visitante</span>
               {onAuthPage ? null : (
-                <Link to={loginPath} className={styles.login}>
+                <Link
+                  to={loginPath}
+                  className={`${buttonClass({ variant: 'quiet' })} ${styles.login}`}
+                >
                   Entrar
                 </Link>
               )}

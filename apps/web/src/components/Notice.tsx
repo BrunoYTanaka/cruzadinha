@@ -25,7 +25,7 @@ export function Notice({ variant = 'info', children, action, onDismiss }: Notice
         </Button>
       ) : null}
       {onDismiss ? (
-        <Button variant="ghost" onClick={onDismiss} className={styles.action}>
+        <Button variant="quiet" onClick={onDismiss} className={styles.action}>
           Fechar
         </Button>
       ) : null}

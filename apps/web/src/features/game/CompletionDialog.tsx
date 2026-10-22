@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Button } from '../../components/Button'
-import buttonStyles from '../../components/Button.module.css'
+import { Button, buttonClass } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
 import { formatElapsed, spokenElapsed } from '../../lib/time'
 import styles from './CompletionDialog.module.css'
@@ -76,14 +75,14 @@ export function CompletionDialog({
           <Link
             ref={shortcut}
             to={otherSource.href}
-            className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.block} ${styles.link}`}
+            className={buttonClass({ variant: 'primary', block: true })}
           >
             Jogar {otherSource.name} deste dia
           </Link>
         ) : null}
         <Button
           ref={primary}
-          variant={otherSource ? 'default' : 'primary'}
+          variant={otherSource ? 'secondary' : 'primary'}
           block
           onClick={() => void navigate('/')}
         >

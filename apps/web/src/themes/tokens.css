@@ -5,7 +5,7 @@
    tabuleiro:           --block --cell --cell-line --word --sel --sel-ink
    ajuda:               --help --bad
    estado:              --ok --ok-tint --warn --warn-tint
-   controles:           --pill --scrollbar
+   controles:           --pill --scrollbar --control --control-line --hover-overlay --press-overlay
    Componentes só leem tokens: nada de cor ou medida fixa. */
 :root {
   --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;

@@ -35,10 +35,6 @@
   font-size: 20px;
 }
 
-.nav:disabled {
-  opacity: 0.35;
-}
-
 .caption {
   position: absolute;
   width: 1px;
@@ -87,6 +83,20 @@
   line-height: 1.1;
   text-decoration: none;
   overflow: hidden;
+  transition:
+    border-color 120ms,
+    background-image 120ms;
+}
+
+/* Dia que é link (feature 023): borda de destaque com o mouse e a camada de pressionado. */
+@media (hover: hover) {
+  a.day:hover {
+    border-color: var(--accent);
+  }
+}
+
+a.day:active {
+  background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
 .number {

@@ -106,7 +106,98 @@ describe.each(Object.entries(themes))('contraste dos tokens (%s)', (_name, token
   })
 })
 
+// Estados dos botões (feature 023): as sobreposições translúcidas `--hover-overlay` e
+// `--press-overlay` (`rgb(r g b / a)`) misturadas sobre o fundo de cada controle.
+type Overlay = { rgb: [number, number, number]; alpha: number }
+
+function readOverlays(block: string): Record<string, Overlay> {
+  const overlays: Record<string, Overlay> = {}
+  const pattern = /(--[\w-]+):\s*rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)\s*;/g
+  for (const [, name, r, g, b, alpha] of block.matchAll(pattern)) {
+    if (name) overlays[name] = { rgb: [Number(r), Number(g), Number(b)], alpha: Number(alpha) }
+  }
+  return overlays
+}
+
+function blend(overlay: Overlay, base: string): string {
+  const channels = [1, 3, 5].map((index, channel) => {
+    const value = parseInt(base.slice(index, index + 2), 16)
+    const mixed = Math.round(
+      (overlay.rgb[channel] ?? 0) * overlay.alpha + value * (1 - overlay.alpha),
+    )
+    return mixed.toString(16).padStart(2, '0')
+  })
+  return `#${channels.join('')}`
+}
+
+const overlayThemes: Record<string, Record<string, Overlay>> = {
+  claro: readOverlays(lightCss),
+  escuro: readOverlays(darkBlock(darkCss)),
+}
+
+// Limite dos botões secundário e discreto contra o que está em volta (3:1, SC-001).
+const BUTTON_LINE_PAIRS: [string, string][] = [
+  ['--control-line', '--bg'],
+  ['--control-line', '--surface'],
+]
+
+// Texto do botão sobre o fundo em repouso, com o mouse e pressionado (4,5:1, SC-004).
+const BUTTON_TEXT_PAIRS: [string, string][] = [
+  ['--ink', '--control'],
+  ['--ink', '--surface'],
+  ['--ink', '--bg'],
+  ['--ink', '--pill'],
+  ['--accent-ink', '--accent'],
+]
+
+describe.each(Object.entries(themes))('estados dos botões (%s)', (name, tokens) => {
+  const get = (token: string) => {
+    const value = tokens[token]
+    if (!value) throw new Error(`token ${token} ausente`)
+    return value
+  }
+  const overlay = (token: string) => {
+    const value = overlayThemes[name]?.[token]
+    if (!value) throw new Error(`sobreposição ${token} ausente`)
+    return value
+  }
+  const states = (background: string) => [
+    get(background),
+    blend(overlay('--hover-overlay'), get(background)),
+    blend(overlay('--press-overlay'), get(background)),
+  ]
+
+  it.each(BUTTON_LINE_PAIRS)('%s contra %s tem pelo menos 3:1', (line, background) => {
+    expect(contrast(get(line), get(background))).toBeGreaterThanOrEqual(3)
+  })
+
+  it.each(BUTTON_TEXT_PAIRS)(
+    '%s sobre %s tem pelo menos 4,5:1 em repouso, com o mouse e pressionado',
+    (text, background) => {
+      for (const state of states(background)) {
+        expect(contrast(get(text), state)).toBeGreaterThanOrEqual(4.5)
+      }
+    },
+  )
+
+  it('as setas da barra da dica, pressionadas sobre --word, têm pelo menos 3:1', () => {
+    for (const state of states('--word')) {
+      expect(contrast(get('--ink'), state)).toBeGreaterThanOrEqual(3)
+    }
+  })
+})
+
 describe('tokens', () => {
+  it('os dois blocos do tema escuro têm os mesmos tokens de controle', () => {
+    const media = darkCss.slice(0, darkCss.indexOf(":root[data-theme='dark']"))
+    const explicit = darkBlock(darkCss)
+    for (const token of ['--control', '--control-line', '--hover-overlay', '--press-overlay']) {
+      const value = (block: string) => block.match(new RegExp(`${token}:\\s*([^;]+);`))?.[1]
+      expect(value(media), token).toBeDefined()
+      expect(value(media), token).toBe(value(explicit))
+    }
+  })
+
   it('os dois temas definem os mesmos tokens', () => {
     expect(Object.keys(themes['escuro'] ?? {}).sort()).toEqual(
       Object.keys(themes['claro'] ?? {}).sort(),

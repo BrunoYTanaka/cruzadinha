@@ -1,6 +1,7 @@
-import styles from './BoardSizeReset.module.css'
+import { Button } from '../../components/Button'
 
-// "Tamanho padrão" na faixa de ferramentas do computador: apaga o tamanho escolhido pela alça.
+// "Tamanho padrão" na faixa de ferramentas do computador: apaga o tamanho escolhido pela alça. É um
+// botão secundário pequeno (feature 023), com o texto na cor normal, não na dos links.
 export function BoardSizeReset({
   isDefault,
   onReset,
@@ -9,8 +10,8 @@ export function BoardSizeReset({
   onReset: () => void
 }) {
   return (
-    <button type="button" className={styles.reset} disabled={isDefault} onClick={onReset}>
+    <Button size="small" disabled={isDefault} onClick={onReset}>
       Tamanho padrão
-    </button>
+    </Button>
   )
 }

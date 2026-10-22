@@ -1,3 +1,4 @@
+import { buttonClass } from '../../components/Button'
 import { Tooltip } from '../../components/Tooltip'
 import { setSettingsOpen } from './settings-open'
 import styles from './SettingsButton.module.css'
@@ -8,7 +9,7 @@ export function SettingsButton() {
     <Tooltip label="Configurações">
       <button
         type="button"
-        className={styles.button}
+        className={`${buttonClass({ variant: 'icon' })} ${styles.button}`}
         aria-label="Configurações"
         aria-haspopup="dialog"
         onClick={() => setSettingsOpen(true)}

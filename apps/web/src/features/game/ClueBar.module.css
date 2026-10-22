@@ -128,10 +128,7 @@
   width: var(--tap);
   height: var(--tap);
   padding: 0;
-  border: 0;
   border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--ink);
 }
 
 .icon {

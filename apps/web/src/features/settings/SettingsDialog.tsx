@@ -1,7 +1,7 @@
 import { puzzleSourceIdSchema, puzzleSourceNames, type Settings } from '@cruzadinha/shared'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Button } from '../../components/Button'
+import { Button, buttonClass } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
 import { ThemeButton } from '../../themes/ThemeButton'
 import { buildLoginPath } from '../auth/redirect'
@@ -81,7 +81,7 @@ function LimitControl({
       <div className={styles.stepper}>
         <button
           type="button"
-          className={styles.step}
+          className={`${buttonClass()} ${styles.step}`}
           aria-label={`Menos ${plural}`}
           disabled={unlimited || value <= 0}
           onClick={() => value !== null && set(value - 1)}
@@ -93,7 +93,7 @@ function LimitControl({
         </output>
         <button
           type="button"
-          className={styles.step}
+          className={`${buttonClass()} ${styles.step}`}
           aria-label={`Mais ${plural}`}
           disabled={unlimited || value >= MAX_HELP}
           onClick={() => value !== null && set(value + 1)}
@@ -268,7 +268,7 @@ export function SettingsDialog() {
               para levar para outros.
             </span>
           )}
-          <Button variant="ghost" onClick={restoreDefaults}>
+          <Button variant="quiet" onClick={restoreDefaults}>
             Restaurar padrões
           </Button>
         </div>
