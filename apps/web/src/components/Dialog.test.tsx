@@ -74,4 +74,24 @@ describe('Dialog', () => {
     await user.keyboard('{Escape}')
     expect(container.querySelector('#root')).not.toHaveAttribute('inert')
   })
+
+  // Largura (feature 024): `size="wide"` põe a classe de largura maior no painel; sem a prop, não.
+  it('aplica a classe de largura só com size="wide"', () => {
+    const { rerender } = render(
+      <Dialog open onClose={() => {}} title="Padrão">
+        <button>ok</button>
+      </Dialog>,
+    )
+    const classes = () => screen.getByRole('dialog').className.split(' ')
+    const base = classes()
+    expect(base).toHaveLength(1)
+
+    rerender(
+      <Dialog open onClose={() => {}} title="Padrão" size="wide">
+        <button>ok</button>
+      </Dialog>,
+    )
+    expect(classes()).toHaveLength(2)
+    expect(classes()).toContain(base[0])
+  })
 })

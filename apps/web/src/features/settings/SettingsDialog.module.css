@@ -2,6 +2,8 @@
   display: grid;
   gap: 14px;
   min-width: 0;
+  /* As linhas de ajuda escolhem o arranjo pela largura da modal, não da janela (feature 024). */
+  container-type: inline-size;
 }
 
 .separator {
@@ -46,6 +48,18 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
+}
+
+/* Com 400 px ou mais de conteúdo, nome, passos, valor e "Sem limite" cabem numa linha (≈ 371 px) e a
+   opção vai para o canto direito; abaixo disso ela desce para uma linha própria, à esquerda. */
+@container (min-width: 400px) {
+  .limit {
+    flex-wrap: nowrap;
+  }
+
+  .limit .check {
+    margin-inline-start: auto;
+  }
 }
 
 .limitName {
@@ -138,6 +152,12 @@
   background: var(--accent-ink);
 }
 
+/* O tipo discreto tem 18 px de padding e 1 px de borda: a margem negativa leva o texto à margem
+   das outras linhas (feature 024); a área de clique e o hover continuam do tamanho do tipo. */
+.restore {
+  margin-inline-start: -19px;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;
@@ -148,7 +168,10 @@
 
 /* Cruzada padrão com até 3 fontes: botões lado a lado num trilho. */
 .segment {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 4px;
   padding: 4px;
   border-radius: var(--radius-md);
@@ -156,8 +179,9 @@
 }
 
 .segmentButton {
-  flex: 1;
+  position: relative;
   min-width: 0;
+  overflow-wrap: anywhere;
   min-height: var(--tap);
   padding: 0 8px;
   border: 1px solid transparent;
@@ -172,7 +196,33 @@
     background-image 120ms;
 }
 
-.segmentButton[aria-pressed='true'] {
+/* Destaque do botão marcado (feature 024): um elemento que desliza de uma fonte para a outra. Fica
+   embaixo dos botões, que seguem com o fundo transparente e recebem por cima o hover e o pressionado
+   (feature 023). A posição é só função de --i e --count, então cliques rápidos terminam na última. */
+.thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc((100% - 8px - 4px * (var(--count) - 1)) / var(--count));
+  height: calc(100% - 8px);
+  /* Borda transparente: em cores forçadas o sistema a pinta e a fonte marcada continua visível. */
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+  translate: calc(var(--i) * (100% + 4px)) 0;
+  transition: translate 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: none;
+  }
+}
+
+/* Uma só fonte: não há destaque, então o botão marcado leva o fundo. */
+.single .segmentButton[aria-pressed='true'] {
   background-color: var(--surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
