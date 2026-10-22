@@ -1,6 +1,6 @@
 name: Feature / melhoria
 description: Propor uma funcionalidade nova ou uma melhoria.
-title: 'feat: '
+title: '[Feature]: '
 labels:
   - enhancement
 body:

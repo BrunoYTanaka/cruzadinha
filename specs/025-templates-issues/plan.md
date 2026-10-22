@@ -66,10 +66,10 @@ specs/025-templates-issues/
 .github/
 └── ISSUE_TEMPLATE/
     ├── config.yml       # seletor: issue em branco permitida, sem links de contato
-    ├── bug.yml          # prefixo "fix: ", etiqueta bug
-    ├── feature.yml      # prefixo "feat: ", etiqueta enhancement
-    ├── docs.yml         # prefixo "docs: ", etiqueta documentation
-    └── chore.yml        # prefixo "chore: ", sem etiqueta
+    ├── bug.yml          # prefixo "[Bug]: ", etiqueta bug
+    ├── feature.yml      # prefixo "[Feature]: ", etiqueta enhancement
+    ├── docs.yml         # prefixo "[Docs]: ", etiqueta documentation
+    └── chore.yml        # prefixo "[Chore]: ", sem etiqueta
 CLAUDE.md                # bullet em "Conventions" sobre os templates e o fluxo por tipo
 ```
 

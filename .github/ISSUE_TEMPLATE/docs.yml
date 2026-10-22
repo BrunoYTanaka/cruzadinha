@@ -1,6 +1,6 @@
 name: Documentação
 description: Criar, corrigir ou atualizar documentação.
-title: 'docs: '
+title: '[Docs]: '
 labels:
   - documentation
 body:

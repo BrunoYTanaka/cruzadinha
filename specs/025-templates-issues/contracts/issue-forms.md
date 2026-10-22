@@ -6,7 +6,7 @@ Interface exposta ao usuário: a página de nova issue. Legenda: **obrigatório*
 
 `blank_issues_enabled: true`; sem `contact_links`.
 
-## `bug.yml` — nome "Bug", título `fix: `, etiqueta `bug`
+## `bug.yml` — nome "Bug", título `[Bug]: `, etiqueta `bug`
 
 Descrição do seletor: "Algo não funciona como deveria."
 
@@ -20,7 +20,7 @@ Descrição do seletor: "Algo não funciona como deveria."
 | ambiente | input | Ambiente e versão | não |
 | evidencias | textarea | Evidências (prints, logs) | não |
 
-## `feature.yml` — nome "Feature / melhoria", título `feat: `, etiqueta `enhancement`
+## `feature.yml` — nome "Feature / melhoria", título `[Feature]: `, etiqueta `enhancement`
 
 Descrição: "Propor uma funcionalidade nova ou uma melhoria."
 
@@ -31,7 +31,7 @@ Descrição: "Propor uma funcionalidade nova ou uma melhoria."
 | criterios | textarea (valor inicial `- [ ] `) | Critérios de aceitação | sim |
 | impactos | textarea | Impactos esperados | não |
 
-## `docs.yml` — nome "Documentação", título `docs: `, etiqueta `documentation`
+## `docs.yml` — nome "Documentação", título `[Docs]: `, etiqueta `documentation`
 
 Descrição: "Criar, corrigir ou atualizar documentação."
 
@@ -42,7 +42,7 @@ Descrição: "Criar, corrigir ou atualizar documentação."
 | publico | input | Público-alvo | não |
 | validacao | textarea | Validação e revisão esperadas | não |
 
-## `chore.yml` — nome "Manutenção / chore", título `chore: `, sem etiqueta
+## `chore.yml` — nome "Manutenção / chore", título `[Chore]: `, sem etiqueta
 
 Descrição: "Dependências, CI, ferramentas ou limpeza que não mudam o comportamento."
 

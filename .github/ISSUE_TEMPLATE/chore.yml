@@ -1,6 +1,6 @@
 name: Manutenção / chore
 description: Dependências, CI, ferramentas ou limpeza que não mudam o comportamento.
-title: 'chore: '
+title: '[Chore]: '
 body:
   - type: textarea
     id: objetivo
