@@ -38,6 +38,7 @@ Run everything from the repository root:
 - `npm ci`: install all workspaces from `package-lock.json`; also activates the Git hooks (`prepare: husky`).
 - `npm run format` / `npm run format:check`: Prettier on the whole repo (`specs/`, `.specify/`, `.claude/` and this file are ignored).
 - `npm run lint`: ESLint with the single root `eslint.config.mjs`.
+- `npm run check:ids` / `npm run check:ids:remote`: fail when two `specs/NNN-*` folders, two `DDE-NNN` or two `ERD-NNN` files share a number (`scripts/check-unique-ids.mjs`). Spec Kit and the doc skills pick the next number from the local tree only, so parallel branches can collide; `:remote` also fetches `origin/main` and compares against it (offline it warns and checks only the local tree). If it fails, rename the folder to the next free number, update `.specify/feature.json` if it points to it and the references inside the feature's files, and keep the branch name when a pull request is already open (renaming the head branch closes the PR).
 - `npm run typecheck`, `npm test`, `npm run build`: run in every workspace (`--workspaces --if-present`).
 - `npm run test:int`: integration tests (`*.int.test.ts`) against a real Postgres 17 started by Testcontainers; needs Docker. Not run by the pre-push hook.
 - Single test: `npx vitest run <file>` inside the workspace, e.g. `cd apps/api && npx vitest run src/config.test.ts`.
@@ -56,7 +57,7 @@ Run everything from the repository root:
 - Front variables: `VITE_HELP_LETTER_LIMIT` (default 4) and `VITE_HELP_WORD_LIMIT` (default 2) are read at build time from the root `.env`; invalid values abort start-up.
 - Local environment: `cp .env.example .env`, then `docker compose up -d` (Postgres 17 and the API image). Health: `curl localhost:3000/api/health`.
 
-Hooks: pre-commit runs `lint-staged` (ESLint `--fix` and Prettier on staged files); pre-push runs `typecheck` and the unit tests. CI (`.github/workflows/ci.yml`) runs `npm ci`, `format:check`, `lint`, `typecheck`, `test` and `build` on every push, plus a job that runs `test:int` and one that builds `apps/api/Dockerfile`.
+Hooks: pre-commit runs `lint-staged` (ESLint `--fix` and Prettier on staged files); pre-push runs `check:ids:remote`, `typecheck` and the unit tests. CI (`.github/workflows/ci.yml`) runs `npm ci`, `check:ids`, `format:check`, `lint`, `typecheck`, `test` and `build` on every push, plus a job that runs `test:int` and one that builds `apps/api/Dockerfile`.
 
 ## Architecture
 

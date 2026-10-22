@@ -65,6 +65,7 @@ Rode a partir da raiz do repositório:
 | `npm run dev -w @cruzadinha/web`                                 | Sobe o site com o servidor de desenvolvimento do Vite.                            |
 | `npm run format` / `npm run format:check`                        | Formata ou verifica a formatação com Prettier.                                    |
 | `npm run lint`                                                   | Roda o ESLint.                                                                    |
+| `npm run check:ids` / `npm run check:ids:remote`                 | Falha se `specs/`, `DDE` ou `ERD` repetem número (`:remote` compara com a main).  |
 | `npm run typecheck`                                              | Verifica os tipos em todos os workspaces.                                         |
 | `npm test`                                                       | Roda os testes unitários em todos os workspaces.                                  |
 | `npm run test:int`                                               | Roda os testes de integração com Postgres em container (exige Docker).            |
@@ -76,7 +77,7 @@ Rode a partir da raiz do repositório:
 
 Para rodar um único arquivo de teste, entre no workspace: `cd apps/api && npx vitest run src/config.test.ts`.
 
-Os Git hooks rodam `lint-staged` no pre-commit e `typecheck` mais os testes no pre-push. A CI repete formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e os testes end-to-end (Playwright, com o seed de desenvolvimento) e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
+Os Git hooks rodam `lint-staged` no pre-commit e, no pre-push, a checagem de números repetidos contra `origin/main`, o `typecheck` e os testes. A CI repete a checagem de números repetidos, a formatação, lint, typecheck, testes e build a cada push, roda os testes de integração e os testes end-to-end (Playwright, com o seed de desenvolvimento) e também gera a imagem Docker da API. A API aplica as migrações pendentes do banco ao subir.
 
 ## Versões
 
