@@ -1,0 +1,21 @@
+name: Manutenção / chore
+description: Dependências, CI, ferramentas ou limpeza que não mudam o comportamento.
+title: 'chore: '
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo da tarefa
+      description: O que precisa ser feito e por quê.
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto no projeto
+      description: O que muda para quem desenvolve ou para o pipeline, e se algo fica incompatível.
+  - type: textarea
+    id: riscos
+    attributes:
+      label: Riscos e validação
+      description: O que pode dar errado e como confirmar que deu certo, por exemplo CI verde ou o site subindo.

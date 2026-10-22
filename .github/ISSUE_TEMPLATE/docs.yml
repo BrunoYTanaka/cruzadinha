@@ -1,0 +1,30 @@
+name: Documentação
+description: Criar, corrigir ou atualizar documentação.
+title: 'docs: '
+labels:
+  - documentation
+body:
+  - type: input
+    id: area
+    attributes:
+      label: Documento ou área afetada
+      description: Arquivo ou assunto, por exemplo `docs/deploy.md` ou "instruções de instalação".
+    validations:
+      required: true
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo da atualização
+      description: O que está faltando, errado ou desatualizado, e o que deve ficar escrito.
+    validations:
+      required: true
+  - type: input
+    id: publico
+    attributes:
+      label: Público-alvo
+      description: Quem vai ler, por exemplo quem mantém o projeto ou quem está começando.
+  - type: textarea
+    id: validacao
+    attributes:
+      label: Validação e revisão esperadas
+      description: Como saber que o texto ficou correto, e quem deve revisar.
