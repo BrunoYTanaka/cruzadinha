@@ -34,7 +34,9 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
   }, [open])
 
   // Mede o balão sem deslocamento e grava o que falta para caber. É direto no DOM, antes da
-  // pintura: não há estado novo, então não há laço de render nem piscada. O resize recalcula.
+  // pintura: não há estado novo, então não há laço de render nem piscada. O resize recalcula, e o
+  // ResizeObserver cobre a largura do texto mudar com a janela parada (fonte que termina de
+  // carregar depois que o balão abriu); o deslocamento não muda o tamanho, então não há laço.
   useLayoutEffect(() => {
     const tip = tipRef.current
     if (!open || !tip) return
@@ -46,7 +48,12 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
     }
     place()
     window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place)
+    observer?.observe(tip)
+    return () => {
+      window.removeEventListener('resize', place)
+      observer?.disconnect()
+    }
   }, [open, label])
 
   const onPointerEnter = (event: PointerEvent) => {
