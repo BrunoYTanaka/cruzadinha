@@ -98,7 +98,7 @@ export function GamePage() {
   if (failure) {
     if (failure instanceof ApiRequestError && failure.status === 404) {
       return (
-        <ErrorState title="Cruzada não encontrada.">
+        <ErrorState level={1} title="Cruzada não encontrada.">
           <BackLink />
         </ErrorState>
       )
@@ -106,6 +106,7 @@ export function GamePage() {
     const offline = failure instanceof ApiRequestError && failure.isOffline
     return (
       <ErrorState
+        level={1}
         title={offline ? 'Sem conexão' : 'Não foi possível abrir a cruzada'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={() => {

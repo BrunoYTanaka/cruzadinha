@@ -26,7 +26,9 @@ describe('ServerWake', () => {
   it('explains the wait after 2 s and counts the seconds', () => {
     render(<ServerWake />)
     act(() => vi.advanceTimersByTime(2_000))
-    expect(screen.getByRole('heading', { name: 'Acordando o servidor' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Acordando o servidor' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(
       'O servidor dorme quando ninguém está jogando. A primeira visita pode levar até um minuto.',
     )
@@ -43,7 +45,7 @@ describe('ServerWake', () => {
 
   it('shows the message right away and focuses the title when immediate', () => {
     render(<ServerWake immediate focusOnMount />)
-    const title = screen.getByRole('heading', { name: 'Acordando o servidor' })
+    const title = screen.getByRole('heading', { level: 1, name: 'Acordando o servidor' })
     expect(title).toHaveFocus()
     expect(screen.getByText('Esperando há 0 s')).toBeInTheDocument()
   })

@@ -13,6 +13,7 @@ export function RouteError() {
     if (revalidator.state === 'loading') return <ServerWake immediate focusOnMount />
     return (
       <ErrorState
+        level={1}
         title="Não foi possível falar com o servidor."
         message="O servidor não respondeu em 90 segundos."
         onRetry={() => void revalidator.revalidate()}
@@ -22,6 +23,7 @@ export function RouteError() {
   const offline = error instanceof ApiRequestError && error.isOffline
   return (
     <ErrorState
+      level={1}
       title={offline ? 'Sem conexão' : 'Algo deu errado'}
       message={
         offline

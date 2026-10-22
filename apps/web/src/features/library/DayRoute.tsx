@@ -66,6 +66,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
   if (isFuture) {
     return (
       <ErrorState
+        level={1}
         title="Esse dia ainda não chegou"
         message="A cruzada só existe a partir do próprio dia."
       >
@@ -76,6 +77,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
   if (wrongSource) {
     return (
       <ErrorState
+        level={1}
         title="Esta fonte não está disponível agora"
         message="As cruzadas das outras fontes continuam disponíveis."
       >
@@ -88,7 +90,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
     if (failure instanceof ApiRequestError) {
       if (failure.status === 404) {
         return (
-          <ErrorState title="Não há cruzada neste dia.">
+          <ErrorState level={1} title="Não há cruzada neste dia.">
             <BackLink />
           </ErrorState>
         )
@@ -96,6 +98,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
       if (failure.status === 502) {
         return (
           <ErrorState
+            level={1}
             title="A fonte está fora do ar agora."
             message="Tente mais tarde. As cruzadas já guardadas continuam disponíveis."
             onRetry={() => void query.refetch()}
@@ -107,6 +110,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
       if (failure.status === 429) {
         return (
           <ErrorState
+            level={1}
             title="Muitas buscas seguidas."
             waitSeconds={failure.retryAfterSeconds ?? 60}
             onRetry={() => void query.refetch()}
@@ -118,6 +122,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
       if (failure.isOffline) {
         return (
           <ErrorState
+            level={1}
             title="Sem conexão"
             message="Confira a conexão e tente de novo."
             onRetry={() => void query.refetch()}
@@ -129,6 +134,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
     }
     return (
       <ErrorState
+        level={1}
         title="Não foi possível buscar a cruzada"
         message="Tente de novo em instantes."
         onRetry={() => void query.refetch()}

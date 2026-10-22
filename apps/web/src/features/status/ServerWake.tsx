@@ -41,9 +41,9 @@ export function ServerWake({ immediate = false, focusOnMount = false }: ServerWa
         data-animated={reducedMotion ? 'false' : 'true'}
         aria-hidden="true"
       />
-      <h2 id="server-wake-title" className={styles.title} ref={titleRef} tabIndex={-1}>
+      <h1 id="server-wake-title" className={styles.title} ref={titleRef} tabIndex={-1}>
         Acordando o servidor
-      </h2>
+      </h1>
       <p role="status" className={styles.message}>
         O servidor dorme quando ninguém está jogando. A primeira visita pode levar até um minuto.
       </p>
