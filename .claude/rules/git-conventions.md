@@ -7,7 +7,7 @@ description: Branching, commit message, and pull request conventions for this re
 ## Branching
 
 ```
-feature/add-job-filter-sidebar         # New features
+feat/add-job-filter-sidebar            # New features (Spec Kit: feat/NNN-slug)
 fix/employer-route-redirect-loop       # Bug fixes
 docs/update-readme                     # Documentation only
 chore/upgrade-dependencies             # Maintenance, tooling
@@ -15,6 +15,8 @@ refactor/simplify-auth-context         # Code refactoring
 style/mobile-job-card-spacing          # Visual/style changes
 ```
 
+- Format is `<type>/<kebab-description>`, with the same types as Conventional Commits (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`)
+- Enforced by `npm run check:branch` (pre-push hook and the `branch-name` CI job); `main` and `release-please--*` are exempt
 - Branch off `main` for all new work
 - Keep branches short-lived; open a PR when ready
 - Delete branches after merging
