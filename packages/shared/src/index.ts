@@ -21,6 +21,7 @@ export {
   puzzleSchema,
   puzzleSourceIdSchema,
   puzzleSourceNames,
+  puzzleSourcesWithoutFetch,
   puzzleSourceQuerySchema,
   solutionSchema,
   type AvailableDate,
@@ -33,7 +34,12 @@ export {
 } from './puzzle/schema'
 export { puzzleResponseSchema, type PuzzleResponse } from './puzzle/response'
 export { validatePuzzleWithSolution, type PairValidation, type RuleIssue } from './puzzle/rules'
-export { wordCells, type CellPosition } from './puzzle/word-cells'
+export {
+  wordBoundaries,
+  wordCells,
+  type CellPosition,
+  type WordBoundary,
+} from './puzzle/word-cells'
 export {
   LIBRARY_LIMIT,
   libraryItemSchema,
