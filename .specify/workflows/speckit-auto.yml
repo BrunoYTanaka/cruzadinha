@@ -1,0 +1,296 @@
+schema_version: "1.0"
+workflow:
+  id: "speckit-auto"
+  name: "Cruzadinha full cycle"
+  version: "0.1.0"
+  author: "Cruzadinha"
+  model: "claude-sonnet-5-5"
+  description: "specify → clarify → plan → tasks → analyze (2+ rounds) → implement → converge, updating DDE/ERD when tables change"
+
+requires:
+  speckit_version: ">=0.8.5"
+  integrations:
+    any:
+      - "claude"
+
+inputs:
+  spec:
+    type: string
+    required: true
+    prompt: "Describe what you want to build"
+  integration:
+    type: string
+    default: "auto"
+    prompt: "Integration to use ('auto' uses the project's initialized integration)"
+
+steps:
+  - id: specify
+    command: speckit.specify
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  # specify creates the feature branch and folder, so the checks go after it.
+  - id: check-names
+    type: shell
+    run: |
+      branch=$(git branch --show-current)
+      case "$branch" in
+        main|master|"")
+          echo "specify did not create a feature branch (on '$branch'); check its output above" >&2
+          exit 1 ;;
+      esac
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      case "$dir" in
+        *"${branch#*/}") ;;
+        *)
+          echo "feature.json points to $dir, which does not match branch $branch" >&2
+          exit 1 ;;
+      esac
+      if [ ! -f "$dir/spec.md" ]; then
+        echo "$dir/spec.md does not exist; specify did not write the spec" >&2
+        exit 1
+      fi
+      npm run check:branch && npm run check:ids
+
+  - id: clarify
+    type: prompt
+    model: "claude-opus-5-5"
+    integration: "{{ inputs.integration }}"
+    prompt: |
+      Run /speckit-clarify on the current feature (directory in
+      .specify/feature.json). Nobody is available to answer, so you answer
+      every question yourself, following these rules.
+
+      Choosing an answer. Pick the option that is best for the person using
+      the app. When criteria conflict, the earlier one wins:
+      1. Security and privacy: collect the least data, never log secrets or
+         personal data, safe defaults, no account or data exposure.
+      2. Usability and accessibility: fewest steps, clear messages in
+         Portuguese, works on a phone, with a keyboard and with a screen
+         reader, never blocks the player.
+      3. The constitution (.specify/memory/constitution.md), CLAUDE.md and the
+         patterns of earlier features in specs/.
+      4. The simplest option, and the one easiest to undo.
+      Do not invent requirements the question did not raise.
+
+      Recording. Encode each answer in the spec as the clarify command
+      normally does, and add one line with the reason and the criterion
+      (for example "security: stores only the hash").
+
+      Flagging. If these criteria do not settle a question, or it changes
+      scope, stored data or who can see what, still pick an answer but tag
+      it [LOW CONFIDENCE] so it can be reviewed at the next gate.
+
+  - id: review-spec
+    type: gate
+    message: "Review the spec (with the clarifications applied) before planning."
+    options: [approve, reject]
+    on_reject: abort
+
+  - id: plan
+    command: speckit.plan
+    model: "claude-opus-5-5"
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: tasks
+    command: speckit.tasks
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  # Analyze until nothing CRITICAL/HIGH is left, with at least 2 rounds.
+  # do-while runs the body once, then repeats while the condition holds
+  # (max_iterations counts the first pass).
+  - id: reset-analyze
+    type: shell
+    run: |
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      rm -f "$dir"/analyze-report.md "$dir"/analyze-round-*.md
+
+  - id: analyze-loop
+    type: do-while
+    max_iterations: 3
+    condition: "{{ steps.measure.output.data.rounds < 2 or steps.measure.output.data.blocking > 0 }}"
+    steps:
+      - id: analyze
+        type: prompt
+        model: "claude-opus-5-5"
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Run /speckit-analyze on the current feature (directory in
+          .specify/feature.json). Save the full report to
+          <feature directory>/analyze-report.md, overwriting any previous one.
+          The last line of the file must be exactly
+          "FINDINGS_BLOCKING: <n>", where n is the number of CRITICAL plus
+          HIGH findings (0 if none).
+
+      - id: measure
+        type: shell
+        output_format: json
+        run: |
+          dir=$(jq -r .feature_directory .specify/feature.json)
+          f="$dir/analyze-report.md"
+          n=$(ls "$dir"/analyze-round-*.md 2>/dev/null | wc -l)
+          n=$((n + 1))
+          b=$(grep -oE 'FINDINGS_BLOCKING: *[0-9]+' "$f" 2>/dev/null | tail -1 | grep -oE '[0-9]+$')
+          b=${b:-99}
+          cp "$f" "$dir/analyze-round-$n.md" 2>/dev/null
+          echo "{\"rounds\": $n, \"blocking\": $b}"
+
+      # Skipped on a clean round, which saves one model call.
+      - id: fix
+        type: if
+        condition: "{{ steps.measure.output.data.blocking > 0 }}"
+        then:
+          - id: fix-prompt
+            type: prompt
+            integration: "{{ inputs.integration }}"
+            prompt: >-
+              Read <feature directory>/analyze-report.md (directory in
+              .specify/feature.json) and fix every CRITICAL, HIGH and MEDIUM
+              finding by editing spec.md, plan.md and tasks.md. Do not touch
+              application code.
+
+  # Rounds ran out with blocking findings left: stop so a person can look.
+  - id: analyze-result
+    type: shell
+    run: |
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      b=$(grep -oE 'FINDINGS_BLOCKING: *[0-9]+' "$dir"/analyze-report.md | tail -1 | grep -oE '[0-9]+$')
+      if [ "${b:-99}" -gt 0 ]; then
+        echo "analyze still reports ${b:-unknown} blocking findings after the last round; see $dir/analyze-report.md" >&2
+        exit 1
+      fi
+
+  - id: implement
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: converge
+    command: speckit.converge
+    integration: "{{ inputs.integration }}"
+
+  # Finish whatever converge appended to tasks.md
+  - id: implement-rest
+    command: speckit.implement
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  # Tables changed? Look at the schema and migrations (committed, staged or new).
+  - id: detect-tables
+    type: shell
+    run: |
+      if (git diff --name-only main; git ls-files -o --exclude-standard) \
+        | grep -qE '^apps/api/(src/db/schema\.ts|drizzle/)'; then
+        echo yes
+      else
+        echo no
+      fi
+
+  - id: update-data-models
+    type: if
+    condition: "{{ steps.detect-tables.output.stdout | contains('yes') }}"
+    then:
+      - id: data-definition
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Run /data-definition on the spec.md of the current feature (see
+          .specify/feature.json) to update the data model. When it asks which
+          format to produce, answer option 2: model + ERD. If a DDE for this
+          domain already exists in docs/data-definitions/, update that file
+          instead of creating a new one.
+
+      - id: erd
+        type: prompt
+        integration: "{{ inputs.integration }}"
+        prompt: >-
+          Make sure docs/entity-relationship-diagrams/ reflects the tables
+          changed in this feature (apps/api/src/db/schema.ts and the new
+          migrations in apps/api/drizzle/). Use /entity-relationship-diagram,
+          updating the existing ERD when there is one.
+
+  # Quality gate: fix and recheck up to 3 times, then verify once more.
+  - id: quality-loop
+    type: do-while
+    max_iterations: 3
+    condition: "{{ steps.quality-check.output.data.ok == false }}"
+    steps:
+      - id: quality-check
+        type: shell
+        output_format: json
+        timeout: 1800
+        run: |
+          dir=$(jq -r .feature_directory .specify/feature.json)
+          if (npm run format:check && npm run lint && npm run typecheck && npm test) \
+            > "$dir/quality.log" 2>&1; then
+            echo '{"ok": true}'
+          else
+            echo '{"ok": false}'
+          fi
+
+      - id: quality-fix
+        type: if
+        condition: "{{ steps.quality-check.output.data.ok == false }}"
+        then:
+          - id: quality-fix-prompt
+            type: prompt
+            integration: "{{ inputs.integration }}"
+            prompt: >-
+              The quality checks failed. Read <feature directory>/quality.log
+              (directory in .specify/feature.json; the commands are npm run
+              format:check, lint, typecheck and test), fix the causes in the
+              code or in the files that changed, without disabling rules or
+              skipping tests, and stop.
+
+  - id: quality-final
+    type: shell
+    timeout: 1800
+    run: |
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      if ! (npm run format:check && npm run lint && npm run typecheck && npm test) \
+        > "$dir/quality.log" 2>&1; then
+        echo "quality checks still fail after 3 attempts; see $dir/quality.log" >&2
+        exit 1
+      fi
+
+  # Only reached when everything above passed; a failed run keeps the files for debugging.
+  - id: cleanup
+    type: shell
+    run: |
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      rm -f "$dir"/analyze-report.md "$dir"/analyze-round-*.md "$dir"/quality.log
+
+  - id: commit
+    type: prompt
+    model: "claude-haiku-5-5"
+    integration: "{{ inputs.integration }}"
+    prompt: |
+      Commit the work of this feature on the current branch. Never commit on
+      main, never push, never open a pull request.
+
+      Rules (CLAUDE.md and .claude/rules/git-conventions.md):
+      - Conventional Commits 1.0.0: type(scope): description, imperative,
+        lowercase, no trailing period, subject under 72 characters, written in
+        English.
+      - The type decides the release bump, so choose it by the folder touched:
+        apps/api -> scope api, apps/web -> scope web, packages/shared -> scope
+        shared. Use feat or fix only for behavior that ships; docs, specs and
+        workflow files are docs or chore.
+      - Split into several commits by concern (for example: specs and docs;
+        shared; api; web; tests), each one passing on its own when possible.
+        Do not mix scopes in one commit.
+      - Do NOT add a Co-Authored-By trailer or any Claude/AI attribution line,
+        in the subject or the body. This project rule overrides the default.
+      - Stage files by name, not with "git add -A". Do not commit .env files,
+        logs or anything ignored.
+      - Let the pre-commit hook run. If it fails, fix the cause and commit
+        again; never use --no-verify.
+      Finish by running git status and git log --oneline -n 10 and reporting
+      the result.

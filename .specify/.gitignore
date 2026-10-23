@@ -7,3 +7,6 @@ feature.json
 
 # Per-machine extension config overrides.
 extensions/*/local-config.yml
+
+# Run state written by "specify workflow run"
+workflows/runs/
