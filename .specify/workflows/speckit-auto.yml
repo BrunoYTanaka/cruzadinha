@@ -51,7 +51,7 @@ steps:
         echo "$dir/spec.md does not exist; specify did not write the spec" >&2
         exit 1
       fi
-      npm run check:branch && npm run check:ids
+      npm run check:branch && npm run check:ids:remote
 
   - id: clarify
     type: prompt
