@@ -411,7 +411,7 @@ describe('abas de fonte (features 014 e 015)', () => {
   })
 })
 
-describe('a terceira fonte, clube (feature 030)', () => {
+describe('a fonte clube (feature 030)', () => {
   const clubeItem = makeLibraryItem('2026-10-12', {
     puzzleId: '00000000-0000-4000-8000-00000000d012',
     source: 'clube',
@@ -419,7 +419,7 @@ describe('a terceira fonte, clube (feature 030)', () => {
     finishedMs: 61_000,
   })
 
-  function threeSources(clube: (() => Response) | undefined = undefined) {
+  function allSources(clube: (() => Response) | undefined = undefined) {
     return mockApi({
       'GET /api/library': ({ url }) => {
         const source = new URL(url, 'http://x').searchParams.get('source')
@@ -429,14 +429,15 @@ describe('a terceira fonte, clube (feature 030)', () => {
     })
   }
 
-  it('mostra três abas e três cartões "Hoje", cada um no seu lugar', async () => {
-    threeSources()
+  it('mostra quatro abas e quatro cartões "Hoje", cada um no seu lugar', async () => {
+    allSources()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     const tabs = screen.getAllByRole('tab')
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       expect.stringContaining('O Globo'),
       expect.stringContaining('Cruzada Online'),
+      expect.stringContaining('Cruzadas Brasil'),
       expect.stringContaining('Cruzadas Clube'),
     ])
     const clubeCard = screen.getByText('Sem cruzada hoje').closest('li')!
@@ -445,7 +446,7 @@ describe('a terceira fonte, clube (feature 030)', () => {
   })
 
   it('um dia passado sem edição aparece sem cruzada, sem link para buscar', async () => {
-    threeSources()
+    allSources()
     const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
@@ -463,14 +464,14 @@ describe('a terceira fonte, clube (feature 030)', () => {
   })
 
   it('o contador de concluídas da aba conta só a fonte dela', async () => {
-    threeSources()
+    allSources()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     expect(screen.getByRole('tab', { name: /^Cruzadas Clube/ })).toHaveTextContent('1')
   })
 
   it('uma API anterior que recusa a fonte (400) deixa só a aba dela indisponível', async () => {
-    threeSources(() => apiError(400, 'invalid-input'))
+    allSources(() => apiError(400, 'invalid-input'))
     const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })

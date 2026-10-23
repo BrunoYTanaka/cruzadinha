@@ -49,13 +49,9 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(todayCell(page, 'em andamento')).toBeVisible()
   await page.reload()
   await expect(globo).toHaveAttribute('aria-selected', 'true')
-  // Com três abas, a seta da última volta à primeira (feature 030).
-  const clube = page.getByRole('tab', { name: /^Cruzadas Clube/ })
   await cruzada.click()
   await cruzada.focus()
-  await page.keyboard.press('ArrowRight')
-  await expect(clube).toHaveAttribute('aria-selected', 'true')
-  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowLeft')
   await expect(globo).toHaveAttribute('aria-selected', 'true')
   await expect(globo).toBeFocused()
   await expect(todayCell(page, 'não iniciado')).toBeVisible()
@@ -81,6 +77,30 @@ test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzada Online')
 })
 
+test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jogo em um toque', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.getByRole('tab')).toHaveCount(4)
+  await expect(page.getByRole('tab').nth(2)).toHaveAccessibleName(/^Cruzadas Brasil/)
+
+  // SC-008: um toque no cartão de hoje leva ao jogo.
+  await card(page, 'Cruzadas Brasil').click()
+  await expect(page.getByRole('grid')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzadas Brasil')
+  await expect(page.getByText('Fonte: Exemplo de desenvolvimento (seed)')).toBeVisible()
+
+  // A fixture do exemplo tem Ç na linha 1, coluna 2: a letra simples ou a acentuada contam.
+  await page.getByRole('gridcell', { name: /^Linha 1, coluna 2,/ }).click()
+  await pressLetter(page, 'Ç')
+  await expect(page.getByRole('gridcell', { name: /^Linha 1, coluna 2, letra Ç/ })).toBeVisible()
+
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: /^Cruzadas Brasil: em andamento/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^Cruzada Online: não iniciada/ })).toBeVisible()
+})
+
 for (const viewport of [
   { width: 360, height: 640 },
   { width: 1280, height: 800 },
@@ -96,6 +116,7 @@ for (const viewport of [
       // SC-002: todas as fontes e a situação de hoje na primeira tela.
       await expect(card(page, 'O Globo')).toBeInViewport()
       await expect(card(page, 'Cruzada Online')).toBeInViewport()
+      await expect(card(page, 'Cruzadas Brasil')).toBeInViewport()
       await expect(page.getByRole('tablist', { name: 'Fonte do calendário' })).toBeInViewport()
       // FR-015: a página não rola para os lados.
       const overflow = await page.evaluate(

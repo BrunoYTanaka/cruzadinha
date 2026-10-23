@@ -38,10 +38,12 @@ async function openClube(page: Page) {
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
-test('três cartões e três abas; abre a Cruzadas Clube pelo cartão de hoje', async ({ page }) => {
+test('quatro cartões e quatro abas; abre a Cruzadas Clube pelo cartão de hoje', async ({
+  page,
+}) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
-  await expect(page.getByRole('tab')).toHaveCount(3)
+  await expect(page.getByRole('tab')).toHaveCount(4)
   await expect(page.getByRole('tab', { name: /^Cruzadas Clube/ })).toBeVisible()
   expect((await axe(page).analyze()).violations).toEqual([])
 

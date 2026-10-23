@@ -9,6 +9,7 @@ import { loadDotEnvIfPresent } from './env-file'
 import { systemClock } from './lib/clock'
 import { createClubeSource } from './sources/clube/clube'
 import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
+import { createCruzadasBrasilSource } from './sources/cruzadasbrasil/cruzadasbrasil'
 import { createOgloboSource } from './sources/oglobo/oglobo'
 
 // Entrada de npm run cli (tsx) e de dist/cli.mjs (imagem).
@@ -60,7 +61,12 @@ try {
   code = await runCli(process.argv.slice(2), {
     db: database.db,
     clock: systemClock,
-    sources: [createOgloboSource(), createCruzadaOnlineSource(), createClubeSource()],
+    sources: [
+      createOgloboSource(),
+      createCruzadaOnlineSource(),
+      createCruzadasBrasilSource(),
+      createClubeSource(),
+    ],
     historyDays,
     readSecret: createSecretReader(),
     stdout: (text) => process.stdout.write(text),

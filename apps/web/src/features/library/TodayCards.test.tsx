@@ -44,6 +44,7 @@ describe('TodayCards', () => {
     const { container } = renderCards([
       entry('oglobo', 'O Globo', { items: [playing] }),
       entry('cruzadaonline', 'Cruzada Online'),
+      entry('cruzadasbrasil', 'Cruzadas Brasil'),
       entry('clube', 'Cruzadas Clube', { items: [makeLibraryItem(today, { source: 'clube' })] }),
     ])
     expect(screen.getByRole('heading', { level: 1, name: 'Hoje' })).toBeInTheDocument()
@@ -52,7 +53,8 @@ describe('TodayCards', () => {
     expect(cards).toHaveLength(puzzleSourceIdSchema.options.length)
     expect(cards[0]).toHaveTextContent('O Globo')
     expect(cards[1]).toHaveTextContent('Cruzada Online')
-    expect(cards[2]).toHaveTextContent('Cruzadas Clube')
+    expect(cards[2]).toHaveTextContent('Cruzadas Brasil')
+    expect(cards[3]).toHaveTextContent('Cruzadas Clube')
     expect(
       screen.getByRole('link', {
         name: 'O Globo: em andamento, 8 minutos e 42 segundos. Continuar',
@@ -62,6 +64,9 @@ describe('TodayCards', () => {
     expect(
       screen.getByRole('link', { name: 'Cruzada Online: ainda não guardada. Jogar' }),
     ).toHaveAttribute('href', '/dia/2026-10-19?fonte=cruzadaonline')
+    expect(
+      screen.getByRole('link', { name: 'Cruzadas Brasil: ainda não guardada. Jogar' }),
+    ).toHaveAttribute('href', '/dia/2026-10-19?fonte=cruzadasbrasil')
     await expectNoA11yViolations(container)
   })
 
@@ -102,7 +107,7 @@ describe('TodayCards', () => {
     expect(screen.getByRole('link', { name: 'O Globo: não iniciada. Jogar' })).toBeInTheDocument()
   })
 
-  it('a terceira fonte sem edição de hoje mostra "Sem cruzada hoje", sem link e sem buscar', () => {
+  it('a fonte clube sem edição de hoje mostra "Sem cruzada hoje", sem link e sem buscar', () => {
     renderCards([
       entry('oglobo', 'O Globo'),
       entry('cruzadaonline', 'Cruzada Online'),
@@ -113,7 +118,7 @@ describe('TodayCards', () => {
     expect(within(card).queryByRole('link')).not.toBeInTheDocument()
   })
 
-  it('a terceira fonte com edição de hoje é um link para jogar', () => {
+  it('a fonte clube com edição de hoje é um link para jogar', () => {
     const item = makeLibraryItem(today, { source: 'clube' })
     renderCards([
       entry('oglobo', 'O Globo'),

@@ -45,6 +45,19 @@ describe('DayRoute com fonte (feature 014)', () => {
     expect(getSettings().defaultSource).toBe('oglobo')
   })
 
+  it('?fonte=cruzadasbrasil pede a terceira fonte (feature 029)', async () => {
+    const { calls } = mockApi({
+      'GET /api/puzzles': () =>
+        jsonResponse(
+          200,
+          makePuzzleResponse(TINY, { date: '2026-10-10', source: 'cruzadasbrasil' }),
+        ),
+    })
+    const { router } = renderRoutes(routes, ['/dia/2026-10-10?fonte=cruzadasbrasil'])
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
+    expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-10&source=cruzadasbrasil')
+  })
+
   it.each(['', '?fonte=xyz'])('sem fonte válida (%s) usa a cruzada padrão', async (query) => {
     updateSettings({ defaultSource: 'cruzadaonline' })
     const { calls } = mockApi({ 'GET /api/puzzles': cruzada })

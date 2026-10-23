@@ -31,6 +31,36 @@ function Harness({ onChange }: { onChange: (source: PuzzleSourceId) => void }) {
   )
 }
 
+describe('SourceTabs com três fontes (feature 029)', () => {
+  it('mostra a terceira aba depois das outras e navega até ela com as setas', async () => {
+    const user = userEvent.setup()
+    const three: SourceTab[] = [
+      ...tabs,
+      { source: 'cruzadasbrasil', name: 'Cruzadas Brasil', count: 2 },
+    ]
+    const onChange = vi.fn()
+    const { container } = render(
+      <>
+        <SourceTabs value="cruzadaonline" tabs={three} onChange={onChange} />
+        <section id="source-panel" role="tabpanel" aria-labelledby="source-tab-cruzadaonline">
+          Calendário
+        </section>
+      </>,
+    )
+    const names = screen.getAllByRole('tab').map((tab) => tab.getAttribute('id'))
+    expect(names).toEqual([
+      'source-tab-oglobo',
+      'source-tab-cruzadaonline',
+      'source-tab-cruzadasbrasil',
+    ])
+    screen.getByRole('tab', { name: 'Cruzada Online' }).focus()
+    await user.keyboard('{ArrowRight}')
+    expect(onChange).toHaveBeenLastCalledWith('cruzadasbrasil')
+    expect(screen.getByRole('tab', { name: 'Cruzadas Brasil 2 concluídas' })).toHaveFocus()
+    await expectNoA11yViolations(container)
+  })
+})
+
 describe('SourceTabs', () => {
   it('uma aba por fonte, na ordem recebida, só a ativa no Tab', async () => {
     const { container } = render(<Harness onChange={vi.fn()} />)

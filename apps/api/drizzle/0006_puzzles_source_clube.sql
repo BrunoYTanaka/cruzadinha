@@ -1,2 +1,0 @@
-ALTER TABLE "puzzles" DROP CONSTRAINT "puzzles_source_check";--> statement-breakpoint
-ALTER TABLE "puzzles" ADD CONSTRAINT "puzzles_source_check" CHECK ("puzzles"."source" IN ('oglobo', 'cruzadaonline', 'clube'));

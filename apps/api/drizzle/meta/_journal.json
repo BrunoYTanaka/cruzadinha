@@ -47,8 +47,15 @@
     {
       "idx": 6,
       "version": "7",
-      "when": 1792754157100,
-      "tag": "0006_puzzles_source_clube",
+      "when": 1792754179138,
+      "tag": "0006_puzzles_source_cruzadasbrasil",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792756351240,
+      "tag": "0007_puzzles_source_clube",
       "breakpoints": true
     }
   ]

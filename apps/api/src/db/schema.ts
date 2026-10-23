@@ -108,7 +108,7 @@ export const rateLimitAttempts = pgTable(
   ],
 )
 
-export const puzzleSources = ['oglobo', 'cruzadaonline', 'clube'] as const
+export const puzzleSources = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'] as const
 export const puzzleLevels = ['daily'] as const
 
 // Cache compartilhado de puzzles: um por fonte, nível e data. `data` é a parte pública e
@@ -126,7 +126,10 @@ export const puzzles = pgTable(
   },
   (table) => [
     uniqueIndex('puzzles_source_level_date_unique').on(table.source, table.level, table.date),
-    check('puzzles_source_check', sql`${table.source} IN ('oglobo', 'cruzadaonline', 'clube')`),
+    check(
+      'puzzles_source_check',
+      sql`${table.source} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube')`,
+    ),
     check('puzzles_level_check', sql`${table.level} IN ('daily')`),
   ],
 )

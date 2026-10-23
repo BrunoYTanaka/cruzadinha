@@ -293,6 +293,30 @@ describe('GET /api/puzzles com fonte (feature 014)', () => {
     expect(source.calls).toEqual([])
   })
 
+  it('source=cruzadasbrasil busca só nessa fonte (feature 029)', async () => {
+    const brasil = fakeSource(
+      new Map<string, FetchPuzzleResult>([[today(), okResult(today(), 'cruzadasbrasil')]]),
+      { id: 'cruzadasbrasil' },
+    )
+    await start(okFor(today()))
+    // A terceira fonte entra na lista de adaptadores do app.
+    await app.close()
+    app = buildTestApp({
+      database: db,
+      clock: clock.now,
+      puzzleSources: [source, cruzada, brasil],
+      rateLimits: defaultRateLimits,
+    })
+    await app.ready()
+    const response = await get(`/api/puzzles?date=${today()}&source=cruzadasbrasil`, false)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().puzzle.source).toBe('cruzadasbrasil')
+    expect(response.json().puzzle.attribution.sourceName).toBe('Cruzadas Brasil')
+    expect(brasil.calls).toEqual([today()])
+    expect(source.calls).toEqual([])
+  })
+
   it('fonte desconhecida é pedido inválido', async () => {
     await start()
     const response = await get(`/api/puzzles?date=${today()}&source=xyz`, false)

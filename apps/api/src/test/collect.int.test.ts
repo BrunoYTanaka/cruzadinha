@@ -279,6 +279,39 @@ describe('collect (várias fontes)', () => {
     expect(cruzada?.report.saved).toEqual([today()])
   })
 
+  it('com três fontes, a falha de uma não impede as outras (feature 029)', async () => {
+    const pauses: number[] = []
+    const service = createPuzzlesService({
+      db,
+      clock: clock.now,
+      sources: [
+        fakeSource(new Map([[today(), { ok: false, reason: 'source-down' }]])),
+        fakeSource(new Map([[today(), okResult(today(), 'cruzadaonline')]]), {
+          id: 'cruzadaonline',
+        }),
+        fakeSource(new Map([[today(), okResult(today(), 'cruzadasbrasil')]]), {
+          id: 'cruzadasbrasil',
+        }),
+      ],
+      rateLimiter: createRateLimiter(createRateLimitRepository(db)),
+      limits: defaultRateLimits,
+      historyDays: 0,
+      sleep: async (ms) => {
+        pauses.push(ms)
+      },
+    })
+    const run = await service.collect()
+
+    expect(run.sources.map((entry) => entry.source)).toEqual([
+      'oglobo',
+      'cruzadaonline',
+      'cruzadasbrasil',
+    ])
+    expect(run.sources[0]?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
+    expect(run.sources[2]?.report.saved).toEqual([today()])
+    expect(pauses).toEqual([2000, 2000])
+  })
+
   it('recusa duas fontes com o mesmo id', () => {
     expect(() =>
       createPuzzlesService({

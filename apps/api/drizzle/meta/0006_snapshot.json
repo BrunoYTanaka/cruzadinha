@@ -1,5 +1,5 @@
 {
-  "id": "d31c3379-ee22-4c9f-8950-fe0a7d196efc",
+  "id": "aed18a62-4cbf-4547-ad31-3892c13b1f19",
   "prevId": "36741ffd-16c3-423f-bf3a-3906be8e086e",
   "version": "7",
   "dialect": "postgresql",
@@ -392,7 +392,7 @@
       "checkConstraints": {
         "puzzles_source_check": {
           "name": "puzzles_source_check",
-          "value": "\"puzzles\".\"source\" IN ('oglobo', 'cruzadaonline', 'clube')"
+          "value": "\"puzzles\".\"source\" IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil')"
         },
         "puzzles_level_check": {
           "name": "puzzles_level_check",

@@ -24,6 +24,7 @@ import { settingsRoutes } from './modules/settings/settings.routes'
 import { createSettingsService } from './modules/settings/settings.service'
 import { createClubeSource } from './sources/clube/clube'
 import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
+import { createCruzadasBrasilSource } from './sources/cruzadasbrasil/cruzadasbrasil'
 import { createOgloboSource } from './sources/oglobo/oglobo'
 import type { PuzzleSource } from './sources/types'
 import { API_VERSION } from './version'
@@ -46,7 +47,12 @@ export function buildApp({
   database,
   clock = systemClock,
   rateLimits = defaultRateLimits,
-  puzzleSources = [createOgloboSource(), createCruzadaOnlineSource(), createClubeSource()],
+  puzzleSources = [
+    createOgloboSource(),
+    createCruzadaOnlineSource(),
+    createCruzadasBrasilSource(),
+    createClubeSource(),
+  ],
   logStream,
 }: AppDeps): FastifyInstance {
   const app = Fastify({

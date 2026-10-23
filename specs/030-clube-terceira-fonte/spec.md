@@ -17,6 +17,10 @@
 - Q: Edição duplicada na mesma data? → A: Conta como já salva (`skipped`) no resultado da coleta; não há um tipo "duplicada".
 - Q: O que a janela da coleta mede para esta fonte? → A: Dias, a partir da data da página de cada edição (`COLLECT_HISTORY_DAYS`); a coleta para na primeira edição mais antiga que a janela ou já salva.
 
+### Atualização (2026-10-23, depois da 029)
+
+- A feature 029 (Cruzadas Brasil) entrou na `main` antes desta: a `clube` passou a ser a **quarta** fonte (O Globo, Cruzada Online, Cruzadas Brasil, Cruzadas Clube) e a migração é a `0007`. Onde a spec, o plano e as tarefas dizem "terceira fonte", leia "nova fonte". Com quatro fontes, a cruzada padrão nos ajustes é uma lista de rádios (FR-012a da feature 021).
+
 ## Observações da fonte (2026-10-22)
 
 Feitas pelo autor antes da spec; servem de base para as suposições abaixo e não substituem a verificação sob demanda (FR-019).

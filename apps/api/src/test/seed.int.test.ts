@@ -117,15 +117,17 @@ describe('db:seed (puzzle de exemplo)', () => {
     expect(await seed(DEV)).toBe(0)
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (O Globo)`)
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzada Online)`)
+    expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzadas Brasil)`)
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzadas Clube)`)
 
     const rows = await db.select().from(puzzles).orderBy(puzzles.source)
     expect(rows.map((row) => [row.source, row.date])).toEqual([
       ['clube', today()],
       ['cruzadaonline', today()],
+      ['cruzadasbrasil', today()],
       ['oglobo', today()],
     ])
-    const [clube, cruzada, globo] = rows.map((row) => puzzleSchema.parse(row.data))
+    const [clube, cruzada, brasil, globo] = rows.map((row) => puzzleSchema.parse(row.data))
     expect(clube?.source).toBe('clube')
     expect(clube?.grid.cells.flat().every((cell) => cell.kind === 'open')).toBe(true)
     expect(globo?.attribution).toEqual({
@@ -140,6 +142,7 @@ describe('db:seed (puzzle de exemplo)', () => {
       author: null,
       copyright: null,
     })
+    expect(brasil?.attribution.title).toBe('Exemplo de desenvolvimento (seed): Cruzadas Brasil')
     for (const row of rows) {
       const puzzle = puzzleSchema.parse(row.data)
       expect(validatePuzzleWithSolution(puzzle, solutionSchema.parse(row.solution)).success).toBe(
@@ -184,9 +187,10 @@ describe('db:seed (puzzle de exemplo)', () => {
     expect(await seed(DEV)).toBe(0)
     expect(out).toContain(`Já existe puzzle em ${today()} (O Globo); exemplo não gravado.`)
     expect(out).toContain(`Já existe puzzle em ${today()} (Cruzada Online); exemplo não gravado.`)
+    expect(out).toContain(`Já existe puzzle em ${today()} (Cruzadas Brasil); exemplo não gravado.`)
     expect(out).toContain(`Já existe puzzle em ${today()} (Cruzadas Clube); exemplo não gravado.`)
     const rows = await db.select().from(puzzles).orderBy(puzzles.source)
-    expect(rows).toHaveLength(3)
+    expect(rows).toHaveLength(4)
     expect(rows.map((row) => row.puzzleId)).toEqual(before.map((row) => row.puzzleId))
     expect(rows.map((row) => row.updatedAt.getTime())).toEqual(
       before.map((row) => row.updatedAt.getTime()),

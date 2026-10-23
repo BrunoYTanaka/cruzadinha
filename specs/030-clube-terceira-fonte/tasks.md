@@ -86,8 +86,8 @@
 ## Phase 6: Polish e transversais
 
 - [x] T041 [P] Atualizar `CLAUDE.md` (resumo da feature 030), `docs/design.md`, `docs/deploy.md` (se a sandbox/WASM mudar o build) e conferir `docs/versionamento.md` (release A: `shared`+API; release B: site)
-- [ ] T042 Rodar `npm run format:check`, `lint`, `check:ids:remote`, `typecheck`, `test`, `build`, `test:int` e `test:e2e -w @cruzadinha/web`; corrigir o que falhar
-- [ ] T043 Verificação final contra a fonte real em pelo menos 5 edições (`npm run source:check:clube -w @cruzadinha/api`, SC-007) e rodar o checklist de `quickstart.md`; confirmar que nenhum arquivo versionado contém um puzzle completo (SC-009)
+- [x] T042 Rodar `npm run format:check`, `lint`, `check:ids:remote`, `typecheck`, `test`, `build`, `test:int` e `test:e2e -w @cruzadinha/web`; corrigir o que falhar
+- [x] T043 Verificação final contra a fonte real em pelo menos 5 edições (`npm run source:check:clube -w @cruzadinha/api`, SC-007) e rodar o checklist de `quickstart.md`; confirmar que nenhum arquivo versionado contém um puzzle completo (SC-009)
 
 ## Dependencies & Execution Order
 

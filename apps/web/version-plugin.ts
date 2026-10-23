@@ -3,19 +3,28 @@ import { readFileSync } from 'node:fs'
 import type { Plugin } from 'vite'
 
 // Monta o conteúdo do version.json do site (feature 012, FR-023): a versão do apps/web e o commit
-// publicado (GITHUB_SHA na CI, o HEAD do git localmente, "desconhecido" sem nenhum dos dois).
+// publicado (GITHUB_SHA na CI, o HEAD do git localmente, "desconhecido" sem nenhum dos dois). O git
+// só é consultado sem GITHUB_SHA (feature 028): no container da CI ele recusa o diretório montado.
 export function siteVersionJson(
   version: string,
   env: Record<string, string | undefined>,
-  gitHead: string | undefined,
+  readHead: () => string | undefined,
 ): string {
-  const commit = env.GITHUB_SHA || gitHead || 'desconhecido'
+  const commit = env.GITHUB_SHA || readHead() || 'desconhecido'
   return `${JSON.stringify({ version, commit })}\n`
 }
 
-function readGitHead(): string | undefined {
+// O stderr do git é descartado: sem repositório ou com outro dono, o `fatal:` dele não deve sujar o
+// log do build, e a falta de commit já cai em "desconhecido".
+export function readGitHead(cwd?: string): string | undefined {
   try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() || undefined
+    return (
+      execFileSync('git', ['rev-parse', 'HEAD'], {
+        cwd,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim() || undefined
+    )
   } catch {
     return undefined
   }
@@ -34,7 +43,7 @@ export function siteVersionPlugin(): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'version.json',
-        source: siteVersionJson(pkg.version, process.env, readGitHead()),
+        source: siteVersionJson(pkg.version, process.env, readGitHead),
       })
     },
   }

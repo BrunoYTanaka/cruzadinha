@@ -440,6 +440,28 @@ describe('biblioteca por fonte (feature 014)', () => {
     expect(ofGlobo[0]).toMatchObject({ status: 'not_started', elapsedMs: null })
   })
 
+  it('três fontes no mesmo dia: cada pedido lista só a sua (feature 029)', async () => {
+    const { globo, cruzada } = await bothSources()
+    const brasil = await storePuzzle('2026-10-13', 'cruzadasbrasil')
+    const sid = await register('ana@exemplo.com')
+
+    for (const who of [undefined, sid]) {
+      const ofBrasil = await getLibrary(who, '?source=cruzadasbrasil')
+      expect(ofBrasil.json().items).toMatchObject([
+        { puzzleId: brasil, source: 'cruzadasbrasil', status: 'not_started' },
+      ])
+    }
+    // Pedido sem fonte e o da 014 continuam como antes (SC-007).
+    expect(
+      (await getLibrary()).json().items.map((item: { puzzleId: string }) => item.puzzleId),
+    ).toEqual([globo])
+    expect(
+      (await getLibrary(undefined, '?source=cruzadaonline'))
+        .json()
+        .items.map((item: { puzzleId: string }) => item.puzzleId),
+    ).toEqual([cruzada])
+  })
+
   it('fonte desconhecida é pedido inválido', async () => {
     const response = await getLibrary(undefined, '?source=xyz')
     expect(response.statusCode).toBe(400)

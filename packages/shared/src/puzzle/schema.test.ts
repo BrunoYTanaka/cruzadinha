@@ -84,9 +84,10 @@ describe('levelSchema', () => {
 })
 
 describe('puzzleSourceIdSchema', () => {
-  it('aceita oglobo, cruzadaonline e clube e recusa outras fontes', () => {
+  it('aceita oglobo, cruzadaonline, cruzadasbrasil e clube e recusa outras fontes', () => {
     expect(puzzleSourceIdSchema.safeParse('oglobo').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('cruzadaonline').success).toBe(true)
+    expect(puzzleSourceIdSchema.safeParse('cruzadasbrasil').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('clube').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('publico').success).toBe(false)
   })
@@ -94,12 +95,14 @@ describe('puzzleSourceIdSchema', () => {
   it('na consulta, fonte não informada vale oglobo', () => {
     expect(puzzleSourceQuerySchema.parse(undefined)).toBe('oglobo')
     expect(puzzleSourceQuerySchema.parse('cruzadaonline')).toBe('cruzadaonline')
+    expect(puzzleSourceQuerySchema.parse('cruzadasbrasil')).toBe('cruzadasbrasil')
     expect(puzzleSourceQuerySchema.safeParse('xyz').success).toBe(false)
   })
 
   it('tem um nome exibido para cada fonte', () => {
     expect(Object.keys(puzzleSourceNames).sort()).toEqual([...puzzleSourceIdSchema.options].sort())
     expect(puzzleSourceNames.cruzadaonline).toBe('Cruzada Online')
+    expect(puzzleSourceNames.cruzadasbrasil).toBe('Cruzadas Brasil')
     expect(puzzleSourceNames.clube).toBe('Cruzadas Clube')
   })
 
