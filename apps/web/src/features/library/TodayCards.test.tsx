@@ -43,6 +43,7 @@ describe('TodayCards', () => {
     const { container } = renderCards([
       entry('oglobo', 'O Globo', { items: [playing] }),
       entry('cruzadaonline', 'Cruzada Online'),
+      entry('cruzadasbrasil', 'Cruzadas Brasil'),
     ])
     expect(screen.getByRole('heading', { level: 1, name: 'Hoje' })).toBeInTheDocument()
     expect(screen.getByText('segunda-feira, 19 de outubro')).toBeInTheDocument()
@@ -50,6 +51,7 @@ describe('TodayCards', () => {
     expect(cards).toHaveLength(puzzleSourceIdSchema.options.length)
     expect(cards[0]).toHaveTextContent('O Globo')
     expect(cards[1]).toHaveTextContent('Cruzada Online')
+    expect(cards[2]).toHaveTextContent('Cruzadas Brasil')
     expect(
       screen.getByRole('link', {
         name: 'O Globo: em andamento, 8 minutos e 42 segundos. Continuar',
@@ -59,6 +61,9 @@ describe('TodayCards', () => {
     expect(
       screen.getByRole('link', { name: 'Cruzada Online: ainda não guardada. Jogar' }),
     ).toHaveAttribute('href', '/dia/2026-10-19?fonte=cruzadaonline')
+    expect(
+      screen.getByRole('link', { name: 'Cruzadas Brasil: ainda não guardada. Jogar' }),
+    ).toHaveAttribute('href', '/dia/2026-10-19?fonte=cruzadasbrasil')
     await expectNoA11yViolations(container)
   })
 
