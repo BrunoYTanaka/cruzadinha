@@ -91,6 +91,15 @@ describe('repositório de puzzles', () => {
     expect((await findPuzzle(db, key('2026-10-12')))?.puzzleId).toBe(a.puzzleId)
   })
 
+  it('guarda a terceira fonte (Cruzadas Brasil) na mesma data (feature 029)', async () => {
+    const brasil = await insertPuzzleIfAbsent(db, okResult('2026-10-12', 'cruzadasbrasil'))
+    const globo = await insertPuzzleIfAbsent(db, okResult('2026-10-12'))
+
+    expect(brasil.inserted && globo.inserted).toBe(true)
+    const stored = await findPuzzle(db, { ...key('2026-10-12'), source: 'cruzadasbrasil' })
+    expect(stored?.puzzle.attribution.sourceName).toBe('Cruzadas Brasil')
+  })
+
   it('a regra do banco recusa uma fonte desconhecida', async () => {
     const { puzzle, solution } = okResult('2026-10-12')
     await expect(

@@ -95,6 +95,17 @@ describe('GamePage', () => {
     await waitFor(() => expect(document.title).toMatch(/Cruzada de 14 de outubro · Cruzada Online/))
   })
 
+  it('mostra "Cruzadas Brasil" no topo e no título da aba (feature 029)', async () => {
+    openGame({
+      [PUZZLE]: () => jsonResponse(200, makePuzzleResponse(TINY, { source: 'cruzadasbrasil' })),
+    })
+    const title = await screen.findByRole('heading', { level: 1 })
+    expect(title).toHaveTextContent(/^Cruzadas Brasil\s*Cruzada de 14 de outubro$/)
+    await waitFor(() =>
+      expect(document.title).toMatch(/Cruzada de 14 de outubro · Cruzadas Brasil/),
+    )
+  })
+
   it('mostra a dica ativa e a lista de dicas no computador', async () => {
     openGame()
     await screen.findByRole('grid')

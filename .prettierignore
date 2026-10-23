@@ -12,3 +12,4 @@ apps/api/drizzle/
 playwright-report/
 test-results/
 .playwright-mcp/
+apps/api/src/sources/cruzadasbrasil/fixtures/

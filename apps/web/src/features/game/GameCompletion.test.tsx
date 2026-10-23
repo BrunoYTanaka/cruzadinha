@@ -108,12 +108,16 @@ describe('atalho para a outra fonte do dia (feature 015)', () => {
       status,
     })
   const bySource =
-    (online: ReturnType<typeof makeLibraryItem>[]) =>
-    ({ url }: { url: string }) =>
-      jsonResponse(200, {
-        items:
-          new URL(url, 'http://x').searchParams.get('source') === 'cruzadaonline' ? online : [],
+    (
+      online: ReturnType<typeof makeLibraryItem>[],
+      brasil: ReturnType<typeof makeLibraryItem>[] = [],
+    ) =>
+    ({ url }: { url: string }) => {
+      const source = new URL(url, 'http://x').searchParams.get('source')
+      return jsonResponse(200, {
+        items: source === 'cruzadaonline' ? online : source === 'cruzadasbrasil' ? brasil : [],
       })
+    }
 
   async function complete(user: ReturnType<typeof setup>) {
     await screen.findByRole('grid')
@@ -140,7 +144,10 @@ describe('atalho para a outra fonte do dia (feature 015)', () => {
     const user = setup()
     const { calls } = openGame({
       [SAVE]: () => jsonResponse(200, { progress: doneProgress() }),
-      [LIBRARY]: bySource([sameDay('completed')]),
+      [LIBRARY]: bySource(
+        [sameDay('completed')],
+        [{ ...sameDay('completed'), source: 'cruzadasbrasil' }],
+      ),
     })
     await complete(user)
     await waitFor(() => expect(calls.some((call) => call.key === LIBRARY)).toBe(true))

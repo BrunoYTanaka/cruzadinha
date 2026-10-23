@@ -35,6 +35,10 @@ A segunda fonte é a **Cruzada Online**, publicada pelo jornal Público. A bibli
 - Uma data sem arquivo responde 403 da CDN. O arquivo do dia seguinte já está publicado na véspera, então o adaptador nunca pede data futura.
 - Histórico: há arquivos desde pelo menos 2024. Detalhes em `specs/014-adaptador-publico/findings.md`.
 
+### Cruzadas Brasil (feature 029)
+
+A terceira fonte é a **Cruzadas Brasil** (`cruzadasbrasil`), com uma cruzada diária (nível "Diário") por data em `https://cruzadasbrasil.com.br/palavras-cruzadas/AAAAMMDD`. Não há API: a página é do Next.js e leva o estado do jogo (`dadosJogo`: `id`, `nivel`, `dimensoes`, `dicas`, `posicoes_num` e `gabarito`) em literais `self.__next_f.push([1,"..."])`. O adaptador concatena os literais, lê o objeto, valida com Zod e calcula palavras, números e tamanhos a partir da grade, conferindo contra as dicas, as posições e o gabarito. Histórico real: desde 2026-07-13; 404 é `unavailable` e uma data futura nunca é pedida (a página responde "Em breve"). 403 (bloqueio) é `source-down`. A atribuição é "Cruzadas Brasil". Detalhes e pendências com a fonte em [specs/029-adaptador-cruzadas-brasil/findings.md](../specs/029-adaptador-cruzadas-brasil/findings.md).
+
 ### Viabilidade (resolvida)
 
 A feature 001 confirmou o acesso sem login: veredito **viável** em 2026-10-12, com o puzzle diário completo (grade, dicas e solução). Detalhes em `specs/001-viabilidade-fonte/decision.md`.
@@ -103,12 +107,15 @@ apps/api/src/
     cruzadaonline/   única parte que conhece o XML do Público: pedido, leitura
                      segura do XML, schema, conversão, fixtures e
                      source:check:cruzadaonline
+    cruzadasbrasil/  única parte que conhece a página da Cruzadas Brasil: pedido,
+                     leitura dos dados do jogo, schema, conversão, fixtures e
+                     source:check:cruzadasbrasil
   cli.ts             users create; puzzles collect
 ```
 
 ### Fonte de puzzles
 
-`puzzles` conhece apenas a interface `PuzzleSource`. O adaptador `oglobo` gera o token anônimo (guardado em memória, e trocado por um novo se a fonte o recusar), busca o puzzle e converte o ipuz para o **formato interno**. O adaptador `cruzadaonline` lê o XML do Crossword Compiler (recusa DOCTYPE e corpos grandes) e o converte para o mesmo formato. O serviço recebe a lista de adaptadores; as rotas por data e a biblioteca aceitam a fonte, com O Globo como padrão. Adicionar uma fonte é escrever outro adaptador e incluí-lo na lista, sem tocar no resto.
+`puzzles` conhece apenas a interface `PuzzleSource`. O adaptador `oglobo` gera o token anônimo (guardado em memória, e trocado por um novo se a fonte o recusar), busca o puzzle e converte o ipuz para o **formato interno**. O adaptador `cruzadaonline` lê o XML do Crossword Compiler (recusa DOCTYPE e corpos grandes) e o converte para o mesmo formato. O adaptador `cruzadasbrasil` lê o estado do Next.js embutido no HTML e o converte da mesma forma. O serviço recebe a lista de adaptadores; as rotas por data e a biblioteca aceitam a fonte, com O Globo como padrão. Adicionar uma fonte é escrever outro adaptador e incluí-lo na lista, sem tocar no resto.
 
 ### Formato interno de puzzle (`packages/shared`)
 
