@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.8.4...web-v0.9.0) (2026-10-23)
+
+
+### Features
+
+* add Cruzadas Clube as a puzzle source ([2ce8fc8](https://github.com/BrunoYTanaka/cruzadinha/commit/2ce8fc8fb793191e485518af1fc6019e73cfcb4b))
+* **api:** add Cruzadas Brasil as a third puzzle source ([7f35376](https://github.com/BrunoYTanaka/cruzadinha/commit/7f35376cd0715e9156ceb6ea1f18dd1f0421cebb))
+* **web:** draw bars between neighbouring words and show the clube source ([1bf4cc3](https://github.com/BrunoYTanaka/cruzadinha/commit/1bf4cc31cf7231d8ceedfadd841557d3e109c24e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.18.0 to 0.19.0
+
 ## [0.8.4](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.8.3...web-v0.8.4) (2026-10-22)
 
 
