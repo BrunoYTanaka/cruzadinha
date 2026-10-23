@@ -49,8 +49,12 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(todayCell(page, 'em andamento')).toBeVisible()
   await page.reload()
   await expect(globo).toHaveAttribute('aria-selected', 'true')
+  // Com três abas, a seta da última volta à primeira (feature 030).
+  const clube = page.getByRole('tab', { name: /^Cruzadas Clube/ })
   await cruzada.click()
   await cruzada.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(clube).toHaveAttribute('aria-selected', 'true')
   await page.keyboard.press('ArrowRight')
   await expect(globo).toHaveAttribute('aria-selected', 'true')
   await expect(globo).toBeFocused()

@@ -141,6 +141,19 @@ describe('cruzada padrão e ir direto ao jogo (US2)', () => {
     expect(cruzada).toHaveAttribute('aria-pressed', 'true')
   })
 
+  it('a terceira fonte, Cruzadas Clube, pode ser a padrão (feature 030)', async () => {
+    const { user, dialog } = await openSettings()
+    const group = within(dialog).getByRole('group', { name: 'Cruzada padrão' })
+    expect(within(group).getAllByRole('button')).toHaveLength(3)
+    await user.click(within(group).getByRole('button', { name: 'Cruzadas Clube' }))
+    expect(getSettings().defaultSource).toBe('clube')
+    expect(within(group).getByRole('button', { name: 'Cruzadas Clube' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(group).toHaveStyle({ '--i': '2', '--count': '3' })
+  })
+
   it('com mais de 3 fontes, vira uma lista de rádios (FR-012a)', async () => {
     const user = (await import('@testing-library/user-event')).default.setup()
     const onChange = vi.fn()

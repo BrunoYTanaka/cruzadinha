@@ -27,4 +27,16 @@ describe('attributionLine', () => {
       attributionLine(attribution({ sourceName: 'Cruzada Online', copyright: 'Cruzada Online' })),
     ).toBe('Fonte: Cruzada Online')
   })
+
+  it('Cruzadas Clube mostra a fonte, o título e o autor da edição (feature 030)', () => {
+    expect(
+      attributionLine(
+        attribution({
+          sourceName: 'Cruzadas Clube',
+          title: 'Cruzadas clássicas 901',
+          author: 'Autora de Exemplo',
+        }),
+      ),
+    ).toBe('Fonte: Cruzadas Clube · Cruzadas clássicas 901 · Autora de Exemplo')
+  })
 })

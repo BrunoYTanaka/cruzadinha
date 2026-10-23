@@ -36,6 +36,44 @@
   color: var(--sel-ink);
 }
 
+/* Barra entre palavras vizinhas (feature 030), dentro da célula para não mexer no tamanho. Na
+   célula selecionada o fundo é amarelo: a barra usa a cor do texto dela. */
+.cell {
+  --bar-width: 3px;
+}
+
+.cell[data-bar-across] {
+  box-shadow: inset calc(var(--bar-width) * -1) 0 0 var(--bar);
+}
+
+.cell[data-bar-down] {
+  box-shadow: inset 0 calc(var(--bar-width) * -1) 0 var(--bar);
+}
+
+.cell[data-bar-across][data-bar-down] {
+  box-shadow:
+    inset calc(var(--bar-width) * -1) 0 0 var(--bar),
+    inset 0 calc(var(--bar-width) * -1) 0 var(--bar);
+}
+
+.selected[data-bar-across],
+.selected[data-bar-down] {
+  --bar: var(--sel-ink);
+}
+
+/* Sombras somem em cores forçadas: a borda mantém a barra visível. */
+@media (forced-colors: active) {
+  .cell[data-bar-across] {
+    box-sizing: border-box;
+    border-right: var(--bar-width) solid CanvasText;
+  }
+
+  .cell[data-bar-down] {
+    box-sizing: border-box;
+    border-bottom: var(--bar-width) solid CanvasText;
+  }
+}
+
 .number {
   position: absolute;
   top: 2px;

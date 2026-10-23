@@ -1,14 +1,14 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { Button } from '../../components/Button'
-import { isNoPuzzle, isSourceDown } from './source-down'
+import { isNoPuzzle, isSourceDown, isSourceUnsupported } from './source-down'
 import { todayCard, type TodayCard } from './today-cards'
 import styles from './TodayCards.module.css'
 import type { SourceLibrary } from './useSourceLibraries'
 
 // Só o que os cartões leem da biblioteca de cada fonte.
 export type TodayCardsSource = Pick<SourceLibrary, 'source' | 'name' | 'items'> & {
-  query: { isPending: boolean; isError: boolean; refetch: () => unknown }
+  query: { isPending: boolean; isError: boolean; error?: unknown; refetch: () => unknown }
 }
 
 type TodayCardsProps = {
@@ -56,6 +56,14 @@ function SourceCard({ library, today }: { library: TodayCardsSource; today: stri
       <div className={styles.card} aria-busy="true">
         <span className={styles.name}>{name}</span>
         <span className={styles.muted}>Carregando…</span>
+      </div>
+    )
+  }
+  if (query.isError && isSourceUnsupported(query.error)) {
+    return (
+      <div className={styles.card}>
+        <span className={styles.name}>{name}</span>
+        <span className={styles.muted}>Não disponível agora.</span>
       </div>
     )
   }

@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { ApiRequestError } from '../../api/client'
 import { expectNoA11yViolations } from '../../test/axe'
 import { makeLibraryItem } from '../../test/fixtures'
 import { noPuzzleKey } from './source-down'
@@ -43,6 +44,7 @@ describe('TodayCards', () => {
     const { container } = renderCards([
       entry('oglobo', 'O Globo', { items: [playing] }),
       entry('cruzadaonline', 'Cruzada Online'),
+      entry('clube', 'Cruzadas Clube', { items: [makeLibraryItem(today, { source: 'clube' })] }),
     ])
     expect(screen.getByRole('heading', { level: 1, name: 'Hoje' })).toBeInTheDocument()
     expect(screen.getByText('segunda-feira, 19 de outubro')).toBeInTheDocument()
@@ -50,6 +52,7 @@ describe('TodayCards', () => {
     expect(cards).toHaveLength(puzzleSourceIdSchema.options.length)
     expect(cards[0]).toHaveTextContent('O Globo')
     expect(cards[1]).toHaveTextContent('Cruzada Online')
+    expect(cards[2]).toHaveTextContent('Cruzadas Clube')
     expect(
       screen.getByRole('link', {
         name: 'O Globo: em andamento, 8 minutos e 42 segundos. Continuar',
@@ -96,6 +99,47 @@ describe('TodayCards', () => {
         query: { isPending: false, isError: true, refetch: vi.fn() },
       }),
     ])
+    expect(screen.getByRole('link', { name: 'O Globo: não iniciada. Jogar' })).toBeInTheDocument()
+  })
+
+  it('a terceira fonte sem edição de hoje mostra "Sem cruzada hoje", sem link e sem buscar', () => {
+    renderCards([
+      entry('oglobo', 'O Globo'),
+      entry('cruzadaonline', 'Cruzada Online'),
+      entry('clube', 'Cruzadas Clube'),
+    ])
+    const card = screen.getByText('Cruzadas Clube').closest('li')!
+    expect(card).toHaveTextContent('Sem cruzada hoje')
+    expect(within(card).queryByRole('link')).not.toBeInTheDocument()
+  })
+
+  it('a terceira fonte com edição de hoje é um link para jogar', () => {
+    const item = makeLibraryItem(today, { source: 'clube' })
+    renderCards([
+      entry('oglobo', 'O Globo'),
+      entry('cruzadaonline', 'Cruzada Online'),
+      entry('clube', 'Cruzadas Clube', { items: [item] }),
+    ])
+    expect(
+      screen.getByRole('link', { name: 'Cruzadas Clube: não iniciada. Jogar' }),
+    ).toHaveAttribute('href', `/jogo/${item.puzzleId}`)
+  })
+
+  it('uma API anterior que recusa a fonte (400) deixa só aquele cartão indisponível', () => {
+    renderCards([
+      entry('oglobo', 'O Globo', { items: [makeLibraryItem(today)] }),
+      entry('clube', 'Cruzadas Clube', {
+        query: {
+          isPending: false,
+          isError: true,
+          error: new ApiRequestError(400, { code: 'invalid-input' }),
+          refetch: vi.fn(),
+        },
+      }),
+    ])
+    const card = screen.getByText('Cruzadas Clube').closest('li')!
+    expect(card).toHaveTextContent('Não disponível agora.')
+    expect(within(card).queryByRole('button')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'O Globo: não iniciada. Jogar' })).toBeInTheDocument()
   })
 })

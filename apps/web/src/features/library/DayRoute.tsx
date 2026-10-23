@@ -88,6 +88,18 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
   if (query.isError) {
     const failure = query.error
     if (failure instanceof ApiRequestError) {
+      // 400: uma API anterior não conhece esta fonte (feature 030). As outras seguem disponíveis.
+      if (failure.status === 400) {
+        return (
+          <ErrorState
+            level={1}
+            title="Esta fonte não está disponível agora"
+            message="As cruzadas das outras fontes continuam disponíveis."
+          >
+            <BackLink />
+          </ErrorState>
+        )
+      }
       if (failure.status === 404) {
         return (
           <ErrorState level={1} title="Não há cruzada neste dia.">

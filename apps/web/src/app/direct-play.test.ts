@@ -147,6 +147,15 @@ describe('directPlayLoader', () => {
     })
   })
 
+  it('a cruzada padrão clube só vai ao jogo se hoje já está salvo; sem edição, fica com o motivo', async () => {
+    const item = makeLibraryItem(today, { source: 'clube' })
+    const saved = (await run([item], { source: 'clube' })()) as Response
+    expect(saved.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
+    expect(await run([], { source: 'clube' })()).toEqual({
+      directPlay: { kind: 'stay', reason: 'no-puzzle', name: 'Cruzadas Clube' },
+    })
+  })
+
   it('cruzada padrão desconhecida usa a primeira fonte', async () => {
     const item = makeLibraryItem(today, { source: 'oglobo' })
     const loader = run([item], { source: 'nova-fonte' })

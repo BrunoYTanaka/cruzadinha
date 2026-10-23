@@ -83,6 +83,39 @@ describe('DayRoute com fonte (feature 014)', () => {
   })
 })
 
+describe('DayRoute com a fonte clube (feature 030)', () => {
+  it('um dia salvo abre o jogo pela API, sem ser tratado como busca', async () => {
+    const { calls } = mockApi({
+      'GET /api/puzzles': () =>
+        jsonResponse(200, makePuzzleResponse(TINY, { date: '2026-10-05', source: 'clube' })),
+    })
+    const { router } = renderRoutes(routes, ['/dia/2026-10-05?fonte=clube'])
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
+    expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-05&source=clube')
+  })
+
+  it('um dia sem edição mostra "Não há cruzada neste dia." e lembra só para a clube', async () => {
+    mockApi({ 'GET /api/puzzles': () => apiError(404, 'puzzle-unavailable') })
+    renderRoutes(routes, ['/dia/2026-10-03?fonte=clube'])
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não há cruzada neste dia.')
+    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:clube:2026-10-03')).toBe('1')
+    expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:oglobo:2026-10-03')).toBeNull()
+  })
+
+  it('uma API anterior que recusa a fonte (400) deixa a fonte indisponível, sem tentar de novo', async () => {
+    const { calls } = mockApi({ 'GET /api/puzzles': () => apiError(400, 'invalid-input') })
+    renderRoutes(routes, ['/dia/2026-10-03?fonte=clube'])
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Esta fonte não está disponível agora',
+    )
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Esta fonte não está disponível agora',
+    )
+    expect(screen.queryByRole('button', { name: 'Tentar de novo' })).not.toBeInTheDocument()
+    expect(calls).toHaveLength(1)
+  })
+})
+
 describe('DayRoute', () => {
   it('em sucesso redireciona a /jogo/:id com replace e apaga o aviso da fonte', async () => {
     window.localStorage.setItem(SOURCE_DOWN_KEY, String(Date.now()))
