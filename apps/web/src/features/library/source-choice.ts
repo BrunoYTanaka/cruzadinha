@@ -22,7 +22,21 @@ export function saveSourceChoice(source: PuzzleSourceId): void {
   updateSettings({ defaultSource: source })
 }
 
-// Aba do calendário: começa na cruzada padrão e muda só durante a visita, sem virar preferência.
+// Fonte do último jogo aberto (feature 031). Fica na memória do módulo, não na URL nem no aparelho:
+// vale para qualquer caminho de volta, inclusive o botão do navegador, e zera ao recarregar a página.
+let rememberedSource: PuzzleSourceId | null = null
+
+export function rememberGameSource(source: unknown): void {
+  const parsed = puzzleSourceIdSchema.safeParse(source)
+  rememberedSource = parsed.success ? parsed.data : null
+}
+
+export function clearRememberedSource(): void {
+  rememberedSource = null
+}
+
+// Aba do calendário: começa na fonte do jogo de onde a pessoa voltou, senão na cruzada padrão, e
+// muda só durante a visita, sem virar preferência.
 export function useSourceChoice(): [PuzzleSourceId, (source: PuzzleSourceId) => void] {
-  return useState(loadSourceChoice)
+  return useState(() => rememberedSource ?? loadSourceChoice())
 }

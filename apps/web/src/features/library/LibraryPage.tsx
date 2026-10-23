@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useLoaderData } from 'react-router'
 import { ApiRequestError } from '../../api/client'
 import { ErrorState, LoadingState } from '../../app/ErrorState'
@@ -14,7 +14,7 @@ import { Calendar } from './Calendar'
 import styles from './LibraryPage.module.css'
 import { LibraryLegend } from './LibraryLegend'
 import { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from './library-width'
-import { useSourceChoice } from './source-choice'
+import { clearRememberedSource, useSourceChoice } from './source-choice'
 import { isSourceDown, readNoPuzzleDates } from './source-down'
 import { SourceTabs } from './SourceTabs'
 import { completedInMonth } from './today-cards'
@@ -30,6 +30,8 @@ export function LibraryPage() {
   const today = useMemo(() => todayInBrasilia(), [])
   const viewer = useViewer()
   const [source, setSource] = useSourceChoice()
+  // A fonte do jogo vale só para esta chegada ao calendário (feature 031).
+  useEffect(() => clearRememberedSource(), [])
   // Motivo de "Ir direto ao jogo" não ter saído do calendário (feature 021).
   const loaderData: unknown = useLoaderData()
   const directPlay = isDirectPlayData(loaderData) ? loaderData.directPlay : null

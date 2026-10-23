@@ -11,6 +11,7 @@ import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../.
 import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../guest/guest-store'
 import { LibraryPage } from './LibraryPage'
+import { rememberGameSource } from './source-choice'
 import { loadLibraryWidth } from './library-width'
 import { getSettings, updateSettings } from '../settings/settings-store'
 import { sourceDownKey } from './source-down'
@@ -60,6 +61,32 @@ afterEach(() => {
 })
 
 describe('LibraryPage', () => {
+  it('abre na aba da fonte do jogo de onde a pessoa voltou e só nesta montagem (feature 031)', async () => {
+    library()
+    rememberGameSource('cruzadaonline')
+    const first = renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('tab', { name: /Cruzada Online/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    first.unmount()
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('tab', { name: /O Globo/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  })
+
+  it('fonte lembrada que o site não conhece abre na cruzada padrão (feature 031)', async () => {
+    library()
+    rememberGameSource('nova-fonte')
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('tab', { name: /O Globo/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  })
+
   it('mostra o mês atual com a situação de cada dia por texto', async () => {
     library()
     renderRoutes(routes, ['/'], withAccount())

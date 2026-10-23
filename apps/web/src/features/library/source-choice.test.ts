@@ -1,10 +1,19 @@
 import { puzzleSourceIdSchema } from '@cruzadinha/shared'
+import { renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { getSettings, resetSettingsStore, updateSettings } from '../settings/settings-store'
-import { DEFAULT_SOURCE, loadSourceChoice, saveSourceChoice } from './source-choice'
+import {
+  DEFAULT_SOURCE,
+  clearRememberedSource,
+  loadSourceChoice,
+  rememberGameSource,
+  saveSourceChoice,
+  useSourceChoice,
+} from './source-choice'
 
 afterEach(() => {
   vi.restoreAllMocks()
+  clearRememberedSource()
   window.localStorage.clear()
 })
 
@@ -54,5 +63,32 @@ describe('cruzada padrão (feature 021)', () => {
     resetSettingsStore()
     expect(() => saveSourceChoice('cruzadaonline')).not.toThrow()
     expect(loadSourceChoice()).toBe('cruzadaonline')
+  })
+})
+
+describe('aba do calendário ao voltar de um jogo (feature 031)', () => {
+  it('começa na fonte do jogo de onde a pessoa saiu', () => {
+    rememberGameSource('cruzadaonline')
+    const { result } = renderHook(() => useSourceChoice())
+    expect(result.current[0]).toBe('cruzadaonline')
+  })
+
+  it('sem jogo lembrado começa na cruzada padrão', () => {
+    saveSourceChoice('cruzadaonline')
+    const { result } = renderHook(() => useSourceChoice())
+    expect(result.current[0]).toBe('cruzadaonline')
+    clearRememberedSource()
+    saveSourceChoice('oglobo')
+    expect(renderHook(() => useSourceChoice()).result.current[0]).toBe('oglobo')
+  })
+
+  it('fonte desconhecida não é lembrada e vale a cruzada padrão', () => {
+    rememberGameSource('nova-fonte')
+    expect(renderHook(() => useSourceChoice()).result.current[0]).toBe(DEFAULT_SOURCE)
+  })
+
+  it('lembrar a fonte ou trocar de aba não grava nas configurações', () => {
+    rememberGameSource('cruzadaonline')
+    expect(getSettings().defaultSource).toBe(DEFAULT_SOURCE)
   })
 })
