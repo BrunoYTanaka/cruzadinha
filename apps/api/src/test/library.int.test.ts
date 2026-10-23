@@ -462,4 +462,50 @@ describe('biblioteca por fonte (feature 014)', () => {
     expect((await getLibrary()).json().items).toHaveLength(366)
     expect((await getLibrary(undefined, '?source=cruzadaonline')).json().items).toHaveLength(1)
   })
+
+  it('source=clube lista só a fonte nova, com o progresso de cada pessoa separado', async () => {
+    await bothSources()
+    const clube = await storePuzzle('2026-10-13', 'clube')
+    const sid = await register('ana@exemplo.com')
+    expect((await putProgress(clube, save(), sid)).statusCode).toBe(200)
+
+    for (const who of [undefined, sid]) {
+      const response = await getLibrary(who, '?source=clube')
+      expect(response.statusCode).toBe(200)
+      expect(response.json().items).toMatchObject([{ puzzleId: clube, source: 'clube' }])
+    }
+    expect((await getLibrary(sid, '?source=clube')).json().items[0]).toMatchObject({
+      status: 'in_progress',
+      elapsedMs: 83_000,
+    })
+    expect((await getLibrary(sid, '?source=oglobo')).json().items[0]).toMatchObject({
+      status: 'not_started',
+    })
+  })
+
+  it('sem fonte a biblioteca do O Globo fica idêntica, mesmo com puzzles da clube (FR-004)', async () => {
+    const { globo } = await bothSources()
+    await storePuzzle('2026-10-13', 'clube')
+
+    const items = libraryResponseSchema.parse((await getLibrary()).json()).items
+    expect(items.map((item) => [item.puzzleId, item.source])).toEqual([[globo, 'oglobo']])
+  })
+
+  it('o limite de 366 também vale para a clube, sem tocar nas outras', async () => {
+    const ok = okResult('2025-01-01', 'clube')
+    const start = Date.UTC(2025, 0, 1)
+    await db.insert(puzzles).values(
+      Array.from({ length: 367 }, (_, index) => ({
+        source: ok.puzzle.source,
+        level: ok.puzzle.level,
+        date: new Date(start + index * 86_400_000).toISOString().slice(0, 10),
+        data: ok.puzzle,
+        solution: ok.solution,
+      })),
+    )
+    await storePuzzle('2024-06-01')
+
+    expect((await getLibrary(undefined, '?source=clube')).json().items).toHaveLength(366)
+    expect((await getLibrary()).json().items).toHaveLength(1)
+  })
 })

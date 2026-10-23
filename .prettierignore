@@ -12,3 +12,5 @@ apps/api/drizzle/
 playwright-report/
 test-results/
 .playwright-mcp/
+# Fixtures da fonte clube imitam páginas e scripts reais; o formatador as reescreveria.
+apps/api/src/sources/clube/fixtures/

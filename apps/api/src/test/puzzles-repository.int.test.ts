@@ -91,6 +91,14 @@ describe('repositório de puzzles', () => {
     expect((await findPuzzle(db, key('2026-10-12')))?.puzzleId).toBe(a.puzzleId)
   })
 
+  it('a regra do banco aceita a fonte clube (migração 0006)', async () => {
+    const clube = okResult('2026-10-12', 'clube')
+    const saved = await insertPuzzleIfAbsent(db, clube)
+    expect(saved.inserted).toBe(true)
+    const stored = await findPuzzle(db, { ...key('2026-10-12'), source: 'clube' })
+    expect(stored?.puzzle.attribution.sourceName).toBe('Cruzadas Clube')
+  })
+
   it('a regra do banco recusa uma fonte desconhecida', async () => {
     const { puzzle, solution } = okResult('2026-10-12')
     await expect(

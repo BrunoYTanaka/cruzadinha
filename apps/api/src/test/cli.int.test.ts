@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { users } from '../db/schema'
 import { runCli } from '../cli/run-cli'
 import { buildTestApp } from './app'
-import { fakeSource, okResult, type FakeSource } from './fake-source'
+import { fakeListedSource, fakeSource, okResult, type FakeSource } from './fake-source'
 import type { FetchPuzzleResult } from '../sources/types'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
@@ -234,6 +234,32 @@ describe('puzzles collect', () => {
       'Coleta Cruzada Online: 0 gravados, 0 já existentes, 0 indisponíveis, 1 falhas.',
     )
     expect(err).toContain(`[Cruzada Online] Falhou em ${today()}: source-down`)
+  })
+
+  it('inclui a fonte que lista edições: uma linha por fonte e a falha dela não esconde as outras', async () => {
+    withSource(new Map([[today(), okResult(today())]]))
+    const clube = fakeListedSource([{ date: today() }], {
+      failure: { ok: false, reason: 'source-down', detail: 'x' },
+    })
+
+    const code = await runCli(['puzzles', 'collect'], {
+      db,
+      clock: clock.now,
+      sources: [source, clube],
+      historyDays: 0,
+      readSecret: async () => '',
+      stdout: (text) => {
+        out += text
+      },
+      stderr: (text) => {
+        err += text
+      },
+    })
+
+    expect(code).toBe(1)
+    expect(out).toContain('Coleta O Globo: 1 gravados')
+    expect(out).toContain('Coleta Cruzadas Clube: 1 gravados')
+    expect(err).toContain(`[Cruzadas Clube] Falhou em ${today()}: source-down`)
   })
 
   it('recusa argumento inesperado com o uso', async () => {

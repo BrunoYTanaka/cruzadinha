@@ -43,6 +43,13 @@
       "when": 1792602270994,
       "tag": "0005_user_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792754157100,
+      "tag": "0006_puzzles_source_clube",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,8 @@ import {
   type PuzzleSourceId,
   type Solution,
 } from '@cruzadinha/shared'
+import { convertClube } from '../sources/clube/convert'
+import { readFixture as readClubeFixture } from '../sources/clube/fixtures'
 import { convertCrosswordCompiler } from '../sources/cruzadaonline/convert'
 import { readFixture } from '../sources/cruzadaonline/fixtures'
 import { readXml } from '../sources/cruzadaonline/xml'
@@ -17,12 +19,18 @@ function convertSample(source: PuzzleSourceId, date: string) {
   if (source === 'oglobo') {
     return convertAgilmenteResponse(agilmenteResponseSchema.parse(dailyValid), 'daily', date)
   }
+  if (source === 'clube') {
+    // Cruzada clássica 4 x 3 sem blocos, com palavras vizinhas coladas.
+    const read = readXml(readClubeFixture('game-valid.xml'))
+    if (!read.ok) throw new Error('a fixture do puzzle de exemplo deveria ser XML válido')
+    return convertClube(read.doc, 'daily', date)
+  }
   const read = readXml(readFixture('daily-valid.xml'))
   if (!read.ok) throw new Error('a fixture do puzzle de exemplo deveria ser XML válido')
   return convertCrosswordCompiler(read.doc, 'daily', date)
 }
 
-// Puzzle de exemplo do seed, um por fonte: a fixture 5 x 5 de texto inventado de cada adaptador,
+// Puzzle de exemplo do seed, um por fonte: a fixture reduzida de texto inventado de cada adaptador,
 // passada pelo mesmo conversor e pela mesma validação de qualquer puzzle. Só o seed importa este
 // arquivo (fora do bundle). A atribuição deixa claro que é exemplo, para o conteúdo inventado não
 // parecer da fonte real; o título diz de qual fonte é o exemplo.

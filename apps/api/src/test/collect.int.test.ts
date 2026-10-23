@@ -7,7 +7,7 @@ import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
 import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
 import type { CollectRun } from '../modules/puzzles/puzzles.service'
 import type { FetchPuzzleResult } from '../sources/types'
-import { fakeSource, okResult } from './fake-source'
+import { fakeListedSource, fakeSource, okResult, type FakeListedSource } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
@@ -289,5 +289,161 @@ describe('collect (várias fontes)', () => {
         limits: defaultRateLimits,
       }),
     ).toThrow('fonte repetida: oglobo')
+  })
+})
+
+describe('collect (fonte que lista edições, feature 030)', () => {
+  const dayOffset = (days: number) => addDaysToIsoDate(today(), -days)
+
+  function withListed(
+    listed: FakeListedSource,
+    options: {
+      historyDays?: number
+      pauses?: number[]
+      others?: ReturnType<typeof fakeSource>[]
+    } = {},
+  ) {
+    return createPuzzlesService({
+      db,
+      clock: clock.now,
+      sources: [...(options.others ?? []), listed],
+      rateLimiter: createRateLimiter(createRateLimitRepository(db)),
+      limits: defaultRateLimits,
+      historyDays: options.historyDays ?? 31,
+      sleep: async (ms) => {
+        options.pauses?.push(ms)
+      },
+    })
+  }
+
+  const lastReport = (run: CollectRun) => run.sources[run.sources.length - 1]!.report
+
+  it('salva cada edição pela data da página, da mais nova à mais antiga', async () => {
+    const dates = [dayOffset(0), dayOffset(7), dayOffset(14)]
+    const source = fakeListedSource(dates.map((date) => ({ date })))
+    const report = lastReport(await withListed(source).collect())
+
+    expect(report.saved).toEqual(dates)
+    expect(source.loaded).toEqual(dates)
+    const rows = await db.select().from(puzzles)
+    expect(rows.map((row) => [row.source, row.date]).sort()).toEqual(
+      dates.map((date) => ['clube', date]).sort(),
+    )
+  })
+
+  it('só vai até o início da janela', async () => {
+    const source = fakeListedSource([{ date: dayOffset(2) }, { date: dayOffset(40) }])
+    const report = lastReport(await withListed(source, { historyDays: 31 }).collect())
+
+    expect(report.saved).toEqual([dayOffset(2)])
+    expect(source.listed).toEqual([dayOffset(2)])
+  })
+
+  it('edição já salva não tem o puzzle pedido de novo', async () => {
+    const dates = [dayOffset(0), dayOffset(7)]
+    const first = fakeListedSource(dates.map((date) => ({ date })))
+    await withListed(first).collect()
+
+    const second = fakeListedSource(dates.map((date) => ({ date })))
+    const report = lastReport(await withListed(second).collect())
+
+    expect(report.saved).toEqual([])
+    expect(report.skipped).toEqual(dates)
+    expect(second.listed).toEqual(dates)
+    expect(second.loaded).toEqual([])
+    expect(await db.select().from(puzzles)).toHaveLength(2)
+  })
+
+  it('preenche uma edição antiga que faltava mesmo havendo uma mais nova salva', async () => {
+    const newer = fakeListedSource([{ date: dayOffset(0) }])
+    await withListed(newer).collect()
+
+    const both = fakeListedSource([{ date: dayOffset(0) }, { date: dayOffset(7) }])
+    const report = lastReport(await withListed(both).collect())
+
+    expect(report.saved).toEqual([dayOffset(7)])
+    expect(report.skipped).toEqual([dayOffset(0)])
+  })
+
+  it('duas edições na mesma data: a primeira fica e a outra conta como já salva', async () => {
+    const date = dayOffset(1)
+    const source = fakeListedSource([{ date }, { date }])
+    const report = lastReport(await withListed(source).collect())
+
+    expect(report.saved).toEqual([date])
+    expect(report.skipped).toEqual([date])
+    expect(await db.select().from(puzzles)).toHaveLength(1)
+  })
+
+  it('edição com data futura não é salva', async () => {
+    const future = addDaysToIsoDate(today(), 3)
+    const source = fakeListedSource([{ date: future }, { date: dayOffset(1) }])
+    const report = lastReport(await withListed(source).collect())
+
+    expect(report.unavailable).toEqual([future])
+    expect(report.saved).toEqual([dayOffset(1)])
+  })
+
+  it('faz a pausa de 2 s antes de cada pedido, lista e edições', async () => {
+    const pauses: number[] = []
+    const source = fakeListedSource([{ date: dayOffset(0) }, { date: dayOffset(7) }])
+    await withListed(source, { pauses }).collect()
+
+    // lista + 2 páginas + 2 scripts = 5 pedidos, 4 pausas.
+    expect(pauses).toEqual([2000, 2000, 2000, 2000])
+  })
+
+  it('não grava puzzle inconsistente', async () => {
+    const date = dayOffset(0)
+    const broken = { ...okResult(date, 'clube'), solution: { cells: [['A']] } }
+    const source = fakeListedSource([{ date, result: broken }])
+    const report = lastReport(await withListed(source).collect())
+
+    expect(report.failed).toEqual([{ date, reason: 'unexpected-format' }])
+    expect(await db.select().from(puzzles)).toHaveLength(0)
+  })
+
+  it('limite de uso do script interrompe a fonte e deixa a data pendente', async () => {
+    const dates = [dayOffset(0), dayOffset(7)]
+    const source = fakeListedSource([
+      { date: dates[0]! },
+      { date: dates[1]!, result: { ok: false, reason: 'rate-limited' } },
+    ])
+    const report = lastReport(await withListed(source).collect())
+
+    expect(report.saved).toEqual([dates[0]])
+    expect(report.stoppedBy).toBe('rate-limited')
+    expect(report.pending).toEqual([dates[1]])
+  })
+
+  it('falha da lista vira falha da fonte e limite da lista interrompe', async () => {
+    const down = fakeListedSource([], {
+      failure: { ok: false, reason: 'source-down', detail: 'x' },
+    })
+    expect(lastReport(await withListed(down).collect()).failed).toEqual([
+      { date: today(), reason: 'source-down' },
+    ])
+    const limited = fakeListedSource([], {
+      failure: { ok: false, reason: 'rate-limited', detail: 'HTTP 429' },
+    })
+    expect(lastReport(await withListed(limited).collect()).stoppedBy).toBe('rate-limited')
+  })
+
+  it('erro inesperado do adaptador não impede a coleta das outras fontes', async () => {
+    const globo = fakeSource(new Map([[today(), okResult(today())]]))
+    const boom = fakeListedSource([{ date: today() }], { throwOnList: true })
+    const run = await withListed(boom, { others: [globo] }).collect()
+
+    expect(run.sources[0]?.report.saved).toEqual([today()])
+    expect(run.sources[1]?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
+  })
+
+  it('uma falha ao carregar uma edição não impede a coleta das outras fontes', async () => {
+    const globo = fakeSource(new Map([[today(), okResult(today())]]))
+    const source = fakeListedSource([{ date: today() }], { throwOnLoad: new Set([today()]) })
+    const run = await withListed(source, { others: [globo] }).collect()
+
+    expect(run.sources[0]?.report.saved).toEqual([today()])
+    expect(run.sources[1]?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
   })
 })
