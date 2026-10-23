@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.9.1...web-v0.9.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **web:** reopen the calendar on the source of the game just left ([f5dd9c9](https://github.com/BrunoYTanaka/cruzadinha/commit/f5dd9c98481931ca78d02109f18b1d148fcfc617))
+* **web:** reopen the calendar on the source of the game just left ([c062440](https://github.com/BrunoYTanaka/cruzadinha/commit/c062440ad2e4d3141eddc27fd87a3f6f91678a48)), closes [#71](https://github.com/BrunoYTanaka/cruzadinha/issues/71)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.20.0 to 0.21.0
+
 ## [0.9.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.9.0...web-v0.9.1) (2026-10-23)
 
 
