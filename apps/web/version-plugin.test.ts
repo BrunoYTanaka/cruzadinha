@@ -35,6 +35,12 @@ describe('siteVersionJson', () => {
   })
 })
 
+// Um hook do git (pre-push) exporta GIT_DIR e afins, e o git filho acharia o repositório mesmo
+// fora dele.
+function gitFreeEnv(): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')))
+}
+
 describe('readGitHead', () => {
   it('returns undefined outside a repository and leaves nothing on stderr', () => {
     const dir = mkdtempSync(join(tmpdir(), 'cruzadinha-nogit-'))
@@ -45,7 +51,7 @@ describe('readGitHead', () => {
     })`
     const result = spawnSync(process.execPath, ['--input-type=module', '-e', script, dir], {
       encoding: 'utf8',
-      env: { ...process.env, GIT_CEILING_DIRECTORIES: tmpdir() },
+      env: { ...gitFreeEnv(), GIT_CEILING_DIRECTORIES: tmpdir() },
     })
     expect(result.stdout).toBe('undefined')
     expect(result.stderr).toBe('')
