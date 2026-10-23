@@ -70,7 +70,7 @@ A pessoa escolhe a cruzada padrão (O Globo ou Cruzada Online). O calendário ab
 3. **Given** "Ir direto ao jogo" ligado e a cruzada de hoje da fonte padrão disponível e não concluída, **When** a pessoa abre o endereço raiz, **Then** cai direto no jogo dessa cruzada.
 4. **Given** "Ir direto ao jogo" ligado e a cruzada de hoje já concluída, ou sem cruzada hoje, ou com a fonte fora do ar, **When** a pessoa abre o endereço raiz, **Then** vê o calendário com um aviso curto explicando por que não foi ao jogo.
 5. **Given** "Ir direto ao jogo" ligado, **When** a pessoa entra por um link direto (um dia do calendário, a página de login, uma cruzada específica) ou volta ao calendário pelo cabeçalho, **Then** o atalho não age; ele só vale ao abrir o endereço raiz.
-6. **Given** a pessoa mudou a aba do calendário sem mexer nas configurações, **When** volta mais tarde, **Then** o calendário abre na cruzada padrão, não na última aba vista. [Ver Assumptions.]
+6. **Given** a pessoa mudou a aba do calendário sem mexer nas configurações, **When** volta mais tarde (nova visita ou recarga), **Then** o calendário abre na cruzada padrão, não na última aba vista. [Ver Assumptions.] *(Ajustado pela feature 031: ao voltar de um jogo na mesma visita, o calendário abre na fonte desse jogo.)*
 
 ---
 
@@ -189,7 +189,7 @@ Quem tem conta muda as configurações num aparelho e, ao entrar em outro aparel
 ## Assumptions
 
 - "Quem estiver logado precisa salvar" foi entendido como salvar na conta, além do aparelho, para valer em outros aparelhos.
-- Cruzada padrão e calendário inicial são uma escolha só. A aba do calendário pode ser trocada à vontade durante a visita, mas não muda a cruzada padrão; o calendário reabre na padrão.
+- Cruzada padrão e calendário inicial são uma escolha só. A aba do calendário pode ser trocada à vontade durante a visita, mas não muda a cruzada padrão; o calendário reabre na padrão ao abrir o site (feature 031: ao voltar de um jogo, reabre na fonte do jogo).
 - Os limites de ajuda contam por cruzada, como hoje; o intervalo 0 a 99 é o mesmo aceito hoje na configuração do site, e os padrões vêm dela. Além do número, cada limite aceita "sem limite" (FR-008a).
 - Usar ajuda, com ou sem limite, não muda tempo, conclusão nem recorde, como hoje.
 - Ajudas já usadas continuam guardadas como hoje; esta feature só muda o limite.

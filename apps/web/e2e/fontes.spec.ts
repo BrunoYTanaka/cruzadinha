@@ -59,6 +59,78 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   expect(await progressRowCount()).toBe(0)
 })
 
+// Feature 031: o calendário volta na aba do jogo de onde a pessoa saiu e, ao abrir o site, na padrão.
+test.describe('volta do jogo para o calendário', () => {
+  const globo = (page: Page) => page.getByRole('tab', { name: /^O Globo/ })
+  const cruzada = (page: Page) => page.getByRole('tab', { name: /^Cruzada Online/ })
+
+  async function openOnlineGame(page: Page) {
+    await page.goto('/')
+    await cruzada(page).click()
+    await page.getByRole('link', { name: /^Hoje, .*, não iniciado$/ }).click()
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzada Online')
+  }
+
+  test('o link, o cabeçalho e o botão Voltar do navegador voltam na Cruzada Online', async ({
+    page,
+  }) => {
+    await openOnlineGame(page)
+    await page.getByRole('link', { name: 'Escolher outro dia' }).click()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+
+    await page.goBack()
+    await expect(page.getByRole('grid')).toBeVisible()
+    await page.getByRole('link', { name: 'Cruzadinha' }).click()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+
+    await page.goBack()
+    await page.goBack()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+  })
+
+  test('o cartão de hoje de outra fonte também volta nessa fonte, sem mudar as configurações', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await card(page, 'Cruzada Online').click()
+    await expect(page.getByRole('grid')).toBeVisible()
+    await page.getByRole('link', { name: 'Escolher outro dia' }).click()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+    const saved = await page.evaluate(() => window.localStorage.getItem('cruzadinha:settings'))
+    expect(JSON.parse(saved ?? '{}').settings.defaultSource).toBe('oglobo')
+  })
+
+  test('o diálogo de conclusão volta na fonte do jogo', async ({ page }) => {
+    await page.goto('/')
+    await card(page, 'Cruzada Online').click()
+    await expect(page.getByRole('grid')).toBeVisible()
+    const response = await page.request.get(
+      `/api/puzzles?level=daily&date=${brasiliaToday()}&source=cruzadaonline`,
+    )
+    const { solution } = (await response.json()) as { solution: { cells: (string | null)[][] } }
+    await fillSolution(page, solution.cells)
+    const dialog = page.getByRole('dialog', { name: 'Cruzada concluída' })
+    await dialog.getByRole('button', { name: 'Voltar à biblioteca' }).click()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+  })
+
+  test('recarregar, ou ir ao login e voltar pelo cabeçalho, abre na cruzada padrão', async ({
+    page,
+  }) => {
+    await openOnlineGame(page)
+    await page.getByRole('link', { name: 'Escolher outro dia' }).click()
+    await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
+    await page.reload()
+    await expect(globo(page)).toHaveAttribute('aria-selected', 'true')
+
+    await openOnlineGame(page)
+    await page.getByRole('link', { name: 'Entrar', exact: true }).first().click()
+    await expect(page).toHaveURL(/\/login/)
+    await page.getByRole('link', { name: 'Cruzadinha' }).click()
+    await expect(globo(page)).toHaveAttribute('aria-selected', 'true')
+  })
+})
+
 test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', async ({ page }) => {
   await page.goto('/')
   await card(page, 'O Globo').click()

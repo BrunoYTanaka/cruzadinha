@@ -2,6 +2,7 @@ import type { LibraryItem } from '@cruzadinha/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../api/query-keys'
 import { updateSettings } from '../features/settings/settings-store'
+import { clearRememberedSource, rememberGameSource } from '../features/library/source-choice'
 import { markSourceDown } from '../features/library/source-down'
 import type { TodayCard } from '../features/library/today-cards'
 import { makeLibraryItem } from '../test/fixtures'
@@ -87,6 +88,14 @@ describe('directPlayLoader', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     window.localStorage.clear()
+  })
+
+  it('a fonte do último jogo (feature 031) não muda a cruzada do atalho', async () => {
+    rememberGameSource('oglobo')
+    const item = makeLibraryItem(today, { source: 'cruzadaonline' })
+    const result = (await run([item])()) as Response
+    clearRememberedSource()
+    expect(result.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
   })
 
   it('desligado não faz nada', async () => {

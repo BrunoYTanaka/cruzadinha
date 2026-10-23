@@ -41,6 +41,7 @@ import { useGame, type GameOwner } from './useGame'
 import { useOnScreenKeyboard } from './useOnScreenKeyboard'
 import { attributionLine } from './attribution'
 import { WordBar } from './WordBar'
+import { rememberGameSource } from '../library/source-choice'
 import type { PuzzleResponse } from '@cruzadinha/shared'
 
 function BackLink() {
@@ -205,6 +206,9 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
       .getElementById(`cell-${selectedRow}-${selectedCol}`)
       ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   }, [desktop, selectedRow, selectedCol])
+
+  const gameSource = puzzle.source
+  useEffect(() => rememberGameSource(gameSource), [gameSource])
 
   const confirmed = state.completion === 'confirmed'
   const finishedMs =

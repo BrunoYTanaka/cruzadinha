@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../components/Button'
 import { Notice } from '../components/Notice'
 import { buildLoginPath } from '../features/auth/redirect'
+import { clearRememberedSource } from '../features/library/source-choice'
 import { sessionQueryOptions, useLogoutMutation } from '../features/auth/useSession'
 import { SettingsButton } from '../features/settings/SettingsButton'
 import { SettingsDialog } from '../features/settings/SettingsDialog'
@@ -20,6 +22,10 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const onAuthPage = location.pathname === '/login' || location.pathname === '/cadastro'
+  // Quem sai do jogo para entrar ou cadastrar-se volta ao calendário na cruzada padrão (feature 031).
+  useEffect(() => {
+    if (onAuthPage) clearRememberedSource()
+  }, [onAuthPage])
   const sessionEnded = useSessionEnded()
   const loginPath = buildLoginPath(location.pathname + location.search)
   // Configurações na conta (feature 021): liga para quem entrou, desliga para visitante.
