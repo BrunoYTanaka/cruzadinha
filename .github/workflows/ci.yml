@@ -11,6 +11,20 @@ env:
   HUSKY: 0
 
 jobs:
+  branch-name:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      # O nome vem por variável de ambiente, nunca interpolado no script.
+      - run: node scripts/check-branch-name.mjs "$HEAD_REF"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
