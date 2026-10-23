@@ -16,6 +16,8 @@ export default defineConfig(
       '**/playwright-report/**',
       '.specify/**',
       '.claude/**',
+      // Scripts de fixture imitam o arquivo do jogo de terceiros (rodam só na sandbox, nos testes).
+      'apps/api/src/sources/clube/fixtures/**',
     ],
   },
   {

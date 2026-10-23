@@ -77,11 +77,11 @@ test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzada Online')
 })
 
-test('três fontes (feature 029): o cartão da Cruzadas Brasil abre o jogo em um toque', async ({
+test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jogo em um toque', async ({
   page,
 }) => {
   await page.goto('/')
-  await expect(page.getByRole('tab')).toHaveCount(3)
+  await expect(page.getByRole('tab')).toHaveCount(4)
   await expect(page.getByRole('tab').nth(2)).toHaveAccessibleName(/^Cruzadas Brasil/)
 
   // SC-008: um toque no cartão de hoje leva ao jogo.

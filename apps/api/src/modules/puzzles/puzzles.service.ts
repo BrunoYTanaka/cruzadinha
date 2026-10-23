@@ -117,7 +117,69 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
     requested = true
   }
 
+  // Fonte que lista as edições (feature 030): em vez de pedir cada data, percorre as edições da mais
+  // nova à mais antiga até o início da janela e só pede o puzzle das datas que ainda não estão
+  // salvas. Uma edição já salva custa só o pedido da página.
+  async function collectListed(source: PuzzleSource): Promise<CollectReport> {
+    const level: Level = 'daily'
+    const today = todayInSaoPaulo(clock)
+    const window = candidateDates(today, historyDays)
+    const report: CollectReport = {
+      saved: [],
+      skipped: [],
+      unavailable: [],
+      failed: [],
+      pending: [],
+    }
+    try {
+      for await (const listing of source.listRecent!({
+        oldestDate: window[window.length - 1]!,
+        beforeRequest: pauseBeforeRequest,
+      })) {
+        if (!listing.ok) {
+          if (listing.reason === 'rate-limited') report.stoppedBy = 'rate-limited'
+          else report.failed.push({ date: today, reason: listing.reason })
+          break
+        }
+        const { date } = listing
+        // Edição com data futura não é jogável hoje: fica para uma coleta futura.
+        if (date > today) {
+          report.unavailable.push(date)
+          continue
+        }
+        if ((await existingDates(db, { source: source.id, level, dates: [date] })).has(date)) {
+          report.skipped.push(date)
+          continue
+        }
+        const fetched = await listing.loadPuzzle()
+        if (!fetched.ok) {
+          if (fetched.reason === 'unavailable') report.unavailable.push(date)
+          else if (fetched.reason === 'rate-limited') {
+            report.stoppedBy = 'rate-limited'
+            report.pending = [date]
+            break
+          } else report.failed.push({ date, reason: fetched.reason })
+          continue
+        }
+        if (!isConsistent(fetched)) {
+          report.failed.push({ date, reason: 'unexpected-format' })
+          continue
+        }
+        const saved = await insertPuzzleIfAbsent(db, {
+          puzzle: fetched.puzzle,
+          solution: fetched.solution,
+        })
+        ;(saved.inserted ? report.saved : report.skipped).push(date)
+      }
+    } catch {
+      // Um erro inesperado do adaptador não pode impedir a coleta das outras fontes.
+      report.failed.push({ date: today, reason: 'source-down' })
+    }
+    return report
+  }
+
   async function collectSource(source: PuzzleSource): Promise<CollectReport> {
+    if (source.listRecent) return collectListed(source)
     const level: Level = 'daily'
     const candidates = candidateDates(todayInSaoPaulo(clock), historyDays)
     const stored = await existingDates(db, { source: source.id, level, dates: candidates })
@@ -181,6 +243,10 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       const source = adapterFor(sourceId)
       const stored = await findPuzzle(db, { source: sourceId, level, date })
       if (stored) return deliver(stored)
+
+      // Fonte sem busca por data: o dia só existe se a coleta o salvou. Não pede à fonte nem
+      // consome o limite de pedidos.
+      if (source.onDemand === false) return { ok: false, reason: 'unavailable' }
 
       if (date > todayInSaoPaulo(clock)) return { ok: false, reason: 'unavailable' }
 

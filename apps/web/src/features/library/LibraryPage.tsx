@@ -75,6 +75,19 @@ export function LibraryPage() {
   let calendarArea: ReactNode
   if (library.isPending) {
     calendarArea = <LoadingState label="Carregando a biblioteca…" />
+  } else if (
+    library.isError &&
+    library.error instanceof ApiRequestError &&
+    library.error.status === 400
+  ) {
+    // Uma API anterior não conhece esta fonte (feature 030): as outras seguem disponíveis.
+    calendarArea = (
+      <ErrorState
+        level={2}
+        title="Esta fonte não está disponível agora"
+        message="As cruzadas das outras fontes continuam disponíveis."
+      />
+    )
   } else if (library.isError) {
     const offline = library.error instanceof ApiRequestError && library.error.isOffline
     calendarArea = (

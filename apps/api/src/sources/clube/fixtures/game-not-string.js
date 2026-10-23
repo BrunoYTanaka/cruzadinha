@@ -1,0 +1,1 @@
+var CrosswordPuzzleData = 42

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { validatePuzzleWithSolution } from './rules'
 import { puzzleSchema, type Puzzle, type Solution } from './schema'
-import { wordCells } from './word-cells'
+import { wordBoundaries, wordCells } from './word-cells'
 
 const open = (number: number | null = null) => ({ kind: 'open' as const, number })
 const block = { kind: 'block' as const }
@@ -154,5 +154,142 @@ describe('wordCells', () => {
       { row: 0, col: 2 },
       { row: 1, col: 2 },
     ])
+  })
+})
+
+// 4 x 2 sem nenhum bloco; palavras vizinhas coladas na mesma linha (feature 030):
+// 1 2 3 4
+// 5 . 6 .   horizontais: 1 (AB), 3 (CD), 5 (EF), 6 (GH); verticais: 1 a 4, de duas letras
+function neighbours(): Puzzle {
+  const across = (number: number, row: number, col: number, clue: string) =>
+    ({ number, direction: 'across', row, col, length: 2, clue }) as const
+  const down = (number: number, col: number) =>
+    ({ number, direction: 'down', row: 0, col, length: 2, clue: `Coluna ${number}` }) as const
+  return {
+    source: 'clube',
+    level: 'daily',
+    date: '2026-10-19',
+    attribution: { sourceName: 'Cruzadas Clube', title: null, author: null, copyright: null },
+    grid: {
+      width: 4,
+      height: 2,
+      cells: [
+        [open(1), open(2), open(3), open(4)],
+        [open(5), open(), open(6), open()],
+      ],
+    },
+    words: [
+      across(1, 0, 0, 'Esquerda do topo'),
+      across(3, 0, 2, 'Direita do topo'),
+      across(5, 1, 0, 'Esquerda de baixo'),
+      across(6, 1, 2, 'Direita de baixo'),
+      down(1, 0),
+      down(2, 1),
+      down(3, 2),
+      down(4, 3),
+    ],
+  }
+}
+
+describe('palavras vizinhas na mesma direção', () => {
+  it('aceita palavras coladas sem bloco entre elas', () => {
+    expect(puzzleSchema.safeParse(neighbours()).success).toBe(true)
+  })
+
+  it('recusa palavra seguida de célula aberta que não inicia outra palavra', () => {
+    const puzzle = neighbours()
+    puzzle.words = puzzle.words.filter(
+      (word) => !(word.direction === 'across' && word.number === 3),
+    )
+    puzzle.grid.cells[0]![2] = open()
+    expect(issuePaths(puzzle)).toContainEqual(['words', 0])
+  })
+
+  it('recusa lacuna: depois da palavra há duas células soltas', () => {
+    const puzzle = loneCell()
+    puzzle.words = puzzle.words.filter(
+      (word) => !(word.direction === 'across' && word.number === 3),
+    )
+    expect(issuePaths(puzzle)).toContainEqual(['words', 0])
+  })
+
+  it('recusa palavras da mesma direção que se sobrepõem', () => {
+    const puzzle = neighbours()
+    puzzle.words[1] = { ...puzzle.words[1]!, col: 1, length: 3 }
+    expect(issuePaths(puzzle)).toContainEqual(['words', 0])
+  })
+})
+
+// 5 x 2: uma corrida de uma letra entre barras na linha de cima (a célula do meio só tem palavra
+// vertical).
+// 1 . 2 . 3      horizontais: 1 (AB), 3 (DE), 4 (FGHIJ); vertical: 2 (CH)
+// 4 . . . .
+function loneCell(): Puzzle {
+  const base = neighbours()
+  return {
+    ...base,
+    grid: {
+      width: 5,
+      height: 2,
+      cells: [
+        [open(1), open(), open(2), open(3), open()],
+        [open(4), open(), open(), open(), open()],
+      ],
+    },
+    words: [
+      { number: 1, direction: 'across', row: 0, col: 0, length: 2, clue: 'a' },
+      { number: 3, direction: 'across', row: 0, col: 3, length: 2, clue: 'b' },
+      { number: 4, direction: 'across', row: 1, col: 0, length: 5, clue: 'c' },
+      { number: 2, direction: 'down', row: 0, col: 2, length: 2, clue: 'd' },
+    ],
+  }
+}
+
+describe('corrida de uma letra entre barras', () => {
+  it('aceita a célula sem palavra horizontal entre duas palavras coladas', () => {
+    expect(puzzleSchema.safeParse(loneCell()).success).toBe(true)
+  })
+
+  it('recusa duas células soltas seguidas depois de uma palavra', () => {
+    const puzzle = loneCell()
+    puzzle.words = puzzle.words.filter(
+      (word) => !(word.direction === 'across' && word.number === 3),
+    )
+    puzzle.grid.cells[0]![3] = open()
+    puzzle.words.push({ number: 5, direction: 'down', row: 0, col: 3, length: 2, clue: 'e' })
+    puzzle.words.push({ number: 6, direction: 'down', row: 0, col: 4, length: 2, clue: 'f' })
+    puzzle.grid.cells[0]![4] = open(6)
+    puzzle.grid.cells[0]![3] = open(5)
+    expect(issuePaths(puzzle)).toContainEqual(['words', 0])
+  })
+})
+
+describe('wordBoundaries', () => {
+  it('marca o fim das palavras que têm vizinha colada', () => {
+    expect(wordBoundaries(neighbours())).toEqual([
+      { row: 0, col: 1, direction: 'across' },
+      { row: 1, col: 1, direction: 'across' },
+    ])
+  })
+
+  it('marca também a corrida de uma letra, dos dois lados', () => {
+    const lone = wordBoundaries(loneCell()).filter((b) => b.row === 0)
+    expect(lone).toEqual([
+      { row: 0, col: 1, direction: 'across' },
+      { row: 0, col: 2, direction: 'across' },
+    ])
+  })
+
+  it('não marca nada numa grade com blocos', () => {
+    expect(wordBoundaries(ring())).toEqual([])
+  })
+
+  it('marca palavras verticais coladas', () => {
+    const grid = { cells: [[open()], [open()], [open()], [open()]] }
+    const words: Puzzle['words'] = [
+      { number: 1, direction: 'down', row: 0, col: 0, length: 2, clue: 'a' },
+      { number: 2, direction: 'down', row: 2, col: 0, length: 2, clue: 'b' },
+    ]
+    expect(wordBoundaries({ grid, words })).toEqual([{ row: 1, col: 0, direction: 'down' }])
   })
 })

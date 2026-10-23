@@ -13,3 +13,5 @@ playwright-report/
 test-results/
 .playwright-mcp/
 apps/api/src/sources/cruzadasbrasil/fixtures/
+# Fixtures da fonte clube imitam páginas e scripts reais; o formatador as reescreveria.
+apps/api/src/sources/clube/fixtures/

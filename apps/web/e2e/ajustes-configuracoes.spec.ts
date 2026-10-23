@@ -153,13 +153,10 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
         expect(restoreBox.x).toBeGreaterThanOrEqual(content.left - 0.5)
         expect(restoreBox.height).toBeGreaterThanOrEqual(44)
 
-        // Seletor: mesma altura e mesma largura entre os botões (SC-004).
-        const sources = await dialog
-          .getByRole('group', { name: 'Cruzada padrão' })
-          .getByRole('button')
-          .all()
-        expect(sources.length).toBeGreaterThanOrEqual(2)
-        expectSameSize(await Promise.all(sources.map((source) => box(source))))
+        // Seletor: com mais de 3 fontes (feature 030) é uma lista de rádios, uma opção por fonte.
+        await expect(
+          dialog.getByRole('group', { name: 'Cruzada padrão' }).getByRole('radio'),
+        ).toHaveCount(4)
 
         // Sem rolagem lateral na modal.
         const overflow = await dialog.evaluate(
@@ -173,7 +170,9 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
     }
   }
 
-  test('nome de fonte longo não desalinha os botões do seletor', async ({ page }) => {
+  // O seletor em botões só existe com até 3 fontes; com as 4 reais (feature 030) é uma lista de
+  // rádios, e o caso de botões está nos testes de `SettingsDialog.test.tsx` (2 e 3 fontes).
+  test.skip('nome de fonte longo não desalinha os botões do seletor', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 900 })
     await page.goto('/')
     const dialog = await openSettings(page)
@@ -286,7 +285,10 @@ test.describe('US4: "Sem limite" à direita em telas maiores', () => {
   })
 })
 
-test.describe('US5: troca suave da cruzada padrão', () => {
+// O destaque deslizante só existe com até 3 fontes; com as 4 reais (feature 030) o seletor é uma
+// lista de rádios. A transição e o toque seguem cobertos pelos testes de `SettingsDialog.test.tsx`
+// (2 e 3 fontes), que não dependem de quantas fontes o site tem.
+test.describe.skip('US5: troca suave da cruzada padrão', () => {
   async function picker(page: Page) {
     const dialog = await openSettings(page)
     const group = dialog.getByRole('group', { name: 'Cruzada padrão' })
@@ -367,7 +369,7 @@ test.describe('US5: troca suave da cruzada padrão', () => {
   })
 })
 
-test.describe('US5: toque', () => {
+test.describe.skip('US5: toque', () => {
   test.use({ hasTouch: true })
 
   test('um toque troca a fonte e o destaque a acompanha', async ({ page }) => {

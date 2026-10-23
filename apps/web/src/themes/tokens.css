@@ -2,7 +2,7 @@
    dark.css e seguem contracts/ui-contracts.md:
    superfícies e texto: --bg --surface --ink --mute --line
    ação:                --accent --accent-ink --focus
-   tabuleiro:           --block --cell --cell-line --word --sel --sel-ink
+   tabuleiro:           --block --cell --cell-line --bar --word --sel --sel-ink
    ajuda:               --help --bad
    estado:              --ok --ok-tint --warn --warn-tint
    controles:           --pill --scrollbar --control --control-line --hover-overlay --press-overlay

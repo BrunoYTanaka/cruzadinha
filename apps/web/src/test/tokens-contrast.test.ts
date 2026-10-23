@@ -64,6 +64,10 @@ const CONTROL_PAIRS: [string, string][] = [
   ['--focus', '--surface'],
   ['--help', '--cell'],
   ['--bad', '--cell'],
+  // Barra entre palavras vizinhas (feature 030): sobre a célula e sobre a palavra ativa. Na célula
+  // selecionada a barra usa --sel-ink sobre --sel (já coberto em TEXT_PAIRS).
+  ['--bar', '--cell'],
+  ['--bar', '--word'],
   // Alças de redimensionar (feature 011): em repouso (--mute) e no hover e no foco (--accent).
   ['--mute', '--bg'],
   ['--mute', '--surface'],

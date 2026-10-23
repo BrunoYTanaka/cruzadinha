@@ -2,11 +2,12 @@ import type { FastifyInstance } from 'fastify'
 import { Writable } from 'node:stream'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { puzzles } from '../db/schema'
+import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
-import type { FetchPuzzleResult } from '../sources/types'
+import type { FetchPuzzleResult, PuzzleSource } from '../sources/types'
 import { buildTestApp, sessionCookieFrom } from './app'
-import { fakeSource, okResult, type FakeSource } from './fake-source'
+import { fakeListedSource, fakeSource, okResult, type FakeSource } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
@@ -27,6 +28,7 @@ async function start(
   responses: Map<string, FetchPuzzleResult> = new Map(),
   rateLimits: RateLimits = defaultRateLimits,
   cruzadaResponses: Map<string, FetchPuzzleResult> = new Map(),
+  extraSources: readonly PuzzleSource[] = [],
 ) {
   source = fakeSource(responses)
   cruzada = fakeSource(cruzadaResponses, { id: 'cruzadaonline' })
@@ -40,7 +42,7 @@ async function start(
   app = buildTestApp({
     database: db,
     clock: clock.now,
-    puzzleSources: [source, cruzada],
+    puzzleSources: [source, cruzada, ...extraSources],
     rateLimits,
     logStream,
   })
@@ -57,6 +59,9 @@ async function start(
 function get(url: string, withSession = true) {
   return app.inject({ method: 'GET', url, headers: withSession ? { cookie: `sid=${cookie}` } : {} })
 }
+
+// Grava um puzzle da fonte clube, como a coleta faz.
+const saveClube = (date: string) => insertPuzzleIfAbsent(db, okResult(date, 'clube'))
 
 const okFor = (...dates: string[]) =>
   new Map<string, FetchPuzzleResult>(dates.map((date) => [date, okResult(date)]))
@@ -361,6 +366,48 @@ describe('GET /api/puzzles com fonte (feature 014)', () => {
     expect(response.statusCode).toBe(502)
     expect(response.json().error).toBe('puzzle-source-failed')
     expect(response.body + logged.join('')).not.toContain('detalhe-secreto')
+  })
+})
+
+describe('GET /api/puzzles com a fonte clube (feature 030)', () => {
+  it('um dia salvo é entregue com a atribuição da fonte e sem pedir à fonte', async () => {
+    const clube = fakeListedSource([])
+    await start(new Map(), defaultRateLimits, new Map(), [clube])
+    await saveClube(today())
+
+    const response = await get(`/api/puzzles?date=${today()}&source=clube`, false)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().puzzle.source).toBe('clube')
+    expect(response.json().puzzle.attribution.sourceName).toBe('Cruzadas Clube')
+    expect(clube.fetchCalls).toEqual([])
+  })
+
+  it('um dia passado sem edição responde 404 sem pedir à fonte nem gastar o limite', async () => {
+    const limits = { ...defaultRateLimits, puzzleFetch: { max: 1, windowMinutes: 60 } }
+    const clube = fakeListedSource([])
+    await start(okFor(daysAgo(2)), limits, new Map(), [clube])
+
+    for (const day of [1, 3, 4]) {
+      const missing = await get(`/api/puzzles?date=${daysAgo(day)}&source=clube`, false)
+      expect(missing.statusCode).toBe(404)
+      expect(missing.json().error).toBe('puzzle-unavailable')
+    }
+    expect(clube.fetchCalls).toEqual([])
+    expect(clube.listed).toEqual([])
+    // O limite de buscas não foi gasto: a única busca permitida ainda vale para o O Globo.
+    expect((await get(`/api/puzzles?date=${daysAgo(2)}`, false)).statusCode).toBe(200)
+  })
+
+  it('sem fonte informada nunca devolve o puzzle da clube, mesmo no mesmo dia', async () => {
+    const clube = fakeListedSource([])
+    await start(okFor(today()), defaultRateLimits, new Map(), [clube])
+    await saveClube(today())
+
+    const response = await get(`/api/puzzles?date=${today()}`, false)
+
+    expect(response.json().puzzle.source).toBe('oglobo')
+    expect(await db.select().from(puzzles)).toHaveLength(2)
   })
 })
 

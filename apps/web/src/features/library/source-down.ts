@@ -1,4 +1,5 @@
-import type { PuzzleSourceId } from '@cruzadinha/shared'
+import { puzzleSourcesWithoutFetch, type PuzzleSourceId } from '@cruzadinha/shared'
+import { ApiRequestError } from '../../api/client'
 import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
 
 // A biblioteca só lê o que está guardado e nunca consulta a fonte, então ela não sabe se a fonte
@@ -35,10 +36,19 @@ export function markNoPuzzle(source: PuzzleSourceId, date: string): void {
   writeStorage(noPuzzleKey(source, date), '1', 'session')
 }
 
+// Uma fonte sem busca por data (feature 030) só tem os dias que a coleta salvou: um dia passado
+// fora da biblioteca nunca é buscado, então já nasce como "sem cruzada".
 export function isNoPuzzle(source: PuzzleSourceId, date: string): boolean {
+  if (puzzleSourcesWithoutFetch.includes(source)) return true
   return readStorage(noPuzzleKey(source, date), 'session') === '1'
 }
 
 export function readNoPuzzleDates(source: PuzzleSourceId, dates: readonly string[]): Set<string> {
   return new Set(dates.filter((date) => isNoPuzzle(source, date)))
+}
+
+// Uma API anterior à fonte responde 400 (`invalid-input`) ao pedido dela (feature 030): a fonte
+// fica indisponível, sem afetar as outras.
+export function isSourceUnsupported(error: unknown): boolean {
+  return error instanceof ApiRequestError && error.status === 400
 }

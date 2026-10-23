@@ -130,23 +130,30 @@ describe('modal de configurações', () => {
 })
 
 describe('cruzada padrão e ir direto ao jogo (US2)', () => {
-  it('com as fontes reais, botões lado a lado com aria-pressed', async () => {
+  it('com as quatro fontes reais, é uma lista de rádios com a primeira marcada', async () => {
     const { user, dialog } = await openSettings()
     const group = within(dialog).getByRole('group', { name: 'Cruzada padrão' })
-    const oglobo = within(group).getByRole('button', { name: 'O Globo' })
-    const cruzada = within(group).getByRole('button', { name: 'Cruzada Online' })
-    expect(oglobo).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      within(group)
+        .getAllByRole('radio')
+        .map((radio) => radio.getAttribute('aria-label') ?? radio.parentElement?.textContent),
+    ).toHaveLength(4)
+    const oglobo = within(group).getByRole('radio', { name: 'O Globo' })
+    const cruzada = within(group).getByRole('radio', { name: 'Cruzada Online' })
+    expect(oglobo).toBeChecked()
     await user.click(cruzada)
     expect(getSettings().defaultSource).toBe('cruzadaonline')
-    expect(cruzada).toHaveAttribute('aria-pressed', 'true')
+    expect(cruzada).toBeChecked()
   })
 
-  it('a terceira fonte (Cruzadas Brasil) pode ser a cruzada padrão (feature 029)', async () => {
+  it('a terceira e a quarta fonte (Cruzadas Brasil e Cruzadas Clube) podem ser a padrão', async () => {
     const { user, dialog } = await openSettings()
     const group = within(dialog).getByRole('group', { name: 'Cruzada padrão' })
-    expect(within(group).getAllByRole('button')).toHaveLength(3)
-    await user.click(within(group).getByRole('button', { name: 'Cruzadas Brasil' }))
+    await user.click(within(group).getByRole('radio', { name: 'Cruzadas Brasil' }))
     expect(getSettings().defaultSource).toBe('cruzadasbrasil')
+    await user.click(within(group).getByRole('radio', { name: 'Cruzadas Clube' }))
+    expect(getSettings().defaultSource).toBe('clube')
+    expect(within(group).getByRole('radio', { name: 'Cruzadas Clube' })).toBeChecked()
   })
 
   it('com mais de 3 fontes, vira uma lista de rádios (FR-012a)', async () => {

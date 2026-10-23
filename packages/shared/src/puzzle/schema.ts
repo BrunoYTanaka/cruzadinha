@@ -15,7 +15,7 @@ const dimension = z
 // A fonte só publica o nível diário; novos níveis entram aqui quando houver fonte para eles.
 export const levelSchema = z.enum(['daily'], { error: 'deve ser daily' })
 
-export const puzzleSourceIdSchema = z.enum(['oglobo', 'cruzadaonline', 'cruzadasbrasil'])
+export const puzzleSourceIdSchema = z.enum(['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'])
 
 // Fonte não informada vale oglobo, para o site anterior (feature 014).
 export const puzzleSourceQuerySchema = puzzleSourceIdSchema.default('oglobo')
@@ -25,7 +25,12 @@ export const puzzleSourceNames = {
   oglobo: 'O Globo',
   cruzadaonline: 'Cruzada Online',
   cruzadasbrasil: 'Cruzadas Brasil',
+  clube: 'Cruzadas Clube',
 } as const satisfies Record<PuzzleSourceId, string>
+
+// Fontes sem busca por data: o dia só existe se a coleta o salvou (feature 030). O site mostra
+// "sem cruzada" e a API responde só com o que está salvo.
+export const puzzleSourcesWithoutFetch: readonly PuzzleSourceId[] = ['clube']
 
 export const isoDateSchema = z.iso.date({ error: 'deve ser uma data AAAA-MM-DD válida' })
 

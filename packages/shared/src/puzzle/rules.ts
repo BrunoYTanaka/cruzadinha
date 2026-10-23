@@ -40,6 +40,22 @@ export function checkPuzzleRules(puzzle: { grid: RuleGrid; words: RuleWord[] }):
   const covered = new Set<string>()
   const starts = new Set<string>()
   const seen = new Set<string>()
+  // Início e fim de cada palavra por direção: palavras vizinhas (feature 030) são aceitas quando a
+  // célula depois do fim é o início de outra palavra da mesma direção.
+  const wordStarts = new Set<string>()
+  const wordEnds = new Set<string>()
+  // Células que alguma palavra da direção ocupa. Uma célula aberta fora delas, entre barras, é uma
+  // corrida de uma letra (sem palavra nessa direção; a outra direção a cobre).
+  const coveredBy = new Set<string>()
+  for (const word of words) {
+    const cells = wordCells(word)
+    const first = cells[0]
+    const last = cells[cells.length - 1]
+    if (first) wordStarts.add(`${word.direction}:${first.row}:${first.col}`)
+    if (last) wordEnds.add(`${word.direction}:${last.row}:${last.col}`)
+    for (const cell of cells) coveredBy.add(`${word.direction}:${cell.row}:${cell.col}`)
+  }
+  const seenCells = new Set<string>()
 
   words.forEach((word, i) => {
     const label = `palavra ${word.number} ${directionName[word.direction]}`
@@ -65,9 +81,24 @@ export function checkPuzzleRules(puzzle: { grid: RuleGrid; words: RuleWord[] }):
     const step = word.direction === 'across' ? { row: 0, col: 1 } : { row: 1, col: 0 }
     const before = { row: first.row - step.row, col: first.col - step.col }
     const after = { row: last.row + step.row, col: last.col + step.col }
-    if (isOpen(grid, before) || isOpen(grid, after)) {
+    const dir = word.direction
+    // A célula ao lado do fim (ou do começo) da palavra: bloco/borda, o início (fim) de uma
+    // palavra vizinha colada, ou uma corrida de uma letra entre barras, que só vale entre duas
+    // palavras (palavra | letra | palavra), como nas cruzadas clássicas (feature 030).
+    const beyond = (position: CellPosition, sign: 1 | -1, joins: Set<string>): boolean => {
+      if (!isOpen(grid, position)) return true
+      const key = `${dir}:${position.row}:${position.col}`
+      if (joins.has(key)) return true
+      if (coveredBy.has(key)) return false
+      const outer = { row: position.row + sign * step.row, col: position.col + sign * step.col }
+      return joins.has(`${dir}:${outer.row}:${outer.col}`)
+    }
+    if (!beyond(before, -1, wordEnds) || !beyond(after, 1, wordStarts)) {
       issues.push({ path, message: `${label} não ocupa a sequência inteira de células abertas` })
     }
+    const overlaps = cells.some((cell) => seenCells.has(`${dir}:${cell.row}:${cell.col}`))
+    if (overlaps) issues.push({ path, message: `${label} sobrepõe outra palavra na mesma direção` })
+    for (const cell of cells) seenCells.add(`${dir}:${cell.row}:${cell.col}`)
 
     const start = cellAt(grid, first)
     if (start?.kind !== 'open' || start.number !== word.number) {

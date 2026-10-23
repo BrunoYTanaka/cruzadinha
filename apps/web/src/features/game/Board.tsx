@@ -1,4 +1,4 @@
-import type { Puzzle } from '@cruzadinha/shared'
+import { wordBoundaries, type Puzzle } from '@cruzadinha/shared'
 import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type MouseEvent } from 'react'
 import type { Arrow, PuzzleIndex } from '../../game-logic/navigation'
 import { activeWord } from '../../game-logic/navigation'
@@ -66,6 +66,15 @@ export function Board({
     () => new Set(word ? index.cellsOf(word).map((cell) => cellKey(cell)) : []),
     [word, index],
   )
+  // Fim de palavra com vizinha colada (cruzadas clássicas sem bloco): onde desenhar a barra.
+  const bars = useMemo(() => {
+    const byCell = new Map<string, { across: boolean; down: boolean }>()
+    for (const { row, col, direction } of wordBoundaries(puzzle)) {
+      const key = cellKey({ row, col })
+      byCell.set(key, { across: false, down: false, ...byCell.get(key), [direction]: true })
+    }
+    return byCell
+  }, [puzzle])
   const selectedKey = state.selected ? cellKey(state.selected) : null
   const gridRef = useRef<HTMLDivElement>(null)
   // Ligado por Esc: o próximo Tab sai do tabuleiro em vez de mudar de palavra.
@@ -163,6 +172,8 @@ export function Board({
                   selected={!readOnly && selectedKey === key}
                   inWord={!readOnly && inWord.has(key)}
                   mark={state.marks[key]}
+                  barAcross={bars.get(key)?.across}
+                  barDown={bars.get(key)?.down}
                   label={describe(row, col, state.cells[row]?.[col] ?? null, state.marks[key])}
                 />
               )

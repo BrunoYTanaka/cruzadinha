@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { ApiRequestError } from '../../api/client'
 import {
   clearSourceDown,
   isNoPuzzle,
   isSourceDown,
+  isSourceUnsupported,
   markNoPuzzle,
   markSourceDown,
   readNoPuzzleDates,
@@ -43,5 +45,21 @@ describe('dia sem cruzada', () => {
     expect(readNoPuzzleDates('cruzadaonline', ['2026-10-02', '2026-10-03'])).toEqual(
       new Set(['2026-10-03']),
     )
+  })
+
+  it('uma fonte sem busca por data nunca é buscável: todo dia passado é sem cruzada (feature 030)', () => {
+    expect(isNoPuzzle('clube', '2026-10-03')).toBe(true)
+    expect(readNoPuzzleDates('clube', ['2026-10-02', '2026-10-03'])).toEqual(
+      new Set(['2026-10-02', '2026-10-03']),
+    )
+    expect(isNoPuzzle('oglobo', '2026-10-03')).toBe(false)
+  })
+})
+
+describe('fonte que a API não conhece (feature 030)', () => {
+  it('só o 400 (invalid-input) conta como fonte indisponível', () => {
+    expect(isSourceUnsupported(new ApiRequestError(400, { code: 'invalid-input' }))).toBe(true)
+    expect(isSourceUnsupported(new ApiRequestError(502))).toBe(false)
+    expect(isSourceUnsupported(new Error('x'))).toBe(false)
   })
 })

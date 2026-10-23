@@ -5,7 +5,13 @@ import { describe, expect, it } from 'vitest'
 import { createGame } from '../../game-logic/reducer'
 import type { GameState } from '../../game-logic/state'
 import { expectNoA11yViolations } from '../../test/axe'
-import { LAYOUT5, makePuzzle, makeSolution } from '../../test/fixtures'
+import {
+  LAYOUT5,
+  makeNeighbourPuzzle,
+  makePuzzle,
+  makeSolution,
+  NEIGHBOURS,
+} from '../../test/fixtures'
 import { activeWord } from '../../game-logic/navigation'
 import { Board } from './Board'
 import { boardKeyToAction } from './board-keys'
@@ -14,20 +20,23 @@ import { ClueBar } from './ClueBar'
 function Harness({
   rows = LAYOUT5,
   readOnly = false,
+  neighbours = false,
   patch,
 }: {
   rows?: string[]
   readOnly?: boolean
+  // Cruzada clássica sem blocos, com palavras vizinhas coladas (feature 030).
+  neighbours?: boolean
   patch?: (state: GameState) => GameState
 }) {
   const game = useMemo(
     () =>
       createGame({
-        puzzle: makePuzzle(rows),
-        solution: makeSolution(rows),
+        puzzle: neighbours ? makeNeighbourPuzzle() : makePuzzle(rows),
+        solution: makeSolution(neighbours ? NEIGHBOURS : rows),
         limits: { letters: 4, words: 2 },
       }),
-    [rows],
+    [rows, neighbours],
   )
   const [state, dispatch] = useReducer(game.reducer, game.initialState, (initial) =>
     patch ? patch(initial) : initial,
@@ -251,5 +260,36 @@ describe('Board', () => {
   it('passa nas regras de acessibilidade', async () => {
     const { container } = render(<Harness />)
     await expectNoA11yViolations(container)
+  })
+
+  describe('barras entre palavras vizinhas', () => {
+    const barred = (container: HTMLElement, attribute: 'across' | 'down') =>
+      Array.from(container.querySelectorAll(`[data-bar-${attribute}]`)).map(
+        (cell) => `${cell.getAttribute('data-row')},${cell.getAttribute('data-col')}`,
+      )
+
+    it('marca o fim das palavras que têm vizinha colada', () => {
+      const { container } = render(<Harness neighbours />)
+      expect(barred(container, 'across')).toEqual(['0,1', '1,1'])
+      expect(barred(container, 'down')).toEqual([])
+    })
+
+    it('não marca nada numa grade comum', () => {
+      const { container } = render(<Harness />)
+      expect(container.querySelectorAll('[data-bar-across], [data-bar-down]')).toHaveLength(0)
+    })
+
+    it('a barra não altera o rótulo nem a navegação por teclado', async () => {
+      const user = userEvent.setup()
+      render(<Harness neighbours />)
+      await user.click(screen.getByRole('grid'))
+      await user.keyboard('AB')
+      expect(screen.getByRole('grid')).toHaveAttribute('aria-activedescendant', 'cell-0-1')
+    })
+
+    it('não tem violações de acessibilidade', async () => {
+      const { container } = render(<Harness neighbours />)
+      await expectNoA11yViolations(container)
+    })
   })
 })

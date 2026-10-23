@@ -106,6 +106,53 @@ export const TINY = ['CAL', 'A#O', 'SOL']
 // 3 ARSOL, 4 MARE.
 export const LAYOUT5 = ['#CASA', 'MO#AR', 'ARTES', 'RE#LO', 'E#SOL']
 
+// 4 × 3 sem nenhum bloco, como as cruzadas clássicas do Cruzadas Clube: palavras vizinhas coladas
+// na mesma linha. Horizontais: 1 AB, 3 CD, 5 EF, 6 GH, 7 IJKL. Verticais: 1 AEI, 2 BFJ, 3 CGK,
+// 4 DHL. Os fins de palavra com vizinha colada são (0,1) e (1,1).
+export const NEIGHBOURS = ['ABCD', 'EFGH', 'IJKL']
+
+export function makeNeighbourPuzzle(date = '2026-10-19'): Puzzle {
+  const word = (
+    number: number,
+    direction: 'across' | 'down',
+    row: number,
+    col: number,
+    length: number,
+  ) => ({ number, direction, row, col, length, clue: `Dica ${number} ${direction}` })
+  const numbers = [
+    [1, 2, 3, 4],
+    [5, null, 6, null],
+    [7, null, null, null],
+  ]
+  return {
+    source: 'clube',
+    level: 'daily',
+    date,
+    attribution: {
+      sourceName: 'Cruzadas Clube',
+      title: 'Cruzadas clássicas de exemplo',
+      author: 'Autora de exemplo',
+      copyright: null,
+    },
+    grid: {
+      width: 4,
+      height: 3,
+      cells: numbers.map((row) => row.map((number) => ({ kind: 'open' as const, number }))),
+    },
+    words: [
+      word(1, 'across', 0, 0, 2),
+      word(3, 'across', 0, 2, 2),
+      word(5, 'across', 1, 0, 2),
+      word(6, 'across', 1, 2, 2),
+      word(7, 'across', 2, 0, 4),
+      word(1, 'down', 0, 0, 3),
+      word(2, 'down', 0, 1, 3),
+      word(3, 'down', 0, 2, 3),
+      word(4, 'down', 0, 3, 3),
+    ],
+  }
+}
+
 export function makeLibraryItem(date: string, overrides: Partial<LibraryItem> = {}): LibraryItem {
   const digits = date.replaceAll('-', '')
   return {

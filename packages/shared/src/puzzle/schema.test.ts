@@ -5,6 +5,7 @@ import {
   puzzleSchema,
   puzzleSourceIdSchema,
   puzzleSourceNames,
+  puzzleSourcesWithoutFetch,
   puzzleSourceQuerySchema,
   solutionSchema,
 } from './schema'
@@ -83,10 +84,11 @@ describe('levelSchema', () => {
 })
 
 describe('puzzleSourceIdSchema', () => {
-  it('aceita oglobo, cruzadaonline e cruzadasbrasil e recusa outras fontes', () => {
+  it('aceita oglobo, cruzadaonline, cruzadasbrasil e clube e recusa outras fontes', () => {
     expect(puzzleSourceIdSchema.safeParse('oglobo').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('cruzadaonline').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('cruzadasbrasil').success).toBe(true)
+    expect(puzzleSourceIdSchema.safeParse('clube').success).toBe(true)
     expect(puzzleSourceIdSchema.safeParse('publico').success).toBe(false)
   })
 
@@ -101,6 +103,11 @@ describe('puzzleSourceIdSchema', () => {
     expect(Object.keys(puzzleSourceNames).sort()).toEqual([...puzzleSourceIdSchema.options].sort())
     expect(puzzleSourceNames.cruzadaonline).toBe('Cruzada Online')
     expect(puzzleSourceNames.cruzadasbrasil).toBe('Cruzadas Brasil')
+    expect(puzzleSourceNames.clube).toBe('Cruzadas Clube')
+  })
+
+  it('só o clube não tem busca por data', () => {
+    expect(puzzleSourcesWithoutFetch).toEqual(['clube'])
   })
 })
 

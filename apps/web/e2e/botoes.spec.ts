@@ -470,15 +470,13 @@ async function failSourceRequests(page: Page) {
 }
 
 test.describe('023 US4: consistência entre telas e temas', () => {
-  test('aba, segmento e chave mantêm o selecionado com o mouse por cima', async ({ page }) => {
+  test('aba e chave mantêm o selecionado com o mouse por cima', async ({ page }) => {
     await page.goto('/')
     await expectSelectedKept(page, page.getByRole('tab', { selected: true }))
 
     const dialog = await openSettings(page)
-    await expectSelectedKept(
-      page,
-      dialog.getByRole('group', { name: 'Cruzada padrão' }).locator('[aria-pressed="true"]'),
-    )
+    // O segmento do seletor de cruzada padrão só existe com até 3 fontes; com as 4 reais (feature
+    // 030) é uma lista de rádios, sem o destaque de segmento (coberto em SettingsDialog.test.tsx).
     const toggle = dialog.getByRole('switch', { name: 'Riscar a dica só quando acerta' })
     if ((await toggle.getAttribute('aria-checked')) !== 'true') await toggle.click()
     expect(await css(toggle, 'background-color')).toBe(await tokenBackground(page, '--accent'))

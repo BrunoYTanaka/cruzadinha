@@ -7,6 +7,7 @@ import { createDatabase } from './db/client'
 import { describeError } from './db/errors'
 import { loadDotEnvIfPresent } from './env-file'
 import { systemClock } from './lib/clock'
+import { createClubeSource } from './sources/clube/clube'
 import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
 import { createCruzadasBrasilSource } from './sources/cruzadasbrasil/cruzadasbrasil'
 import { createOgloboSource } from './sources/oglobo/oglobo'
@@ -60,7 +61,12 @@ try {
   code = await runCli(process.argv.slice(2), {
     db: database.db,
     clock: systemClock,
-    sources: [createOgloboSource(), createCruzadaOnlineSource(), createCruzadasBrasilSource()],
+    sources: [
+      createOgloboSource(),
+      createCruzadaOnlineSource(),
+      createCruzadasBrasilSource(),
+      createClubeSource(),
+    ],
     historyDays,
     readSecret: createSecretReader(),
     stdout: (text) => process.stdout.write(text),

@@ -167,7 +167,7 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
     const dialog = await openSettings(page)
     await dialog
       .getByRole('group', { name: 'Cruzada padrão' })
-      .getByRole('button', { name: 'Cruzada Online' })
+      .getByRole('radio', { name: 'Cruzada Online' })
       .click()
     await dialog.getByRole('button', { name: 'Fechar' }).click()
     await page.reload()

@@ -411,6 +411,83 @@ describe('abas de fonte (features 014 e 015)', () => {
   })
 })
 
+describe('a fonte clube (feature 030)', () => {
+  const clubeItem = makeLibraryItem('2026-10-12', {
+    puzzleId: '00000000-0000-4000-8000-00000000d012',
+    source: 'clube',
+    status: 'completed',
+    finishedMs: 61_000,
+  })
+
+  function allSources(clube: (() => Response) | undefined = undefined) {
+    return mockApi({
+      'GET /api/library': ({ url }) => {
+        const source = new URL(url, 'http://x').searchParams.get('source')
+        if (source === 'clube') return clube ? clube() : jsonResponse(200, { items: [clubeItem] })
+        return jsonResponse(200, { items: source === 'cruzadaonline' ? [] : items })
+      },
+    })
+  }
+
+  it('mostra quatro abas e quatro cartões "Hoje", cada um no seu lugar', async () => {
+    allSources()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      expect.stringContaining('O Globo'),
+      expect.stringContaining('Cruzada Online'),
+      expect.stringContaining('Cruzadas Brasil'),
+      expect.stringContaining('Cruzadas Clube'),
+    ])
+    const clubeCard = screen.getByText('Sem cruzada hoje').closest('li')!
+    expect(clubeCard).toHaveTextContent('Cruzadas Clube')
+    expect(within(clubeCard).queryByRole('link')).not.toBeInTheDocument()
+  })
+
+  it('um dia passado sem edição aparece sem cruzada, sem link para buscar', async () => {
+    allSources()
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    await user.click(screen.getByRole('tab', { name: /^Cruzadas Clube/ }))
+
+    // O dia salvo é um link para o jogo; o 10 (passado, sem edição) não é link nem busca.
+    expect(
+      screen.getByRole('link', { name: '12 de outubro, concluído em 1 minuto e 1 segundo' }),
+    ).toHaveAttribute('href', `/jogo/${clubeItem.puzzleId}`)
+    expect(screen.queryByRole('link', { name: /^10 de outubro/ })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('img', { name: '10 de outubro, sem cruzada neste dia' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('table').querySelector('a[href^="/dia/"]')).toBeNull()
+  })
+
+  it('o contador de concluídas da aba conta só a fonte dela', async () => {
+    allSources()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    expect(screen.getByRole('tab', { name: /^Cruzadas Clube/ })).toHaveTextContent('1')
+  })
+
+  it('uma API anterior que recusa a fonte (400) deixa só a aba dela indisponível', async () => {
+    allSources(() => apiError(400, 'invalid-input'))
+    const user = userEvent.setup()
+    renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    await user.click(screen.getByRole('tab', { name: /^Cruzadas Clube/ }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Esta fonte não está disponível agora',
+    )
+    expect(screen.queryByRole('button', { name: 'Tentar de novo' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /^O Globo/ }))
+    expect(
+      screen.getByRole('link', { name: 'Hoje, 14 de outubro, não iniciado' }),
+    ).toBeInTheDocument()
+  })
+})
+
 describe('biblioteca do visitante (feature 013)', () => {
   const guestRoutes = [
     {
