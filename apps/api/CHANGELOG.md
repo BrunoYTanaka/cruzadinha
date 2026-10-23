@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.4.7...api-v0.5.0) (2026-10-23)
+
+
+### Features
+
+* add Cruzadas Clube as a puzzle source ([2ce8fc8](https://github.com/BrunoYTanaka/cruzadinha/commit/2ce8fc8fb793191e485518af1fc6019e73cfcb4b))
+* **api:** add Cruzadas Brasil as a third puzzle source ([7f35376](https://github.com/BrunoYTanaka/cruzadinha/commit/7f35376cd0715e9156ceb6ea1f18dd1f0421cebb))
+* **api:** add Cruzadas Brasil as a third puzzle source ([191fb57](https://github.com/BrunoYTanaka/cruzadinha/commit/191fb574679a1bb8d0c61d22bc6f06a79d9fd545))
+* **api:** add the Cruzadas Clube source with a sandboxed script reader ([5c70157](https://github.com/BrunoYTanaka/cruzadinha/commit/5c70157031940ce129030e6fd411ceeb56177932))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.18.0 to 0.19.0
+
 ## [0.4.7](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.4.6...api-v0.4.7) (2026-10-22)
 
 
