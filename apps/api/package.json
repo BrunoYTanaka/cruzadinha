@@ -15,7 +15,8 @@
     "db:seed": "tsx src/db/seed.ts",
     "cli": "tsx src/cli.ts",
     "source:check": "tsx src/sources/oglobo/check.ts",
-    "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts"
+    "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts",
+    "source:check:cruzadasbrasil": "tsx src/sources/cruzadasbrasil/check.ts"
   },
   "dependencies": {
     "@cruzadinha/shared": "0.18.0",
