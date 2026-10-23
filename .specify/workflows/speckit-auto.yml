@@ -22,6 +22,10 @@ inputs:
     type: string
     default: "auto"
     prompt: "Integration to use ('auto' uses the project's initialized integration)"
+  spec_review:
+    type: string
+    default: ""
+    prompt: "Answer for the spec gate (approve or reject); empty asks at the terminal"
 
 steps:
   - id: specify
@@ -86,6 +90,7 @@ steps:
     type: gate
     message: "Review the spec (with the clarifications applied) before planning."
     options: [approve, reject]
+    verdict_input: spec_review
     on_reject: abort
 
   - id: plan
@@ -175,18 +180,29 @@ steps:
     command: speckit.converge
     integration: "{{ inputs.integration }}"
 
-  # Finish whatever converge appended to tasks.md
-  - id: implement-rest
-    command: speckit.implement
-    integration: "{{ inputs.integration }}"
-    input:
-      args: "{{ inputs.spec }}"
+  # Finish whatever converge appended to tasks.md; skipped when nothing is open.
+  - id: pending-tasks
+    type: shell
+    output_format: json
+    run: |
+      dir=$(jq -r .feature_directory .specify/feature.json)
+      echo "{\"pending\": $(grep -c '^- \[ \]' "$dir/tasks.md")}"
+
+  - id: finish-tasks
+    type: if
+    condition: "{{ steps.pending-tasks.output.data.pending > 0 }}"
+    then:
+      - id: implement-rest
+        command: speckit.implement
+        integration: "{{ inputs.integration }}"
+        input:
+          args: "{{ inputs.spec }}"
 
   # Tables changed? Look at the schema and migrations (committed, staged or new).
   - id: detect-tables
     type: shell
     run: |
-      if (git diff --name-only main; git ls-files -o --exclude-standard) \
+      if (git diff --name-only "$(git merge-base HEAD main)"; git ls-files -o --exclude-standard) \
         | grep -qE '^apps/api/(src/db/schema\.ts|drizzle/)'; then
         echo yes
       else
@@ -228,7 +244,13 @@ steps:
         timeout: 1800
         run: |
           dir=$(jq -r .feature_directory .specify/feature.json)
-          if (npm run format:check && npm run lint && npm run typecheck && npm test) \
+          workspaces=""
+          files=$( (git diff --name-only "$(git merge-base HEAD main)"; git ls-files -o --exclude-standard) )
+          echo "$files" | grep -q '^apps/api/' && workspaces="$workspaces -w @cruzadinha/api"
+          echo "$files" | grep -q '^apps/web/' && workspaces="$workspaces -w @cruzadinha/web"
+          echo "$files" | grep -q '^packages/shared/' && workspaces=""
+          # shortcut: the shared package or no code change runs every workspace
+          if (npm run format:check && npm run lint && npm run typecheck && npm test $workspaces) \
             > "$dir/quality.log" 2>&1; then
             echo '{"ok": true}'
           else
@@ -254,7 +276,12 @@ steps:
     timeout: 1800
     run: |
       dir=$(jq -r .feature_directory .specify/feature.json)
-      if ! (npm run format:check && npm run lint && npm run typecheck && npm test) \
+      workspaces=""
+      files=$( (git diff --name-only "$(git merge-base HEAD main)"; git ls-files -o --exclude-standard) )
+      echo "$files" | grep -q '^apps/api/' && workspaces="$workspaces -w @cruzadinha/api"
+      echo "$files" | grep -q '^apps/web/' && workspaces="$workspaces -w @cruzadinha/web"
+      echo "$files" | grep -q '^packages/shared/' && workspaces=""
+      if ! (npm run format:check && npm run lint && npm run typecheck && npm test $workspaces) \
         > "$dir/quality.log" 2>&1; then
         echo "quality checks still fail after 3 attempts; see $dir/quality.log" >&2
         exit 1
