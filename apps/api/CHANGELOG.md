@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.7.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.6.0...api-v0.7.0) (2026-10-26)
+
+
+### Features
+
+* **api:** confirm the e-mail on sign-up and recover the password by e-mail ([4c6bb6b](https://github.com/BrunoYTanaka/cruzadinha/commit/4c6bb6b64cdb1dcc395a2ff2412a16f86f0e3dbd))
+* confirm the e-mail on sign-up and recover the password by e-mail ([fbd23d0](https://github.com/BrunoYTanaka/cruzadinha/commit/fbd23d06230d83165a27b866c98b445468ed49f6))
+
+
+### Bug Fixes
+
+* **api:** delete expired and ended sessions during puzzles collect ([a9f2bf2](https://github.com/BrunoYTanaka/cruzadinha/commit/a9f2bf213855946aab580d5a9cf410ebd483963f))
+* **api:** drop the unused invites table and action ([1fa0f56](https://github.com/BrunoYTanaka/cruzadinha/commit/1fa0f566ba47fb3e4b8a3d5b7fad82bf4bbf1898))
+* **api:** fix the audit findings (login limit, PROXY_SECRET, sessions and more) ([790ed08](https://github.com/BrunoYTanaka/cruzadinha/commit/790ed081c9cd47f9cc75a074c920174c71c0b520))
+* **api:** refuse to start in production without PROXY_SECRET ([6961a97](https://github.com/BrunoYTanaka/cruzadinha/commit/6961a978934bf86696d8ee095f8c15c377add922))
+* **api:** reserve the login attempt before checking the password ([30df1ef](https://github.com/BrunoYTanaka/cruzadinha/commit/30df1eff4532cfdee65940334495b9f08ed6bd04))
+* **api:** stop reading a source body once it passes the size limit ([f265fb0](https://github.com/BrunoYTanaka/cruzadinha/commit/f265fb0d982414dbebecd568988d35017043118e))
+
+
+### Performance Improvements
+
+* **api:** read only the grid when saving progress ([f36bcba](https://github.com/BrunoYTanaka/cruzadinha/commit/f36bcbaabd22550b0711b1ce4bd91d07b6bb6a6d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.23.0 to 0.24.0
+
 ## [0.6.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.5.3...api-v0.6.0) (2026-10-26)
 
 ### Features
