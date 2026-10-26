@@ -1,6 +1,6 @@
 // Regras de fronteira do site e da API (specs/037-reorganizar-por-feature/contracts/boundaries.md).
-// Rode com `npm run check:deps`. Mude SEVERITY para 'error' quando não houver violações.
-const SEVERITY = 'warn'
+// Rode com `npm run check:deps`. Todas as regras são erro: o lint (e, por ele, o commit, o push e a CI) falha numa violação.
+const SEVERITY = 'error'
 
 const WEB = '^apps/web/src'
 const API = '^apps/api/src'

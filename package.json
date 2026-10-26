@@ -12,7 +12,7 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run check:deps",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:int": "npm run test:int --workspaces --if-present",

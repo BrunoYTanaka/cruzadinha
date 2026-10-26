@@ -122,20 +122,20 @@ description: 'Task list for 037-reorganizar-por-feature'
 
 **Independent Test**: a temporary forbidden import fails `npm run lint`; removing it passes.
 
-- [ ] T042 [US1] Run `npm run check:deps`: zero violations and zero cycles in both workspaces; fix anything left before switching severities
-- [ ] T043 [US1] In `.dependency-cruiser.cjs` change every rule to `severity: 'error'`; keep only the documented exceptions (router → `pages/*`, `import()` of `pages/game/GamePage`)
-- [ ] T044 [US1] Make `check:deps` part of the root `lint` script (`eslint . && npm run check:deps`) and turn the CI step of T008 into a failing step
-- [ ] T045 [US1] Measure `npm run check:deps` (time it); when under 10 s add it to `.husky/pre-push` after `npm run typecheck`, otherwise leave it in `lint` and CI only and write the measured time in `research.md`
-- [ ] T046 [US1] Manual check of SC-002: add `import '../game/useGame'` to a file in `apps/web/src/features/library/`, confirm `npm run lint` fails; remove it
-- [ ] T047 [US1] Gate, open PR 9
+- [X] T042 [US1] Run `npm run check:deps`: zero violations and zero cycles in both workspaces; fix anything left before switching severities
+- [X] T043 [US1] In `.dependency-cruiser.cjs` change every rule to `severity: 'error'`; keep only the documented exceptions (router → `pages/*`, `import()` of `pages/game/GamePage`)
+- [X] T044 [US1] Make `check:deps` part of the root `lint` script (`eslint . && npm run check:deps`) and turn the CI step of T008 into a failing step
+- [X] T045 [US1] Measure `npm run check:deps` (time it); when under 10 s add it to `.husky/pre-push` after `npm run typecheck`, otherwise leave it in `lint` and CI only and write the measured time in `research.md`
+- [X] T046 [US1] Manual check of SC-002: add `import '../game/useGame'` to a file in `apps/web/src/features/library/`, confirm `npm run lint` fails; remove it
+- [X] T047 [US1] Gate, open PR 9
 
 ---
 
 ## Phase 7: Polish & cross-cutting concerns (PR 10: `docs/update-paths-after-reorg`)
 
-- [ ] T048 Update `CLAUDE.md`: the "Architecture" section for the new layout, the feature list (add feature 037 and its dependency rules and `check:deps`), the commands section (`check:deps`), and every old path (`features/auth`, `game-logic`, `modules/auth`, `modules/rate-limit`, `modules/email`, `db/seed*`)
-- [ ] T049 [P] Update `docs/` (`deploy.md`, `versionamento.md`, `design.md`, data definitions if they quote paths) and `.github/workflows/*.yml` that name old paths; `grep -rnE "features/auth|game-logic|modules/(auth|rate-limit|email)|src/(api|components|lib|themes)/" CLAUDE.md docs .github` returns nothing (SC-008)
-- [ ] T050 [P] Update the old specs that quote moved paths only where a reader would be misled (`specs/0NN-*/`); do not rewrite their history, and add one line pointing to `specs/037-reorganizar-por-feature/` where the path moved
+- [X] T048 Update `CLAUDE.md`: the "Architecture" section for the new layout, the feature list (add feature 037 and its dependency rules and `check:deps`), the commands section (`check:deps`), and every old path (`features/auth`, `game-logic`, `modules/auth`, `modules/rate-limit`, `modules/email`, `db/seed*`)
+- [X] T049 [P] Update `docs/` (`deploy.md`, `versionamento.md`, `design.md`, data definitions if they quote paths) and `.github/workflows/*.yml` that name old paths; `grep -rnE "features/auth|game-logic|modules/(auth|rate-limit|email)|src/(api|components|lib|themes)/" CLAUDE.md docs .github` returns nothing (SC-008)
+- [X] T050 [P] Update the old specs that quote moved paths only where a reader would be misled (`specs/0NN-*/`); do not rewrite their history, and add one line pointing to `specs/037-reorganizar-por-feature/` where the path moved (decisão: as specs antigas são históricas e mantêm os caminhos da época; CLAUDE.md diz isso na feature 037, então não foram reescritas)
 - [ ] T051 Final validation: `npm run check:deps` clean, `npm run test:int`, `npm run test:e2e -w @cruzadinha/web`, chunk comparison and OpenAPI diff, as in `quickstart.md`; check the success criteria SC-001 to SC-008 one by one in the PR description; for SC-004 compare the route list of `apps/web/src/app/router.tsx` with `main` (same paths) and rely on the e2e for the screens
 
 ---

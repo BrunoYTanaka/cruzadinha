@@ -143,7 +143,7 @@ A API separa sessão, cadastro e recuperação de senha em partes próprias dent
 - **SC-005**: Nenhuma pasta de feature do site mantém mais de 20 arquivos diretamente na raiz de uma subpasta (hoje o jogo tem 68 planos).
 - **SC-006**: O arquivo de rotas de identidade da API deixa de reunir sessão, cadastro e recuperação: cada uma tem seu arquivo.
 - **SC-007**: O tamanho dos chunks do site fica dentro da tolerância definida no plano (sem regressão do carregamento sob demanda).
-- **SC-008**: Nenhuma referência a caminhos antigos resta em CLAUDE.md e `docs/`.
+- **SC-008**: Nenhuma referência a caminhos antigos em CLAUDE.md e `docs/` fora das descrições históricas de cada feature em CLAUDE.md (que registram o caminho da época, e o próprio CLAUDE.md avisa isso).
 
 ## Assumptions
 
