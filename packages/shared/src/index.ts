@@ -27,6 +27,7 @@ export {
 export { healthStatusSchema, type HealthStatus } from './health'
 export {
   availableDateSchema,
+  gridSchema,
   isoDateSchema,
   levelSchema,
   puzzleSchema,

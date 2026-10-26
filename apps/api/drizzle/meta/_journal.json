@@ -61,15 +61,15 @@
     {
       "idx": 8,
       "version": "7",
-      "when": 1793020936647,
-      "tag": "0008_email_verification_and_recovery",
+      "when": 1793021643070,
+      "tag": "0008_remove_invites",
       "breakpoints": true
     },
     {
       "idx": 9,
       "version": "7",
-      "when": 1793023625613,
-      "tag": "0009_pending_without_password",
+      "when": 1793025371540,
+      "tag": "0009_email_verification_and_recovery",
       "breakpoints": true
     }
   ]

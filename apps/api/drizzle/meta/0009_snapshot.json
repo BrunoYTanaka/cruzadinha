@@ -1,6 +1,6 @@
 {
-  "id": "2138dad4-a2d0-4849-840f-16a15928bd6f",
-  "prevId": "caddc9fc-29c5-4740-b9b2-5db64ac5d58e",
+  "id": "b2004121-eb14-492d-a5aa-2bb241c0810c",
+  "prevId": "c4936f6b-48ed-400c-bbe2-48617ac7cf63",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -54,131 +54,6 @@
         "email_send_block_reason_check": {
           "name": "email_send_block_reason_check",
           "value": "\"email_send_block\".\"reason\" IN ('daily_quota_exceeded', 'monthly_quota_exceeded')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.invites": {
-      "name": "invites",
-      "schema": "",
-      "columns": {
-        "invite_id": {
-          "name": "invite_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "code_hash": {
-          "name": "code_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_by_user_id": {
-          "name": "created_by_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "used_by_user_id": {
-          "name": "used_by_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "used_at": {
-          "name": "used_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "invites_created_by_user_id_idx": {
-          "name": "invites_created_by_user_id_idx",
-          "columns": [
-            {
-              "expression": "created_by_user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "invites_created_by_user_id_users_user_id_fk": {
-          "name": "invites_created_by_user_id_users_user_id_fk",
-          "tableFrom": "invites",
-          "tableTo": "users",
-          "columnsFrom": ["created_by_user_id"],
-          "columnsTo": ["user_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "invites_used_by_user_id_users_user_id_fk": {
-          "name": "invites_used_by_user_id_users_user_id_fk",
-          "tableFrom": "invites",
-          "tableTo": "users",
-          "columnsFrom": ["used_by_user_id"],
-          "columnsTo": ["user_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "invites_code_hash_unique": {
-          "name": "invites_code_hash_unique",
-          "nullsNotDistinct": false,
-          "columns": ["code_hash"]
-        },
-        "invites_used_by_user_id_unique": {
-          "name": "invites_used_by_user_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["used_by_user_id"]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "invites_used_pair": {
-          "name": "invites_used_pair",
-          "value": "(\"invites\".\"used_at\" IS NULL) = (\"invites\".\"used_by_user_id\" IS NULL)"
-        },
-        "invites_not_used_and_revoked": {
-          "name": "invites_not_used_and_revoked",
-          "value": "NOT (\"invites\".\"used_at\" IS NOT NULL AND \"invites\".\"revoked_at\" IS NOT NULL)"
         }
       },
       "isRLSEnabled": false
@@ -271,8 +146,12 @@
           "name": "password_reset_tokens_user_id_users_user_id_fk",
           "tableFrom": "password_reset_tokens",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["user_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -282,7 +161,9 @@
         "password_reset_tokens_token_hash_unique": {
           "name": "password_reset_tokens_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": ["token_hash"]
+          "columns": [
+            "token_hash"
+          ]
         }
       },
       "policies": {},
@@ -356,7 +237,9 @@
         "pending_registrations_token_hash_unique": {
           "name": "pending_registrations_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": ["token_hash"]
+          "columns": [
+            "token_hash"
+          ]
         }
       },
       "policies": {},
@@ -464,8 +347,12 @@
           "name": "progress_user_id_users_user_id_fk",
           "tableFrom": "progress",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["user_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -473,8 +360,12 @@
           "name": "progress_puzzle_id_puzzles_puzzle_id_fk",
           "tableFrom": "progress",
           "tableTo": "puzzles",
-          "columnsFrom": ["puzzle_id"],
-          "columnsTo": ["puzzle_id"],
+          "columnsFrom": [
+            "puzzle_id"
+          ],
+          "columnsTo": [
+            "puzzle_id"
+          ],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -482,7 +373,10 @@
       "compositePrimaryKeys": {
         "progress_user_id_puzzle_id_pk": {
           "name": "progress_user_id_puzzle_id_pk",
-          "columns": ["user_id", "puzzle_id"]
+          "columns": [
+            "user_id",
+            "puzzle_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -713,7 +607,7 @@
       "checkConstraints": {
         "rate_limit_attempts_action_check": {
           "name": "rate_limit_attempts_action_check",
-          "value": "\"rate_limit_attempts\".\"action\" IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD')"
+          "value": "\"rate_limit_attempts\".\"action\" IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD')"
         },
         "rate_limit_attempts_key_type_check": {
           "name": "rate_limit_attempts_key_type_check",
@@ -800,8 +694,12 @@
           "name": "sessions_user_id_users_user_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["user_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -811,7 +709,9 @@
         "sessions_token_hash_unique": {
           "name": "sessions_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": ["token_hash"]
+          "columns": [
+            "token_hash"
+          ]
         }
       },
       "policies": {},
@@ -866,8 +766,12 @@
           "name": "user_settings_user_id_users_user_id_fk",
           "tableFrom": "user_settings",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["user_id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

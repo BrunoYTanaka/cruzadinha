@@ -14,7 +14,7 @@ O cadastro deixa de criar a conta na hora: grava uma pendência e envia um link;
 
 **Primary Dependencies**: Fastify 5, Drizzle + postgres.js, Zod, argon2 (já em uso); web: React 19, React Router 7, TanStack Query. Nenhuma dependência nova (Resend por `fetch`).
 
-**Storage**: Postgres 17. Migrações `0008` (`pending_registrations`, `password_reset_tokens`, `email_send_block` e `CHECK`s alargados em `rate_limit_attempts`) e `0009` (a pendência sem senha nem `last_sent_at`, ação `RESET_PASSWORD` e índice único parcial de um token aberto por usuário).
+**Storage**: Postgres 17. Migração `0009` com `pending_registrations` (sem senha), `password_reset_tokens` (com índice único parcial de um token aberto por usuário), `email_send_block` e `CHECK`s alargados em `rate_limit_attempts` (as ações `FORGOT_PASSWORD`, `RESEND_VERIFICATION`, `VERIFY_TOKEN`, `RESET_PASSWORD`, `EMAIL_SENT` e a chave `GLOBAL`). A `0008` é da auditoria (`remove_invites`).
 
 **Testing**: Vitest (unitários, sem rede; `EmailSender` falso), `*.int.test.ts` com Testcontainers (fluxos completos, uso único, corrida, trava), Playwright com API simulada no navegador, `vitest-axe` e e2e axe nas quatro telas.
 
@@ -72,7 +72,7 @@ packages/shared/src/
 └── auth/schema.ts                     # + verify/resend/forgot/reset requests, sendResponse
 
 apps/api/
-├── drizzle/0008_email_verification_and_recovery.sql, 0009_pending_without_password.sql
+├── drizzle/0009_email_verification_and_recovery.sql
 └── src/
     ├── config.ts                      # + RESEND_API_KEY, MAIL_FROM, APP_BASE_URL, EMAIL_*
     ├── db/schema.ts                   # + 3 tabelas, CHECKs alargados

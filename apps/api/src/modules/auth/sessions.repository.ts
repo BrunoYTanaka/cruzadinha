@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, lt, or } from 'drizzle-orm'
 import type { Executor } from '../../db/client'
 import { sessions, users } from '../../db/schema'
 
@@ -66,4 +66,22 @@ export async function endAllSessionsForUser(
     .update(sessions)
     .set({ endedAt: now })
     .where(and(eq(sessions.userId, userId), isNull(sessions.endedAt)))
+}
+
+const ENDED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
+
+// Sessão vencida não volta a valer; a encerrada fica 7 dias e sai. O banco garante
+// `expires_at <= absolute_expires_at` (sessions_expiry_within_absolute), então `expires_at` passado
+// já cobre o limite absoluto. Devolve quantas linhas apagou.
+export async function deleteStaleSessions(db: Executor, now: Date): Promise<number> {
+  const deleted = await db
+    .delete(sessions)
+    .where(
+      or(
+        lt(sessions.expiresAt, now),
+        lt(sessions.endedAt, new Date(now.getTime() - ENDED_RETENTION_MS)),
+      ),
+    )
+    .returning({ sessionId: sessions.sessionId })
+  return deleted.length
 }

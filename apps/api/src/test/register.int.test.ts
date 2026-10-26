@@ -115,9 +115,10 @@ describe('POST /api/auth/register com o cadastro aberto', () => {
     expect(JSON.stringify(pending)).not.toContain(token)
   })
 
-  it('ignora o código de convite enviado pelo site anterior', async () => {
+  it('recusa um cadastro que ainda envia o código de convite, que não existe mais', async () => {
     const response = await register({ email: 'ana@exemplo.com', inviteCode: 'ABCD-EFGH-JKMN-PQRS' })
-    expect(response.statusCode).toBe(202)
+    expect(response.statusCode).toBe(400)
+    expect(await db.select().from(pendingRegistrations)).toHaveLength(0)
   })
 
   it('não aceita senha no cadastro: ela é escolhida na confirmação', async () => {

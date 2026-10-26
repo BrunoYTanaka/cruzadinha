@@ -3,7 +3,7 @@ import { systemClock, type Clock } from '../../lib/clock'
 import { todayInSaoPaulo } from '../../lib/dates'
 import type { FetchFailureReason, FetchPuzzleResult, PuzzleSource } from '../types'
 import { convertCrosswordCompiler } from './convert'
-import { readXml } from './xml'
+import { readXml } from '../common/xml'
 
 const BASE_URL = 'https://static.publico.pt/s3/files/widgets/crosswords/prd'
 

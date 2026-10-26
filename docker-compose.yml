@@ -22,6 +22,8 @@ services:
     environment:
       DATABASE_URL: postgres://cruzadinha:cruzadinha@db:5432/cruzadinha
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # A imagem roda em produção, que exige PROXY_SECRET; aqui não há repasse do site.
+      ALLOW_MISSING_PROXY_SECRET: 'true'
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:

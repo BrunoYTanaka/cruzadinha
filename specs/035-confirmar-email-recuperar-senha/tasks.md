@@ -6,7 +6,7 @@
 
 **Format**: `- [ ] T### [P?] [US?] descrição com caminho`
 
-> **Revisão de código (depois de `/speckit-implement`)**: três decisões das tarefas abaixo mudaram e a spec, o plano, o `data-model.md` e os contratos já refletem a versão final. (1) O cadastro pede só o e-mail e a senha é escolhida em `verify-email` (T016, T017, T018, T020, T021 e a migração: sem `password_hash` nem `last_sent_at` na pendência, migração `0009`). (2) O intervalo por e-mail é uma tentativa `REGISTER`/`FORGOT_PASSWORD` por `EMAIL`, sem `lastEmailSentAt` nem `intervalPassed` (T013, T017, T022, T026). (3) Ação `RESET_PASSWORD` própria, índice único parcial de token aberto e `revokeOpenResetTokens` (T025 a T027). As descrições das tarefas ficam como foram escritas; o código é a referência.
+> **Revisão de código (depois de `/speckit-implement`)**: três decisões das tarefas abaixo mudaram e a spec, o plano, o `data-model.md` e os contratos já refletem a versão final. (1) O cadastro pede só o e-mail e a senha é escolhida em `verify-email` (T016, T017, T018, T020, T021 e a migração: sem `password_hash` nem `last_sent_at` na pendência, migração `0009`, que junta as duas versões). (2) O intervalo por e-mail é uma tentativa `REGISTER`/`FORGOT_PASSWORD` por `EMAIL`, sem `lastEmailSentAt` nem `intervalPassed` (T013, T017, T022, T026). (3) Ação `RESET_PASSWORD` própria, índice único parcial de token aberto e `revokeOpenResetTokens` (T025 a T027). As descrições das tarefas ficam como foram escritas; o código é a referência.
 
 **Lançamento**: as fases 1 a 2 e as histórias 1 a 5 no lado da API e `shared` formam o lançamento A; as tarefas `web` formam o lançamento B (ver plan.md, "Release and compatibility").
 

@@ -7,6 +7,7 @@ import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
 import {
   createSession,
+  deleteStaleSessions,
   endSessionByTokenHash,
   findSessionByTokenHash,
   renewSession,
@@ -35,6 +36,8 @@ export type AuthService = {
   login(input: { email: string; password: string; address: string }): Promise<LoginResult>
   authenticate(sessionToken: string | undefined): Promise<Authenticated | null>
   logout(sessionToken: string | undefined): Promise<void>
+  // Apaga as sessões vencidas e as encerradas há mais de 7 dias; devolve quantas (`puzzles collect`).
+  purgeStaleSessions(): Promise<number>
 }
 
 // Valor do cookie: 32 bytes em base64url. Outro formato nem chega ao banco.
@@ -95,29 +98,31 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       const now = clock()
       const emailKey = { action: 'LOGIN', keyType: 'EMAIL', keyValue: email } as const
       const addressKey = { action: 'LOGIN', keyType: 'NETWORK_ADDRESS', keyValue: address } as const
-      const decision = await rateLimiter.check(
+      // A tentativa é gravada antes da senha: pedidos simultâneos se contam entre si e só `max`
+      // chegam ao argon2. A recusa devolve as próprias linhas, então não prolonga a janela.
+      const reservation = await rateLimiter.reserve(
         [
           { key: emailKey, window: limits.loginEmail },
           { key: addressKey, window: limits.loginAddress },
         ],
         now,
       )
-      if (!decision.allowed) {
+      if (!reservation.allowed) {
         return {
           ok: false,
           reason: 'too-many-attempts',
-          retryAfterSeconds: decision.retryAfterSeconds,
+          retryAfterSeconds: reservation.retryAfterSeconds,
         }
       }
 
-      // Os dois caminhos de falha fazem a mesma consulta, a mesma verificação e a mesma gravação.
+      // Os dois caminhos de falha fazem a mesma consulta e a mesma verificação; a linha reservada
+      // já é o registro da falha.
       const user = await findUserByEmail(db, email)
       const valid = await verifyPassword(user?.passwordHash ?? (await getDummyHash()), password)
-      if (!user || !valid) {
-        await rateLimiter.record([emailKey, addressKey], now)
-        return { ok: false, reason: 'invalid-credentials' }
-      }
+      if (!user || !valid) return { ok: false, reason: 'invalid-credentials' }
 
+      // Só falhas contam contra o endereço: a tentativa certa devolve a linha dele.
+      await reservation.release([addressKey])
       await rateLimiter.clear(emailKey)
       const session = await openSession(db, { id: user.userId, email: user.email }, now)
       return { ok: true, ...session }
@@ -137,6 +142,8 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       await renewSession(db, session.sessionId, decision.renewTo)
       return { user, renewedExpiresAt: decision.renewTo }
     },
+
+    purgeStaleSessions: () => deleteStaleSessions(db, clock()),
 
     async logout(sessionToken) {
       if (!sessionToken || !SESSION_TOKEN.test(sessionToken)) return

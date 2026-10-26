@@ -8,9 +8,6 @@ export const passwordSchema = z.string().min(8).max(128)
 // poder cadastrar o e-mail de outra pessoa com uma senha que só essa pessoa conhece.
 export const registerRequestSchema = z.strictObject({
   email: emailSchema,
-  // Aceito e ignorado só para o site anterior, que ainda o envia; sai no lançamento B
-  // (feature 013, research R15).
-  inviteCode: z.string().max(64).optional(),
 })
 
 export type RegisterRequest = z.infer<typeof registerRequestSchema>

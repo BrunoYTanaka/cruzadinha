@@ -15,7 +15,6 @@ describe('schema', () => {
   it('has exactly the tables of this feature', async () => {
     expect(await tableNames(db)).toEqual([
       'email_send_block',
-      'invites',
       'password_reset_tokens',
       'pending_registrations',
       'progress',

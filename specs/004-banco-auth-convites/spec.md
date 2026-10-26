@@ -190,7 +190,7 @@ O autor cria convites sem cota e com validade configurável, lista todos os conv
 
 **Limites de tentativas**
 
-- **FR-027**: O login MUST ter limite de tentativas falhas: no máximo 5 por e-mail em 15 minutos e no máximo 20 por endereço de rede em 15 minutos. Ao atingir qualquer um, as tentativas seguintes MUST ser recusadas com "muitas tentativas, tente mais tarde" até a janela passar, sem verificar a senha.
+- **FR-027**: O login MUST ter limite de tentativas falhas: no máximo 5 por e-mail em 15 minutos e no máximo 20 por endereço de rede em 15 minutos. Ao atingir qualquer um, as tentativas seguintes MUST ser recusadas com "muitas tentativas, tente mais tarde" até a janela passar, sem verificar a senha. Desde a feature 034 a tentativa é gravada antes da verificação da senha, sob trava por chave, para que pedidos simultâneos dividam o limite; o efeito visível não muda.
 - **FR-028**: O cadastro e a geração de convites pela API MUST ter limite de tentativas por endereço de rede: no máximo 10 de cada em 1 hora.
 - **FR-029**: A resposta de limite atingido MUST ser distinta das demais, mas MUST NOT revelar se o e-mail tem conta. Os registros de tentativas MUST ser guardados no banco, para que os limites continuem valendo depois de a API reiniciar ou dormir, e MUST valer também com mais de uma instância da API. Eles MUST NOT guardar a senha tentada.
 

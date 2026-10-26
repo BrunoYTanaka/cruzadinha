@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { users } from '../db/schema'
+import { sessions, users } from '../db/schema'
 import { runCli } from '../cli/run-cli'
 import { buildTestApp } from './app'
 import { fakeListedSource, fakeSource, okResult, type FakeSource } from './fake-source'
@@ -25,13 +25,17 @@ beforeEach(async () => {
   secrets = []
   prompts = []
   source = fakeSource()
+  purgeSessions = undefined
 })
 afterAll(() => handle.close())
 
 let source: FakeSource
 
+let purgeSessions: (() => Promise<number>) | undefined
+
 function cli(...argv: string[]): Promise<number> {
   return runCli(argv, {
+    purgeSessions,
     db,
     clock: clock.now,
     sources: [source],
@@ -272,5 +276,41 @@ describe('puzzles collect', () => {
     withSource(new Map([[today(), okResult(today())]]))
     await cli('puzzles', 'collect')
     expect(out + err).not.toMatch(/postgres(ql)?:\/\//)
+  })
+})
+
+describe('puzzles collect: limpeza de sessões', () => {
+  it('imprime quantas sessões apagou', async () => {
+    purgeSessions = async () => 3
+    expect(await cli('puzzles', 'collect')).toBe(0)
+    expect(out).toContain('Sessões apagadas: 3.\n')
+  })
+
+  it('apaga de verdade as sessões vencidas do banco', async () => {
+    const [user] = await db
+      .insert(users)
+      .values({ email: 'ana@exemplo.com', passwordHash: 'hash' })
+      .returning({ id: users.userId })
+    const past = new Date(clock.now().getTime() - 24 * 60 * 60 * 1000)
+    const future = new Date(clock.now().getTime() + 24 * 60 * 60 * 1000)
+    await db.insert(sessions).values([
+      { userId: user?.id ?? '', tokenHash: 'velha', expiresAt: past, absoluteExpiresAt: future },
+      { userId: user?.id ?? '', tokenHash: 'viva', expiresAt: future, absoluteExpiresAt: future },
+    ])
+
+    expect(await cli('puzzles', 'collect')).toBe(0)
+    expect(out).toContain('Sessões apagadas: 1.\n')
+    expect((await db.select().from(sessions)).map((row) => row.tokenHash)).toEqual(['viva'])
+  })
+
+  it('mantém o que foi coletado e sai com 1 quando a limpeza falha, sem detalhes', async () => {
+    purgeSessions = async () => {
+      throw new Error('select * from sessions where token_hash = $1 -- SEGREDO')
+    }
+    expect(await cli('puzzles', 'collect')).toBe(1)
+
+    expect(err).toContain('Falha ao apagar sessões antigas.')
+    expect(err).not.toContain('SEGREDO')
+    expect(out).toContain('Coleta ')
   })
 })

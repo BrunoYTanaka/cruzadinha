@@ -1,4 +1,5 @@
 import {
+  gridSchema,
   puzzleSchema,
   solutionSchema,
   type Level,
@@ -6,7 +7,7 @@ import {
   type PuzzleSourceId,
   type Solution,
 } from '@cruzadinha/shared'
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import type { Executor } from '../../db/client'
 import { puzzles } from '../../db/schema'
 
@@ -41,6 +42,22 @@ export async function findPuzzleById(
 ): Promise<StoredPuzzle | undefined> {
   const [row] = await db.select().from(puzzles).where(eq(puzzles.puzzleId, puzzleId))
   return row ? toStored(row) : undefined
+}
+
+// Só a grade, sem a solução nem o resto do puzzle: o progresso precisa apenas do tamanho e das
+// células. `jsonb` chega como unknown e é relido pelo Zod, como em `toStored`.
+export async function findPuzzleGridById(
+  db: Executor,
+  puzzleId: string,
+): Promise<Puzzle['grid'] | undefined> {
+  const [row] = await db
+    .select({ grid: sql<unknown>`${puzzles.data}->'grid'` })
+    .from(puzzles)
+    .where(eq(puzzles.puzzleId, puzzleId))
+  if (!row) return undefined
+  const grid = gridSchema.safeParse(row.grid)
+  if (!grid.success) throw new Error('puzzle guardado inválido')
+  return grid.data
 }
 
 // Nunca reescreve um puzzle guardado: em conflito devolve o id existente com inserted: false.

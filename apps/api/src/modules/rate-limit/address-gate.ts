@@ -13,8 +13,9 @@ export async function admitAddress(
   window: RateWindow,
 ): Promise<AddressAdmission> {
   const key: RateLimitKey = { action, keyType: 'NETWORK_ADDRESS', keyValue: address }
-  const decision = await rateLimiter.check([{ key, window }], now)
-  if (!decision.allowed) return { ok: false, retryAfterSeconds: decision.retryAfterSeconds }
-  await rateLimiter.record([key], now)
-  return { ok: true }
+  // Contar e gravar de uma vez: pedidos simultâneos não passam do limite juntos.
+  const reservation = await rateLimiter.reserve([{ key, window }], now)
+  return reservation.allowed
+    ? { ok: true }
+    : { ok: false, retryAfterSeconds: reservation.retryAfterSeconds }
 }

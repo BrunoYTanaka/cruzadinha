@@ -43,23 +43,11 @@ describe('registerRequestSchema', () => {
     expect(registerRequestSchema.parse(valid)).toEqual(valid)
   })
 
-  it('accepts and keeps an optional invite code sent by the previous site', () => {
+  it('rejects the removed invite code and extra properties', () => {
     expect(
       registerRequestSchema.safeParse({ ...valid, inviteCode: 'qualquer-coisa' }).success,
-    ).toBe(true)
-    expect(registerRequestSchema.safeParse({ ...valid, inviteCode: 'a'.repeat(64) }).success).toBe(
-      true,
-    )
-  })
-
-  it('refuses a password: it is chosen when the link is opened', () => {
+    ).toBe(false)
     expect(registerRequestSchema.safeParse({ ...valid, password: 'senha-boa-123' }).success).toBe(
-      false,
-    )
-  })
-
-  it('rejects a too long invite code and extra properties', () => {
-    expect(registerRequestSchema.safeParse({ ...valid, inviteCode: 'a'.repeat(65) }).success).toBe(
       false,
     )
     expect(registerRequestSchema.safeParse({ ...valid, extra: 1 }).success).toBe(false)

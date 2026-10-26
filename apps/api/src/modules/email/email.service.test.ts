@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EmailConfig } from '../../config'
 import type { Executor } from '../../db/client'
-import type { RateLimitKey, RateLimitRepository } from '../rate-limit/rate-limit.repository'
+import { createMemoryRateRepository } from '../rate-limit/memory-repository'
 import { createRateLimiter } from '../rate-limit/rate-limit.service'
 import { createEmailService } from './email.service'
 import type { EmailMessage, EmailSender, SendResult } from './types'
@@ -30,26 +30,6 @@ const config: EmailConfig = {
   recoveryReserve: 2,
 }
 
-function memoryRateRepository(): RateLimitRepository & { rows: (RateLimitKey & { at: Date })[] } {
-  const rows: (RateLimitKey & { at: Date })[] = []
-  const same = (a: RateLimitKey, b: RateLimitKey) =>
-    a.action === b.action && a.keyType === b.keyType && a.keyValue === b.keyValue
-  return {
-    rows,
-    async countSince(key, since) {
-      const hits = rows.filter((row) => same(row, key) && row.at > since)
-      return {
-        count: hits.length,
-        oldest: hits.length ? new Date(Math.min(...hits.map((row) => row.at.getTime()))) : null,
-      }
-    },
-    async record(keys, now) {
-      for (const key of keys) rows.push({ ...key, at: now })
-    },
-    async clear() {},
-  }
-}
-
 let now: Date
 let outcomes: SendResult[]
 let sent: EmailMessage[]
@@ -62,7 +42,7 @@ const sender: EmailSender = {
 const warn = vi.fn()
 
 function setup(overrides: Partial<EmailConfig> = {}, withSender = true) {
-  const repository = memoryRateRepository()
+  const repository = createMemoryRateRepository()
   const service = createEmailService({
     db: {} as Executor,
     clock: () => now,
@@ -115,7 +95,7 @@ describe('sendAfterResponse', () => {
     service.sendAfterResponse('signup', message('a@x.com'))
     await service.flush()
     expect(sent).toHaveLength(1)
-    expect(repository.rows.map((row) => row.keyType).sort()).toEqual(['EMAIL', 'GLOBAL'])
+    expect(repository.rows.map((row) => row.key.keyType).sort()).toEqual(['EMAIL', 'GLOBAL'])
   })
 
   it('keeps the last slots for recovery: signup stops at ceiling minus reserve', async () => {
@@ -187,7 +167,7 @@ describe('sendAfterResponse', () => {
           throw new Error('boom a@x.com')
         },
       },
-      rateLimiter: createRateLimiter(memoryRateRepository()),
+      rateLimiter: createRateLimiter(createMemoryRateRepository()),
       config,
       logger: { warn },
     })

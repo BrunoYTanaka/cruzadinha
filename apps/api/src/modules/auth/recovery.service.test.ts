@@ -4,7 +4,7 @@ import { sha256Hex } from '../../lib/tokens'
 import type { EmailService } from '../email/email.service'
 import type { EmailMessage } from '../email/types'
 import { defaultRateLimits } from '../rate-limit/limits'
-import type { RateLimitKey, RateLimitRepository } from '../rate-limit/rate-limit.repository'
+import { createMemoryRateRepository } from '../rate-limit/memory-repository'
 import { createRateLimiter } from '../rate-limit/rate-limit.service'
 import { createRecoveryService } from './recovery.service'
 
@@ -42,28 +42,6 @@ vi.mock('./users.repository', () => ({
 }))
 vi.mock('../../lib/password', () => ({ hashPassword: async (value: string) => `hash:${value}` }))
 
-function memoryRateRepository(): RateLimitRepository {
-  const rows: (RateLimitKey & { at: Date })[] = []
-  const same = (a: RateLimitKey, b: RateLimitKey) =>
-    a.action === b.action && a.keyType === b.keyType && a.keyValue === b.keyValue
-  return {
-    async countSince(key, since) {
-      const hits = rows.filter((row) => same(row, key) && row.at > since)
-      return {
-        count: hits.length,
-        oldest: hits.length ? new Date(Math.min(...hits.map((row) => row.at.getTime()))) : null,
-      }
-    },
-    async record(keys, now) {
-      for (const key of keys) rows.push({ ...key, at: now })
-    },
-    async clear(key) {
-      for (let i = rows.length - 1; i >= 0; i--)
-        if (same(rows[i] as RateLimitKey, key)) rows.splice(i, 1)
-    },
-  }
-}
-
 let now: Date
 let sent: { kind: string; message: EmailMessage; undo: (() => Promise<void>) | undefined }[]
 
@@ -81,7 +59,7 @@ function service() {
     db: { transaction: async (run: (tx: unknown) => unknown) => run({}) } as unknown as Database,
     clock: () => now,
     email,
-    rateLimiter: createRateLimiter(memoryRateRepository()),
+    rateLimiter: createRateLimiter(createMemoryRateRepository()),
     limits: defaultRateLimits,
     baseUrl: 'https://site.example',
   })

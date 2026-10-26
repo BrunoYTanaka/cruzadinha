@@ -9,7 +9,7 @@ import {
   type Word,
 } from '@cruzadinha/shared'
 import type { FetchPuzzleFailure, FetchPuzzleSuccess } from '../types'
-import { clueText } from '../cruzadaonline/clue-text'
+import { clueText } from '../common/clue-text'
 import { clubeDocSchema, type ClubeDoc } from './schema'
 
 type ConvertFailure = FetchPuzzleFailure & { reason: 'unexpected-format' | 'unsupported' }

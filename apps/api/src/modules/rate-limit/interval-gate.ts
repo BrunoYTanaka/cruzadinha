@@ -13,11 +13,11 @@ export async function enterIntervalGate(
   key: RateLimitKey,
   intervalSeconds: number,
 ): Promise<IntervalGate> {
-  const decision = await rateLimiter.check(
+  // Contar e gravar de uma vez: dois pedidos juntos não passam os dois pelo intervalo.
+  const reservation = await rateLimiter.reserve(
     [{ key, window: { max: 1, windowMinutes: intervalSeconds / 60 } }],
     now,
   )
-  if (!decision.allowed) return { ok: false, retryAfterSeconds: decision.retryAfterSeconds }
-  await rateLimiter.record([key], now)
-  return { ok: true, release: () => rateLimiter.clear(key) }
+  if (!reservation.allowed) return { ok: false, retryAfterSeconds: reservation.retryAfterSeconds }
+  return { ok: true, release: () => reservation.release() }
 }

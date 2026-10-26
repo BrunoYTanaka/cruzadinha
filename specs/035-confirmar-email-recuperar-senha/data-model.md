@@ -1,6 +1,6 @@
 # Data Model: Confirmar e-mail no cadastro e recuperar senha
 
-Migração `0008_email_verification_and_recovery.sql` (próximo número após `0007`), gerada pelo Drizzle e com o `CREATE TRIGGER <tabela>_set_updated_at` das três tabelas à mão. `users` não muda. Todas as tabelas espalham `timestamps` (`created_at`, `updated_at`).
+Migração `0009_email_verification_and_recovery.sql` (próximo número após a `0008_remove_invites`), gerada pelo Drizzle e com o `CREATE TRIGGER <tabela>_set_updated_at` das três tabelas à mão. `users` não muda. Todas as tabelas espalham `timestamps` (`created_at`, `updated_at`).
 
 ## `pending_registrations`
 

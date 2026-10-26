@@ -1,5 +1,5 @@
 import { isoDateSchema } from '@cruzadinha/shared'
-import { clueText } from '../cruzadaonline/clue-text'
+import { clueText } from '../common/clue-text'
 
 export type EditionPageInfo = {
   /** Data de publicação da edição, AAAA-MM-DD, como a página informa. */

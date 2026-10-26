@@ -17,6 +17,8 @@ export type CliDeps = {
   sources: readonly PuzzleSource[]
   /** Dias anteriores a hoje que a coleta também busca (0 = só hoje). */
   historyDays: number
+  /** Apaga as sessões mortas ao fim de `puzzles collect`; o padrão usa o serviço de autenticação. */
+  purgeSessions?: () => Promise<number>
   /** Lê um segredo (a senha) sem eco no terminal, ou da entrada padrão; nunca é registrado. */
   readSecret: (prompt: string) => Promise<string>
   stdout: (text: string) => void
@@ -35,6 +37,15 @@ class UsageError extends Error {}
 function usageError(stderr: CliDeps['stderr'], message: string): number {
   stderr(`${message}\n${USAGE}\n`)
   return 2
+}
+
+function authService(deps: CliDeps) {
+  return createAuthService({
+    db: deps.db,
+    clock: deps.clock,
+    rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
+    limits: defaultRateLimits,
+  })
 }
 
 // Conta criada pelo autor, com o cadastro aberto ou fechado (feature 013, FR-019). A senha nunca é
@@ -56,12 +67,7 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   const confirmation = await deps.readSecret('Confirme a senha: ')
   if (confirmation !== password) throw new UsageError('As senhas não conferem.')
 
-  const auth = createAuthService({
-    db: deps.db,
-    clock: deps.clock,
-    rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
-    limits: defaultRateLimits,
-  })
+  const auth = authService(deps)
   const result = await auth.createAccount({ email: email.data, password })
   if (!result.ok) {
     deps.stderr('Já existe uma conta com esse e-mail.\n')
@@ -111,6 +117,16 @@ async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
       )
     }
     if (report.failed.length > 0 || report.stoppedBy) failed = true
+  }
+
+  // Depois da coleta e à parte: uma falha aqui não desfaz nem esconde o que foi gravado.
+  try {
+    const purge = deps.purgeSessions ?? (() => authService(deps).purgeStaleSessions())
+    deps.stdout(`Sessões apagadas: ${await purge()}.\n`)
+  } catch {
+    // Sem detalhes: a mensagem do Drizzle traz os parâmetros da consulta.
+    deps.stderr('Falha ao apagar sessões antigas.\n')
+    failed = true
   }
   return failed ? 1 : 0
 }
