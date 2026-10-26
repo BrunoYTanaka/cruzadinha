@@ -1,7 +1,7 @@
 import type { AuthResponse, User } from '@cruzadinha/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { getMe, login, logout, register } from '../../api/auth'
+import { getMe, login, logout } from '../../api/auth'
 import { queryKeys } from '../../api/query-keys'
 import { clearEnded } from '../../app/session-ended'
 import { useServerReady } from '../status/useSlowServer'
@@ -42,17 +42,6 @@ export function useLoginMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: login,
-    onSuccess: (response) => {
-      queryClient.setQueryData(queryKeys.session, response)
-      clearEnded()
-    },
-  })
-}
-
-export function useRegisterMutation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: register,
     onSuccess: (response) => {
       queryClient.setQueryData(queryKeys.session, response)
       clearEnded()

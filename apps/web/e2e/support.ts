@@ -37,7 +37,7 @@ export async function resetDatabase(): Promise<void> {
   const sql = postgres(databaseUrl(), { max: 1, onnotice: () => undefined })
   try {
     await sql.unsafe(
-      'TRUNCATE TABLE progress, sessions, invites, rate_limit_attempts, puzzles, users CASCADE',
+      'TRUNCATE TABLE progress, sessions, invites, rate_limit_attempts, puzzles, pending_registrations, email_send_block, users CASCADE',
     )
   } finally {
     await sql.end()

@@ -1,8 +1,11 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
 import { isServerReady, waitForServer } from '../api/server-wake'
+import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { RegisterPage } from '../features/auth/RegisterPage'
+import { ResetPasswordPage } from '../features/auth/ResetPasswordPage'
+import { VerifyEmailPage } from '../features/auth/VerifyEmailPage'
 import { DayRoute } from '../features/library/DayRoute'
 import { LibraryPage } from '../features/library/LibraryPage'
 import { ServerWake } from '../features/status/ServerWake'
@@ -37,6 +40,9 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
           children: [
             { path: '/login', element: <LoginPage /> },
             { path: '/cadastro', element: <RegisterPage /> },
+            { path: '/verificar-email', element: <VerifyEmailPage /> },
+            { path: '/esqueci-a-senha', element: <ForgotPasswordPage /> },
+            { path: '/redefinir-senha', element: <ResetPasswordPage /> },
             {
               loader: viewerLoader(queryClient),
               children: [

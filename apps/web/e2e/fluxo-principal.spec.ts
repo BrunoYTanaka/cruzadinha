@@ -1,22 +1,25 @@
 import { expect, test } from '@playwright/test'
-import { fillSolution, resetAndSeed, todaySolution, typedLetter } from './support'
+import {
+  createAccount,
+  fillSolution,
+  login,
+  resetAndSeed,
+  todaySolution,
+  typedLetter,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
 })
 
-// A API do E2E sobe com REGISTRATION_ENABLED=true (CI e quickstart): o cadastro está aberto.
-test('cadastro sem convite, biblioteca, jogo, conclusão, modo leitura e jogar de novo', async ({
+// O cadastro só cria a conta depois de o e-mail ser confirmado (feature 034); o e-mail não é lido
+// aqui, então a conta vem da CLI do autor e o cadastro por link é coberto em
+// `confirmar-email.spec.ts`, com a API simulada.
+test('conta criada pela CLI, biblioteca, jogo, conclusão, modo leitura e jogar de novo', async ({
   page,
 }) => {
-  await page.goto('/')
-  await page.getByRole('link', { name: 'Entrar' }).click()
-  await page.getByRole('link', { name: /criar conta/i }).click()
-  // O login também tem "E-mail": espera a tela de cadastro antes de preencher.
-  await expect(page.getByRole('heading', { name: 'Criar conta' })).toBeVisible()
-  await page.getByLabel('E-mail').fill('ana@exemplo.com')
-  await page.getByLabel('Senha').fill('uma-senha-longa-123')
-  await page.getByRole('button', { name: 'Criar conta' }).click()
+  createAccount('ana@exemplo.com', 'uma-senha-longa-123')
+  await login(page, 'ana@exemplo.com', 'uma-senha-longa-123')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
   await page.getByRole('link', { name: /^O Globo: / }).click()

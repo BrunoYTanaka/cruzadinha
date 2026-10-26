@@ -1,69 +1,126 @@
-import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useRef, useState, type FormEvent } from 'react'
+import { Link, Navigate, useSearchParams } from 'react-router'
+import { register, resendVerification } from '../../api/auth'
+import { ApiRequestError } from '../../api/client'
 import { Button } from '../../components/Button'
 import { Field } from '../../components/Field'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import styles from './AuthPage.module.css'
-import { ApiRequestError } from '../../api/client'
-import { authMessages, invalidFields, registerErrorMessage } from './messages'
+import { authMessages, emailRequestErrorMessage, invalidFields } from './messages'
 import { safeNext } from './redirect'
+import { ResendLink } from './ResendLink'
+import { useCountdown } from './useCountdown'
 import { useRegistration } from './useRegistration'
-import { useRegisterMutation, useSessionQuery } from './useSession'
-
-const MIN_PASSWORD = 8
+import { useSessionQuery } from './useSession'
 
 export function RegisterPage() {
   useDocumentTitle('Criar conta')
-  const navigate = useNavigate()
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
   const session = useSessionQuery()
   const registration = useRegistration()
-  const register = useRegisterMutation()
+  const registerMutation = useMutation({ mutationFn: register })
+  const resendMutation = useMutation({ mutationFn: resendVerification })
+  const countdown = useCountdown()
   // Uma aba antiga pode enviar com o cadastro já fechado: a recusa vira o mesmo aviso de fechado.
   const [closedByServer, setClosedByServer] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [fields, setFields] = useState<string[]>([])
+  // E-mail para onde o link foi pedido; com ele a tela troca para "enviamos um link".
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const sentHeading = useRef<HTMLHeadingElement>(null)
 
   if (session.data) return <Navigate to={next} replace />
   if (registration.isPending) return null
   if (!registration.isOpen || closedByServer) return <RegistrationClosed />
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault()
-    const missing = [!email.trim() ? 'email' : '', !password ? 'password' : ''].filter(Boolean)
-    if (missing.length > 0) {
-      setError(authMessages.fillAll)
-      setFields(missing)
+  function failed(failure: unknown) {
+    if (failure instanceof ApiRequestError && failure.code === 'registration-closed') {
+      setClosedByServer(true)
       return
     }
-    if (password.length < MIN_PASSWORD) {
-      setError(authMessages.checkFields)
-      setFields(['password'])
+    if (failure instanceof ApiRequestError && failure.retryAfterSeconds) {
+      // 429 mostra a espera; 503 (e-mail indisponível) segura o botão sem dizer por quanto tempo.
+      if (failure.status === 429) countdown.start(failure.retryAfterSeconds)
+      if (failure.status === 503) countdown.start(failure.retryAfterSeconds, { hidden: true })
+    }
+    setError(emailRequestErrorMessage(failure))
+    setFields(invalidFields(failure))
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    if (!email.trim()) {
+      setError(authMessages.fillAll)
+      setFields(['email'])
       return
     }
     setError(null)
     setFields([])
     try {
-      await register.mutateAsync({ email: email.trim(), password })
-      void navigate(next, { replace: true })
+      const accepted = await registerMutation.mutateAsync({ email: email.trim() })
+      countdown.start(accepted.retryAfter)
+      setSentTo(email.trim().toLowerCase())
+      // O foco vai ao título novo para o leitor de tela anunciar a troca de tela.
+      setTimeout(() => sentHeading.current?.focus(), 0)
     } catch (failure) {
-      if (failure instanceof ApiRequestError && failure.code === 'registration-closed') {
-        setClosedByServer(true)
-        return
-      }
-      setError(registerErrorMessage(failure))
-      setFields(invalidFields(failure))
+      failed(failure)
     }
+  }
+
+  async function onResend() {
+    setError(null)
+    try {
+      const accepted = await resendMutation.mutateAsync({ email: sentTo ?? email.trim() })
+      countdown.start(accepted.retryAfter)
+    } catch (failure) {
+      failed(failure)
+    }
+  }
+
+  if (sentTo) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <h1 className={styles.title} ref={sentHeading} tabIndex={-1}>
+            Confira seu e-mail
+          </h1>
+          <div className={styles.sent}>
+            <p className={styles.lead}>
+              Enviamos um link para <span className={styles.email}>{sentTo}</span>. Abra-o para
+              escolher a senha e ativar a conta.
+            </p>
+            <p className={styles.lead}>Não chegou? Veja a caixa de spam ou peça outro link.</p>
+          </div>
+          {error ? (
+            <div role="alert" className={styles.alert}>
+              {error}
+            </div>
+          ) : null}
+          <ResendLink
+            label="Reenviar link"
+            countdown={countdown}
+            onResend={() => void onResend()}
+            pending={resendMutation.isPending}
+          />
+          <p className={styles.alt}>
+            Já confirmou? <Link to="/login">Entrar</Link>
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
-        <p className={styles.lead}>Com uma conta, seu progresso fica salvo em qualquer aparelho.</p>
+        <p className={styles.lead}>
+          Com uma conta, seu progresso fica salvo em qualquer aparelho. Informe seu e-mail e
+          enviaremos um link para escolher a senha e ativar a conta.
+        </p>
         {error ? (
           <div role="alert" className={styles.alert}>
             {error}
@@ -81,18 +138,8 @@ export function RegisterPage() {
             onChange={(event) => setEmail(event.target.value)}
             error={fields.includes('email') ? 'Confira este campo.' : undefined}
           />
-          <Field
-            label="Senha"
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            hint={authMessages.passwordHint}
-            error={fields.includes('password') ? 'Confira este campo.' : undefined}
-          />
-          <Button type="submit" variant="primary" block disabled={register.isPending}>
-            {register.isPending ? 'Criando…' : 'Criar conta'}
+          <Button type="submit" variant="primary" block disabled={registerMutation.isPending}>
+            {registerMutation.isPending ? 'Enviando…' : 'Criar conta'}
           </Button>
         </form>
         <p className={styles.alt}>
