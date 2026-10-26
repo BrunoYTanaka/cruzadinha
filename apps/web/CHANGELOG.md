@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.11.0...web-v0.11.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **web:** ignore saves from a tab opened before playing again ([e6651ea](https://github.com/BrunoYTanaka/cruzadinha/commit/e6651eafdeaac78f28a1bfe66b42af3a611a8932))
+* **web:** ignore saves from a tab opened before playing again ([58267b8](https://github.com/BrunoYTanaka/cruzadinha/commit/58267b875af1b84e31547189894dd30f7bf5dfa4)), closes [#86](https://github.com/BrunoYTanaka/cruzadinha/issues/86)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.24.0 to 0.25.0
+
 ## [0.11.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.10.0...web-v0.11.0) (2026-10-26)
 
 
