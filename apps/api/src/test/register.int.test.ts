@@ -356,3 +356,18 @@ describe('intervalo entre envios e reenvio', () => {
     expect(mail.sent).toHaveLength(2)
   })
 })
+
+describe('POST /api/auth/register sob pedidos simultâneos', () => {
+  it('não deixa passar mais que o limite por endereço de rede', async () => {
+    const responses = await Promise.all(
+      Array.from({ length: 15 }, (_, i) =>
+        register({ email: `x${i}` }, { remoteAddress: '10.0.0.2' }),
+      ),
+    )
+    const codes = responses.map((response) => response.statusCode)
+    expect(codes.filter((code) => code === 400)).toHaveLength(10)
+    const blocked = responses.filter((response) => response.statusCode === 429)
+    expect(blocked).toHaveLength(5)
+    for (const response of blocked) expect(response.json().retryAfter).toBeGreaterThan(0)
+  })
+})

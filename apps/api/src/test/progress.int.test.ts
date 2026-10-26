@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { progress, puzzles, users } from '../platform/db/schema'
 import { todayInSaoPaulo } from '../platform/lib/dates'
 import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
+import { defaultRateLimits } from '../platform/rate-limit'
 import { buildTestApp, sessionCookieFrom, signUpForTest } from './app'
 import { fakeSource, okResult } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
@@ -254,6 +255,44 @@ describe('salvar e retomar (US1)', () => {
     expect(await rowCount()).toBe(1)
     const read = await getProgress(puzzleId, sid)
     expect(read.json().progress.cells).toEqual(withLetter('B'))
+  })
+})
+
+describe('limite de gravações por usuário', () => {
+  function limited(max: number) {
+    app.close()
+    app = buildTestApp({
+      database: db,
+      clock: clock.now,
+      puzzleSources: [fakeSource()],
+      rateLimits: { ...defaultRateLimits, progressSave: { max, windowMinutes: 60 } },
+    })
+  }
+
+  it('recusa com 429 e retry-after depois do limite, só para quem passou dele', async () => {
+    limited(2)
+    const ana = await register('ana@exemplo.com')
+    const bia = await register('bia@exemplo.com')
+    expect((await putProgress(puzzleId, save(), ana)).statusCode).toBe(200)
+    expect((await resetProgress(puzzleId, ana)).statusCode).toBe(200)
+
+    const blocked = await putProgress(puzzleId, save({ savedAt: at(-30) }), ana)
+    expect(blocked.statusCode).toBe(429)
+    expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0)
+    expect((await resetProgress(puzzleId, ana)).statusCode).toBe(429)
+
+    expect((await putProgress(puzzleId, save(), bia)).statusCode).toBe(200)
+    // leitura não conta
+    expect((await getProgress(puzzleId, ana)).statusCode).toBe(200)
+  })
+
+  it('pedidos simultâneos não passam do limite', async () => {
+    limited(3)
+    const sid = await register('ana@exemplo.com')
+    const results = await Promise.all(
+      Array.from({ length: 10 }, (_, i) => putProgress(puzzleId, save({ savedAt: at(-i) }), sid)),
+    )
+    expect(results.filter((r) => r.statusCode === 429)).toHaveLength(7)
   })
 })
 

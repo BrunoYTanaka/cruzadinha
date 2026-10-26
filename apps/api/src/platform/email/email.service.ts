@@ -62,7 +62,8 @@ export function createEmailService({
     const emailKey = { action: 'EMAIL_SENT', keyType: 'EMAIL', keyValue: message.to } as const
     const globalMax =
       kind === 'recovery' ? config.dailyCeiling : config.dailyCeiling - config.recoveryReserve
-    const decision = await rateLimiter.check(
+    // Contar e gravar de uma vez: envios simultâneos não passam juntos do teto.
+    const reservation = await rateLimiter.reserve(
       [
         { key: globalKey, window: { max: globalMax, windowMinutes: DAY_MINUTES } },
         { key: emailKey, window: { max: config.perAddressDailyMax, windowMinutes: DAY_MINUTES } },
@@ -70,16 +71,18 @@ export function createEmailService({
       now,
     )
     // Teto atingido: a rota já respondeu igual, então só deixa de enviar.
-    if (!decision.allowed) {
+    if (!reservation.allowed) {
       await onNotSent?.()
       return
     }
 
-    const result = await sender.send(message)
-    if (result.ok) {
-      await rateLimiter.record([globalKey, emailKey], clock())
-      return
-    }
+    const result = await sender.send(message).catch(async (error: unknown) => {
+      await reservation.release()
+      throw error
+    })
+    if (result.ok) return
+    // Nada saiu: a reserva não deve gastar o teto.
+    await reservation.release()
     if (result.reason === 'quota-daily' || result.reason === 'quota-monthly') {
       const reason =
         result.reason === 'quota-daily' ? 'daily_quota_exceeded' : 'monthly_quota_exceeded'

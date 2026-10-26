@@ -10,6 +10,8 @@ const envSchema = z.object({
 })
 
 const OWN_HEADER_PREFIX = 'x-cruzadinha-'
+// A API gratuita leva até cerca de um minuto para acordar; o site já tem a tela de espera.
+const PROXY_TIMEOUT_MS = 25_000
 
 // A página de "acordando" do provedor (HTML) e a falha de conexão viram um 503 JSON, que o site
 // já trata como espera.
@@ -57,6 +59,8 @@ export async function proxyRequest(
       headers,
       body: hasBody ? await request.arrayBuffer() : undefined,
       redirect: 'manual',
+      // Sem limite, um servidor travado prende o pedido até o limite da plataforma.
+      signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
     })
   } catch {
     return wakingResponse()

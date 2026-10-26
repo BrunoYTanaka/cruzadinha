@@ -183,6 +183,16 @@ describe('puzzles collect', () => {
     expect(out + err).not.toContain('corpo-bruto')
   })
 
+  it('escreve a causa de um erro inesperado do adaptador, só com nomes e códigos', async () => {
+    source = fakeSource(new Map(), { throwOn: new Set([today()]) })
+
+    expect(await cli('puzzles', 'collect')).toBe(1)
+    expect(err).toContain(`[O Globo] Erro em ${today()}: `)
+    expect(err).toContain('"name":"Error"')
+    expect(err).toContain(`[O Globo] Falhou em ${today()}: source-down`)
+    expect(out + err).not.toContain('falha inesperada da fonte falsa')
+  })
+
   it('sai com 1 e lista as datas pendentes quando a fonte limita o uso', async () => {
     const yesterday = addDaysToIsoDate(today(), -1)
     withSource(

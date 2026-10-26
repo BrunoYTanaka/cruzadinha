@@ -71,6 +71,13 @@
       "when": 1793025371540,
       "tag": "0009_email_verification_and_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793042693552,
+      "tag": "0010_progress_save_limit",
+      "breakpoints": true
     }
   ]
 }

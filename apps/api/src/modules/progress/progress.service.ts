@@ -7,6 +7,7 @@ import {
 import type { Database } from '../../platform/db/client'
 import type { Clock } from '../../platform/lib/clock'
 import { savedAtTooFar } from '../../platform/lib/saved-at'
+import type { RateLimiter, RateWindow } from '../../platform/rate-limit'
 import { findPuzzleGridById } from '../puzzles'
 import {
   ensureRow,
@@ -96,10 +97,13 @@ export type GetProgressResult =
 export type SaveProgressResult =
   | { ok: true; progress: Progress }
   | { ok: false; reason: 'puzzle-unavailable' | 'progress-completed' }
+  | { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
   | { ok: false; reason: 'invalid-input'; fields: string[] }
 
 export type ResetProgressResult =
-  { ok: true; progress: Progress } | { ok: false; reason: 'puzzle-unavailable' }
+  | { ok: true; progress: Progress }
+  | { ok: false; reason: 'puzzle-unavailable' }
+  | { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
 export type ProgressService = {
   get(userId: string, puzzleId: string): Promise<GetProgressResult>
@@ -107,13 +111,31 @@ export type ProgressService = {
   reset(userId: string, puzzleId: string): Promise<ResetProgressResult>
 }
 
-export type ProgressDeps = { db: Database; clock: Clock }
+export type ProgressDeps = {
+  db: Database
+  clock: Clock
+  rateLimiter: RateLimiter
+  limits: { progressSave: RateWindow }
+}
 
 const emptyCellsFor = (height: number, width: number): ProgressCells =>
   Array.from({ length: height }, () => Array.from({ length: width }, () => null))
 
 export function createProgressService(deps: ProgressDeps): ProgressService {
-  const { db, clock } = deps
+  const { db, clock, rateLimiter, limits } = deps
+
+  // Cada gravação ou reinício conta para o usuário, antes de tocar o banco.
+  async function admit(userId: string, now: Date) {
+    const key = { action: 'PROGRESS_SAVE', keyType: 'USER', keyValue: userId } as const
+    const reservation = await rateLimiter.reserve([{ key, window: limits.progressSave }], now)
+    return reservation.allowed
+      ? null
+      : ({
+          ok: false,
+          reason: 'too-many-attempts',
+          retryAfterSeconds: reservation.retryAfterSeconds,
+        } as const)
+  }
 
   return {
     async get(userId, puzzleId) {
@@ -125,6 +147,8 @@ export function createProgressService(deps: ProgressDeps): ProgressService {
     },
 
     async save(userId, puzzleId, request) {
+      const refused = await admit(userId, clock())
+      if (refused) return refused
       const grid = await findPuzzleGridById(db, puzzleId)
       if (!grid) return { ok: false, reason: 'puzzle-unavailable' }
       // Só nomes de campos: o conteúdo das letras nunca vai a mensagem nem a log.
@@ -153,6 +177,8 @@ export function createProgressService(deps: ProgressDeps): ProgressService {
     },
 
     async reset(userId, puzzleId) {
+      const refused = await admit(userId, clock())
+      if (refused) return refused
       const grid = await findPuzzleGridById(db, puzzleId)
       if (!grid) return { ok: false, reason: 'puzzle-unavailable' }
       const empty = emptyCellsFor(grid.height, grid.width)

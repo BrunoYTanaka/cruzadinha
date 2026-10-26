@@ -1,6 +1,11 @@
 import { progressEnvelopeSchema, saveProgressRequestSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { commonErrors, errorResponse, toDocSchema } from '../../platform/docs/doc-schema'
+import {
+  commonErrors,
+  errorResponse,
+  retryAfterHeader,
+  toDocSchema,
+} from '../../platform/docs/doc-schema'
 
 const unauthenticated = errorResponse('`unauthenticated`: sem sessão válida.')
 const unavailable = errorResponse('`puzzle-unavailable`: identificador inexistente ou inválido.')
@@ -60,6 +65,12 @@ export const saveProgressSchema = {
     ),
     401: unauthenticated,
     404: unavailable,
+    429: {
+      ...errorResponse(
+        '`too-many-attempts`: limite de gravações de progresso do usuário atingido.',
+      ),
+      headers: retryAfterHeader,
+    },
     409: errorResponse(
       '`progress-completed`: o puzzle já está concluído; reinicie para jogar de novo.',
     ),
@@ -78,6 +89,12 @@ export const resetProgressSchema = {
     200: { description: 'Progresso reiniciado', ...toDocSchema(progressEnvelopeSchema) },
     401: unauthenticated,
     404: unavailable,
+    429: {
+      ...errorResponse(
+        '`too-many-attempts`: limite de gravações de progresso do usuário atingido.',
+      ),
+      headers: retryAfterHeader,
+    },
     ...commonErrors,
   },
 } satisfies FastifySchema

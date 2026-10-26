@@ -119,6 +119,26 @@ describe('teto global diário com reserva para a recuperação', () => {
     expect(mail.sent).toHaveLength(3)
   })
 
+  it('envios simultâneos não passam do teto', async () => {
+    await app.close()
+    build({ EMAIL_DAILY_CEILING: '3', EMAIL_RECOVERY_RESERVE: '0' })
+    const emails = Array.from({ length: 10 }, (_, i) => `conta${i}@exemplo.com`)
+    await Promise.all(emails.map((email) => register(email, '10.0.0.1')))
+    await app.flushEmail()
+    expect(mail.sent).toHaveLength(3)
+  })
+
+  it('um envio que falha devolve a vaga', async () => {
+    await app.close()
+    build({ EMAIL_DAILY_CEILING: '1', EMAIL_RECOVERY_RESERVE: '0' })
+    mail.outcomes.push({ ok: false, reason: 'failed' })
+    await register('a@exemplo.com')
+    await app.flushEmail()
+    await register('b@exemplo.com')
+    await app.flushEmail()
+    expect(mail.sent.map((m) => m.to)).toEqual(['a@exemplo.com', 'b@exemplo.com'])
+  })
+
   it('volta a enviar quando as vagas saem da janela de 24 horas', async () => {
     await app.close()
     build({ EMAIL_DAILY_CEILING: '2', EMAIL_RECOVERY_RESERVE: '0' })

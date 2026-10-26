@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { Writable } from 'node:stream'
 import Fastify from 'fastify'
 import { describe, expect, it } from 'vitest'
-import { proxyGuard } from './proxy-guard'
+import { limitKey, proxyGuard } from './proxy-guard'
 
 const SECRET = randomBytes(24).toString('hex')
 
@@ -93,5 +93,19 @@ describe('proxyGuard without PROXY_SECRET', () => {
     })
     expect(response.statusCode).toBe(200)
     expect(response.json()).toEqual({ address: '127.0.0.1' })
+  })
+})
+
+describe('limitKey', () => {
+  it.each([
+    ['203.0.113.7', '203.0.113.7'],
+    ['2001:db8:1:2:aaaa::1', '2001:db8:1:2::/64'],
+    ['2001:DB8:1:2:bbbb:0:0:9', '2001:db8:1:2::/64'],
+    ['2001:db8::1', '2001:db8:0:0::/64'],
+    ['::1', '0:0:0:0::/64'],
+    ['::ffff:203.0.113.5', '203.0.113.5'],
+    ['::ffff:cb00:7106', '203.0.113.6'],
+  ])('%s -> %s', (ip, key) => {
+    expect(limitKey(ip)).toBe(key)
   })
 })

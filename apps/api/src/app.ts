@@ -161,7 +161,12 @@ export function buildApp({
     limits: rateLimits,
   })
   app.register(puzzlesRoutes, { puzzles, optionalSession })
-  const progress = createProgressService({ db: database, clock })
+  const progress = createProgressService({
+    db: database,
+    clock,
+    rateLimiter,
+    limits: rateLimits,
+  })
   app.register(progressRoutes, { progress, requireSession })
   const library = createLibraryService({ db: database })
   app.register(libraryRoutes, { library, optionalSession })

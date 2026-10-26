@@ -68,6 +68,17 @@ describe('proxyRequest', () => {
     expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ redirect: 'manual' })
   })
 
+  it('gives the API call a time limit and turns a timeout into the waking 503', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async (_input, init) => {
+      expect(init?.signal).toBeInstanceOf(AbortSignal)
+      throw new DOMException('The operation timed out.', 'TimeoutError')
+    })
+    const response = await proxyRequest(browserRequest('/api/health'), env, fetchImpl)
+
+    expect(fetchImpl).toHaveBeenCalledOnce()
+    expect(response.status).toBe(503)
+  })
+
   it('returns the API response as it came, cookies included', async () => {
     const headers = new Headers({ 'content-type': 'application/json', 'retry-after': '90' })
     headers.append('set-cookie', 'sid=novo; HttpOnly; Path=/')

@@ -1,5 +1,6 @@
 import { emailSchema, passwordSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { parseArgs } from 'node:util'
+import { describeError } from '../platform/db/errors'
 import type { Database } from '../platform/db/client'
 import type { Clock } from '../platform/lib/clock'
 import { createAccount, createAuthService, deleteExpiredAuthRows } from '../modules/identity'
@@ -30,7 +31,7 @@ const USAGE = [
   'Uso:',
   '  users create --email <email>   cria uma conta (a senha é pedida sem eco ou lida da entrada padrão)',
   '  puzzles collect                guarda o puzzle do dia (e o histórico que faltar)',
-  '  auth cleanup                   apaga pendências, tokens e contagens de envio vencidos',
+  '  auth cleanup                   apaga pendências, tokens e contagens de tentativas vencidos',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -83,7 +84,7 @@ async function cleanupAuth(args: string[], deps: CliDeps): Promise<number> {
   const counts = await deleteExpiredAuthRows(deps.db, deps.clock())
   deps.stdout(
     `Limpeza: ${counts.pending} pendências, ${counts.resetTokens} tokens de recuperação, ` +
-      `${counts.emailSends} contagens de envio.\n`,
+      `${counts.attempts} contagens de tentativas.\n`,
   )
   return 0
 }
@@ -97,6 +98,11 @@ async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
     rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
     limits: defaultRateLimits,
     historyDays: deps.historyDays,
+    // Só nomes e códigos: a mensagem do erro pode trazer parâmetros de consulta ou corpo da fonte.
+    onError: ({ source, date, error }) =>
+      deps.stderr(
+        `[${puzzleSourceNames[source]}] Erro em ${date}: ${JSON.stringify(describeError(error))}\n`,
+      ),
   })
   const run = await puzzles.collect()
 

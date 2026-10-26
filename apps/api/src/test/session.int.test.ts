@@ -230,6 +230,7 @@ describe('timing and speed', () => {
     register: { max: 1000, windowMinutes: 60 },
     puzzleFetch: { max: 1000, windowMinutes: 60 },
     settingsSave: { max: 1000, windowMinutes: 60 },
+    progressSave: { max: 1000, windowMinutes: 60 },
     forgotPassword: { max: 1000, windowMinutes: 60 },
     resendVerification: { max: 1000, windowMinutes: 60 },
     verifyToken: { max: 1000, windowMinutes: 60 },

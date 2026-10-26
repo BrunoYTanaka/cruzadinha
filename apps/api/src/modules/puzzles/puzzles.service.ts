@@ -8,7 +8,7 @@ import {
 import { setTimeout as delay } from 'node:timers/promises'
 import type { Database } from '../../platform/db/client'
 import type { Clock } from '../../platform/lib/clock'
-import { candidateDates, todayInSaoPaulo } from '../../platform/lib/dates'
+import { addDaysToIsoDate, candidateDates, todayInSaoPaulo } from '../../platform/lib/dates'
 import type {
   FetchFailureReason,
   FetchPuzzleResult,
@@ -68,6 +68,16 @@ export type PuzzlesService = {
   getById(puzzleId: string): Promise<GetPuzzleResult>
 }
 
+/** Erro inesperado de um adaptador durante a coleta; quem chama decide como registrá-lo. */
+export type CollectErrorHandler = (info: {
+  source: PuzzleSourceId
+  date: string
+  error: unknown
+}) => void
+
+// Dias para trás que ainda se buscam na fonte; é o tamanho da biblioteca (366 por fonte).
+const FETCH_WINDOW_DAYS = 366
+
 export type PuzzlesDeps = {
   db: Database
   clock: Clock
@@ -77,6 +87,8 @@ export type PuzzlesDeps = {
   limits: RateLimits
   /** Dias anteriores a hoje que a coleta também busca (0 = só hoje). */
   historyDays?: number
+  /** Recebe o erro inesperado de um adaptador na coleta, antes de a falha entrar no relatório. */
+  onError?: CollectErrorHandler
   /** Pausa entre pedidos da coleta; injetável para os testes. */
   sleep?: (ms: number) => Promise<void>
 }
@@ -96,7 +108,7 @@ function deliver(stored: StoredPuzzle): GetPuzzleResult {
 }
 
 export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
-  const { db, clock, sources, rateLimiter, limits, historyDays = 0, sleep = delay } = deps
+  const { db, clock, sources, rateLimiter, limits, historyDays = 0, sleep = delay, onError } = deps
   const bySource = new Map<PuzzleSourceId, PuzzleSource>()
   for (const source of sources) {
     if (bySource.has(source.id)) throw new Error(`fonte repetida: ${source.id}`)
@@ -130,6 +142,8 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       failed: [],
       pending: [],
     }
+    // A edição em andamento, para a falha apontar a data certa.
+    let current = today
     try {
       for await (const listing of source.listRecent!({
         oldestDate: window[window.length - 1]!,
@@ -141,6 +155,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
           break
         }
         const { date } = listing
+        current = date
         // Edição com data futura não é jogável hoje: fica para uma coleta futura.
         if (date > today) {
           report.unavailable.push(date)
@@ -170,9 +185,10 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
         })
         ;(saved.inserted ? report.saved : report.skipped).push(date)
       }
-    } catch {
+    } catch (error) {
       // Um erro inesperado do adaptador não pode impedir a coleta das outras fontes.
-      report.failed.push({ date: today, reason: 'source-down' })
+      onError?.({ source: source.id, date: current, error })
+      report.failed.push({ date: current, reason: 'source-down' })
     }
     return report
   }
@@ -197,8 +213,9 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       let fetched: FetchPuzzleResult
       try {
         fetched = await source.fetchPuzzle(level, date)
-      } catch {
+      } catch (error) {
         // Um erro inesperado de um adaptador não pode impedir a coleta das outras fontes.
+        onError?.({ source: source.id, date, error })
         report.failed.push({ date, reason: 'source-down' })
         break
       }
@@ -247,20 +264,26 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       // consome o limite de pedidos.
       if (source.onDemand === false) return { ok: false, reason: 'unavailable' }
 
-      if (date > todayInSaoPaulo(clock)) return { ok: false, reason: 'unavailable' }
+      const today = todayInSaoPaulo(clock)
+      if (date > today) return { ok: false, reason: 'unavailable' }
+      // Mesma janela da biblioteca: um dia mais antigo não é buscado, senão qualquer visitante faria
+      // o servidor pedir à fonte datas que ela não tem, e a resposta "indisponível" não é guardada.
+      if (date < addDaysToIsoDate(today, -FETCH_WINDOW_DAYS)) {
+        return { ok: false, reason: 'unavailable' }
+      }
 
       // Só a ida à fonte conta no limite: puzzle guardado nunca chega aqui.
       const now = clock()
       const key = { action: 'PUZZLE_FETCH', keyType: 'NETWORK_ADDRESS', keyValue: address } as const
-      const decision = await rateLimiter.check([{ key, window: limits.puzzleFetch }], now)
-      if (!decision.allowed) {
+      // Contar e gravar de uma vez: pedidos simultâneos do mesmo endereço não passam do limite.
+      const reservation = await rateLimiter.reserve([{ key, window: limits.puzzleFetch }], now)
+      if (!reservation.allowed) {
         return {
           ok: false,
           reason: 'too-many-attempts',
-          retryAfterSeconds: decision.retryAfterSeconds,
+          retryAfterSeconds: reservation.retryAfterSeconds,
         }
       }
-      await rateLimiter.record([key], now)
 
       const fetched = await source.fetchPuzzle(level, date)
       if (!fetched.ok) {

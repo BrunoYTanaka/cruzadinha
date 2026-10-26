@@ -58,8 +58,9 @@ export const rateLimitActions = [
   'VERIFY_TOKEN',
   'EMAIL_SENT',
   'RESET_PASSWORD',
+  'PROGRESS_SAVE',
 ] as const
-export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL'] as const
+export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER'] as const
 
 export const rateLimitAttempts = pgTable(
   'rate_limit_attempts',
@@ -80,11 +81,11 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
-      sql`${table.keyType} IN ('EMAIL', 'NETWORK_ADDRESS', 'GLOBAL')`,
+      sql`${table.keyType} IN ('EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER')`,
     ),
   ],
 )

@@ -23,7 +23,7 @@ describe('convites removidos (migração 0008)', () => {
     await expect(attempt('INVITE_CREATE')).rejects.toThrow()
   })
 
-  it.each(['LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE'])(
+  it.each(['LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'PROGRESS_SAVE'])(
     'aceita a ação %s',
     async (action) => {
       await attempt(action)
