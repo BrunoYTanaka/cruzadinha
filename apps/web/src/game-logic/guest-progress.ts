@@ -15,12 +15,14 @@ export type GuestProgress = {
   bestMs: number | null
   bestAt: string | null
   help: HelpSnapshot | null
+  // Geração do jogo: "Jogar de novo" soma 1. Ausente conta como 0 (registros antigos).
+  game?: number
 }
 
 // O que o jogo manda gravar a cada mudança.
 export type GuestSave = Pick<
   GuestProgress,
-  'puzzleId' | 'date' | 'cells' | 'elapsedMs' | 'status' | 'savedAt' | 'help'
+  'puzzleId' | 'date' | 'cells' | 'elapsedMs' | 'status' | 'savedAt' | 'help' | 'game'
 >
 
 export type GuestDecision = { kind: 'apply'; next: GuestProgress } | { kind: 'unchanged' }
@@ -57,6 +59,7 @@ export function decideGuestSave(
     status: incoming.status,
     savedAt: incoming.savedAt,
     help: incoming.help,
+    game: incoming.game,
   }
 
   if (!current) {
@@ -70,6 +73,9 @@ export function decideGuestSave(
     }
   }
 
+  // Uma aba aberta antes de "Jogar de novo" ainda guarda o jogo anterior: o salvamento dela não
+  // desfaz o reinício feito em outra aba (issue #86).
+  if ((incoming.game ?? 0) !== (current.game ?? 0)) return { kind: 'unchanged' }
   if (Date.parse(incoming.savedAt) < Date.parse(current.savedAt)) return { kind: 'unchanged' }
   if (current.status === 'completed') return { kind: 'unchanged' }
 
@@ -99,5 +105,6 @@ export function decideGuestReset(current: GuestProgress, now: Date): GuestProgre
     completedAt: null,
     finishedMs: null,
     help: null,
+    game: (current.game ?? 0) + 1,
   }
 }

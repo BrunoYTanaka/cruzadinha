@@ -178,8 +178,46 @@ describe('decideGuestReset', () => {
       completedAt: null,
       finishedMs: null,
       help: null,
+      game: 1,
       bestMs: 398_000,
       bestAt: later(-900),
     })
+  })
+})
+
+describe('geração do jogo (issue #86, aba antiga depois de "Jogar de novo")', () => {
+  it('"Jogar de novo" passa para a geração seguinte', () => {
+    expect(decideGuestReset(record(), now).game).toBe(1)
+    expect(decideGuestReset(record({ game: 3 }), now).game).toBe(4)
+  })
+
+  it('ignora o salvamento de uma geração anterior, mesmo mais novo', () => {
+    const current = decideGuestReset(
+      record({ help: { usage: { letters: 1, words: 0 }, marks: {}, locked: [] } }),
+      now,
+    )
+    const stale = save({
+      savedAt: later(60),
+      help: { usage: { letters: 1, words: 0 }, marks: {}, locked: [] },
+    })
+    expect(decideGuestSave(current, stale, new Date(later(61)))).toEqual({
+      kind: 'unchanged',
+    })
+  })
+
+  it('aceita o salvamento da geração atual e mantém o número', () => {
+    const current = decideGuestReset(record(), now)
+    const decision = decideGuestSave(
+      current,
+      save({ savedAt: later(5), game: 1 }),
+      new Date(later(6)),
+    )
+    expect(decision.kind).toBe('apply')
+    if (decision.kind === 'apply') expect(decision.next.game).toBe(1)
+  })
+
+  it('registro e salvamento sem geração contam como a geração 0', () => {
+    const decision = decideGuestSave(record(), save({ savedAt: later(5) }), new Date(later(6)))
+    expect(decision.kind).toBe('apply')
   })
 })

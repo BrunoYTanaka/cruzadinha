@@ -25,6 +25,12 @@ describe('guestProgressRecordSchema', () => {
     expect(guestProgressRecordSchema.safeParse({ ...valid, help: null }).success).toBe(true)
   })
 
+  it('aceita a geração do jogo e registros antigos sem ela', () => {
+    expect(guestProgressRecordSchema.safeParse({ ...valid, game: 2 }).success).toBe(true)
+    expect(guestProgressRecordSchema.safeParse(valid).success).toBe(true)
+    expect(guestProgressRecordSchema.safeParse({ ...valid, game: -1 }).success).toBe(false)
+  })
+
   it.each([
     ['outra versão', { v: 2 }],
     ['tempo negativo', { elapsedMs: -1 }],

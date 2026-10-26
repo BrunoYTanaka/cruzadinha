@@ -84,6 +84,11 @@ export function useGame({ response, owner }: UseGameArgs) {
   const userId = owner.kind === 'user' ? owner.user.id : null
   const store = owner.kind === 'guest' ? (owner.store ?? defaultGuestStore) : null
 
+  // Geração do jogo do visitante: sobe em "Jogar de novo" e ancora os salvamentos desta aba.
+  const [generation, setGeneration] = useState(() =>
+    owner.kind === 'guest' ? (owner.record?.game ?? 0) : 0,
+  )
+
   const [summary, setSummary] = useState<ProgressSummary | null>(() => summaryOf(owner))
 
   // O estado inicial junta o progresso guardado e a fila local, uma única vez.
@@ -132,6 +137,7 @@ export function useGame({ response, owner }: UseGameArgs) {
         puzzleId,
         date: puzzle.date,
         store,
+        game: generation,
         onSaved: (record) => {
           setSummary(record)
           if (record.status === 'completed') dispatch({ type: 'confirmCompletion' })
@@ -147,7 +153,7 @@ export function useGame({ response, owner }: UseGameArgs) {
         if (body.status === 'completed') dispatch({ type: 'confirmCompletion' })
       },
     })
-  }, [puzzleId, puzzle.date, userId, store, dispatch])
+  }, [puzzleId, puzzle.date, userId, store, generation, dispatch])
   const saveState = useSyncExternalStore(queue.subscribe, queue.getState, queue.getState)
 
   // O que vai para a fila. O visitante leva junto as ajudas atuais (R7); a conta não, porque o corpo
@@ -265,7 +271,10 @@ export function useGame({ response, owner }: UseGameArgs) {
     try {
       if (store) {
         const fresh = await store.reset(puzzleId)
-        if (fresh) setSummary(fresh)
+        if (fresh) {
+          setGeneration(fresh.game ?? 0)
+          setSummary(fresh)
+        }
       } else {
         const { progress: fresh } = await resetProgress(puzzleId)
         setSummary(fresh)
