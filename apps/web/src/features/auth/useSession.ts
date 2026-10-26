@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { getMe, login, logout, register } from '../../api/auth'
 import { queryKeys } from '../../api/query-keys'
 import { clearEnded } from '../../app/session-ended'
+import { useServerReady } from '../status/useSlowServer'
 
 // `null` é visitante (sem sessão), feature 013.
 export function sessionQueryOptions() {
@@ -14,8 +15,11 @@ export function sessionQueryOptions() {
   } as const
 }
 
+// Fora do portão que espera a API (cabeçalho, configurações, login), o pedido da sessão só sai com
+// o servidor pronto; senão a API dormindo derrubaria a tela ou piscaria o cabeçalho (feature 032).
 export function useSessionQuery() {
-  return useQuery(sessionQueryOptions())
+  const serverReady = useServerReady()
+  return useQuery({ ...sessionQueryOptions(), enabled: serverReady })
 }
 
 export type Viewer = { kind: 'guest' } | { kind: 'user'; user: User }

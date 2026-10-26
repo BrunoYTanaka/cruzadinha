@@ -1,13 +1,14 @@
 import type { LibraryItem } from '@cruzadinha/shared'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../api/query-keys'
+import { resetServerWake, waitForServer } from '../api/server-wake'
 import { updateSettings } from '../features/settings/settings-store'
 import { clearRememberedSource, rememberGameSource } from '../features/library/source-choice'
 import { markSourceDown } from '../features/library/source-down'
 import type { TodayCard } from '../features/library/today-cards'
 import { makeLibraryItem } from '../test/fixtures'
 import { jsonResponse, mockApi } from '../test/http'
-import { aUser, makeQueryClient } from '../test/render'
+import { aUser, makeQueryClient, serverIsReady } from '../test/render'
 import { decideDirectPlay, directPlayLoader, directPlayMessage } from './direct-play'
 
 const card = (patch: Partial<TodayCard>): TodayCard => ({
@@ -85,9 +86,39 @@ describe('directPlayLoader', () => {
     return loader
   }
 
+  beforeEach(async () => {
+    resetServerWake()
+    await serverIsReady()
+  })
+
   afterEach(() => {
+    resetServerWake()
     vi.unstubAllGlobals()
     window.localStorage.clear()
+  })
+
+  it('com a API dormindo espera acordar antes de consultar a sessão e ainda leva ao jogo (feature 032)', async () => {
+    resetServerWake()
+    const item = makeLibraryItem(today, { source: 'cruzadaonline' })
+    let awake = false
+    const { calls } = mockApi({
+      'GET /api/health': () => jsonResponse(200, { status: 'ok', database: 'up' }),
+      'GET /api/auth/me': () =>
+        awake ? jsonResponse(200, { user: aUser }) : jsonResponse(503, { error: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [item] }),
+    })
+    const queryClient = makeQueryClient()
+    updateSettings({ directToGame: true, defaultSource: 'cruzadaonline' })
+    const loader = directPlayLoader(queryClient, { initialPath: '/', today: () => today })
+    const request = new Request('http://localhost/')
+    const running = loader({ request })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(calls).toEqual([])
+    awake = true
+    await waitForServer()
+    const result = (await running) as Response
+    expect(result.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
+    expect(calls.map((call) => call.key)[0]).toBe('GET /api/health')
   })
 
   it('a fonte do último jogo (feature 031) não muda a cruzada do atalho', async () => {
