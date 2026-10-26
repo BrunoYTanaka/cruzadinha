@@ -20,6 +20,7 @@ const full: Settings = {
   directToGame: true,
   boardCellSize: 72,
   libraryWidth: 1200,
+  copyClue: true,
 }
 
 describe('defaultSettings', () => {
@@ -33,6 +34,7 @@ describe('defaultSettings', () => {
       directToGame: false,
       boardCellSize: null,
       libraryWidth: null,
+      copyClue: false,
     })
   })
 })
@@ -56,6 +58,11 @@ describe('parseSettings', () => {
       ...full,
       libraryWidth: null,
     })
+  })
+
+  it('troca copyClue inválido pelo padrão (feature 032)', () => {
+    expect(parseSettings({ ...full, copyClue: 'sim' }, defaults).copyClue).toBe(false)
+    expect(parseSettings({ theme: 'light' }, defaults).copyClue).toBe(false)
   })
 
   it('aceita sem limite nas ajudas', () => {
@@ -102,6 +109,10 @@ describe('parseStoredSettings', () => {
     expect(parseStoredSettings([])).toEqual({})
   })
 
+  it('mantém copyClue válido', () => {
+    expect(parseStoredSettings({ copyClue: true })).toEqual({ copyClue: true })
+  })
+
   it('mantém null quando o campo aceita null', () => {
     expect(parseStoredSettings({ helpWords: null })).toEqual({ helpWords: null })
   })
@@ -109,6 +120,11 @@ describe('parseStoredSettings', () => {
 
 describe('saveSettingsRequestSchema', () => {
   const savedAt = '2026-10-21T13:05:40.120Z'
+
+  it('aceita o pedido sem copyClue, de um site anterior (feature 032)', () => {
+    const older = Object.fromEntries(Object.entries(full).filter(([key]) => key !== 'copyClue'))
+    expect(saveSettingsRequestSchema.safeParse({ settings: older, savedAt }).success).toBe(true)
+  })
 
   it('aceita o pedido completo', () => {
     expect(saveSettingsRequestSchema.safeParse({ settings: full, savedAt }).success).toBe(true)

@@ -1,4 +1,4 @@
-import type { Settings } from '@cruzadinha/shared'
+import type { SaveSettingsRequest } from '@cruzadinha/shared'
 import { eq, lt, sql } from 'drizzle-orm'
 import type { Executor } from '../../db/client'
 import { userSettings } from '../../db/schema'
@@ -22,7 +22,7 @@ export async function findSettings(
 export async function upsertSettings(
   db: Executor,
   userId: string,
-  settings: Settings,
+  settings: SaveSettingsRequest['settings'],
   savedAt: Date,
 ): Promise<StoredSettings | undefined> {
   await db

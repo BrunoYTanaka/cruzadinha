@@ -42,6 +42,7 @@ export const saveSettingsSchema = {
           directToGame: false,
           boardCellSize: null,
           libraryWidth: 1200,
+          copyClue: false,
         },
         savedAt: '2026-10-21T13:05:40.120Z',
       },
