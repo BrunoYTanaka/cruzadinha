@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.10.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.9.3...web-v0.10.0) (2026-10-26)
+
+
+### Features
+
+* **web:** copy the clue on double click and close settings on outside click ([e885813](https://github.com/BrunoYTanaka/cruzadinha/commit/e8858135234f5ea2baf53c157e78067d64734c40))
+* **web:** copy the clue on double click and close settings on outside click ([2e25b21](https://github.com/BrunoYTanaka/cruzadinha/commit/2e25b216bbabc2def55e21df8242a503241d19cc))
+
+
+### Bug Fixes
+
+* **web:** give the theme button e2e a viewport tall enough for the settings dialog ([4c6a719](https://github.com/BrunoYTanaka/cruzadinha/commit/4c6a7191cc22c859e3b804de989653981d56ffeb))
+* **web:** give the theme button e2e a viewport tall enough for the settings dialog ([855fe6d](https://github.com/BrunoYTanaka/cruzadinha/commit/855fe6dac86412f5a3596623bce8e0415f3648d4))
+* **web:** wait for the server before asking for the session ([ffd8977](https://github.com/BrunoYTanaka/cruzadinha/commit/ffd8977288cdf6cb8f3edfeee09f2c353d00b4ae))
+* **web:** wait for the server before asking for the session ([f023198](https://github.com/BrunoYTanaka/cruzadinha/commit/f02319889c95e92cb5ee2c2991b5a8af9c775efb)), closes [#63](https://github.com/BrunoYTanaka/cruzadinha/issues/63)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.22.0 to 0.23.0
+
 ## [0.9.3](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.9.2...web-v0.9.3) (2026-10-23)
 
 

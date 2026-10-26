@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.5.3...api-v0.6.0) (2026-10-26)
+
+
+### Features
+
+* **shared:** add copyClue setting ([8bdd09b](https://github.com/BrunoYTanaka/cruzadinha/commit/8bdd09be6352254658a090890cf12553d3ef21e0))
+* **web:** copy the clue on double click and close settings on outside click ([e885813](https://github.com/BrunoYTanaka/cruzadinha/commit/e8858135234f5ea2baf53c157e78067d64734c40))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.22.0 to 0.23.0
+
 ## [0.5.3](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.5.2...api-v0.5.3) (2026-10-23)
 
 
