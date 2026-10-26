@@ -28,6 +28,27 @@ const DOCTYPE = /<!DOCTYPE/i
 
 type Got = { ok: true; text: string } | { ok: false; reason: FetchFailureReason; detail: string }
 
+// Lê o corpo aos pedaços e para ao passar de `maxBytes`, mesmo sem `content-length`; devolve
+// undefined nesse caso. O que passou do limite nunca é decodificado.
+async function readText(response: Response, maxBytes: number): Promise<string | undefined> {
+  if (!response.body) return ''
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > maxBytes) {
+      // Sem esperar: o cancelamento de um corpo duplicado (`clone`) só termina com as duas pontas.
+      void reader.cancel().catch(() => {})
+      return undefined
+    }
+    chunks.push(value)
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks))
+}
+
 export function createClubeSource(options: ClubeSourceOptions = {}): PuzzleSource {
   const fetch = options.fetch ?? globalThis.fetch
   const timeoutMs = options.timeoutMs ?? 10_000
@@ -52,8 +73,8 @@ export function createClubeSource(options: ClubeSourceOptions = {}): PuzzleSourc
       if (Number(response.headers.get('content-length') ?? 0) > maxBytes) {
         return { ok: false, reason: 'unexpected-format', detail: 'corpo grande demais' }
       }
-      const text = await response.text()
-      if (Buffer.byteLength(text) > maxBytes) {
+      const text = await readText(response, maxBytes)
+      if (text === undefined) {
         return { ok: false, reason: 'unexpected-format', detail: 'corpo grande demais' }
       }
       return { ok: true, text }

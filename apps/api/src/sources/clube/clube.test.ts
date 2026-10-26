@@ -162,6 +162,51 @@ describe('fonte clube', () => {
       ])
     })
 
+    describe('corpo em pedaços, sem content-length', () => {
+      const chunked =
+        (chunks: Uint8Array[], onCancel = () => {}) =>
+        () => {
+          let next = 0
+          const body = new ReadableStream<Uint8Array>({
+            pull(controller) {
+              const chunk = chunks[next++]
+              if (chunk) controller.enqueue(chunk)
+              else controller.close()
+            },
+            cancel: onCancel,
+          })
+          return new Response(body, { status: 200 })
+        }
+
+      it('para de ler ao passar do limite e cancela o resto', async () => {
+        const cancelled = vi.fn()
+        const pieces = Array.from({ length: 50 }, () => new TextEncoder().encode('x'.repeat(100)))
+        const routes = { ...goodRoutes(), [CATEGORY]: chunked(pieces, cancelled) }
+        const items = await collect(
+          createClubeSource({ fetch: fakeFetch(routes).fetch, maxBytes: 1_000 }),
+        )
+
+        expect(items).toEqual([
+          { ok: false, reason: 'unexpected-format', detail: 'corpo grande demais' },
+        ])
+        expect(cancelled).toHaveBeenCalledTimes(1)
+      })
+
+      it('junta os pedaços, inclusive uma letra acentuada partida ao meio', async () => {
+        const bytes = new TextEncoder().encode(readFixture('category.html'))
+        const cut = bytes.indexOf(0xc3) + 1
+        const split = cut > 0 ? [bytes.slice(0, cut), bytes.slice(cut)] : [bytes]
+        const routes = { ...goodRoutes(), [CATEGORY]: chunked(split) }
+        const chunkedItems = await collect(createClubeSource({ fetch: fakeFetch(routes).fetch }))
+        const wholeItems = await collect(
+          createClubeSource({ fetch: fakeFetch(goodRoutes()).fetch }),
+        )
+
+        // Os itens trazem funções (loadPuzzle); o JSON compara só os dados.
+        expect(JSON.stringify(chunkedItems)).toBe(JSON.stringify(wholeItems))
+      })
+    })
+
     it('um ciclo de edições anteriores não gira para sempre', async () => {
       const loop = text(readFixture('page-valid.html').replace(E900, E901))
       const routes = { ...goodRoutes(), [E901]: loop }

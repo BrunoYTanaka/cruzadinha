@@ -130,8 +130,8 @@ Nada bloqueante: cada história toca arquivos próprios. Atenção a dois pontos
 
 **Independent Test**: `apps/api/src/sources/clube/clube.test.ts`.
 
-- [ ] T034 [US8] Escrever em `apps/api/src/sources/clube/clube.test.ts` os casos que falham: `fetch` falso devolve `Response` com `ReadableStream` em pedaços, sem `content-length`, somando mais que `maxBytes` (pequeno, injetado): resultado `unexpected-format` / `corpo grande demais` e o stream é cancelado (`cancel` chamado, pedaços seguintes não lidos); corpo dentro do limite devolve o mesmo resultado de hoje, inclusive com caracteres acentuados partidos entre pedaços
-- [ ] T035 [US8] Em `apps/api/src/sources/clube/clube.ts` (`get`) substituir `response.text()` por leitura de `response.body.getReader()` acumulando `Uint8Array` até `maxBytes` (`reader.cancel()` ao passar), decodificando UTF-8 com `TextDecoder` ao final; manter a checagem de `content-length`; commit `fix(api): stop reading a source body once it passes the size limit`
+- [X] T034 [US8] Escrever em `apps/api/src/sources/clube/clube.test.ts` os casos que falham: `fetch` falso devolve `Response` com `ReadableStream` em pedaços, sem `content-length`, somando mais que `maxBytes` (pequeno, injetado): resultado `unexpected-format` / `corpo grande demais` e o stream é cancelado (`cancel` chamado, pedaços seguintes não lidos); corpo dentro do limite devolve o mesmo resultado de hoje, inclusive com caracteres acentuados partidos entre pedaços
+- [X] T035 [US8] Em `apps/api/src/sources/clube/clube.ts` (`get`) substituir `response.text()` por leitura de `response.body.getReader()` acumulando `Uint8Array` até `maxBytes` (`reader.cancel()` ao passar), decodificando UTF-8 com `TextDecoder` ao final; manter a checagem de `content-length`; commit `fix(api): stop reading a source body once it passes the size limit`
 
 ---
 
