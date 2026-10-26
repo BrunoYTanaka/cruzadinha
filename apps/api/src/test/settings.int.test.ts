@@ -116,6 +116,14 @@ describe('GET/PUT /api/settings', () => {
     expect(response.json().settings).toEqual({ ...settings, defaultSource: 'nova-fonte' })
   })
 
+  it('pedido sem copyClue, de um site anterior, é aceito (feature 033)', async () => {
+    const sid = await register('ana@exemplo.com')
+    const older = Object.fromEntries(Object.entries(settings).filter(([key]) => key !== 'copyClue'))
+    const response = await putSettings({ settings: older, savedAt: at(-1) }, sid)
+    expect(response.statusCode).toBe(200)
+    expect(response.json().settings).toEqual(older)
+  })
+
   it('savedAt mais antigo não sobrescreve e devolve o que vale (FR-022)', async () => {
     const sid = await register('ana@exemplo.com')
     const newer = at(-10)

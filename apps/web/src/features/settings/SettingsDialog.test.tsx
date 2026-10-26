@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../../api/query-keys'
@@ -65,6 +65,32 @@ describe('engrenagem do cabeçalho', () => {
   })
 })
 
+describe('fechar ao clicar fora (feature 033)', () => {
+  it('clicar fora do painel fecha e devolve o foco à engrenagem', async () => {
+    const { dialog } = await openSettings()
+    const backdrop = dialog.parentElement as HTMLElement
+    fireEvent.pointerDown(backdrop)
+    fireEvent.click(backdrop)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Configurações' })).toHaveFocus()
+  })
+
+  it('clicar dentro do painel não fecha', async () => {
+    const { user, dialog } = await openSettings()
+    await user.click(within(dialog).getByRole('heading', { name: 'Configurações' }))
+    await user.click(dialog)
+    expect(screen.getByRole('dialog', { name: 'Configurações' })).toBeInTheDocument()
+  })
+
+  it('arrastar de dentro para fora não fecha: o toque tem de começar fora', async () => {
+    const { dialog } = await openSettings()
+    fireEvent.pointerDown(within(dialog).getByRole('heading', { name: 'Configurações' }))
+    fireEvent.pointerUp(dialog.parentElement as HTMLElement)
+    fireEvent.click(dialog.parentElement as HTMLElement)
+    expect(screen.getByRole('dialog', { name: 'Configurações' })).toBeInTheDocument()
+  })
+})
+
 describe('modal de configurações', () => {
   it('tem o botão de tema e nenhum botão "Salvar"', async () => {
     const { dialog } = await openSettings()
@@ -108,9 +134,26 @@ describe('modal de configurações', () => {
     expect(within(dialog).getByText(/certa ou errada/)).toBeInTheDocument()
   })
 
+  it('o switch de copiar a dica vem desligado e grava copyClue (feature 033)', async () => {
+    const { user, dialog } = await openSettings()
+    const copy = within(dialog).getByRole('switch', { name: 'Copiar a dica' })
+    expect(copy).toHaveAttribute('aria-checked', 'false')
+    expect(getSettings().copyClue).toBe(false)
+    await user.click(copy)
+    expect(copy).toHaveAttribute('aria-checked', 'true')
+    expect(getSettings().copyClue).toBe(true)
+    expect(
+      JSON.parse(window.localStorage.getItem('cruzadinha:settings') ?? '{}').settings,
+    ).toMatchObject({
+      copyClue: true,
+    })
+  })
+
   it('Restaurar padrões volta tudo', async () => {
     const { user, dialog } = await openSettings()
-    act(() => updateSettings({ helpLetters: null, strikeMode: 'filled', theme: 'dark' }))
+    act(() =>
+      updateSettings({ helpLetters: null, strikeMode: 'filled', theme: 'dark', copyClue: true }),
+    )
     await user.click(within(dialog).getByRole('button', { name: 'Restaurar padrões' }))
     expect(getSettings()).toEqual(settingsDefaults())
   })

@@ -86,19 +86,32 @@ export function Dialog({
       }
     }
 
-    function onPointerDown(event: PointerEvent) {
-      if (!closeOnBackdrop) return
+    // Fecha só quando o toque começa e termina fora do painel: arrastar de dentro para fora (para
+    // selecionar texto, por exemplo) não fecha. O fechamento espera o `click`, depois de o clique
+    // ter tirado o foco, para o foco voltar ao elemento de origem e ficar lá (feature 033).
+    let pressedOutside = false
+    const isOutside = (target: EventTarget | null) => {
       const current = panelRef.current
-      if (current && event.target instanceof Node && !current.contains(event.target)) {
-        onCloseRef.current()
-      }
+      return current !== null && target instanceof Node && !current.contains(target)
+    }
+
+    function onPointerDown(event: PointerEvent) {
+      pressedOutside = closeOnBackdrop && isOutside(event.target)
+    }
+
+    function onClick(event: MouseEvent) {
+      const close = pressedOutside && isOutside(event.target)
+      pressedOutside = false
+      if (close) onCloseRef.current()
     }
 
     document.addEventListener('keydown', onKeyDown, true)
     document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('click', onClick, true)
     return () => {
       document.removeEventListener('keydown', onKeyDown, true)
       document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('click', onClick, true)
       root?.removeAttribute('inert')
       if (previous?.isConnected) previous.focus()
     }

@@ -28,6 +28,8 @@ import { CompletionDialog } from './CompletionDialog'
 import { ReadModeBanner } from './ReadModeBanner'
 import { ClueList } from './ClueList'
 import { ClueSheet } from './ClueSheet'
+import { CopyToast } from './CopyToast'
+import { useCopyClue } from './useCopyClue'
 import styles from './GamePage.module.css'
 import { HelpButtons } from './HelpButtons'
 import { Keyboard } from './Keyboard'
@@ -168,6 +170,11 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
     limits,
   } = useGame({ response, owner })
   const guest = owner.kind === 'guest'
+  const { onCopy, notice: copyNotice } = useCopyClue({
+    index: game.index,
+    cells: state.cells,
+    paused: clock.paused,
+  })
   const storageAvailable = useGuestStorageAvailable()
   const [dialogClosed, setDialogClosed] = useState(false)
   // A biblioteca das fontes só é pedida ao concluir, para o atalho da janela; em geral já está em
@@ -257,9 +264,10 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         word={word}
         onPrevious={() => stepWord('previousWord')}
         onNext={() => stepWord('nextWord')}
+        onCopy={onCopy}
       />
     ) : (
-      <ClueBar word={word} />
+      <ClueBar word={word} onCopy={onCopy} />
     )
   const clueList = (
     <ClueList
@@ -268,6 +276,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
       struck={struck}
       strikeMode={strikeMode}
       onSelect={selectClue}
+      onCopy={onCopy}
       fill={desktop}
     />
   )
@@ -425,6 +434,7 @@ function Game({ response, owner }: { response: PuzzleResponse; owner: GameOwner 
         otherSource={otherSource}
       />
       <LegendButton />
+      <CopyToast notice={copyNotice} />
       <ClueSheet
         open={cluesOpen}
         onClose={() => setCluesOpen(false)}

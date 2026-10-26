@@ -2,6 +2,7 @@ import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useEffect, useRef } from 'react'
 import { wordKey, type StrikeMode } from '../../game-logic/clue-strike'
 import styles from './ClueList.module.css'
+import { keepSelectionOnDoubleClick } from './useCopyClue'
 
 type ClueListProps = {
   puzzle: Puzzle
@@ -11,6 +12,8 @@ type ClueListProps = {
   struck: ReadonlySet<string>
   strikeMode?: StrikeMode
   onSelect: (word: Word) => void
+  // Duplo clique na dica copia o texto (feature 033); sem ele a opção está desligada.
+  onCopy?: (word: Word) => void
   // Computador: as listas ocupam a altura do pai e cada grupo rola por dentro, mantendo a dica
   // ativa visível.
   fill?: boolean
@@ -23,6 +26,7 @@ function Group({
   struck,
   strikeMode = 'solved',
   onSelect,
+  onCopy,
 }: { title: string; words: Word[] } & Omit<ClueListProps, 'puzzle' | 'fill'>) {
   // Ao preencher, a dica só fica riscada: sem fundo de sucesso e sem visto, porque pode estar errada.
   const solved = strikeMode === 'solved'
@@ -42,6 +46,8 @@ function Group({
                 className={`${styles.clue} ${active ? styles.active : ''} ${mark}`}
                 aria-current={active ? 'true' : undefined}
                 onClick={() => onSelect(word)}
+                onDoubleClick={onCopy ? () => onCopy(word) : undefined}
+                onMouseDown={onCopy ? keepSelectionOnDoubleClick : undefined}
               >
                 <b className={styles.number}>{word.number}</b>
                 <span>{word.clue}</span>
@@ -70,6 +76,7 @@ export function ClueList({
   struck,
   strikeMode,
   onSelect,
+  onCopy,
   fill = false,
 }: ClueListProps) {
   const across = puzzle.words.filter((word) => word.direction === 'across')
@@ -104,6 +111,7 @@ export function ClueList({
         struck={struck}
         strikeMode={strikeMode}
         onSelect={onSelect}
+        onCopy={onCopy}
       />
       <Group
         title="Verticais"
@@ -112,6 +120,7 @@ export function ClueList({
         struck={struck}
         strikeMode={strikeMode}
         onSelect={onSelect}
+        onCopy={onCopy}
       />
     </div>
   )

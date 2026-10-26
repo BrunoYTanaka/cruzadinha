@@ -29,6 +29,23 @@ afterEach(() => {
   resetSettingsStore()
 })
 
+describe('copyClue (feature 033)', () => {
+  it('registro guardado antes da feature vale desligado', () => {
+    window.localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({ v: 1, settings: { theme: 'dark' }, savedAt: '2026-10-20T10:00:00.000Z' }),
+    )
+    resetSettingsStore()
+    expect(getSettingsRecord().settings.copyClue).toBe(false)
+  })
+
+  it('ligar grava e sobrevive à releitura', () => {
+    updateSettings({ copyClue: true })
+    resetSettingsStore()
+    expect(getSettingsRecord().settings.copyClue).toBe(true)
+  })
+})
+
 describe('primeira leitura', () => {
   it('sem nada guardado vale o padrão', () => {
     expect(getSettingsRecord().settings).toEqual(defaults)
