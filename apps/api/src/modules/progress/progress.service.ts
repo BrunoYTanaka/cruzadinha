@@ -7,7 +7,7 @@ import {
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
 import { savedAtTooFar } from '../../lib/saved-at'
-import { findPuzzleGridById } from '../puzzles/puzzles.repository'
+import { findPuzzleGridById } from '../puzzles'
 import {
   ensureRow,
   findProgress,

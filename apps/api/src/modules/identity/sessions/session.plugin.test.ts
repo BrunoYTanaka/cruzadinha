@@ -1,7 +1,7 @@
 import cookie from '@fastify/cookie'
 import Fastify, { type FastifyInstance } from 'fastify'
 import { afterEach, describe, expect, it } from 'vitest'
-import { loadConfig } from '../../config'
+import { loadConfig } from '../../../config'
 import type { AuthService, Authenticated } from './auth.service'
 import { createOptionalSession, createRequireSession } from './session.plugin'
 

@@ -1,6 +1,6 @@
 import { and, eq, gt } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { pendingRegistrations } from '../../db/schema'
+import type { Executor } from '../../../db/client'
+import { pendingRegistrations } from '../../../db/schema'
 
 // Cadastro novo ou renovação: só o token e a validade mudam. A pendência não guarda senha (ela é
 // escolhida por quem abre o link), então ninguém a sequestra cadastrando o e-mail de outra pessoa.

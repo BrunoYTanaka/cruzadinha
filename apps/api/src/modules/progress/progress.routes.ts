@@ -2,7 +2,7 @@ import { saveProgressRequestSchema, type ProgressEnvelope } from '@cruzadinha/sh
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError } from '../../http/errors'
-import type { RequireSession } from '../auth/session.plugin'
+import type { RequireSession } from '../identity'
 import { getProgressSchema, resetProgressSchema, saveProgressSchema } from './progress.schemas'
 import type { ProgressService } from './progress.service'
 

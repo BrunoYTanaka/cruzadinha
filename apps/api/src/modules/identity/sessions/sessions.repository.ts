@@ -1,6 +1,6 @@
 import { and, eq, isNull, lt, or } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { sessions, users } from '../../db/schema'
+import type { Executor } from '../../../db/client'
+import { sessions, users } from '../../../db/schema'
 
 export async function createSession(
   db: Executor,

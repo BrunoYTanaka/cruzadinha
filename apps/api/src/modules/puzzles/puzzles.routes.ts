@@ -7,7 +7,7 @@ import {
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError, sendTooManyAttempts } from '../../http/errors'
-import type { OptionalSession } from '../auth/session.plugin'
+import type { OptionalSession } from '../identity'
 import { getPuzzleByDateSchema, getPuzzleByIdSchema } from './puzzles.schemas'
 import type { GetPuzzleResult, PuzzlesService } from './puzzles.service'
 

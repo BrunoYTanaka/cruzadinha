@@ -101,10 +101,10 @@ description: 'Task list for 037-reorganizar-por-feature'
 
 ### PR 7: `refactor/api-identity`
 
-- [ ] T033 [US4] Create `apps/api/src/modules/identity/{sessions,registration,recovery}/`; `git mv` the `modules/auth/` files as in `data-model.md`; split `auth.routes.ts` (207 lines) into `sessions.routes.ts`, `registration.routes.ts`, `recovery.routes.ts` and `auth.schemas.ts` into the matching `*.schemas.ts`; keep the prefix `/api/auth` and every route `schema`; `users.repository.ts` and `cleanup.repository.ts` stay at `modules/identity/`
-- [ ] T034 [US4] Create `apps/api/src/modules/identity/index.ts` exporting `createRequireSession`, `createOptionalSession`, `SESSION_COOKIE`, `createAccount` and the route registrars; switch `modules/{puzzles,library,progress,settings}`, `platform/docs` (still `docs/` until T038), `cli/run-cli.ts`, `app.ts` and `src/test/app.ts` to it
-- [ ] T035 [US4] `git mv` `apps/api/src/db/{seed,seed-user,seed-puzzle}.ts` (+ tests) to `apps/api/src/seed/`; fix the script `db:seed` in `apps/api/package.json` and the references in `docs/` and CLAUDE.md
-- [ ] T036 [US4] Decide in `research.md` how `modules/progress` reaches `puzzles.repository` (entry `modules/puzzles/index.ts` or a named exception in the config), apply it
+- [X] T033 [US4] Create `apps/api/src/modules/identity/{sessions,registration,recovery}/`; `git mv` the `modules/auth/` files as in `data-model.md`; split `auth.routes.ts` (207 lines) into `sessions.routes.ts`, `registration.routes.ts`, `recovery.routes.ts` and `auth.schemas.ts` into the matching `*.schemas.ts`; keep the prefix `/api/auth` and every route `schema`; `users.repository.ts` and `cleanup.repository.ts` stay at `modules/identity/`
+- [X] T034 [US4] Create `apps/api/src/modules/identity/index.ts` exporting `createRequireSession`, `createOptionalSession`, `SESSION_COOKIE`, `createAccount` and the route registrars; switch `modules/{puzzles,library,progress,settings}`, `platform/docs` (still `docs/` until T038), `cli/run-cli.ts`, `app.ts` and `src/test/app.ts` to it
+- [X] T035 [US4] `git mv` `apps/api/src/db/{seed,seed-user,seed-puzzle}.ts` (+ tests) to `apps/api/src/seed/`; fix the script `db:seed` in `apps/api/package.json` and the references in `docs/` and CLAUDE.md
+- [X] T036 [US4] Decide in `research.md` how `modules/progress` reaches `puzzles.repository` (entry `modules/puzzles/index.ts` or a named exception in the config), apply it
 - [ ] T037 [US4] Gate (with `test:int`), compare `GET /api/docs/json` with `openapi-before.json` (empty diff), open PR 7
 
 ### PR 8: `refactor/api-platform`

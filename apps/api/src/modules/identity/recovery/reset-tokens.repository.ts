@@ -1,6 +1,6 @@
 import { and, eq, gt, isNull } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { passwordResetTokens } from '../../db/schema'
+import type { Executor } from '../../../db/client'
+import { passwordResetTokens } from '../../../db/schema'
 
 // Um pedido novo invalida os anteriores: no máximo um token aberto por usuário. O índice único
 // parcial decide quando dois pedidos chegam juntos: o segundo não insere nada e devolve `false`.

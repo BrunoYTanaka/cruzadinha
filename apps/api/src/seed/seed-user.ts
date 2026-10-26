@@ -1,11 +1,11 @@
 import { puzzleSourceIdSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { loadConfig, loadSeedConfig } from '../config'
 import { hashPassword } from '../lib/password'
-import { insertIfEmailFree } from '../modules/auth/users.repository'
+import { insertIfEmailFree } from '../modules/identity'
 import { systemClock, type Clock } from '../lib/clock'
 import { todayInSaoPaulo } from '../lib/dates'
-import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
-import type { DatabaseHandle } from './client'
+import { insertPuzzleIfAbsent } from '../modules/puzzles'
+import type { DatabaseHandle } from '../db/client'
 import { buildSamplePuzzle } from './seed-puzzle'
 
 export type SeedDeps = {

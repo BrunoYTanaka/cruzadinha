@@ -2,7 +2,7 @@ import { puzzleSourceQuerySchema, type LibraryResponse } from '@cruzadinha/share
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError } from '../../http/errors'
-import type { OptionalSession } from '../auth/session.plugin'
+import type { OptionalSession } from '../identity'
 import { getLibrarySchema } from './library.schemas'
 import type { LibraryService } from './library.service'
 

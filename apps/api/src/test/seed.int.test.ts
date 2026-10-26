@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
 import { puzzles, users } from '../db/schema'
 import { createDatabase } from '../db/client'
-import { runSeed } from '../db/seed-user'
+import { runSeed } from '../seed/seed-user'
 import {
   validatePuzzleWithSolution,
   puzzleResponseSchema,

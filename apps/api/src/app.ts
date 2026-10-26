@@ -7,15 +7,15 @@ import type { DatabaseProbe } from './db/probe'
 import { apiError } from './http/errors'
 import { proxyGuard } from './http/proxy-guard'
 import { systemClock, type Clock } from './lib/clock'
-import { authRoutes } from './modules/auth/auth.routes'
-import { createAuthService } from './modules/auth/auth.service'
-import { createRecoveryService } from './modules/auth/recovery.service'
-import { createRegistrationService } from './modules/auth/registration.service'
+import { identityRoutes } from './modules/identity'
+import { createAuthService } from './modules/identity'
+import { createRecoveryService } from './modules/identity'
+import { createRegistrationService } from './modules/identity'
 import { createEmailService } from './modules/email/email.service'
 import { createLogSender } from './modules/email/log-sender'
 import { createResendSender } from './modules/email/resend-sender'
 import type { EmailSender } from './modules/email/types'
-import { createOptionalSession, createRequireSession } from './modules/auth/session.plugin'
+import { createOptionalSession, createRequireSession } from './modules/identity'
 import { healthRoutes } from './modules/health/health.routes'
 import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
 import { createRateLimitRepository } from './modules/rate-limit/rate-limit.repository'
@@ -24,8 +24,8 @@ import { libraryRoutes } from './modules/library/library.routes'
 import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
-import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
-import { createPuzzlesService } from './modules/puzzles/puzzles.service'
+import { puzzlesRoutes } from './modules/puzzles'
+import { createPuzzlesService } from './modules/puzzles'
 import { settingsRoutes } from './modules/settings/settings.routes'
 import { createSettingsService } from './modules/settings/settings.service'
 import { createClubeSource } from './sources/clube/clube'
@@ -141,7 +141,7 @@ export function buildApp({
   const requireSession = createRequireSession(auth, config, clock)
   const optionalSession = createOptionalSession(auth, config, clock)
 
-  app.register(authRoutes, {
+  app.register(identityRoutes, {
     auth,
     config,
     clock,

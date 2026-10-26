@@ -20,7 +20,7 @@ import { z } from 'zod'
 import { buildApp } from '../app'
 import { loadConfig } from '../config'
 import { createDatabase } from '../db/client'
-import { buildSamplePuzzle } from '../db/seed-puzzle'
+import { buildSamplePuzzle } from '../seed/seed-puzzle'
 import type { DatabaseProbe } from '../db/probe'
 import { toDocSchema } from './doc-schema'
 

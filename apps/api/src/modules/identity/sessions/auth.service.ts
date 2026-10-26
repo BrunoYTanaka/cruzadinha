@@ -1,9 +1,9 @@
-import type { Database } from '../../db/client'
-import { addDays, type Clock } from '../../lib/clock'
-import { createDummyHash, hashPassword, verifyPassword } from '../../lib/password'
-import { generateSessionToken, sha256Hex } from '../../lib/tokens'
-import type { RateLimits } from '../rate-limit/limits'
-import type { RateLimiter } from '../rate-limit/rate-limit.service'
+import type { Database } from '../../../db/client'
+import { addDays, type Clock } from '../../../lib/clock'
+import { createDummyHash, hashPassword, verifyPassword } from '../../../lib/password'
+import { generateSessionToken, sha256Hex } from '../../../lib/tokens'
+import type { RateLimits } from '../../rate-limit/limits'
+import type { RateLimiter } from '../../rate-limit/rate-limit.service'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
 import {
   createSession,
@@ -12,7 +12,7 @@ import {
   findSessionByTokenHash,
   renewSession,
 } from './sessions.repository'
-import { findUserByEmail, insertIfEmailFree } from './users.repository'
+import { findUserByEmail, insertIfEmailFree } from '../users.repository'
 
 export type AuthUser = { id: string; email: string }
 

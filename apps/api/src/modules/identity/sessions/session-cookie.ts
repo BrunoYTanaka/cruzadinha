@@ -1,7 +1,8 @@
 import type { FastifyReply } from 'fastify'
-import type { ServerConfig } from '../../config'
+import type { ServerConfig } from '../../../config'
+import { SESSION_COOKIE } from '../../../http/session-cookie-name'
 
-export const SESSION_COOKIE = 'sid'
+export { SESSION_COOKIE }
 
 export function setSessionCookie(
   reply: FastifyReply,

@@ -1,7 +1,7 @@
 import cookie from '@fastify/cookie'
 import Fastify from 'fastify'
 import { describe, expect, it } from 'vitest'
-import type { ServerConfig } from '../../config'
+import type { ServerConfig } from '../../../config'
 import { clearSessionCookie, setSessionCookie } from './session-cookie'
 
 const now = new Date('2026-10-13T12:00:00.000Z')

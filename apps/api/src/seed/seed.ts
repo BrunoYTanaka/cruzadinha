@@ -1,6 +1,6 @@
 import { loadDotEnvIfPresent } from '../env-file'
-import { createDatabase } from './client'
-import { describeError } from './errors'
+import { createDatabase } from '../db/client'
+import { describeError } from '../db/errors'
 import { runSeed } from './seed-user'
 
 // Entrada de npm run db:seed. Fica fora do bundle: não existe na imagem de produção.
