@@ -89,13 +89,14 @@ describe('POST /api/auth/register com o cadastro aberto', () => {
     expect(session?.userId).toBe(body.user.id)
   })
 
-  it('ignora o código de convite enviado pelo site anterior', async () => {
+  it('recusa um cadastro que ainda envia o código de convite, que não existe mais', async () => {
     const response = await register({
       email: 'ana@exemplo.com',
       password: 'senha-boa-123',
       inviteCode: 'ABCD-EFGH-JKMN-PQRS',
     })
-    expect(response.statusCode).toBe(201)
+    expect(response.statusCode).toBe(400)
+    expect(await db.select().from(users)).toHaveLength(0)
   })
 
   it('recusa um e-mail que já tem conta com a mensagem genérica', async () => {

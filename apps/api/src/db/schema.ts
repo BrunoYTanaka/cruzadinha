@@ -47,37 +47,7 @@ export const sessions = pgTable(
   ],
 )
 
-export const invites = pgTable(
-  'invites',
-  {
-    inviteId: uuid('invite_id').primaryKey().defaultRandom(),
-    codeHash: text('code_hash').notNull().unique(),
-    createdByUserId: uuid('created_by_user_id').references(() => users.userId),
-    usedByUserId: uuid('used_by_user_id')
-      .unique()
-      .references(() => users.userId),
-    expiresAt: instant('expires_at').notNull(),
-    usedAt: instant('used_at'),
-    revokedAt: instant('revoked_at'),
-    ...timestamps,
-  },
-  (table) => [
-    index('invites_created_by_user_id_idx').on(table.createdByUserId),
-    check('invites_used_pair', sql`(${table.usedAt} IS NULL) = (${table.usedByUserId} IS NULL)`),
-    check(
-      'invites_not_used_and_revoked',
-      sql`NOT (${table.usedAt} IS NOT NULL AND ${table.revokedAt} IS NOT NULL)`,
-    ),
-  ],
-)
-
-export const rateLimitActions = [
-  'LOGIN',
-  'REGISTER',
-  'INVITE_CREATE',
-  'PUZZLE_FETCH',
-  'SETTINGS_SAVE',
-] as const
+export const rateLimitActions = ['LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE'] as const
 export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS'] as const
 
 export const rateLimitAttempts = pgTable(
@@ -99,7 +69,7 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH', 'SETTINGS_SAVE')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',

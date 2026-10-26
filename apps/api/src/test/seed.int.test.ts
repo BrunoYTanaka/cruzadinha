@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
-import { invites, puzzles, users } from '../db/schema'
+import { puzzles, users } from '../db/schema'
 import { createDatabase } from '../db/client'
 import { runSeed } from '../db/seed-user'
 import {
@@ -68,7 +68,6 @@ describe('db:seed', () => {
     const [user] = await db.select().from(users)
     expect(user?.email).toBe('dev@cruzadinha.local')
     expect(user?.passwordHash.startsWith('$argon2id$')).toBe(true)
-    expect(await db.select().from(invites)).toHaveLength(0)
     expect(await login('senha-de-teste-123')).toBe(200)
   })
 

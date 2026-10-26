@@ -37,8 +37,7 @@ export const registerSchema = {
   description:
     'Só funciona com o cadastro aberto (`REGISTRATION_ENABLED=true`); fechado, responde 403 antes ' +
     'de qualquer outra checagem. Depois, o limite de tentativas por endereço é conferido antes do ' +
-    'corpo. Em caso de sucesso, a sessão já fica aberta. `inviteCode` é aceito e ignorado, só para ' +
-    'o site anterior.',
+    'corpo. Em caso de sucesso, a sessão já fica aberta.',
   body: {
     ...withFieldDescription(toDocSchema(registerRequestSchema), 'email', emailDescription),
     examples: [{ email: 'ana@example.com', password: 'senha-de-exemplo' }],

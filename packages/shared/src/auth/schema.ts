@@ -7,9 +7,6 @@ export const passwordSchema = z.string().min(8).max(128)
 export const registerRequestSchema = z.strictObject({
   email: emailSchema,
   password: passwordSchema,
-  // Aceito e ignorado só para o site anterior, que ainda o envia; sai no lançamento B
-  // (feature 013, research R15).
-  inviteCode: z.string().max(64).optional(),
 })
 
 export type RegisterRequest = z.infer<typeof registerRequestSchema>
