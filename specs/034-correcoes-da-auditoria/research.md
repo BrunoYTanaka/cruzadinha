@@ -37,7 +37,9 @@
 
 ## R5. Sandbox do Clube
 
-**Decision**: nada novo. `sources/clube/sandbox.test.ts` já exercita laço infinito (`game-loop.js`, tempo) e memória (`game-memory.js`, limite de bytes). O texto exato `script: falha na sandbox` não aparece no arquivo (verificado com `grep`), então a tarefa T020 confere o que os testes afirmam e acrescenta só a asserção do texto e da rapidez que faltar.
+**Decision**: só reforçar asserções. `sources/clube/sandbox.test.ts` já exercitava laço infinito, memória e recursão com `toMatchObject({ ok: false })`. Agora cada caso afirma o resultado exato `{ ok: false, detail: 'script: falhou ao executar' }` e o laço, também, que termina em menos de 2 s.
+
+**Rationale**: a issue esperava `script: falha na sandbox`, mas esse texto é do `catch` do próprio motor (instância num estado que não se reaproveita, `sandbox.ts`), não do estouro de tempo ou de memória do script: nesses o motor interrompe o script e o erro volta como `script: falhou ao executar`. As duas mensagens são `ok: false` sem vazar detalhe. Forçar o `catch` do motor exigiria falha artificial do WebAssembly, fora do que a issue pede.
 
 ## R6. Remoção de convites
 

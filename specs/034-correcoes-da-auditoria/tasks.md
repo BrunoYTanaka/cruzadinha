@@ -80,7 +80,7 @@ Nada bloqueante: cada história toca arquivos próprios. Atenção a dois pontos
 
 **Independent Test**: `npx vitest run src/sources/clube/sandbox.test.ts`.
 
-- [ ] T020 [US4] Ler `apps/api/src/sources/clube/sandbox.test.ts` e conferir o que os casos de `game-loop.js` (timeout curto injetado, `timeoutMs: 100`) e `game-memory.js` afirmam; o texto `script: falha na sandbox` não aparece hoje no arquivo (`grep`), então acrescentar a asserção do texto exato e a de rapidez (tempo medido abaixo de 2 s, SC-004) para os dois casos; se faltar a asserção do texto ou do tempo, acrescentar só ela; sem mudança de código de produção; commit `test(api): assert the sandbox failure message and speed` apenas se houve alteração
+- [X] T020 [US4] Ler `apps/api/src/sources/clube/sandbox.test.ts` e conferir o que os casos de `game-loop.js` (timeout curto injetado, `timeoutMs: 100`) e `game-memory.js` afirmam; o texto `script: falha na sandbox` não aparece hoje no arquivo (`grep`), então acrescentar a asserção do texto exato e a de rapidez (tempo medido abaixo de 2 s, SC-004) para os dois casos; se faltar a asserção do texto ou do tempo, acrescentar só ela; sem mudança de código de produção; commit `test(api): assert the sandbox failure message and speed` apenas se houve alteração
 
 ---
 
