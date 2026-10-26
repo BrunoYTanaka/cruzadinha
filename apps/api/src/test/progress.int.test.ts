@@ -117,6 +117,16 @@ afterEach(() => app.close())
 afterAll(() => handle.close())
 
 describe('salvar e retomar (US1)', () => {
+  it('salva, lê e zera sem ler a solução do puzzle (feature 034)', async () => {
+    const sid = await register('ana@exemplo.com')
+    // Uma solução inválida quebraria qualquer leitura que a trouxesse do banco.
+    await db.execute(sql`UPDATE puzzles SET solution = '"inválida"'::jsonb`)
+
+    expect((await putProgress(puzzleId, save(), sid)).statusCode).toBe(200)
+    expect((await getProgress(puzzleId, sid)).statusCode).toBe(200)
+    expect((await resetProgress(puzzleId, sid)).statusCode).toBe(200)
+  })
+
   it('responde progress nulo quando o usuário ainda não jogou', async () => {
     const sid = await register('ana@exemplo.com')
     const response = await getProgress(puzzleId, sid)

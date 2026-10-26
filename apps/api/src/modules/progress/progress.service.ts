@@ -7,7 +7,7 @@ import {
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
 import { savedAtTooFar } from '../../lib/saved-at'
-import { findPuzzleById } from '../puzzles/puzzles.repository'
+import { findPuzzleGridById } from '../puzzles/puzzles.repository'
 import {
   ensureRow,
   findProgress,
@@ -117,16 +117,16 @@ export function createProgressService(deps: ProgressDeps): ProgressService {
 
   return {
     async get(userId, puzzleId) {
-      const stored = await findPuzzleById(db, puzzleId)
-      if (!stored) return { ok: false, reason: 'puzzle-unavailable' }
+      if (!(await findPuzzleGridById(db, puzzleId))) {
+        return { ok: false, reason: 'puzzle-unavailable' }
+      }
       const found = await findProgress(db, userId, puzzleId)
       return { ok: true, progress: found ? toProgress(found) : null }
     },
 
     async save(userId, puzzleId, request) {
-      const stored = await findPuzzleById(db, puzzleId)
-      if (!stored) return { ok: false, reason: 'puzzle-unavailable' }
-      const { grid } = stored.puzzle
+      const grid = await findPuzzleGridById(db, puzzleId)
+      if (!grid) return { ok: false, reason: 'puzzle-unavailable' }
       // Só nomes de campos: o conteúdo das letras nunca vai a mensagem nem a log.
       if (!cellsMatchGrid(grid, request.cells).success) {
         return { ok: false, reason: 'invalid-input', fields: ['cells'] }
@@ -153,9 +153,8 @@ export function createProgressService(deps: ProgressDeps): ProgressService {
     },
 
     async reset(userId, puzzleId) {
-      const stored = await findPuzzleById(db, puzzleId)
-      if (!stored) return { ok: false, reason: 'puzzle-unavailable' }
-      const { grid } = stored.puzzle
+      const grid = await findPuzzleGridById(db, puzzleId)
+      if (!grid) return { ok: false, reason: 'puzzle-unavailable' }
       const empty = emptyCellsFor(grid.height, grid.width)
       const now = clock()
 
