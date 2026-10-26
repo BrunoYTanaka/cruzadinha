@@ -80,6 +80,9 @@ export function LoginPage() {
             {login.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
         </form>
+        <p className={styles.alt}>
+          <Link to="/esqueci-a-senha">Esqueci a senha</Link>
+        </p>
         {registration.isOpen ? (
           <p className={styles.alt}>
             Ainda não tem conta?{' '}

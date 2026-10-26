@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { runCli } from '../cli/run-cli'
-import { buildTestApp, sessionCookieFrom } from './app'
+import { buildTestApp, sessionCookieFrom, signUpForTest } from './app'
 import { fakeSource } from './fake-source'
 import { openTestDatabase, tableNames, testClock, truncateAll } from './database'
 
@@ -34,13 +34,14 @@ describe('stored secrets', () => {
 
     const password = 'senha-secreta-987'
     secrets.push(password)
-    const registered = await app.inject({
+    // O cadastro agora só grava a pendência; a conta vem do usuário criado direto no banco.
+    const pending = await app.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: { email: 'ana@exemplo.com', password },
+      payload: { email: 'pendente@exemplo.com' },
     })
-    const registerCookie = sessionCookieFrom(registered.headers['set-cookie']) ?? ''
-    secrets.push(registerCookie)
+    expect(pending.statusCode).toBe(202)
+    await signUpForTest(app, db, 'ana@exemplo.com', password)
 
     const loggedIn = await app.inject({
       method: 'POST',

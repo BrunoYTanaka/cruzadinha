@@ -1,11 +1,18 @@
 import {
   authResponseSchema,
+  emailRequestAcceptedSchema,
   registrationStatusSchema,
   type AuthResponse,
+  type EmailRequestAccepted,
+  type ForgotPasswordRequest,
   type LoginRequest,
   type RegisterRequest,
   type RegistrationStatus,
+  type ResendVerificationRequest,
+  type ResetPasswordRequest,
+  type VerifyEmailRequest,
 } from '@cruzadinha/shared'
+import { z } from 'zod'
 import { ApiRequestError, apiRequest, apiRequestNoContent } from './client'
 
 // Sem sessão a pessoa é visitante (feature 013): o 401 vira `null` e não chama o tratador de 401.
@@ -33,8 +40,44 @@ export function login(body: LoginRequest): Promise<AuthResponse> {
   })
 }
 
-export function register(body: RegisterRequest): Promise<AuthResponse> {
-  return apiRequest('/api/auth/register', authResponseSchema, {
+// O cadastro só pede o link de confirmação: não cria conta nem sessão (feature 035).
+export function register(body: RegisterRequest): Promise<EmailRequestAccepted> {
+  return apiRequest('/api/auth/register', emailRequestAcceptedSchema, {
+    method: 'POST',
+    body,
+    skipUnauthenticatedHandler: true,
+  })
+}
+
+export function resendVerification(body: ResendVerificationRequest): Promise<EmailRequestAccepted> {
+  return apiRequest('/api/auth/resend-verification', emailRequestAcceptedSchema, {
+    method: 'POST',
+    body,
+    skipUnauthenticatedHandler: true,
+  })
+}
+
+const emptySchema = z.object({})
+
+// A senha é escolhida aqui, por quem abriu o link (feature 035).
+export async function verifyEmail(body: VerifyEmailRequest): Promise<void> {
+  await apiRequest('/api/auth/verify-email', emptySchema, {
+    method: 'POST',
+    body,
+    skipUnauthenticatedHandler: true,
+  })
+}
+
+export function forgotPassword(body: ForgotPasswordRequest): Promise<EmailRequestAccepted> {
+  return apiRequest('/api/auth/forgot-password', emailRequestAcceptedSchema, {
+    method: 'POST',
+    body,
+    skipUnauthenticatedHandler: true,
+  })
+}
+
+export async function resetPassword(body: ResetPasswordRequest): Promise<void> {
+  await apiRequest('/api/auth/reset-password', emptySchema, {
     method: 'POST',
     body,
     skipUnauthenticatedHandler: true,

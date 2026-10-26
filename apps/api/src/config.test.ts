@@ -13,6 +13,84 @@ function errorMessage(env: Record<string, string | undefined>): string {
   throw new Error('loadConfig did not fail')
 }
 
+describe('loadConfig e-mail settings', () => {
+  const mail = {
+    DATABASE_URL: databaseUrl,
+    RESEND_API_KEY: 're_chave-ficticia',
+    MAIL_FROM: 'Cruzadinha <nao-responda@example.com>',
+    APP_BASE_URL: 'https://cruzadinha.example.com',
+  }
+
+  it('reads the sender, the address and the limits', () => {
+    const { email } = loadConfig({
+      ...mail,
+      EMAIL_RESEND_INTERVAL_SECONDS: '120',
+      EMAIL_PER_ADDRESS_DAILY_MAX: '3',
+      EMAIL_DAILY_CEILING: '50',
+      EMAIL_RECOVERY_RESERVE: '10',
+    })
+    expect(email).toEqual({
+      apiKey: 're_chave-ficticia',
+      from: 'Cruzadinha <nao-responda@example.com>',
+      baseUrl: 'https://cruzadinha.example.com',
+      resendIntervalSeconds: 120,
+      perAddressDailyMax: 3,
+      dailyCeiling: 50,
+      recoveryReserve: 10,
+    })
+  })
+
+  it.each([
+    ['EMAIL_RESEND_INTERVAL_SECONDS', '29'],
+    ['EMAIL_RESEND_INTERVAL_SECONDS', '3601'],
+    ['EMAIL_RESEND_INTERVAL_SECONDS', 'abc'],
+    ['EMAIL_PER_ADDRESS_DAILY_MAX', '0'],
+    ['EMAIL_DAILY_CEILING', '100'],
+    ['EMAIL_RECOVERY_RESERVE', '-1'],
+    ['MAIL_FROM', 'sem-arroba'],
+    ['APP_BASE_URL', 'https://cruzadinha.example.com/'],
+    ['APP_BASE_URL', 'nao-e-url'],
+  ])('refuses %s=%s', (name, value) => {
+    expect(() => loadConfig({ ...mail, [name]: value })).toThrow(name)
+  })
+
+  it('refuses a reserve that is not below the ceiling', () => {
+    expect(() =>
+      loadConfig({
+        DATABASE_URL: databaseUrl,
+        EMAIL_DAILY_CEILING: '20',
+        EMAIL_RECOVERY_RESERVE: '20',
+      }),
+    ).toThrow('EMAIL_RECOVERY_RESERVE')
+  })
+
+  it('requires MAIL_FROM and APP_BASE_URL with the API key', () => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, RESEND_API_KEY: 'x' })).toThrow(
+      'MAIL_FROM',
+    )
+    expect(() =>
+      loadConfig({ DATABASE_URL: databaseUrl, RESEND_API_KEY: 'x', MAIL_FROM: 'a@b.com' }),
+    ).toThrow('APP_BASE_URL')
+  })
+
+  it('accepts http only outside production', () => {
+    const env = { ...mail, APP_BASE_URL: 'http://localhost:5173' }
+    expect(loadConfig(env).email.baseUrl).toBe('http://localhost:5173')
+    expect(() => loadConfig({ ...env, NODE_ENV: 'production' })).toThrow('https')
+  })
+
+  it('treats empty text as missing', () => {
+    const { email } = loadConfig({
+      DATABASE_URL: databaseUrl,
+      RESEND_API_KEY: '',
+      MAIL_FROM: '',
+      EMAIL_DAILY_CEILING: '',
+    })
+    expect(email.apiKey).toBeUndefined()
+    expect(email.dailyCeiling).toBe(90)
+  })
+})
+
 describe('loadConfig', () => {
   it('applies the defaults when only DATABASE_URL is set', () => {
     expect(loadConfig({ DATABASE_URL: databaseUrl })).toEqual({
@@ -26,6 +104,15 @@ describe('loadConfig', () => {
       proxySecret: undefined,
       releaseCommit: undefined,
       registrationEnabled: false,
+      email: {
+        apiKey: undefined,
+        from: undefined,
+        baseUrl: 'http://localhost:5173',
+        resendIntervalSeconds: 60,
+        perAddressDailyMax: 5,
+        dailyCeiling: 90,
+        recoveryReserve: 20,
+      },
     })
   })
 
@@ -50,6 +137,15 @@ describe('loadConfig', () => {
       proxySecret: undefined,
       releaseCommit: undefined,
       registrationEnabled: false,
+      email: {
+        apiKey: undefined,
+        from: undefined,
+        baseUrl: undefined,
+        resendIntervalSeconds: 60,
+        perAddressDailyMax: 5,
+        dailyCeiling: 90,
+        recoveryReserve: 20,
+      },
     })
   })
 

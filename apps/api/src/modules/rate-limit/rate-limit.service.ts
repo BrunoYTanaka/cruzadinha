@@ -57,7 +57,7 @@ export function createRateLimiter(repository: RateLimitRepository): RateLimiter 
       // Contar e gravar sob a trava das chaves: cada pedido vê os que o antecederam.
       const { wait, ids } = await repository.withKeyLocks(keys, async (locked) => {
         const wait = await longestWait(locked, rules, now)
-        return { wait, ids: wait > 0 ? [] : await locked.insert(keys) }
+        return { wait, ids: wait > 0 ? [] : await locked.insert(keys, now) }
       })
       if (wait > 0) return { allowed: false, retryAfterSeconds: wait }
       return {

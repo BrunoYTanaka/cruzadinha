@@ -14,7 +14,7 @@ export type RateLimitRepository = {
   countSince(key: RateLimitKey, since: Date): Promise<AttemptCount>
   record(keys: RateLimitKey[], now: Date): Promise<void>
   /** Grava uma linha por chave e devolve os ids, para quem a gravou poder devolvê-las. */
-  insert(keys: RateLimitKey[]): Promise<string[]>
+  insert(keys: RateLimitKey[], createdAt?: Date): Promise<string[]>
   deleteByIds(ids: string[]): Promise<void>
   clear(key: RateLimitKey): Promise<void>
   /**
@@ -37,6 +37,10 @@ function matches(key: RateLimitKey) {
   )
 }
 
+// A data da tentativa é a do relógio injetado quando há uma, a mesma que a janela usa ao contar.
+const withDate = (keys: RateLimitKey[], createdAt: Date | undefined) =>
+  createdAt ? keys.map((key) => ({ ...key, createdAt })) : keys
+
 const lockName = (key: RateLimitKey) => `${key.action}:${key.keyType}:${key.keyValue}`
 
 export function createRateLimitRepository(database: Database): RateLimitRepository {
@@ -51,18 +55,18 @@ export function createRateLimitRepository(database: Database): RateLimitReposito
       },
 
       async record(keys, now) {
-        if (keys.length > 0) await db.insert(rateLimitAttempts).values(keys)
+        if (keys.length > 0) await db.insert(rateLimitAttempts).values(withDate(keys, now))
         // Limpeza oportunista: nenhuma janela passa de 1 dia.
         await db
           .delete(rateLimitAttempts)
           .where(lt(rateLimitAttempts.createdAt, new Date(now.getTime() - RETENTION_MS)))
       },
 
-      async insert(keys) {
+      async insert(keys, createdAt) {
         if (keys.length === 0) return []
         const rows = await db
           .insert(rateLimitAttempts)
-          .values(keys)
+          .values(withDate(keys, createdAt))
           .returning({ id: rateLimitAttempts.rateLimitAttemptId })
         return rows.map((row) => row.id)
       },

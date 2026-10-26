@@ -2,6 +2,8 @@ import { and, eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { rateLimitAttempts } from '../db/schema'
+import { hashPassword } from '../lib/password'
+import { insertIfEmailFree } from '../modules/auth/users.repository'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
 import { buildTestApp } from './app'
 import { openTestDatabase, testClock, truncateAll } from './database'
@@ -25,13 +27,14 @@ function login(email: string, password: string) {
   return app.inject({ method: 'POST', url: '/api/auth/login', payload: { email, password } })
 }
 
+// A conta vai direto ao banco: o cadastro só cria a conta depois de confirmar o e-mail, e o login
+// não pode entrar na contagem de tentativas que este teste confere.
 async function createAccount(email: string) {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/auth/register',
-    payload: { email, password: PASSWORD },
+  const created = await insertIfEmailFree(db, {
+    email,
+    passwordHash: await hashPassword(PASSWORD),
   })
-  expect(response.statusCode).toBe(201)
+  expect(created).toBeDefined()
 }
 
 function attempts(keyType: 'EMAIL' | 'NETWORK_ADDRESS') {

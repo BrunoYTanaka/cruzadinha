@@ -68,6 +68,10 @@ describe('rate limiter', () => {
       register: { max: 10, windowMinutes: 60 },
       puzzleFetch: { max: 30, windowMinutes: 60 },
       settingsSave: { max: 120, windowMinutes: 60 },
+      forgotPassword: { max: 10, windowMinutes: 60 },
+      resendVerification: { max: 10, windowMinutes: 60 },
+      verifyToken: { max: 30, windowMinutes: 60 },
+      resetPassword: { max: 30, windowMinutes: 60 },
     })
   })
 })

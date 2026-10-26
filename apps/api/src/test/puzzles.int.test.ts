@@ -6,7 +6,7 @@ import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
 import type { FetchPuzzleResult, PuzzleSource } from '../sources/types'
-import { buildTestApp, sessionCookieFrom } from './app'
+import { buildTestApp, signUpForTest } from './app'
 import { fakeListedSource, fakeSource, okResult, type FakeSource } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
@@ -46,14 +46,7 @@ async function start(
     rateLimits,
     logStream,
   })
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/auth/register',
-    payload: { email: 'ana@exemplo.com', password: 'senha-boa-123' },
-  })
-  const sid = sessionCookieFrom(response.headers['set-cookie'])
-  if (!sid) throw new Error('cadastro sem cookie')
-  cookie = sid
+  cookie = await signUpForTest(app, db, 'ana@exemplo.com', 'senha-boa-123')
 }
 
 function get(url: string, withSession = true) {

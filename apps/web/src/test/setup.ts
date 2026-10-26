@@ -4,6 +4,7 @@ import { cleanup } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, beforeEach } from 'vitest'
 import { resetServerWake, waitForServer } from '../api/server-wake'
+import { forgetFragmentTokens } from '../features/auth/token-fragment'
 import { setSettingsOpen } from '../features/settings/settings-open'
 import { resetSettingsStore } from '../features/settings/settings-store'
 
@@ -29,4 +30,5 @@ beforeEach(async () => {
 
 afterEach(() => {
   cleanup()
+  forgetFragmentTokens()
 })

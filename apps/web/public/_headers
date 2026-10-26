@@ -14,3 +14,11 @@
 # Versão publicada do site, lida pelo workflow de publicação (FR-023).
 /version.json
   Cache-Control: no-store
+
+# Os links de confirmação e de recuperação trazem o token no fragmento; sem origem enviada a outros
+# sites (feature 035).
+/verificar-email
+  Referrer-Policy: no-referrer
+
+/redefinir-senha
+  Referrer-Policy: no-referrer

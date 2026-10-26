@@ -3,7 +3,10 @@ import { buildApp } from '../app'
 import { loadConfig } from '../config'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
+import { hashPassword } from '../lib/password'
+import { insertIfEmailFree } from '../modules/auth/users.repository'
 import type { RateLimits } from '../modules/rate-limit/limits'
+import type { EmailSender } from '../modules/email/types'
 import type { PuzzleSource } from '../sources/types'
 
 export function buildTestApp(options: {
@@ -11,6 +14,8 @@ export function buildTestApp(options: {
   clock: Clock
   rateLimits?: RateLimits
   puzzleSources?: readonly PuzzleSource[]
+  /** Envio de e-mail falso; sem ele os testes usam o log e nunca a rede. */
+  emailSender?: EmailSender
   /** Com um destino de log, o nível sobe para `error` para o teste ler o que foi registrado. */
   logStream?: NodeJS.WritableStream
   /** Variáveis extras para a configuração (por exemplo, `PROXY_SECRET`). */
@@ -39,4 +44,23 @@ export function sessionCookieFrom(setCookie: string | string[] | undefined): str
     if (match?.[1]) return match[1]
   }
   return undefined
+}
+
+// Conta pronta e sessão aberta para os testes que não tratam do cadastro (que agora só cria a
+// conta depois de confirmar o e-mail, feature 035): grava o usuário direto e entra pelo login.
+export async function signUpForTest(
+  app: FastifyInstance,
+  database: Database,
+  email: string,
+  password: string,
+): Promise<string> {
+  await insertIfEmailFree(database, { email, passwordHash: await hashPassword(password) })
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { email, password },
+  })
+  const sid = sessionCookieFrom(response.headers['set-cookie'])
+  if (!sid) throw new Error('login sem cookie')
+  return sid
 }

@@ -56,6 +56,18 @@ export async function endSessionByTokenHash(
     .where(and(eq(sessions.tokenHash, tokenHash), isNull(sessions.endedAt)))
 }
 
+// Encerra todas as sessões abertas do usuário (redefinição de senha, feature 035).
+export async function endAllSessionsForUser(
+  db: Executor,
+  userId: string,
+  now: Date,
+): Promise<void> {
+  await db
+    .update(sessions)
+    .set({ endedAt: now })
+    .where(and(eq(sessions.userId, userId), isNull(sessions.endedAt)))
+}
+
 const ENDED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 
 // Sessão vencida não volta a valer; a encerrada fica 7 dias e sai. O banco garante

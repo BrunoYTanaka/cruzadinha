@@ -20,9 +20,6 @@ export type OpenedSession = { user: AuthUser; sessionToken: string; expiresAt: D
 
 export type Throttled = { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
-export type RegisterResult =
-  ({ ok: true } & OpenedSession) | { ok: false; reason: 'registration-failed' }
-
 export type CreateAccountResult =
   { ok: true; user: AuthUser } | { ok: false; reason: 'email-taken' }
 
@@ -34,8 +31,6 @@ export type Authenticated = { user: AuthUser; renewedExpiresAt?: Date }
 export type AuthService = {
   // Conta a tentativa de cadastro do endereço antes de olhar o corpo (FR-028).
   admitRegistration(address: string): Promise<{ ok: true } | Throttled>
-  // Cadastro aberto (feature 013): cria a conta e abre a sessão; quem chama confere a chave.
-  register(input: { email: string; password: string }): Promise<RegisterResult>
   // Conta criada pelo autor na linha de comando: sem sessão e sem limite de tentativas (FR-019).
   createAccount(input: { email: string; password: string }): Promise<CreateAccountResult>
   login(input: { email: string; password: string; address: string }): Promise<LoginResult>
@@ -47,8 +42,6 @@ export type AuthService = {
 
 // Valor do cookie: 32 bytes em base64url. Outro formato nem chega ao banco.
 const SESSION_TOKEN = /^[A-Za-z0-9_-]{43}$/
-
-class EmailTaken extends Error {}
 
 export type AuthDeps = {
   db: Database
@@ -92,25 +85,6 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       }
       await rateLimiter.record([key], now)
       return { ok: true }
-    },
-
-    async register({ email, password }) {
-      // O hash fica fora da transação, para não segurar conexão durante o argon2.
-      const passwordHash = await hashPassword(password)
-      const now = clock()
-
-      try {
-        return await db.transaction(async (tx): Promise<RegisterResult> => {
-          const user = await insertIfEmailFree(tx, { email, passwordHash })
-          if (!user) throw new EmailTaken()
-          const session = await openSession(tx, { id: user.userId, email: user.email }, now)
-          return { ok: true, ...session }
-        })
-      } catch (error) {
-        // A exceção desfaz a transação: nada fica gravado.
-        if (error instanceof EmailTaken) return { ok: false, reason: 'registration-failed' }
-        throw error
-      }
     },
 
     async createAccount({ email, password }) {

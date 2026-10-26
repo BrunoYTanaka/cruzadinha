@@ -1,6 +1,7 @@
 import SwaggerParser from '@apidevtools/swagger-parser'
 import {
   authResponseSchema,
+  forgotPasswordRequestSchema,
   puzzleResponseSchema,
   libraryResponseSchema,
   loginRequestSchema,
@@ -8,7 +9,10 @@ import {
   puzzleSourceIdSchema,
   registerRequestSchema,
   registrationStatusSchema,
+  resendVerificationRequestSchema,
+  resetPasswordRequestSchema,
   saveProgressRequestSchema,
+  verifyEmailRequestSchema,
 } from '@cruzadinha/shared'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
@@ -93,9 +97,13 @@ const catalog = [
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
   'GET /api/settings',
+  'POST /api/auth/forgot-password',
   'POST /api/auth/login',
   'POST /api/auth/logout',
   'POST /api/auth/register',
+  'POST /api/auth/resend-verification',
+  'POST /api/auth/reset-password',
+  'POST /api/auth/verify-email',
   'POST /api/progress/{puzzleId}/reset',
   'PUT /api/progress/{puzzleId}',
   'PUT /api/settings',
@@ -176,16 +184,20 @@ describe('documento OpenAPI', () => {
     }
   })
 
-  it.each(['/api/auth/register', '/api/auth/login'])(
-    'POST %s tem corpo com exemplo',
-    async (path) => {
-      app = build()
-      const doc = await documentOf(app)
-      const media = operation(doc, 'post', path).requestBody?.content['application/json']
+  it.each([
+    '/api/auth/register',
+    '/api/auth/login',
+    '/api/auth/resend-verification',
+    '/api/auth/verify-email',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password',
+  ])('POST %s tem corpo com exemplo', async (path) => {
+    app = build()
+    const doc = await documentOf(app)
+    const media = operation(doc, 'post', path).requestBody?.content['application/json']
 
-      expect(media?.example ?? exampleOf(media?.schema)).toBeDefined()
-    },
-  )
+    expect(media?.example ?? exampleOf(media?.schema)).toBeDefined()
+  })
 
   it.each([
     ['/api/puzzles', 'a data'],
@@ -359,6 +371,10 @@ describe('documentação vinda das regras de validação', () => {
   it.each([
     ['/api/auth/register', registerRequestSchema],
     ['/api/auth/login', loginRequestSchema],
+    ['/api/auth/resend-verification', resendVerificationRequestSchema],
+    ['/api/auth/verify-email', verifyEmailRequestSchema],
+    ['/api/auth/forgot-password', forgotPasswordRequestSchema],
+    ['/api/auth/reset-password', resetPasswordRequestSchema],
   ] as const)('o corpo de POST %s é o do schema Zod da rota', async (path, schema) => {
     app = build()
     const doc = await documentOf(app)

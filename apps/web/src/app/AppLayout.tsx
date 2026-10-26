@@ -11,6 +11,9 @@ import { useSettingsSync } from '../features/settings/settings-sync'
 import styles from './AppLayout.module.css'
 import { clearEnded, useSessionEnded } from './session-ended'
 
+// Telas de conta da feature 035, além do login e do cadastro.
+const ACCOUNT_PATHS = new Set(['/verificar-email', '/esqueci-a-senha', '/redefinir-senha'])
+
 export function AppLayout() {
   // `useSessionQuery` só consulta a sessão depois de o servidor acordar, para não competir com a
   // espera inicial; os loaders já preenchem o cache antes disso nas telas protegidas.
@@ -19,10 +22,12 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const onAuthPage = location.pathname === '/login' || location.pathname === '/cadastro'
-  // Quem sai do jogo para entrar ou cadastrar-se volta ao calendário na cruzada padrão (feature 031).
+  // Quem sai do jogo para entrar, cadastrar-se ou recuperar a senha volta ao calendário na cruzada
+  // padrão (feature 031).
+  const onAccountPage = onAuthPage || ACCOUNT_PATHS.has(location.pathname)
   useEffect(() => {
-    if (onAuthPage) clearRememberedSource()
-  }, [onAuthPage])
+    if (onAccountPage) clearRememberedSource()
+  }, [onAccountPage])
   const sessionEnded = useSessionEnded()
   const loginPath = buildLoginPath(location.pathname + location.search)
   // Configurações na conta (feature 021): liga para quem entrou, desliga para visitante.

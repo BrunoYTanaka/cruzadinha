@@ -64,6 +64,13 @@
       "when": 1793021643070,
       "tag": "0008_remove_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793025371540,
+      "tag": "0009_email_verification_and_recovery",
+      "breakpoints": true
     }
   ]
 }

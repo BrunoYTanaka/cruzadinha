@@ -25,6 +25,15 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, password 
 }
 
 describe('LoginPage', () => {
+  it('oferece o caminho para recuperar a senha', async () => {
+    mockApi({ 'GET /api/auth/me': noSession })
+    renderRoutes(routes, ['/login'])
+    expect(await screen.findByRole('link', { name: 'Esqueci a senha' })).toHaveAttribute(
+      'href',
+      '/esqueci-a-senha',
+    )
+  })
+
   it('mostra "E-mail ou senha incorretos." sem revelar o e-mail', async () => {
     mockApi({
       'GET /api/auth/me': noSession,

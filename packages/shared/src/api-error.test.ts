@@ -23,6 +23,14 @@ describe('apiErrorSchema', () => {
     expect(apiErrorCodeSchema.options).toContain('progress-completed')
   })
 
+  it('accepts the e-mail codes and the retryAfter seconds', () => {
+    expect(apiErrorCodeSchema.options).toContain('invalid-token')
+    expect(apiErrorCodeSchema.options).toContain('email-unavailable')
+    const error = { error: 'email-unavailable', message: 'x', retryAfter: 60 }
+    expect(apiErrorSchema.parse(error)).toEqual(error)
+    expect(apiErrorSchema.safeParse({ ...error, retryAfter: 0 }).success).toBe(false)
+  })
+
   it('rejects unknown codes and extra properties', () => {
     expect(apiErrorSchema.safeParse({ error: 'teapot', message: 'x' }).success).toBe(false)
     expect(
