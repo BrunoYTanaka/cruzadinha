@@ -7,6 +7,7 @@ import {
   isServerReady,
   resetServerWake,
   waitForServer,
+  whenServerReady,
 } from './server-wake'
 
 function json(status: number, body: unknown) {
@@ -128,5 +129,42 @@ describe('waitForServer', () => {
     await vi.advanceTimersByTimeAsync(WAKE_RETRY_MS)
     await assertion
     expect(isServerReady()).toBe(false)
+  })
+})
+
+describe('whenServerReady', () => {
+  it('resolves at once when the server is already ready', async () => {
+    await waitForServer({ fetch: vi.fn(async () => up()) })
+    await expect(whenServerReady()).resolves.toBeUndefined()
+  })
+
+  it('stays pending until waitForServer marks the server ready', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(down()).mockResolvedValueOnce(up())
+    let resolved = false
+    const waiting = whenServerReady().then(() => {
+      resolved = true
+    })
+    const wake = waitForServer({ fetch })
+    await vi.advanceTimersByTimeAsync(WAKE_RETRY_MS - 1)
+    expect(resolved).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    await wake
+    await waiting
+    expect(resolved).toBe(true)
+  })
+
+  it('rejects with AbortError when the signal aborts, and ignores a later wake-up', async () => {
+    const controller = new AbortController()
+    const waiting = whenServerReady(controller.signal)
+    controller.abort()
+    await expect(waiting).rejects.toMatchObject({ name: 'AbortError' })
+    await waitForServer({ fetch: vi.fn(async () => up()) })
+    expect(isServerReady()).toBe(true)
+  })
+
+  it('rejects without waiting when the signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    await expect(whenServerReady(controller.signal)).rejects.toMatchObject({ name: 'AbortError' })
   })
 })

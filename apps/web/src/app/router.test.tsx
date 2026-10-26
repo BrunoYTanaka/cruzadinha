@@ -6,6 +6,8 @@ import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../t
 import { createAppRoutes } from './router'
 
 const healthUp = () => jsonResponse(200, { status: 'ok', database: 'up' })
+const htmlDown = () =>
+  new Response('<html>acordando</html>', { status: 503, headers: { 'content-type': 'text/html' } })
 const withSession = () => jsonResponse(200, { user: aUser })
 
 function renderApp(path: string) {
@@ -86,4 +88,44 @@ describe('entrada do site com a espera do servidor', () => {
     await waitFor(() => expect(router.state.location.search).toBe('?outro=1'))
     expect(calls.filter((call) => call.key === 'GET /api/health')).toHaveLength(1)
   })
+
+  it.each(['/', '/dia/2026-10-01', '/jogo/abc', '/login', '/cadastro'])(
+    'com a API dormindo, %s só pede algo além da saúde depois de ela responder 200 e não mostra erro',
+    async (path) => {
+      let healthCalls = 0
+      const awake = () => healthCalls > 1
+      const { calls } = mockApi({
+        'GET /api/health': () => {
+          healthCalls += 1
+          return awake() ? healthUp() : jsonResponse(503, { error: 'service-unavailable' })
+        },
+        'GET /api/auth/me': () =>
+          awake() ? jsonResponse(401, { error: 'unauthenticated', message: 'x' }) : htmlDown(),
+        'GET /api/library': () => jsonResponse(200, { items: [] }),
+      })
+      const { router } = renderApp(path)
+      await waitFor(() => expect(awake()).toBe(true), { timeout: 5000 })
+      await waitFor(() => expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(true))
+      await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
+      expect(screen.queryByText('Algo deu errado')).not.toBeInTheDocument()
+      const firstOther = calls.findIndex((call) => call.key !== 'GET /api/health')
+      const lastHealth = calls.map((call) => call.key).lastIndexOf('GET /api/health')
+      expect(firstOther).toBeGreaterThan(lastHealth)
+    },
+    10000,
+  )
+
+  it('sair da tela durante a espera não deixa pedido de sessão pendente', async () => {
+    let awake = false
+    const { calls } = mockApi({
+      'GET /api/health': () =>
+        awake ? healthUp() : jsonResponse(503, { error: 'service-unavailable' }),
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+    })
+    const { router } = renderApp('/')
+    await router.navigate('/status')
+    awake = true
+    await new Promise((resolve) => setTimeout(resolve, 2_500))
+    expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
+  }, 8000)
 })

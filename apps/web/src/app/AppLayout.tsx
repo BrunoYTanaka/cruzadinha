@@ -1,23 +1,20 @@
-import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../components/Button'
 import { Notice } from '../components/Notice'
 import { buildLoginPath } from '../features/auth/redirect'
 import { clearRememberedSource } from '../features/library/source-choice'
-import { sessionQueryOptions, useLogoutMutation } from '../features/auth/useSession'
+import { useLogoutMutation, useSessionQuery } from '../features/auth/useSession'
 import { SettingsButton } from '../features/settings/SettingsButton'
 import { SettingsDialog } from '../features/settings/SettingsDialog'
 import { useSettingsSync } from '../features/settings/settings-sync'
-import { useServerReady } from '../features/status/useSlowServer'
 import styles from './AppLayout.module.css'
 import { clearEnded, useSessionEnded } from './session-ended'
 
 export function AppLayout() {
-  // Só consulta a sessão depois de o servidor acordar, para não competir com a espera inicial; os
-  // loaders já preenchem o cache antes disso nas telas protegidas.
-  const serverReady = useServerReady()
-  const session = useQuery({ ...sessionQueryOptions(), enabled: serverReady })
+  // `useSessionQuery` só consulta a sessão depois de o servidor acordar, para não competir com a
+  // espera inicial; os loaders já preenchem o cache antes disso nas telas protegidas.
+  const session = useSessionQuery()
   const logout = useLogoutMutation()
   const location = useLocation()
   const navigate = useNavigate()

@@ -3,6 +3,7 @@ import 'fake-indexeddb/auto'
 import { cleanup } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, beforeEach } from 'vitest'
+import { resetServerWake, waitForServer } from '../api/server-wake'
 import { setSettingsOpen } from '../features/settings/settings-open'
 import { resetSettingsStore } from '../features/settings/settings-store'
 
@@ -14,7 +15,13 @@ if (typeof HTMLCanvasElement !== 'undefined') {
 
 // IndexedDB vazio a cada teste (progresso de visitante, feature 013); as configurações (feature 021)
 // são relidas do armazenamento do teste.
-beforeEach(() => {
+// Por padrão o servidor está pronto (feature 032: a sessão só é pedida depois disso); os testes da
+// espera chamam `resetServerWake()`.
+beforeEach(async () => {
+  resetServerWake()
+  await waitForServer({
+    fetch: async () => Response.json({ status: 'ok', database: 'up' }, { status: 200 }),
+  })
   globalThis.indexedDB = new IDBFactory()
   resetSettingsStore()
   setSettingsOpen(false)

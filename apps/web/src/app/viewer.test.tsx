@@ -3,10 +3,17 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { libraryResponseSchema } from '@cruzadinha/shared'
 import { apiRequest } from '../api/client'
+import { resetServerWake, waitForServer } from '../api/server-wake'
 import { queryKeys } from '../api/query-keys'
 import { useViewer } from '../features/auth/useSession'
 import { apiError, jsonResponse, mockApi } from '../test/http'
-import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../test/render'
+import {
+  aUser,
+  makeQueryClient,
+  renderRoutes,
+  resetSessionHandlers,
+  serverIsReady,
+} from '../test/render'
 import { AppLayout } from './AppLayout'
 import { RouteError } from './RouteError'
 import { clearExpired, getSessionExpired } from './session-expired'
@@ -42,15 +49,64 @@ function routesFor(queryClient: ReturnType<typeof makeQueryClient>) {
 const withSession = () => jsonResponse(200, { user: aUser })
 const noSession = () => apiError(401, 'unauthenticated')
 
-beforeEach(() => {
+beforeEach(async () => {
+  clearExpired()
+  clearEnded()
+  resetServerWake()
+  await serverIsReady()
+})
+
+afterEach(() => {
+  resetServerWake()
+  resetSessionHandlers()
   clearExpired()
   clearEnded()
 })
 
-afterEach(() => {
-  resetSessionHandlers()
-  clearExpired()
-  clearEnded()
+describe('viewerLoader com a API dormindo (feature 032)', () => {
+  it('só pede a sessão depois da saúde e nunca mostra a tela de erro', async () => {
+    resetServerWake()
+    let healthCalls = 0
+    const healthy = () => healthCalls > 1
+    const { calls } = mockApi({
+      'GET /api/health': () => {
+        healthCalls += 1
+        return healthy()
+          ? jsonResponse(200, { status: 'ok', database: 'up' })
+          : apiError(503, 'service-unavailable')
+      },
+      'GET /api/auth/me': () => (healthy() ? noSession() : apiError(503, 'service-unavailable')),
+    })
+    const queryClient = makeQueryClient()
+    const gated = [
+      {
+        loader: async ({ request }: { request: Request }) => {
+          await waitForServer({ signal: request.signal })
+          return null
+        },
+        children: routesFor(queryClient),
+      },
+    ]
+    const { router } = renderRoutes(gated, ['/'], queryClient)
+    // A segunda tentativa de saúde sai 2 s depois (tempo real).
+    expect(await screen.findByText('é visitante', undefined, { timeout: 6000 })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+    const keys = calls.map((call) => call.key)
+    expect(keys.slice(0, 2)).toEqual(['GET /api/health', 'GET /api/health'])
+    expect(keys.indexOf('GET /api/auth/me')).toBeGreaterThan(keys.lastIndexOf('GET /api/health'))
+    expect(keys.filter((key) => key !== 'GET /api/health' && key !== 'GET /api/auth/me')).toEqual(
+      [],
+    )
+  }, 9000)
+
+  it('com o servidor já pronto pede a sessão na hora, sem consultar a saúde', async () => {
+    const { calls } = mockApi({ 'GET /api/auth/me': noSession })
+    const queryClient = makeQueryClient()
+    renderRoutes(routesFor(queryClient), ['/'], queryClient)
+    expect(await screen.findByText('é visitante')).toBeInTheDocument()
+    expect(calls.map((call) => call.key)).toEqual(['GET /api/auth/me'])
+  })
 })
 
 describe('viewerLoader e useViewer', () => {
