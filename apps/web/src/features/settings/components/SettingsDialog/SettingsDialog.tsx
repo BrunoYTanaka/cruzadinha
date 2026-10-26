@@ -1,12 +1,12 @@
 import { puzzleSourceIdSchema, puzzleSourceNames, type Settings } from '@cruzadinha/shared'
 import { useEffect, useId, useRef, type CSSProperties, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Button, buttonClass } from '../../../../shared/components/Button'
-import { Dialog } from '../../../../shared/components/Dialog'
-import { ThemeButton } from '../../../../shared/themes/ThemeButton'
+import { Button, buttonClass } from '../../../../shared/components/Button/Button'
+import { Dialog } from '../../../../shared/components/Dialog/Dialog'
+import { ThemeButton } from '../../../../shared/themes/ThemeButton/ThemeButton'
 import { buildLoginPath, useViewer } from '../../../session'
 import { loadSourceChoice } from '../../../library'
-import { Notice } from '../../../../shared/components/Notice'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { setSettingsOpen, useSettingsOpen } from '../../services/settings-open'
 import { useSettingsSyncStatus } from '../../services/settings-sync'
 import {
@@ -14,7 +14,7 @@ import {
   settingsDefaults,
   updateSettings,
   useSettings,
-} from '../../../../shared/services/settings-store'
+} from '../../../../shared/services/settings-store/settings-store'
 import styles from './SettingsDialog.module.css'
 
 const MAX_HELP = 99

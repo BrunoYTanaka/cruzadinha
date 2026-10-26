@@ -1,1 +1,0 @@
-export { ResendLink } from './ResendLink'

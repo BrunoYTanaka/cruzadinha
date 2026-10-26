@@ -15,7 +15,7 @@ import {
 import { activeWord } from '../../../../../domain/game/navigation'
 import { Board } from './Board'
 import { boardKeyToAction } from '../../../helpers/board-keys'
-import { ClueBar } from '../../clues/ClueBar'
+import { ClueBar } from '../../clues/ClueBar/ClueBar'
 
 function Harness({
   rows = LAYOUT5,

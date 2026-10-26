@@ -1,1 +1,1 @@
-export { ServerWake } from './components/ServerWake'
+export { ServerWake } from './components/ServerWake/ServerWake'

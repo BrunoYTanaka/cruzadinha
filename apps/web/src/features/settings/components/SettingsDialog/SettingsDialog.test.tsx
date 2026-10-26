@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { queryKeys } from '../../../../shared/services/api/query-keys'
+import { queryKeys } from '../../../../shared/services/api/query-keys/query-keys'
 import { AppLayout } from '../../../../app/AppLayout'
 import { expectNoA11yViolations } from '../../../../test/axe'
 import { apiError, jsonResponse, mockApi } from '../../../../test/http'
@@ -11,7 +11,7 @@ import {
   getSettings,
   settingsDefaults,
   updateSettings,
-} from '../../../../shared/services/settings-store'
+} from '../../../../shared/services/settings-store/settings-store'
 
 const routes = [
   {

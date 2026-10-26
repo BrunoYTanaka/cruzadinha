@@ -1,1 +1,0 @@
-export { BoardSizeReset } from './BoardSizeReset'

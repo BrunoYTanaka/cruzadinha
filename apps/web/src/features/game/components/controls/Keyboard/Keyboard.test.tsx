@@ -7,7 +7,7 @@ import { buildIndex } from '../../../../../domain/game/navigation'
 import { LAYOUT5, makePuzzle } from '../../../../../test/fixtures'
 import { Keyboard } from './Keyboard'
 import { ON_SCREEN_KEYBOARD_QUERY, useOnScreenKeyboard } from '../../../hooks/useOnScreenKeyboard'
-import { WordBar } from '../../clues/WordBar'
+import { WordBar } from '../../clues/WordBar/WordBar'
 
 afterEach(() => {
   vi.unstubAllGlobals()

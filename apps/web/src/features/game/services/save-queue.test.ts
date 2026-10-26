@@ -1,6 +1,6 @@
 import type { Progress, ProgressEnvelope, SaveProgressRequest } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiRequestError } from '../../../shared/services/api/client'
+import { ApiRequestError } from '../../../shared/services/api/client/client'
 import { aUser } from '../../../test/render'
 import { cellsFrom, makeProgress, PUZZLE_ID } from '../../../test/fixtures'
 import { createSaveQueue, outboxKey, type SaveFn, type SaveSnapshot } from './save-queue'

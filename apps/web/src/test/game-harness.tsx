@@ -1,7 +1,7 @@
 import { act, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
-import { queryKeys } from '../shared/services/api/query-keys'
+import { queryKeys } from '../shared/services/api/query-keys/query-keys'
 import { clearExpired } from '../features/session/services/session-expired'
 import { GamePage } from '../pages/game/GamePage'
 import { makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from './fixtures'

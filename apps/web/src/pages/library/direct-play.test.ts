@@ -1,8 +1,8 @@
 import type { LibraryItem } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { queryKeys } from '../../shared/services/api/query-keys'
-import { resetServerWake, waitForServer } from '../../shared/services/api/server-wake'
-import { updateSettings } from '../../shared/services/settings-store'
+import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
+import { resetServerWake, waitForServer } from '../../shared/services/api/server-wake/server-wake'
+import { updateSettings } from '../../shared/services/settings-store/settings-store'
 import {
   clearRememberedSource,
   rememberGameSource,

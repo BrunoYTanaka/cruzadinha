@@ -1,5 +1,9 @@
 import type { ThemeSetting } from '@cruzadinha/shared'
-import { getSettings, subscribeSettings, updateSettings } from '../../services/settings-store'
+import {
+  getSettings,
+  subscribeSettings,
+  updateSettings,
+} from '../../services/settings-store/settings-store'
 
 export type Theme = ThemeSetting
 

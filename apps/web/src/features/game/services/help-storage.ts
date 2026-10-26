@@ -1,6 +1,6 @@
 import { helpSchema } from '../../../domain/game/help-schema'
 import type { HelpSnapshot } from '../../../domain/game/reducer'
-import { readStorage, removeStorage, writeStorage } from '../../../shared/services/storage'
+import { readStorage, removeStorage, writeStorage } from '../../../shared/services/storage/storage'
 
 export function helpKey(userId: string, puzzleId: string): string {
   return `cruzadinha:help:${userId}:${puzzleId}`

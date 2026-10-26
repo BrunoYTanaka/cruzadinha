@@ -1,4 +1,4 @@
-import { getSettings, updateSettings } from '../../../shared/services/settings-store'
+import { getSettings, updateSettings } from '../../../shared/services/settings-store/settings-store'
 
 // Tamanho da célula do tabuleiro no computador. Regra de layout, não de jogo: fica fora do
 // `game-logic`, em funções puras testadas sem navegador.

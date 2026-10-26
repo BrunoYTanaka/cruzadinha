@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetServerWake } from '../shared/services/api/server-wake'
+import { resetServerWake } from '../shared/services/api/server-wake/server-wake'
 import { jsonResponse, mockApi } from '../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../test/render'
 import { createAppRoutes } from './router'

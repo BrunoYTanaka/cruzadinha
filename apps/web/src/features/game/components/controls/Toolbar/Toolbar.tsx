@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { buttonClass } from '../../../../../shared/components/Button'
-import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time'
+import { buttonClass } from '../../../../../shared/components/Button/Button'
+import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time/time'
 import styles from './Toolbar.module.css'
 
 type ToolbarProps = {

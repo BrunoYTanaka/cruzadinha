@@ -1,5 +1,5 @@
 import type { GameAction } from '../../../domain/game/reducer'
-import type { BoardKey } from '../components/board/Board'
+import type { BoardKey } from '../components/board/Board/Board'
 
 // Do que o tabuleiro captura do teclado para a ação do reducer.
 export function boardKeyToAction(key: BoardKey): GameAction {

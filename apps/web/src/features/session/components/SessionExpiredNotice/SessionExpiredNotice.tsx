@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { clearExpired, useSessionExpired } from '../../services/session-expired'
-import { Notice } from '../../../../shared/components/Notice'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { ReloginDialog } from '../ReloginDialog/ReloginDialog'
 
 // Aviso que não bloqueia: aparece com o tabuleiro aberto quando a sessão expira e oferece o login

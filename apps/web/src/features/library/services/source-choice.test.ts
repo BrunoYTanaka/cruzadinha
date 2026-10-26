@@ -5,7 +5,7 @@ import {
   getSettings,
   resetSettingsStore,
   updateSettings,
-} from '../../../shared/services/settings-store'
+} from '../../../shared/services/settings-store/settings-store'
 import {
   DEFAULT_SOURCE,
   clearRememberedSource,

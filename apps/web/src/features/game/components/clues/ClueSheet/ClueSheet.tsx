@@ -1,6 +1,6 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
-import { Button } from '../../../../../shared/components/Button'
-import { Dialog } from '../../../../../shared/components/Dialog'
+import { Button } from '../../../../../shared/components/Button/Button'
+import { Dialog } from '../../../../../shared/components/Dialog/Dialog'
 import type { StrikeMode } from '../../../../../domain/game/clue-strike'
 import { ClueList } from '../ClueList/ClueList'
 import styles from './ClueSheet.module.css'

@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
-import { Button } from '../../../../../shared/components/Button'
-import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden'
-import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time'
+import { Button } from '../../../../../shared/components/Button/Button'
+import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
+import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time/time'
 import styles from './ReadModeBanner.module.css'
 
 type ReadModeBannerProps = {

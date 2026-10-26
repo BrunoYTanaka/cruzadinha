@@ -1,6 +1,6 @@
 import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Link } from 'react-router'
-import { formatElapsed, spokenElapsed } from '../../../../shared/helpers/time'
+import { formatElapsed, spokenElapsed } from '../../../../shared/helpers/time/time'
 import type { CalendarDay } from '../../helpers/calendar'
 import styles from '../Calendar/Calendar.module.css'
 

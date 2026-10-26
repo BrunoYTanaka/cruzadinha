@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden'
+import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import type { SaveState } from '../../../services/save-queue'
 import styles from './SaveStatus.module.css'
 

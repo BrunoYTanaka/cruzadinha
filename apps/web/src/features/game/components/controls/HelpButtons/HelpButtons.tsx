@@ -1,5 +1,5 @@
-import { Pill } from '../../../../../shared/components/Pill'
-import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden'
+import { Pill } from '../../../../../shared/components/Pill/Pill'
+import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import type { GameLimits, HelpResult } from '../../../../../domain/game/state'
 import styles from './HelpButtons.module.css'
 

@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { replace, type LoaderFunctionArgs } from 'react-router'
-import { queryKeys } from '../../shared/services/api/query-keys'
-import { whenServerReady } from '../../shared/services/api/server-wake'
+import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
+import { whenServerReady } from '../../shared/services/api/server-wake/server-wake'
 import { sessionQueryOptions, toViewer, viewerKey } from '../../features/session'
 import {
   isNoPuzzle,
@@ -11,8 +11,8 @@ import {
   type TodayCard,
   libraryFor,
 } from '../../features/library'
-import { getSettings } from '../../shared/services/settings-store'
-import { todayInBrasilia } from '../../shared/helpers/dates'
+import { getSettings } from '../../shared/services/settings-store/settings-store'
+import { todayInBrasilia } from '../../shared/helpers/dates/dates'
 
 // "Ir direto ao jogo" (feature 021, FR-013 e FR-014): ao abrir o endereço raiz, leva à cruzada de
 // hoje da cruzada padrão, ou fica no calendário com o motivo.

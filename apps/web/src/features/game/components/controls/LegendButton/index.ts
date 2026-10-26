@@ -1,1 +1,0 @@
-export { LegendButton } from './LegendButton'

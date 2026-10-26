@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router'
-import { register, resendVerification } from '../../../../shared/services/api/auth'
-import { ApiRequestError } from '../../../../shared/services/api/client'
-import { Button } from '../../../../shared/components/Button'
-import { Field } from '../../../../shared/components/Field'
-import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle'
+import { register, resendVerification } from '../../../../shared/services/api/auth/auth'
+import { ApiRequestError } from '../../../../shared/services/api/client/client'
+import { Button } from '../../../../shared/components/Button/Button'
+import { Field } from '../../../../shared/components/Field/Field'
+import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import {
   authMessages,

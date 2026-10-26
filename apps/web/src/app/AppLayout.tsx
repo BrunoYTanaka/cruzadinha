@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
-import { Button, buttonClass } from '../shared/components/Button'
-import { Notice } from '../shared/components/Notice'
+import { Button, buttonClass } from '../shared/components/Button/Button'
+import { Notice } from '../shared/components/Notice/Notice'
 import {
   buildLoginPath,
   useLogoutMutation,

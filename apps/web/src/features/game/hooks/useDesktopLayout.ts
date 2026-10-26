@@ -1,4 +1,4 @@
-import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery/useMediaQuery'
 import { useOnScreenKeyboard } from './useOnScreenKeyboard'
 
 // Mesmo limite em que o CSS da feature 010 põe as dicas ao lado do tabuleiro.

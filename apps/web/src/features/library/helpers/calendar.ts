@@ -6,7 +6,7 @@ import {
   parseIsoDate,
   toIsoDate,
   type YearMonth,
-} from '../../../shared/helpers/dates'
+} from '../../../shared/helpers/dates/dates'
 
 // Situação de um dia no calendário (data-model.md, seção 3).
 export type DayState =

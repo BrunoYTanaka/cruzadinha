@@ -9,9 +9,9 @@ import {
   useLoginMutation,
   useSessionQuery,
 } from '../../../session'
-import { Button } from '../../../../shared/components/Button'
-import { Field } from '../../../../shared/components/Field'
-import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle'
+import { Button } from '../../../../shared/components/Button/Button'
+import { Field } from '../../../../shared/components/Field/Field'
+import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { useRegistration } from '../../hooks/useRegistration'
 

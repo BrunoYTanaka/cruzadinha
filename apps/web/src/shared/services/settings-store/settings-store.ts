@@ -1,6 +1,6 @@
 import { defaultSettings, parseSettings, type Settings } from '@cruzadinha/shared'
 import { useSyncExternalStore } from 'react'
-import { getServerClockOffsetMs } from '../api/client'
+import { getServerClockOffsetMs } from '../api/client/client'
 import { config } from '../config/config'
 import { readStorage, writeStorage } from '../storage/storage'
 

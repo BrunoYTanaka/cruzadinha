@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import type { LoaderFunction } from 'react-router'
-import { whenServerReady } from '../../../shared/services/api/server-wake'
+import { whenServerReady } from '../../../shared/services/api/server-wake/server-wake'
 import { sessionQueryOptions } from '../hooks/useSession'
 
 // Garante que a sessão foi consultada antes das telas (`null` = visitante, feature 013). Nenhuma

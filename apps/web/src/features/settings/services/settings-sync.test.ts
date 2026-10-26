@@ -1,6 +1,6 @@
 import type { SaveSettingsRequest, SettingsEnvelope } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiRequestError } from '../../../shared/services/api/client'
+import { ApiRequestError } from '../../../shared/services/api/client/client'
 import { createSettingsSync, type SettingsSync } from './settings-sync'
 import {
   getSettingsRecord,
@@ -8,7 +8,7 @@ import {
   settingsDefaults,
   subscribeSettings,
   updateSettings,
-} from '../../../shared/services/settings-store'
+} from '../../../shared/services/settings-store/settings-store'
 
 type Api = {
   get: ReturnType<typeof vi.fn<() => Promise<SettingsEnvelope>>>

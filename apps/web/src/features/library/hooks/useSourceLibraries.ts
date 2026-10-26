@@ -6,8 +6,8 @@ import {
   type PuzzleSourceId,
 } from '@cruzadinha/shared'
 import { useQueries, type UseQueryResult } from '@tanstack/react-query'
-import { getLibrary } from '../../../shared/services/api/library'
-import { queryKeys } from '../../../shared/services/api/query-keys'
+import { getLibrary } from '../../../shared/services/api/library/library'
+import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 import { useViewer, viewerKey, type Viewer } from '../../session'
 import { mergeGuestLibrary, guestStore } from '../../guest'
 

@@ -1,10 +1,10 @@
 import type { AuthResponse, User } from '@cruzadinha/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { getMe, login, logout } from '../../../shared/services/api/auth'
-import { queryKeys } from '../../../shared/services/api/query-keys'
+import { getMe, login, logout } from '../../../shared/services/api/auth/auth'
+import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 import { clearEnded } from '../services/session-ended'
-import { useServerReady } from '../../../shared/hooks/useSlowServer'
+import { useServerReady } from '../../../shared/hooks/useSlowServer/useSlowServer'
 
 // `null` é visitante (sem sessão), feature 013.
 export function sessionQueryOptions() {

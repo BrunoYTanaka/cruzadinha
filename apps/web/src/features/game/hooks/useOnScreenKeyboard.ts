@@ -1,4 +1,4 @@
-import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery/useMediaQuery'
 
 // O teclado na tela aparece com ponteiro grosseiro (toque) ou em tela estreita; um teclado físico
 // continua funcionando em qualquer caso.

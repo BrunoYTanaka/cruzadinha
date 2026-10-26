@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useLoaderData } from 'react-router'
-import { ApiRequestError } from '../../shared/services/api/client'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState'
+import { ApiRequestError } from '../../shared/services/api/client/client'
+import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
 import { directPlayMessage, isDirectPlayData } from './direct-play'
-import { Notice } from '../../shared/components/Notice'
-import { ResizeHandle, type ResizeHandleProps } from '../../shared/components/ResizeHandle'
-import { addMonths, todayInBrasilia } from '../../shared/helpers/dates'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
+import { Notice } from '../../shared/components/Notice/Notice'
+import {
+  ResizeHandle,
+  type ResizeHandleProps,
+} from '../../shared/components/ResizeHandle/ResizeHandle'
+import { addMonths, todayInBrasilia } from '../../shared/helpers/dates/dates'
+import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { useViewer } from '../../features/session'
-import { useMediaQuery } from '../../shared/hooks/useMediaQuery'
+import { useMediaQuery } from '../../shared/hooks/useMediaQuery/useMediaQuery'
 import {
   buildMonth,
   compareMonths,

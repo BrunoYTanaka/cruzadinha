@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import { queryKeys } from '../../shared/services/api/query-keys'
+import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
 import { LoginPage } from './LoginPage'

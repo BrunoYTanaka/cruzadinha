@@ -1,7 +1,7 @@
-export { Calendar } from './components/Calendar'
-export { LibraryLegend } from './components/LibraryLegend'
-export { SourceTabs } from './components/SourceTabs'
-export { TodayCards } from './components/TodayCards'
+export { Calendar } from './components/Calendar/Calendar'
+export { LibraryLegend } from './components/LibraryLegend/LibraryLegend'
+export { SourceTabs } from './components/SourceTabs/SourceTabs'
+export { TodayCards } from './components/TodayCards/TodayCards'
 export { buildMonth, compareMonths, currentMonth, firstNavigableMonth } from './helpers/calendar'
 export {
   clearSourceDown,

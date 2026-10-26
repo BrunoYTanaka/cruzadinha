@@ -8,10 +8,14 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import { ApiRequestError } from '../../../shared/services/api/client'
-import { getProgress, resetProgress, saveProgress } from '../../../shared/services/api/progress'
-import { config } from '../../../shared/services/config'
-import { removeStorage } from '../../../shared/services/storage'
+import { ApiRequestError } from '../../../shared/services/api/client/client'
+import {
+  getProgress,
+  resetProgress,
+  saveProgress,
+} from '../../../shared/services/api/progress/progress'
+import { config } from '../../../shared/services/config/config'
+import { removeStorage } from '../../../shared/services/storage/storage'
 import { struckWords, type StrikeMode } from '../../../domain/game/clue-strike'
 import { isSolved } from '../../../domain/game/completion'
 import type { GuestProgress } from '../../../domain/guest/guest-progress'
@@ -19,7 +23,7 @@ import { createGame, type GameAction, type HelpSnapshot } from '../../../domain/
 import type { GameLimits, GameState } from '../../../domain/game/state'
 import type { GuestSaveQueueOptions, GuestStore } from '../../guest'
 import { useSettingsOpen } from '../../settings'
-import { useSettings } from '../../../shared/services/settings-store'
+import { useSettings } from '../../../shared/services/settings-store/settings-store'
 import { clearHelp, loadHelp, saveHelp } from '../services/help-storage'
 import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from '../services/save-queue'
 import { useClock } from './useClock'

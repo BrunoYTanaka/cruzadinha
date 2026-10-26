@@ -1,8 +1,8 @@
 import { puzzleSourceNames } from '@cruzadinha/shared'
 import { Link, useParams } from 'react-router'
-import { ApiRequestError } from '../../shared/services/api/client'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
+import { ApiRequestError } from '../../shared/services/api/client/client'
+import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
+import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { formatDate, GameScreen, useGameData } from '../../features/game'
 import { viewerKey } from '../../features/session'
 

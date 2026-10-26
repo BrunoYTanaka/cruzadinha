@@ -1,6 +1,6 @@
 import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Fragment, type ReactNode } from 'react'
-import { Button } from '../../../../shared/components/Button'
+import { Button } from '../../../../shared/components/Button/Button'
 import type { MonthView } from '../../helpers/calendar'
 import styles from './Calendar.module.css'
 import { DayCell, MONTH_NAMES } from '../DayCell/DayCell'

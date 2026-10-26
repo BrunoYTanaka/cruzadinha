@@ -2,9 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { libraryResponseSchema } from '@cruzadinha/shared'
-import { apiRequest } from '../../../shared/services/api/client'
-import { resetServerWake, waitForServer } from '../../../shared/services/api/server-wake'
-import { queryKeys } from '../../../shared/services/api/query-keys'
+import { apiRequest } from '../../../shared/services/api/client/client'
+import {
+  resetServerWake,
+  waitForServer,
+} from '../../../shared/services/api/server-wake/server-wake'
+import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 import { useViewer } from '../hooks/useSession'
 import { apiError, jsonResponse, mockApi } from '../../../test/http'
 import {

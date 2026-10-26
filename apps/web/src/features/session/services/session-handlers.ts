@@ -1,7 +1,7 @@
 import type { AuthResponse } from '@cruzadinha/shared'
 import type { QueryClient } from '@tanstack/react-query'
-import { setUnauthenticatedHandler } from '../../../shared/services/api/client'
-import { queryKeys } from '../../../shared/services/api/query-keys'
+import { setUnauthenticatedHandler } from '../../../shared/services/api/client/client'
+import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 import { markEnded } from './session-ended'
 import { markExpired } from './session-expired'
 

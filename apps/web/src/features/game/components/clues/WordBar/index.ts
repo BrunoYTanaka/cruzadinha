@@ -1,1 +1,0 @@
-export { WordBar } from './WordBar'

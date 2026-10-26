@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resetSettingsStore } from '../../../shared/services/settings-store'
+import { resetSettingsStore } from '../../../shared/services/settings-store/settings-store'
 import {
   cellFor,
   cellFromDrag,

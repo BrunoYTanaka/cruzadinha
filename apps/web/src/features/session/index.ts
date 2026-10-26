@@ -1,4 +1,4 @@
-export { SessionExpiredNotice } from './components/SessionExpiredNotice'
+export { SessionExpiredNotice } from './components/SessionExpiredNotice/SessionExpiredNotice'
 export {
   authMessages,
   emailRequestErrorMessage,

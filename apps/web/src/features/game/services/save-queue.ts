@@ -4,9 +4,9 @@ import {
   type ProgressEnvelope,
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
-import { ApiRequestError, getServerClockOffsetMs } from '../../../shared/services/api/client'
+import { ApiRequestError, getServerClockOffsetMs } from '../../../shared/services/api/client/client'
 import type { SaveQueue, SaveSnapshot, SaveState } from '../../../domain/game/save-types'
-import { readStorage, removeStorage, writeStorage } from '../../../shared/services/storage'
+import { readStorage, removeStorage, writeStorage } from '../../../shared/services/storage/storage'
 
 export type SaveFn = (
   puzzleId: string,

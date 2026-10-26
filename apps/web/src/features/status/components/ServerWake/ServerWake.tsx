@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { WAKE_NOTICE_DELAY_MS } from '../../../../shared/services/api/server-wake'
-import { LoadingState } from '../../../../shared/components/ErrorState'
-import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery'
+import { WAKE_NOTICE_DELAY_MS } from '../../../../shared/services/api/server-wake/server-wake'
+import { LoadingState } from '../../../../shared/components/ErrorState/ErrorState'
+import { useMediaQuery } from '../../../../shared/hooks/useMediaQuery/useMediaQuery'
 import styles from './ServerWake.module.css'
 
 type ServerWakeProps = {

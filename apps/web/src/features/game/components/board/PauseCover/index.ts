@@ -1,1 +1,0 @@
-export { PauseCover } from './PauseCover'

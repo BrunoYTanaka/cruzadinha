@@ -1,1 +1,0 @@
-export { LibraryLegend } from './LibraryLegend'

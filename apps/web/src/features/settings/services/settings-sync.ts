@@ -1,10 +1,10 @@
 import { parseSettings, type SaveSettingsRequest, type SettingsEnvelope } from '@cruzadinha/shared'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
-import { ApiRequestError } from '../../../shared/services/api/client'
+import { ApiRequestError } from '../../../shared/services/api/client/client'
 import {
   getSettings as fetchSettings,
   saveSettings as sendSettings,
-} from '../../../shared/services/api/settings'
+} from '../../../shared/services/api/settings/settings'
 import { useViewer } from '../../session'
 import {
   getSettingsRecord,
@@ -12,7 +12,7 @@ import {
   settingsDefaults,
   subscribeSettings,
   type SettingsRecord,
-} from '../../../shared/services/settings-store'
+} from '../../../shared/services/settings-store/settings-store'
 
 // Cópia das configurações na conta (feature 021). O aparelho é a versão em uso; a conta recebe as
 // mudanças da pessoa (agrupadas) e as entrega a outros aparelhos. Nada aqui bloqueia o site: uma

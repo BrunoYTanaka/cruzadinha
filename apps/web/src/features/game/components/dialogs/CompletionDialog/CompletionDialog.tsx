@@ -1,8 +1,8 @@
 import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Button, buttonClass } from '../../../../../shared/components/Button'
-import { Dialog } from '../../../../../shared/components/Dialog'
-import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time'
+import { Button, buttonClass } from '../../../../../shared/components/Button/Button'
+import { Dialog } from '../../../../../shared/components/Dialog/Dialog'
+import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time/time'
 import styles from './CompletionDialog.module.css'
 
 type CompletionDialogProps = {
