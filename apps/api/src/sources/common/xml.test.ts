@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { readFixture as fixture } from './fixtures'
+import { readFixture as fixture } from '../cruzadaonline/fixtures'
 import { readXml } from './xml'
 
 type Node = Record<string, unknown>

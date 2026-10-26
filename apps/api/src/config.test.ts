@@ -213,3 +213,63 @@ describe('loadSeedConfig', () => {
     expect(() => loadSeedConfig({})).toThrow('SEED_USER_EMAIL: obrigatória')
   })
 })
+
+describe('loadConfig com PROXY_SECRET obrigatório em produção', () => {
+  const production = { DATABASE_URL: databaseUrl, NODE_ENV: 'production' }
+  const require = { requireProxySecret: true }
+
+  function failure(env: Record<string, string | undefined>): string {
+    try {
+      loadConfig(env, require)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+    throw new Error('loadConfig did not fail')
+  }
+
+  it.each([undefined, ''])('refuses production when PROXY_SECRET is %j', (value) => {
+    expect(failure({ ...production, PROXY_SECRET: value })).toContain(
+      'PROXY_SECRET: obrigatório em produção',
+    )
+  })
+
+  it('starts in production with the secret', () => {
+    const secret = 'S'.repeat(32)
+    expect(loadConfig({ ...production, PROXY_SECRET: secret }, require).proxySecret).toBe(secret)
+  })
+
+  it.each(['development', 'test'])('starts in %s without the secret', (nodeEnv) => {
+    expect(() =>
+      loadConfig({ DATABASE_URL: databaseUrl, NODE_ENV: nodeEnv }, require),
+    ).not.toThrow()
+  })
+
+  it('does not require the secret without the option (author CLI)', () => {
+    expect(() => loadConfig(production)).not.toThrow()
+  })
+
+  it('accepts ALLOW_MISSING_PROXY_SECRET=true in production', () => {
+    expect(() =>
+      loadConfig({ ...production, ALLOW_MISSING_PROXY_SECRET: 'true' }, require),
+    ).not.toThrow()
+  })
+
+  it.each([undefined, '', 'false'])(
+    'still refuses when ALLOW_MISSING_PROXY_SECRET is %j',
+    (value) => {
+      expect(failure({ ...production, ALLOW_MISSING_PROXY_SECRET: value })).toContain(
+        'PROXY_SECRET',
+      )
+    },
+  )
+
+  it('rejects an ALLOW_MISSING_PROXY_SECRET that is not true or false', () => {
+    expect(failure({ ...production, ALLOW_MISSING_PROXY_SECRET: 'talvez' })).toContain(
+      'ALLOW_MISSING_PROXY_SECRET: deve ser true ou false',
+    )
+  })
+
+  it('never echoes the secret in the message', () => {
+    expect(failure({ ...production, PROXY_SECRET: 'SEGREDO' })).not.toContain('SEGREDO')
+  })
+})

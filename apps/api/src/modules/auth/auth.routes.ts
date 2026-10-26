@@ -52,7 +52,6 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
       return sendError(reply, 400, 'invalid-input', invalidFields(parsed.error.issues))
     }
 
-    // O `inviteCode` do site anterior é aceito pelo schema e ignorado aqui.
     const result = await auth.register({ email: parsed.data.email, password: parsed.data.password })
     if (!result.ok) return sendError(reply, 409, 'registration-failed')
     setSessionCookie(reply, result.sessionToken, result.expiresAt, clock(), config.nodeEnv)

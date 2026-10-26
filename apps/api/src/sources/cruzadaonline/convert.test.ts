@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { convertCrosswordCompiler } from './convert'
 import { readFixture } from './fixtures'
-import { readXml } from './xml'
+import { readXml } from '../common/xml'
 
 const DATE = '2026-10-16'
 

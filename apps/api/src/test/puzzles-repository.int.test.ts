@@ -6,6 +6,7 @@ import {
   existingDates,
   findPuzzle,
   findPuzzleById,
+  findPuzzleGridById,
   insertPuzzleIfAbsent,
 } from '../modules/puzzles/puzzles.repository'
 import { okResult } from './fake-source'
@@ -32,7 +33,18 @@ describe('repositório de puzzles', () => {
     expect((await findPuzzleById(db, saved.puzzleId))?.puzzle.date).toBe('2026-10-12')
   })
 
+  it('lê só a grade, igual à do puzzle, sem tocar na solução', async () => {
+    const { puzzle, solution } = okResult('2026-10-12')
+    const saved = await insertPuzzleIfAbsent(db, { puzzle, solution })
+    // Uma solução que não passa no Zod só quebraria uma leitura que a trouxesse.
+    await db.execute(sql`UPDATE puzzles SET solution = '"inválida"'::jsonb`)
+
+    expect(await findPuzzleGridById(db, saved.puzzleId)).toEqual(puzzle.grid)
+    await expect(findPuzzleById(db, saved.puzzleId)).rejects.toThrow('puzzle guardado inválido')
+  })
+
   it('devolve undefined para data ou id ausentes', async () => {
+    expect(await findPuzzleGridById(db, '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a')).toBeUndefined()
     expect(await findPuzzle(db, key('2026-10-12'))).toBeUndefined()
     expect(await findPuzzleById(db, '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a')).toBeUndefined()
   })

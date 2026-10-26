@@ -66,6 +66,12 @@ const envSchema = z.object({
     (value) => (value === '' ? undefined : value),
     z.enum(['true', 'false'], { error: 'deve ser true ou false' }).default('false'),
   ),
+  // Saída para quem roda a imagem de produção sem o repasse do site, como o `docker compose` local.
+  // Só vale com `NODE_ENV=production`; no Render ela não existe.
+  ALLOW_MISSING_PROXY_SECRET: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.enum(['true', 'false'], { error: 'deve ser true ou false' }).default('false'),
+  ),
   // Commit publicado, mostrado no /api/health. No Render vem de RENDER_GIT_COMMIT.
   RELEASE_COMMIT: commitSchema,
   RENDER_GIT_COMMIT: commitSchema,
@@ -90,7 +96,15 @@ export type ServerConfig = Readonly<{
   registrationEnabled: boolean
 }>
 
-export function loadConfig(env: Record<string, string | undefined>): ServerConfig {
+export type LoadConfigOptions = {
+  /** O servidor exige `PROXY_SECRET` em produção; a linha de comando do autor não. */
+  requireProxySecret?: boolean
+}
+
+export function loadConfig(
+  env: Record<string, string | undefined>,
+  options: LoadConfigOptions = {},
+): ServerConfig {
   const result = envSchema.safeParse(env)
   if (!result.success) {
     const lines = result.error.issues.map((issue) => `${String(issue.path[0])}: ${issue.message}`)
@@ -108,7 +122,18 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     RELEASE_COMMIT,
     RENDER_GIT_COMMIT,
     REGISTRATION_ENABLED,
+    ALLOW_MISSING_PROXY_SECRET,
   } = result.data
+  // Sem o segredo, em produção, todos dividiriam o endereço do balanceador nos limites e a API
+  // aceitaria pedidos que não passaram pelo repasse: melhor não subir.
+  if (
+    options.requireProxySecret &&
+    NODE_ENV === 'production' &&
+    PROXY_SECRET === undefined &&
+    ALLOW_MISSING_PROXY_SECRET !== 'true'
+  ) {
+    throw new Error('Configuração inválida:\nPROXY_SECRET: obrigatório em produção')
+  }
   return Object.freeze({
     nodeEnv: NODE_ENV,
     host: HOST,

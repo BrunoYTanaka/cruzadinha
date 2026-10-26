@@ -37,14 +37,14 @@ GitHub Actions ──▶ coleta diária (direto no Neon), lançamento de versõe
 
 Onde fica cada valor:
 
-| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                         |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------ |
-| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                            |
-| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse                               |
-| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha |
-| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                 |
-| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                       |
-| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                  |
+| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                                             |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------- |
+| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                                                |
+| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse; obrigatório em produção (sem ele a API não sobe) |
+| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha                     |
+| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                                     |
+| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                                           |
+| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                                      |
 
 ## 2. Contas
 

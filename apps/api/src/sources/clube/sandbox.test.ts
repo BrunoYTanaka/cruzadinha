@@ -57,7 +57,7 @@ describe('readPuzzleData', () => {
         ...DEFAULT_LIMITS,
         timeoutMs: 200,
       })
-      expect(result).toMatchObject({ ok: false })
+      expect(result).toEqual({ ok: false, detail: 'script: falhou ao executar' })
       expect(Date.now() - started).toBeLessThan(2_000)
     })
 
@@ -66,11 +66,14 @@ describe('readPuzzleData', () => {
         ...DEFAULT_LIMITS,
         memoryBytes: 8 * 1024 * 1024,
       })
-      expect(result).toMatchObject({ ok: false })
+      expect(result).toEqual({ ok: false, detail: 'script: falhou ao executar' })
     })
 
     it('interrompe a recursão sem fim', async () => {
-      expect(await readPuzzleData(readFixture('game-recursion.js'))).toMatchObject({ ok: false })
+      expect(await readPuzzleData(readFixture('game-recursion.js'))).toEqual({
+        ok: false,
+        detail: 'script: falhou ao executar',
+      })
     })
 
     it('depois de cada interrupção a sandbox segue funcionando', async () => {
