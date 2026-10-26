@@ -68,3 +68,12 @@
 **Decision**: ler `response.body.getReader()` somando bytes; ao passar de `maxBytes`, `reader.cancel()` e devolver `unexpected-format` / `corpo grande demais`; decodificar com `TextDecoder` ao final. Mantém a checagem de `content-length`.
 
 **Rationale**: limite vale mesmo sem `content-length`. O teste injeta um `fetch` que devolve `ReadableStream` com pedaços.
+
+## Linha de base e acompanhamentos
+
+- Linha de base (T001): `typecheck` e testes unitários verdes (388 + 900 + 144), antes de qualquer mudança.
+- Adiado (R2): usar `reserve` em `settings.service.ts` e `puzzles.service.ts`, que ainda conferem e depois registram.
+- Adiado: a leitura do corpo sem limite de stream pode existir também em `cruzadaonline/` e `cruzadasbrasil/`; não foi verificada nesta feature.
+- Não executado localmente: `npm run test:e2e -w @cruzadinha/web` (exige Chromium, API e servidor de prévia); a única mudança no E2E é tirar `invites` do `TRUNCATE` em `apps/web/e2e/support.ts`. A CI roda o job `e2e`.
+- Pendente do autor antes do lançamento: conferir `PROXY_SECRET` no painel do Render (T013).
+

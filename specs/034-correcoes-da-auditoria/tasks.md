@@ -97,7 +97,7 @@ Nada bloqueante: cada história toca arquivos próprios. Atenção a dois pontos
 - [X] T025 [P] [US5] Em `packages/shared/src/auth/schema.ts` remover `inviteCode` de `registerRequestSchema`; ajustar `packages/shared/src/auth/schema.test.ts` (linhas ~42 a 50) para o comportamento novo; em `apps/api/src/modules/auth/auth.schemas.ts` (~linha 40) e `auth.routes.ts` (~linha 55) remover o texto e o comentário sobre `inviteCode`; em `apps/api/src/test/register.int.test.ts` (~linha 96) trocar o caso "ignora o código de convite" por "recusa com 400 um cadastro com `inviteCode`" (`registerRequestSchema` é `z.strictObject`, logo o campo vira chave desconhecida; spec US5 cenário 2); em `packages/shared/src/auth/schema.test.ts` os casos de `inviteCode` viram um que espera `success: false`
 - [X] T026 [P] [US5] Em `apps/web/e2e/support.ts` (~linha 40) tirar `invites` do `TRUNCATE`
 - [X] T027 [US5] Atualizar `docs/data-definitions/DDE-001-banco-auth-convites.md` (entidade Invite, relações com User, valores de `action` sem `INVITE_CREATE`, versão e histórico) e `docs/entity-relationship-diagrams/ERD-001-banco-auth-convites.md` (sem `invites`), usando as skills `/data-definition` e `/entity-relationship-diagram`; ajustar `docs/design.md` (linhas ~151, ~281, ~335); na nota de `RateLimitAttempt` do DDE-001 ("No login só as tentativas falhas são registradas") descrever a reserva antes da verificação, a devolução da linha do endereço no sucesso e a remoção da linha recusada; conferir a spec da feature 004 (`specs/004-*/spec.md`, FR-027/FR-028) e anotar a mudança de ordem do registro; em `CLAUDE.md` corrigir a frase da feature 013 sobre a tabela `invites` (removida pela 034) e acrescentar o resumo da feature 034 ao fim da lista de features
-- [ ] T028 [US5] Rodar `npm run test:int` e `npm run test:e2e -w @cruzadinha/web` (seção "E2E" do `CLAUDE.md`); commits `fix(api): drop the unused invites table and action` e `docs: update the data definition and diagram for the removal of invites`
+- [ ] T028 (E2E não rodado localmente, ver research.md) [US5] Rodar `npm run test:int` e `npm run test:e2e -w @cruzadinha/web` (seção "E2E" do `CLAUDE.md`); commits `fix(api): drop the unused invites table and action` e `docs: update the data definition and diagram for the removal of invites`
 
 ---
 
@@ -137,9 +137,9 @@ Nada bloqueante: cada história toca arquivos próprios. Atenção a dois pontos
 
 ## Phase 11: Polish
 
-- [ ] T036 [P] Rodar `npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:int` e `npm run build`; corrigir o que falhar sem desligar regra nem pular teste
-- [ ] T037 [P] Rodar `npm run check:branch` e `npm run check:ids` (a pasta `034-correcoes-da-auditoria` não colide com outra); executar o roteiro de `specs/034-correcoes-da-auditoria/quickstart.md`
-- [ ] T038 Registrar em `specs/034-correcoes-da-auditoria/research.md` os acompanhamentos adiados (R2: `reserve` em `settings` e `puzzles`; leitura do corpo sem limite de stream em `cruzadaonline` e `cruzadasbrasil`, não verificada nesta feature) e abrir uma issue `[Chore]:` para ele se o autor quiser
+- [X] T036 [P] Rodar `npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:int` e `npm run build`; corrigir o que falhar sem desligar regra nem pular teste
+- [X] T037 [P] Rodar `npm run check:branch` e `npm run check:ids` (a pasta `034-correcoes-da-auditoria` não colide com outra); executar o roteiro de `specs/034-correcoes-da-auditoria/quickstart.md`
+- [X] T038 Registrar em `specs/034-correcoes-da-auditoria/research.md` os acompanhamentos adiados (R2: `reserve` em `settings` e `puzzles`; leitura do corpo sem limite de stream em `cruzadaonline` e `cruzadasbrasil`, não verificada nesta feature) e abrir uma issue `[Chore]:` para ele se o autor quiser
 
 ---
 
