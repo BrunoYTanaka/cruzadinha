@@ -105,3 +105,28 @@ export async function waitForServer(
     await pause(WAKE_RETRY_MS, signal)
   }
 }
+
+// Espera o laço de `waitForServer` (rodado pelo loader pai) terminar, sem fazer pedido próprio.
+// Loaders irmãos que consultam a API usam isto para não sair antes de o servidor acordar.
+export function whenServerReady(signal?: AbortSignal): Promise<void> {
+  if (ready) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(abortError())
+      return
+    }
+    const stop = () => {
+      unsubscribe()
+      signal?.removeEventListener('abort', onAbort)
+    }
+    const unsubscribe = subscribeServerReady(() => {
+      stop()
+      resolve()
+    })
+    function onAbort() {
+      stop()
+      reject(abortError())
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
+}

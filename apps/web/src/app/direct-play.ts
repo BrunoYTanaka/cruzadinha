@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { replace } from 'react-router'
+import { replace, type LoaderFunctionArgs } from 'react-router'
 import { queryKeys } from '../api/query-keys'
+import { whenServerReady } from '../api/server-wake'
 import { sessionQueryOptions, toViewer, viewerKey } from '../features/auth/useSession'
 import { isNoPuzzle, isSourceDown } from '../features/library/source-down'
 import { loadSourceChoice } from '../features/library/source-choice'
@@ -68,12 +69,16 @@ export function directPlayLoader(
   { initialPath = pageInitialPath, today = todayInBrasilia }: DirectPlayOptions = {},
 ) {
   let handled = false
-  return async (): Promise<Response | DirectPlayData | null> => {
+  return async (
+    args?: Pick<LoaderFunctionArgs, 'request'>,
+  ): Promise<Response | DirectPlayData | null> => {
     if (handled) return null
     handled = true
     if (initialPath !== '/' || !getSettings().directToGame) return null
     const source = loadSourceChoice()
     try {
+      // Roda em paralelo com o loader pai que espera a API acordar (feature 032).
+      await whenServerReady(args?.request.signal)
       const viewer = toViewer(await queryClient.ensureQueryData(sessionQueryOptions()))
       const library = await queryClient.ensureQueryData({
         queryKey: queryKeys.library(viewerKey(viewer), source),
