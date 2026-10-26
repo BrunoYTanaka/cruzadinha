@@ -1,6 +1,6 @@
 import type { Database } from '../../../platform/db/client'
 import { addDays, type Clock } from '../../../platform/lib/clock'
-import { createDummyHash, hashPassword, verifyPassword } from '../../../platform/lib/password'
+import { createDummyHash, verifyPassword } from '../../../platform/lib/password'
 import { generateSessionToken, sha256Hex } from '../../../platform/lib/tokens'
 import type { RateLimits, RateLimiter } from '../../../platform/rate-limit'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
@@ -11,7 +11,7 @@ import {
   findSessionByTokenHash,
   renewSession,
 } from './sessions.repository'
-import { findUserByEmail, insertIfEmailFree } from '../users.repository'
+import { findUserByEmail } from '../users.repository'
 
 export type AuthUser = { id: string; email: string }
 
@@ -19,19 +19,12 @@ export type OpenedSession = { user: AuthUser; sessionToken: string; expiresAt: D
 
 export type Throttled = { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
-export type CreateAccountResult =
-  { ok: true; user: AuthUser } | { ok: false; reason: 'email-taken' }
-
 export type LoginResult =
   ({ ok: true } & OpenedSession) | Throttled | { ok: false; reason: 'invalid-credentials' }
 
 export type Authenticated = { user: AuthUser; renewedExpiresAt?: Date }
 
 export type AuthService = {
-  // Conta a tentativa de cadastro do endereço antes de olhar o corpo (FR-028).
-  admitRegistration(address: string): Promise<{ ok: true } | Throttled>
-  // Conta criada pelo autor na linha de comando: sem sessão e sem limite de tentativas (FR-019).
-  createAccount(input: { email: string; password: string }): Promise<CreateAccountResult>
   login(input: { email: string; password: string; address: string }): Promise<LoginResult>
   authenticate(sessionToken: string | undefined): Promise<Authenticated | null>
   logout(sessionToken: string | undefined): Promise<void>
@@ -71,28 +64,6 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
   }
 
   return {
-    async admitRegistration(address) {
-      const now = clock()
-      const key = { action: 'REGISTER', keyType: 'NETWORK_ADDRESS', keyValue: address } as const
-      const decision = await rateLimiter.check([{ key, window: limits.register }], now)
-      if (!decision.allowed) {
-        return {
-          ok: false,
-          reason: 'too-many-attempts',
-          retryAfterSeconds: decision.retryAfterSeconds,
-        }
-      }
-      await rateLimiter.record([key], now)
-      return { ok: true }
-    },
-
-    async createAccount({ email, password }) {
-      const passwordHash = await hashPassword(password)
-      const user = await insertIfEmailFree(db, { email, passwordHash })
-      if (!user) return { ok: false, reason: 'email-taken' }
-      return { ok: true, user: { id: user.userId, email: user.email } }
-    },
-
     async login({ email, password, address }) {
       const now = clock()
       const emailKey = { action: 'LOGIN', keyType: 'EMAIL', keyValue: email } as const

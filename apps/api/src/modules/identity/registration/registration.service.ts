@@ -11,17 +11,18 @@ import {
   enterIntervalGate,
 } from '../../../platform/rate-limit'
 import type { RateLimits, RateLimiter } from '../../../platform/rate-limit'
+import type { EmailRequestResult } from '../email-request'
 import { consumePendingByTokenHash, renewPendingToken, upsertPending } from './pending.repository'
 import { findUserByEmail, insertIfEmailFree } from '../users.repository'
 
 // Validade do link de confirmação (feature 035).
 export const VERIFICATION_TTL_DAYS = 1
 
-export type EmailRequestResult = { retryAfter: number }
-
 export type VerifyEmailResult = { ok: true } | { ok: false; reason: 'invalid-token' }
 
 export type RegistrationService = {
+  // Conta a tentativa de cadastro do endereço antes de olhar o corpo (FR-028).
+  admitRegister(address: string): Promise<AddressAdmission>
   admitResend(address: string): Promise<AddressAdmission>
   // Cadastro: grava a pendência (ou avisa o dono da conta) e responde igual nos dois casos.
   requestRegistration(input: { email: string }): Promise<EmailRequestResult>
@@ -73,6 +74,8 @@ export function createRegistrationService({
   }
 
   return {
+    admitRegister: (address) =>
+      admitAddress(rateLimiter, clock(), 'REGISTER', address, limits.register),
     admitResend: (address) =>
       admitAddress(rateLimiter, clock(), 'RESEND_VERIFICATION', address, limits.resendVerification),
     admitVerify: (address) =>

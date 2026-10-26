@@ -9,7 +9,6 @@ import type { FastifyPluginAsync } from 'fastify'
 import type { ServerConfig } from '../../../config'
 import { sendEmailUnavailable, sendError, sendTooManyAttempts } from '../../../platform/http/errors'
 import type { EmailService } from '../../../platform/email'
-import type { AuthService } from '../sessions/auth.service'
 import { invalidFields, TOO_MANY_WITH_BODY } from '../route-helpers'
 import type { RegistrationService } from './registration.service'
 import {
@@ -20,7 +19,6 @@ import {
 } from './registration.schemas'
 
 export type RegistrationRoutesOptions = {
-  auth: AuthService
   config: ServerConfig
   email: EmailService
   registration: RegistrationService
@@ -28,7 +26,7 @@ export type RegistrationRoutesOptions = {
 
 export const registrationRoutes: FastifyPluginAsync<RegistrationRoutesOptions> = async (
   app,
-  { auth, config, email, registration },
+  { config, email, registration },
 ) => {
   // Com a chave desligada, a recusa vem antes de tudo: não conta tentativa nem lê o corpo, e não
   // revela nada sobre contas (feature 013, FR-016). Aberto, o cadastro só grava uma pendência e
@@ -36,7 +34,7 @@ export const registrationRoutes: FastifyPluginAsync<RegistrationRoutesOptions> =
   app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
     if (!config.registrationEnabled) return sendError(reply, 403, 'registration-closed')
 
-    const admission = await auth.admitRegistration(request.clientAddress)
+    const admission = await registration.admitRegister(request.clientAddress)
     if (!admission.ok)
       return sendTooManyAttempts(reply, admission.retryAfterSeconds, TOO_MANY_WITH_BODY)
 

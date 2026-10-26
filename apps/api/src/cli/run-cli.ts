@@ -2,7 +2,7 @@ import { emailSchema, passwordSchema, puzzleSourceNames } from '@cruzadinha/shar
 import { parseArgs } from 'node:util'
 import type { Database } from '../platform/db/client'
 import type { Clock } from '../platform/lib/clock'
-import { createAuthService, deleteExpiredAuthRows } from '../modules/identity'
+import { createAccount, createAuthService, deleteExpiredAuthRows } from '../modules/identity'
 import {
   defaultRateLimits,
   createRateLimitRepository,
@@ -68,8 +68,7 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   const confirmation = await deps.readSecret('Confirme a senha: ')
   if (confirmation !== password) throw new UsageError('As senhas não conferem.')
 
-  const auth = authService(deps)
-  const result = await auth.createAccount({ email: email.data, password })
+  const result = await createAccount(deps.db, { email: email.data, password })
   if (!result.ok) {
     deps.stderr('Já existe uma conta com esse e-mail.\n')
     return 1

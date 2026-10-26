@@ -10,7 +10,7 @@ import {
   enterIntervalGate,
 } from '../../../platform/rate-limit'
 import type { RateLimits, RateLimiter } from '../../../platform/rate-limit'
-import type { EmailRequestResult } from '../registration/registration.service'
+import type { EmailRequestResult } from '../email-request'
 import {
   consumeResetToken,
   replaceResetToken,
