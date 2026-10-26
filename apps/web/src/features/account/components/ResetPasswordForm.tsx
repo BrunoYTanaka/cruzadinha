@@ -8,7 +8,7 @@ import { Button, buttonClass } from '../../../shared/components/Button'
 import { Field } from '../../../shared/components/Field'
 import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
 import styles from '../../../shared/components/AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session'
 import { useFragmentToken } from '../helpers/token-fragment'
 
 const MIN_PASSWORD = 8

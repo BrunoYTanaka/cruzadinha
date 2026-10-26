@@ -4,8 +4,8 @@ import { cleanup } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { afterEach, beforeEach } from 'vitest'
 import { resetServerWake, waitForServer } from '../shared/services/api/server-wake'
-import { forgetFragmentTokens } from '../features/account'
-import { setSettingsOpen } from '../features/settings/settings-open'
+import { forgetFragmentTokens } from '../features/account/helpers/token-fragment'
+import { setSettingsOpen } from '../features/settings/services/settings-open'
 import { resetSettingsStore } from '../shared/services/settings-store'
 
 // O axe tenta usar canvas para ler cores de ícones; o jsdom não tem e avisa a cada teste.

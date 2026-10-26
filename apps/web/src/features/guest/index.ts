@@ -1,0 +1,5 @@
+export { mergeGuestLibrary } from './helpers/guest-library'
+export { createGuestSaveQueue } from './services/guest-save-queue'
+export type { GuestSaveQueueOptions } from './services/guest-save-queue'
+export { guestStore } from './services/guest-store'
+export type { GuestStore } from './services/guest-store'

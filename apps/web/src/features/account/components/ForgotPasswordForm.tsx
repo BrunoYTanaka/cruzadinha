@@ -7,7 +7,7 @@ import { Button } from '../../../shared/components/Button'
 import { Field } from '../../../shared/components/Field'
 import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
 import styles from '../../../shared/components/AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session'
 import { ResendLink } from './ResendLink'
 import { useCountdown } from '../hooks/useCountdown'
 

@@ -7,12 +7,12 @@ import { Button } from '../../../shared/components/Button'
 import { Field } from '../../../shared/components/Field'
 import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
 import styles from '../../../shared/components/AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
-import { safeNext } from '../../session/redirect'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session'
+import { safeNext } from '../../session'
 import { ResendLink } from './ResendLink'
 import { useCountdown } from '../hooks/useCountdown'
 import { useRegistration } from '../hooks/useRegistration'
-import { useSessionQuery } from '../../session/useSession'
+import { useSessionQuery } from '../../session'
 
 export function RegisterForm() {
   useDocumentTitle('Criar conta')

@@ -10,7 +10,7 @@ import {
   setup,
 } from '../../test/game-harness'
 import { jsonResponse } from '../../test/http'
-import { guestStore } from '../guest/guest-store'
+import { guestStore } from '../guest/services/guest-store'
 
 installGameTestLifecycle()
 
