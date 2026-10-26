@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { apiRequest } from '../../api/client'
+import { apiRequest } from '../services/api/client'
 import { ErrorState, LoadingState } from './ErrorState'
 
 afterEach(() => {

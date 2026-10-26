@@ -1,8 +1,8 @@
 import type { AuthResponse, User } from '@cruzadinha/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { getMe, login, logout } from '../../api/auth'
-import { queryKeys } from '../../api/query-keys'
+import { getMe, login, logout } from '../../shared/services/api/auth'
+import { queryKeys } from '../../shared/services/api/query-keys'
 import { clearEnded } from './session-ended'
 import { useServerReady } from '../../shared/hooks/useSlowServer'
 

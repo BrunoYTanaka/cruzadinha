@@ -1,6 +1,6 @@
 import { act, cleanup, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { queryKeys } from '../../api/query-keys'
+import { queryKeys } from '../../shared/services/api/query-keys'
 import { expectNoA11yViolations } from '../../test/axe'
 import { cellsFrom, makeProgress, PUZZLE_ID } from '../../test/fixtures'
 import {

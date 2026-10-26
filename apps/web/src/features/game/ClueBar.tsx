@@ -1,7 +1,7 @@
 import type { Word } from '@cruzadinha/shared'
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
-import { buttonClass } from '../../components/Button'
-import { wordKey } from '../../game-logic/clue-strike'
+import { buttonClass } from '../../shared/components/Button'
+import { wordKey } from '../../domain/game/clue-strike'
 import styles from './ClueBar.module.css'
 import { keepSelectionOnDoubleClick } from './useCopyClue'
 

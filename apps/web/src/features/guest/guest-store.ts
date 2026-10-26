@@ -5,7 +5,7 @@ import {
   decideGuestSave,
   type GuestProgress,
   type GuestSave,
-} from '../../game-logic/guest-progress'
+} from '../../domain/guest/guest-progress'
 import { guestProgressRecordSchema } from './guest-record'
 
 export const GUEST_DB_NAME = 'cruzadinha-visitante'

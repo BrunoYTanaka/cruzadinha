@@ -1,5 +1,5 @@
-import { buttonClass } from '../../components/Button'
-import { Tooltip } from '../../components/Tooltip'
+import { buttonClass } from '../../shared/components/Button'
+import { Tooltip } from '../../shared/components/Tooltip'
 import { setSettingsOpen } from './settings-open'
 import styles from './SettingsButton.module.css'
 

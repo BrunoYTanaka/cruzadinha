@@ -1,6 +1,6 @@
 import { puzzleSourcesWithoutFetch, type PuzzleSourceId } from '@cruzadinha/shared'
-import { ApiRequestError } from '../../api/client'
-import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
+import { ApiRequestError } from '../../shared/services/api/client'
+import { readStorage, removeStorage, writeStorage } from '../../shared/services/storage'
 
 // A biblioteca só lê o que está guardado e nunca consulta a fonte, então ela não sabe se a fonte
 // está fora do ar. O aviso nasce de uma busca de dia que falhou (502) e dura 10 minutos. Cada fonte

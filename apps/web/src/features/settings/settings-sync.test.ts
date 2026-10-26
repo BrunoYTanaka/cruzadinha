@@ -1,6 +1,6 @@
 import type { SaveSettingsRequest, SettingsEnvelope } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiRequestError } from '../../api/client'
+import { ApiRequestError } from '../../shared/services/api/client'
 import { createSettingsSync, type SettingsSync } from './settings-sync'
 import {
   getSettingsRecord,

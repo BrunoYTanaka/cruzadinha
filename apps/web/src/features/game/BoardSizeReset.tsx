@@ -1,4 +1,4 @@
-import { Button } from '../../components/Button'
+import { Button } from '../../shared/components/Button'
 
 // "Tamanho padrão" na faixa de ferramentas do computador: apaga o tamanho escolhido pela alça. É um
 // botão secundário pequeno (feature 023), com o texto na cor normal, não na dos links.

@@ -1,11 +1,9 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { readCss } from '../../test/css-file'
 
 // O jsdom não aplica o CSS dos módulos: os estados de mouse e pressionado (feature 023) são
 // conferidos lendo as regras que os definem. O e2e `botoes.spec.ts` confere o resultado na tela.
-const root = join(import.meta.dirname, '..')
-const css = (path: string) => readFileSync(join(root, path), 'utf8')
+const css = readCss
 
 type Rule = { selector: string; body: string; atRules: string[] }
 
@@ -46,23 +44,23 @@ type Check = 'hover' | 'disabled'
 // Controles que têm estados próprios. Os que usam `buttonClass` herdam os de `.button` e ficam fora:
 // ícones, pílulas, tema, legenda, passos e "Tamanho padrão".
 const CONTROLS: [file: string, selector: string][] = [
-  ['components/Button.module.css', '.button'],
-  ['features/settings/SettingsDialog.module.css', '.segmentButton'],
-  ['features/settings/SettingsDialog.module.css', '.switch'],
-  ['features/library/SourceTabs.module.css', '.tab'],
-  ['features/game/ClueList.module.css', '.clue'],
-  ['features/game/Keyboard.module.css', '.key'],
+  ['Button.module.css', '.button'],
+  ['SettingsDialog.module.css', '.segmentButton'],
+  ['SettingsDialog.module.css', '.switch'],
+  ['SourceTabs.module.css', '.tab'],
+  ['ClueList.module.css', '.clue'],
+  ['Keyboard.module.css', '.key'],
 ]
 
 // Isenções, com o motivo: controles que nunca ficam desativados (o seletor não precisa excluir o
 // desativado; o `:hover` de `.clue` usa `.clue:not(.active, .done)`) e o teclado na tela, que só
 // aparece em aparelho de toque e por isso não tem mouse por cima.
 const EXEMPT: Record<string, Check[]> = {
-  'features/settings/SettingsDialog.module.css .segmentButton': ['disabled'],
-  'features/settings/SettingsDialog.module.css .switch': ['disabled'],
-  'features/library/SourceTabs.module.css .tab': ['disabled'],
-  'features/game/ClueList.module.css .clue': ['disabled'],
-  'features/game/Keyboard.module.css .key': ['disabled', 'hover'],
+  'SettingsDialog.module.css .segmentButton': ['disabled'],
+  'SettingsDialog.module.css .switch': ['disabled'],
+  'SourceTabs.module.css .tab': ['disabled'],
+  'ClueList.module.css .clue': ['disabled'],
+  'Keyboard.module.css .key': ['disabled', 'hover'],
 }
 
 const usesClass = (selector: string, name: string) =>

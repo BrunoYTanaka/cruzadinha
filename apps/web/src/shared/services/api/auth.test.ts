@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiError, jsonResponse, mockApi } from '../test/http'
+import { apiError, jsonResponse, mockApi } from '../../../test/http'
 import { getMe, getRegistration } from './auth'
 import { ApiRequestError, setUnauthenticatedHandler } from './client'
 

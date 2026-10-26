@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { setUnauthenticatedHandler } from '../../api/client'
-import { queryKeys } from '../../api/query-keys'
+import { setUnauthenticatedHandler } from '../../shared/services/api/client'
+import { queryKeys } from '../../shared/services/api/query-keys'
 import { aUser, makeQueryClient } from '../../test/render'
 import { clearEnded, getSessionEnded } from './session-ended'
 import { clearExpired, getSessionExpired } from './session-expired'
@@ -8,7 +8,7 @@ import { installSessionHandlers } from './session-handlers'
 
 // O tratador é instalado no cliente de API; aqui ele é capturado para ser chamado direto.
 let handler: (() => void) | null = null
-vi.mock('../../api/client', () => ({
+vi.mock('../../shared/services/api/client', () => ({
   setUnauthenticatedHandler: vi.fn((next: (() => void) | null) => {
     handler = next
   }),

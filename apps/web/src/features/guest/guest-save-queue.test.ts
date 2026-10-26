@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { GuestProgress } from '../../game-logic/guest-progress'
+import type { GuestProgress } from '../../domain/guest/guest-progress'
 import { createGuestSaveQueue } from './guest-save-queue'
 import { createGuestStore } from './guest-store'
 

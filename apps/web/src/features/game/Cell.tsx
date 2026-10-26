@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import type { HelpMark } from '../../game-logic/state'
+import type { HelpMark } from '../../domain/game/state'
 import styles from './Cell.module.css'
 
 export type CellProps = {

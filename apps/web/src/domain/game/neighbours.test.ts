@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makeNeighbourPuzzle, makeSolution, NEIGHBOURS } from '../test/fixtures'
+import { makeNeighbourPuzzle, makeSolution, NEIGHBOURS } from '../../test/fixtures'
 import { activeWord } from './navigation'
 import { createGame, type GameAction } from './reducer'
 

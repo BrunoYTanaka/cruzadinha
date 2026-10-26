@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useMemo, useReducer } from 'react'
 import { describe, expect, it } from 'vitest'
-import { createGame } from '../../game-logic/reducer'
-import type { GameState } from '../../game-logic/state'
+import { createGame } from '../../domain/game/reducer'
+import type { GameState } from '../../domain/game/state'
 import { expectNoA11yViolations } from '../../test/axe'
 import {
   LAYOUT5,
@@ -12,7 +12,7 @@ import {
   makeSolution,
   NEIGHBOURS,
 } from '../../test/fixtures'
-import { activeWord } from '../../game-logic/navigation'
+import { activeWord } from '../../domain/game/navigation'
 import { Board } from './Board'
 import { boardKeyToAction } from './board-keys'
 import { ClueBar } from './ClueBar'

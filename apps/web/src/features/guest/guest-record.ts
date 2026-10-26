@@ -5,8 +5,8 @@ import {
   progressStatusSchema,
 } from '@cruzadinha/shared'
 import { z } from 'zod'
-import type { GuestProgress } from '../../game-logic/guest-progress'
-import { helpSchema } from '../../game-logic/help-schema'
+import type { GuestProgress } from '../../domain/guest/guest-progress'
+import { helpSchema } from '../../domain/game/help-schema'
 
 const msSchema = z.number().int().min(0).max(MAX_ELAPSED_MS)
 const instantSchema = z.iso.datetime({ offset: true })

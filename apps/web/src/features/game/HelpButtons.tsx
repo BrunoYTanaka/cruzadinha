@@ -1,6 +1,6 @@
-import { Pill } from '../../components/Pill'
-import { VisuallyHidden } from '../../components/VisuallyHidden'
-import type { GameLimits, HelpResult } from '../../game-logic/state'
+import { Pill } from '../../shared/components/Pill'
+import { VisuallyHidden } from '../../shared/components/VisuallyHidden'
+import type { GameLimits, HelpResult } from '../../domain/game/state'
 import styles from './HelpButtons.module.css'
 
 type HelpButtonsProps = {

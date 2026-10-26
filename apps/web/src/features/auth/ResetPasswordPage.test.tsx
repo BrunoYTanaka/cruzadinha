@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import { queryKeys } from '../../api/query-keys'
+import { queryKeys } from '../../shared/services/api/query-keys'
 import { expectNoA11yViolations } from '../../test/axe'
 import { apiError, jsonResponse, mockApi, type Handler } from '../../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'

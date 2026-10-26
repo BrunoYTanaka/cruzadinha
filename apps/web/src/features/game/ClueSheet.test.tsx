@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../test/axe'
 import { LAYOUT5, makePuzzle } from '../../test/fixtures'
-import type { StrikeMode } from '../../game-logic/clue-strike'
+import type { StrikeMode } from '../../domain/game/clue-strike'
 import { ClueSheet } from './ClueSheet'
 
 const puzzle = makePuzzle(LAYOUT5)

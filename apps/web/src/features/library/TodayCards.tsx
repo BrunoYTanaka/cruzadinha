@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
-import { Button } from '../../components/Button'
+import { Button } from '../../shared/components/Button'
 import { isNoPuzzle, isSourceDown, isSourceUnsupported } from './source-down'
 import { todayCard, type TodayCard } from './today-cards'
 import styles from './TodayCards.module.css'

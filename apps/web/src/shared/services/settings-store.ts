@@ -1,8 +1,8 @@
 import { defaultSettings, parseSettings, type Settings } from '@cruzadinha/shared'
 import { useSyncExternalStore } from 'react'
-import { getServerClockOffsetMs } from '../../api/client'
+import { getServerClockOffsetMs } from './api/client'
 import { config } from './config'
-import { readStorage, writeStorage } from '../../lib/storage'
+import { readStorage, writeStorage } from './storage'
 
 // Configurações da pessoa (feature 021): um registro só no aparelho, para visitante e conta. A
 // conta guarda uma cópia (settings-sync); aqui fica a versão em uso.

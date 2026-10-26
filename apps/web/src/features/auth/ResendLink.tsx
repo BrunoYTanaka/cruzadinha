@@ -1,6 +1,6 @@
-import { formatWait } from '../../lib/time'
-import { Button } from '../../components/Button'
-import { VisuallyHidden } from '../../components/VisuallyHidden'
+import { formatWait } from '../../shared/helpers/time'
+import { Button } from '../../shared/components/Button'
+import { VisuallyHidden } from '../../shared/components/VisuallyHidden'
 import type { useCountdown } from './useCountdown'
 
 type Props = {

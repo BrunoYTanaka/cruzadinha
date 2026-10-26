@@ -1,8 +1,8 @@
 import { wordBoundaries, type Puzzle } from '@cruzadinha/shared'
 import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type MouseEvent } from 'react'
-import type { Arrow, PuzzleIndex } from '../../game-logic/navigation'
-import { activeWord } from '../../game-logic/navigation'
-import { cellKey, type GameState, type Position } from '../../game-logic/state'
+import type { Arrow, PuzzleIndex } from '../../domain/game/navigation'
+import { activeWord } from '../../domain/game/navigation'
+import { cellKey, type GameState, type Position } from '../../domain/game/state'
 import styles from './Board.module.css'
 import { Cell } from './Cell'
 

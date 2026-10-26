@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellsFrom, LAYOUT5, makePuzzle, makeSolution, TINY } from '../test/fixtures'
+import { cellsFrom, LAYOUT5, makePuzzle, makeSolution, TINY } from '../../test/fixtures'
 import { createGame, type GameAction } from './reducer'
 import type { GameState } from './state'
 

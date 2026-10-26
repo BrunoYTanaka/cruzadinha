@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
-import { isServerReady, waitForServer } from '../api/server-wake'
+import { isServerReady, waitForServer } from '../shared/services/api/server-wake'
 import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { RegisterPage } from '../features/auth/RegisterPage'

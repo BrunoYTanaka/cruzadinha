@@ -1,7 +1,10 @@
 import { parseSettings, type SaveSettingsRequest, type SettingsEnvelope } from '@cruzadinha/shared'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
-import { ApiRequestError } from '../../api/client'
-import { getSettings as fetchSettings, saveSettings as sendSettings } from '../../api/settings'
+import { ApiRequestError } from '../../shared/services/api/client'
+import {
+  getSettings as fetchSettings,
+  saveSettings as sendSettings,
+} from '../../shared/services/api/settings'
 import { useViewer } from '../session/useSession'
 import {
   getSettingsRecord,

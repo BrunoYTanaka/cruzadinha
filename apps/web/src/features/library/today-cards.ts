@@ -1,6 +1,6 @@
 import { puzzleSourceNames, type LibraryItem, type PuzzleSourceId } from '@cruzadinha/shared'
-import { monthKey, type YearMonth } from '../../lib/dates'
-import { formatElapsed, spokenElapsed } from '../../lib/time'
+import { monthKey, type YearMonth } from '../../shared/helpers/dates'
+import { formatElapsed, spokenElapsed } from '../../shared/helpers/time'
 import { dayState, type DayState } from './calendar'
 
 // Cartão de uma fonte na seção "Hoje" (feature 015, data-model §3). O estado aparece por texto e

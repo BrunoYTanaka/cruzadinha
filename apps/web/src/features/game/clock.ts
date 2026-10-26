@@ -1,4 +1,4 @@
-import { MAX_ELAPSED_MS } from '../../lib/time'
+import { MAX_ELAPSED_MS } from '../../shared/helpers/time'
 
 export type Clock = {
   elapsedMs: () => number

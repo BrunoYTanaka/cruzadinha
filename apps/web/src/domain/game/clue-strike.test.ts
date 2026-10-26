@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellsFrom, makePuzzle, makeSolution, TINY } from '../test/fixtures'
+import { cellsFrom, makePuzzle, makeSolution, TINY } from '../../test/fixtures'
 import { isWordFilled, isWordSolved, struckWords, wordKey } from './clue-strike'
 import { buildIndex } from './navigation'
 

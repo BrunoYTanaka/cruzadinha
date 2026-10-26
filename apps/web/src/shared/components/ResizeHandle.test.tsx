@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { expectNoA11yViolations } from '../test/axe'
+import { expectNoA11yViolations } from '../../test/axe'
 import { ResizeHandle, type ResizeHandleProps } from './ResizeHandle'
 
 function setup(overrides: Partial<ResizeHandleProps> = {}) {

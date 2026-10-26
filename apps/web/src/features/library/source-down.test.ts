@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { ApiRequestError } from '../../api/client'
+import { ApiRequestError } from '../../shared/services/api/client'
 import {
   clearSourceDown,
   isNoPuzzle,

@@ -1,5 +1,5 @@
 import type { LibraryItem } from '@cruzadinha/shared'
-import type { GuestProgress } from '../../game-logic/guest-progress'
+import type { GuestProgress } from '../../domain/guest/guest-progress'
 
 // Biblioteca do visitante: os dias vêm do servidor (sempre "não iniciado" sem sessão) e a situação
 // vem do navegador. Mesma derivação de `toLibraryItem` da API (feature 009), para o calendário não

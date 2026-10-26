@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MAX_ELAPSED_MS } from '../../lib/time'
+import { MAX_ELAPSED_MS } from '../../shared/helpers/time'
 import { createClock } from './clock'
 
 function makeClock(initialMs = 0) {

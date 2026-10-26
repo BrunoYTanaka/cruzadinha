@@ -1,6 +1,6 @@
 import { useRevalidator, useRouteError } from 'react-router'
-import { ApiRequestError } from '../api/client'
-import { ServerWakeTimeoutError } from '../api/server-wake'
+import { ApiRequestError } from '../shared/services/api/client'
+import { ServerWakeTimeoutError } from '../shared/services/api/server-wake'
 import { ServerWake } from '../features/status/ServerWake'
 import { ErrorState } from '../shared/components/ErrorState'
 

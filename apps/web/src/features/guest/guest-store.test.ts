@@ -1,6 +1,6 @@
 import { openDB } from 'idb'
 import { describe, expect, it } from 'vitest'
-import type { GuestSave } from '../../game-logic/guest-progress'
+import type { GuestSave } from '../../domain/guest/guest-progress'
 import { makePuzzle } from '../../test/fixtures'
 import { createGuestStore, GUEST_DB_NAME } from './guest-store'
 

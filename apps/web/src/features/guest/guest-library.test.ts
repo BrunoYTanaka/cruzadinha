@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { GuestProgress } from '../../game-logic/guest-progress'
+import type { GuestProgress } from '../../domain/guest/guest-progress'
 import { makeLibraryItem } from '../../test/fixtures'
 import { mergeGuestLibrary } from './guest-library'
 

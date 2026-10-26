@@ -1,5 +1,5 @@
-import { ApiRequestError } from '../../api/client'
-import { formatWait } from '../../lib/time'
+import { ApiRequestError } from '../../shared/services/api/client'
+import { formatWait } from '../../shared/helpers/time'
 
 // Textos fixos. Nunca dizem se um e-mail existe.
 export const authMessages = {

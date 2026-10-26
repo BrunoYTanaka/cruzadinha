@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellsFrom, LAYOUT5, makePuzzle, TINY } from '../test/fixtures'
+import { cellsFrom, LAYOUT5, makePuzzle, TINY } from '../../test/fixtures'
 import {
   activeWord,
   arrowDirection,

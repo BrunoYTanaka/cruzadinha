@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
-import { Button } from '../../components/Button'
-import { VisuallyHidden } from '../../components/VisuallyHidden'
-import { formatElapsed, spokenElapsed } from '../../lib/time'
+import { Button } from '../../shared/components/Button'
+import { VisuallyHidden } from '../../shared/components/VisuallyHidden'
+import { formatElapsed, spokenElapsed } from '../../shared/helpers/time'
 import styles from './ReadModeBanner.module.css'
 
 type ReadModeBannerProps = {

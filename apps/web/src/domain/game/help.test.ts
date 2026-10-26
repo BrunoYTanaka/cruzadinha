@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makePuzzle, makeSolution } from '../test/fixtures'
+import { makePuzzle, makeSolution } from '../../test/fixtures'
 import { canRevealLetter, canRevealWord } from './help'
 import { createGame, type GameAction } from './reducer'
 import type { GameLimits, GameState } from './state'

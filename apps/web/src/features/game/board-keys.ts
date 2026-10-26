@@ -1,4 +1,4 @@
-import type { GameAction } from '../../game-logic/reducer'
+import type { GameAction } from '../../domain/game/reducer'
 import type { BoardKey } from './Board'
 
 // Do que o tabuleiro captura do teclado para a ação do reducer.

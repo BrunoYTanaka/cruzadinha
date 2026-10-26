@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Button } from '../../components/Button'
+import { Button } from '../../shared/components/Button'
 import styles from './PauseCover.module.css'
 
 // Cobre o tabuleiro enquanto o jogo está pausado, para não dar para pensar com o tempo parado.

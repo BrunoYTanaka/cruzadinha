@@ -65,9 +65,9 @@ description: 'Task list for 037-reorganizar-por-feature'
 
 ### PR 3: `refactor/web-shared-and-domain`
 
-- [ ] T017 [P] [US3] `git mv` `apps/web/src/components/*` to `apps/web/src/shared/components/`, `apps/web/src/themes/*` to `apps/web/src/shared/themes/`, `apps/web/src/lib/{useDocumentTitle,useMediaQuery}.ts` to `shared/hooks/`, `lib/{dates,time}.*` to `shared/helpers/`, `lib/storage.*` to `shared/services/`, `apps/web/src/api/*` to `shared/services/api/`; fix imports, including `apps/web/index.html`, `apps/web/vite.config.ts`, `vitest.config.ts` and any `src/themes/...` path referenced in CSS or scripts, and the file lookups of `tokens-contrast.test.ts`, `button-states.test.ts`, `touch-targets.test.tsx`, `Tooltip.test.tsx`
-- [ ] T018 [P] [US3] `git mv` `apps/web/src/game-logic/*` to `apps/web/src/domain/game/` except `guest-progress.ts` (+ test), which goes to `apps/web/src/domain/guest/`; fix imports
-- [ ] T019 [US3] Gate (chunk comparison included), open PR 3
+- [X] T017 [P] [US3] `git mv` `apps/web/src/components/*` to `apps/web/src/shared/components/`, `apps/web/src/themes/*` to `apps/web/src/shared/themes/`, `apps/web/src/lib/{useDocumentTitle,useMediaQuery}.ts` to `shared/hooks/`, `lib/{dates,time}.*` to `shared/helpers/`, `lib/storage.*` to `shared/services/`, `apps/web/src/api/*` to `shared/services/api/`; fix imports, including `apps/web/index.html`, `apps/web/vite.config.ts`, `vitest.config.ts` and any `src/themes/...` path referenced in CSS or scripts, and the file lookups of `tokens-contrast.test.ts`, `button-states.test.ts`, `touch-targets.test.tsx`, `Tooltip.test.tsx`
+- [X] T018 [P] [US3] `git mv` `apps/web/src/game-logic/*` to `apps/web/src/domain/game/` except `guest-progress.ts` (+ test), which goes to `apps/web/src/domain/guest/`; fix imports
+- [X] T019 [US3] Gate (chunk comparison included), open PR 3
 
 ### PR 4: `refactor/web-status-session-account`
 

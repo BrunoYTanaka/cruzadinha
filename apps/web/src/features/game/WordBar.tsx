@@ -1,6 +1,6 @@
 import type { Word } from '@cruzadinha/shared'
-import type { PuzzleIndex } from '../../game-logic/navigation'
-import { cellKey, type Position } from '../../game-logic/state'
+import type { PuzzleIndex } from '../../domain/game/navigation'
+import { cellKey, type Position } from '../../domain/game/state'
 import { directionName } from './ClueBar'
 import styles from './WordBar.module.css'
 

@@ -1,6 +1,10 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { getOldestPendingStartedAt, subscribePending } from '../../api/client'
-import { WAKE_NOTICE_DELAY_MS, isServerReady, subscribeServerReady } from '../../api/server-wake'
+import { getOldestPendingStartedAt, subscribePending } from '../services/api/client'
+import {
+  WAKE_NOTICE_DELAY_MS,
+  isServerReady,
+  subscribeServerReady,
+} from '../services/api/server-wake'
 
 // Há um pedido à API esperando há `thresholdMs` ou mais? Usado pelo `LoadingState` para trocar o
 // "Carregando…" pela explicação de que o servidor está acordando (FR-011).

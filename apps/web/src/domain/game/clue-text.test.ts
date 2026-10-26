@@ -1,6 +1,6 @@
 import type { Word } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import { cellsFrom, makePuzzle, TINY } from '../test/fixtures'
+import { cellsFrom, makePuzzle, TINY } from '../../test/fixtures'
 import { clueCopyText } from './clue-text'
 import { wordKey } from './clue-strike'
 import { buildIndex } from './navigation'

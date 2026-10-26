@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { expectNoA11yViolations } from '../test/axe'
+import { expectNoA11yViolations } from '../../test/axe'
 import { Tooltip } from './Tooltip'
 
 function setup() {

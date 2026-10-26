@@ -1,4 +1,4 @@
-import type { HelpSnapshot } from './reducer'
+import type { HelpSnapshot } from '../game/reducer'
 
 // Progresso de visitante guardado só no navegador (feature 013, data-model §1). Nunca guarda a
 // solução, e-mail, senha nem token.

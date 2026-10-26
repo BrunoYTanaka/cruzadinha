@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { queryKeys } from '../../api/query-keys'
+import { queryKeys } from '../../shared/services/api/query-keys'
 import { clearExpired } from '../session/session-expired'
 import { cellsFrom, makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
 import { expectNoA11yViolations } from '../../test/axe'

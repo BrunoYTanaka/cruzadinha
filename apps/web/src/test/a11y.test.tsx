@@ -1,10 +1,9 @@
 import { screen } from '@testing-library/react'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { LoginPage } from '../features/auth/LoginPage'
 import { RegisterPage } from '../features/auth/RegisterPage'
 import { expectNoA11yViolations } from './axe'
+import { readCss } from './css-file'
 import { cellsFrom, makeProgress } from './fixtures'
 import { installGameTestLifecycle, openGame, PROGRESS, setup as setupGame } from './game-harness'
 import { apiError, jsonResponse, mockApi } from './http'
@@ -80,7 +79,7 @@ describe('acessibilidade (axe, sem a regra de contraste: ela fica no teste dos t
 
 describe('movimento', () => {
   it('global.css zera animações e transições com prefers-reduced-motion', () => {
-    const css = readFileSync(join(import.meta.dirname, '..', 'themes', 'global.css'), 'utf8')
+    const css = readCss('global.css')
     const block = css.slice(css.indexOf('prefers-reduced-motion: reduce'))
     expect(block).toMatch(/animation-duration:\s*0\.01ms\s*!important/)
     expect(block).toMatch(/transition-duration:\s*0\.01ms\s*!important/)

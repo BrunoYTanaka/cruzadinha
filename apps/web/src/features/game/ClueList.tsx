@@ -1,6 +1,6 @@
 import type { Puzzle, Word } from '@cruzadinha/shared'
 import { useEffect, useRef } from 'react'
-import { wordKey, type StrikeMode } from '../../game-logic/clue-strike'
+import { wordKey, type StrikeMode } from '../../domain/game/clue-strike'
 import styles from './ClueList.module.css'
 import { keepSelectionOnDoubleClick } from './useCopyClue'
 

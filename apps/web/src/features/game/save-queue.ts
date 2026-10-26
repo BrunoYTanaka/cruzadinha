@@ -4,9 +4,9 @@ import {
   type ProgressEnvelope,
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
-import { ApiRequestError, getServerClockOffsetMs } from '../../api/client'
-import type { SaveQueue, SaveSnapshot, SaveState } from '../../game-logic/save-types'
-import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
+import { ApiRequestError, getServerClockOffsetMs } from '../../shared/services/api/client'
+import type { SaveQueue, SaveSnapshot, SaveState } from '../../domain/game/save-types'
+import { readStorage, removeStorage, writeStorage } from '../../shared/services/storage'
 
 export type SaveFn = (
   puzzleId: string,

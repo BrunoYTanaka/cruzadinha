@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { buttonClass } from '../../components/Button'
+import { buttonClass } from '../../shared/components/Button'
 import styles from './LegendButton.module.css'
 
 const ITEMS: { className: string; label: string }[] = [
