@@ -82,7 +82,7 @@ test.describe('US2: botão de tema com o mesmo tamanho nos três estados', () =>
     for (const width of [1280, 360]) {
       test(`tema do sistema ${scheme}, janela em ${width} px`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme })
-        await page.setViewportSize({ width, height: 900 })
+        await page.setViewportSize({ width, height: 1000 })
         await page.goto('/')
         const dialog = await openSettings(page)
         const theme = dialog.getByRole('button', { name: /^Tema:/ })
@@ -135,15 +135,18 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
         })
 
         // Interruptores: mesmo tamanho e a borda direita na borda direita do conteúdo (SC-008).
-        await expect(dialog.getByRole('switch')).toHaveCount(2)
-        const [first, second] = [
+        await expect(dialog.getByRole('switch')).toHaveCount(3)
+        const [first, ...others] = [
           await box(dialog.getByRole('switch').nth(0)),
           await box(dialog.getByRole('switch').nth(1)),
+          await box(dialog.getByRole('switch').nth(2)),
         ]
-        expectNear(first.width, second.width)
-        expectNear(first.height, second.height)
         expectNear(first.x + first.width, content.right)
-        expectNear(second.x + second.width, content.right)
+        for (const other of others) {
+          expectNear(first.width, other.width)
+          expectNear(first.height, other.height)
+          expectNear(other.x + other.width, content.right)
+        }
 
         // "Restaurar padrões": a caixa visível, com o contorno, começa na margem esquerda do
         // conteúdo e nunca antes dela (feature 025, SC-004; substitui a regra do texto da 024).
@@ -416,9 +419,10 @@ test.describe('F025-US1: interruptor com o desenho certo', () => {
         await page.goto('/')
         const dialog = await openSettings(page)
         const switches = dialog.getByRole('switch')
-        await expect(switches).toHaveCount(2)
+        // Riscar a dica, copiar a dica (feature 032) e ir direto ao jogo.
+        await expect(switches).toHaveCount(3)
 
-        for (const index of [0, 1]) {
+        for (const index of [0, 1, 2]) {
           const toggle = switches.nth(index)
           // No meio da área visível: a faixa de toque de 44 px também precisa estar na tela.
           await toggle.evaluate((element) => element.scrollIntoView({ block: 'center' }))

@@ -58,6 +58,15 @@ describe('mudanças da pessoa', () => {
     expect(api.save.mock.calls[0]?.[0].settings).toMatchObject({ theme: 'dark', helpLetters: 6 })
   })
 
+  it('copyClue vai no corpo do PUT (feature 032)', async () => {
+    setup()
+    await sync.start('open')
+    api.save.mockClear()
+    updateSettings({ copyClue: true })
+    await vi.advanceTimersByTimeAsync(800)
+    expect(api.save.mock.calls[0]?.[0].settings).toMatchObject({ copyClue: true })
+  })
+
   it('mudanças de outra aba ou da conta não são enviadas', async () => {
     setup()
     await sync.start('open')

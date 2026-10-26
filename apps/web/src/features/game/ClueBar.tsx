@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 
 import { buttonClass } from '../../components/Button'
 import { wordKey } from '../../game-logic/clue-strike'
 import styles from './ClueBar.module.css'
+import { keepSelectionOnDoubleClick } from './useCopyClue'
 
 // Tempo com o mouse parado sobre a dica cortada antes de o balão com a dica inteira abrir.
 const HOVER_DELAY_MS = 500
@@ -16,6 +17,8 @@ type ClueBarProps = {
   // No computador a barra fica acima do tabuleiro, com botões para a dica anterior e a próxima.
   onPrevious?: () => void
   onNext?: () => void
+  // Duplo clique no texto da dica copia o texto (feature 032); sem ele a opção está desligada.
+  onCopy?: (word: Word) => void
 }
 
 // A dica da palavra ativa, acima do tabuleiro. É uma região viva: quando a seleção muda de
@@ -25,7 +28,7 @@ type ClueBarProps = {
 // Anterior e próxima são botões de ícone (feature 023).
 const step = `${buttonClass({ variant: 'icon' })} ${styles.step}`
 
-export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
+export function ClueBar({ word, onPrevious, onNext, onCopy }: ClueBarProps) {
   const navigable = onPrevious !== undefined && onNext !== undefined
   // A chave da palavra para a qual o balão abriu: outra palavra ativa o fecha sozinha.
   const [openFor, setOpenFor] = useState<string | null>(null)
@@ -83,12 +86,16 @@ export function ClueBar({ word, onPrevious, onNext }: ClueBarProps) {
           <b className={styles.number}>
             {word.number} {directionName(word.direction)}
           </b>
+          {/* Atalho só de mouse (feature 032): o teclado já lê e seleciona a palavra pelo tabuleiro. */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <span
             ref={text}
             className={styles.text}
             onPointerEnter={onTextPointer}
             onPointerMove={onTextPointer}
             onPointerLeave={() => window.clearTimeout(timer.current)}
+            onDoubleClick={onCopy ? () => onCopy(word) : undefined}
+            onMouseDown={onCopy ? keepSelectionOnDoubleClick : undefined}
           >
             {word.clue}
           </span>

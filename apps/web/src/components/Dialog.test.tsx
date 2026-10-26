@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -73,6 +73,35 @@ describe('Dialog', () => {
     expect(container.querySelector('#root')).toHaveAttribute('inert')
     await user.keyboard('{Escape}')
     expect(container.querySelector('#root')).not.toHaveAttribute('inert')
+  })
+
+  // Feature 032: clicar fora só fecha com `closeOnBackdrop`; o padrão dos outros diálogos não muda.
+  it('clicar fora só fecha com closeOnBackdrop, e só se o toque começou fora', () => {
+    const onClose = vi.fn()
+    const { rerender } = render(
+      <Dialog open onClose={onClose} title="Padrão">
+        <button>ok</button>
+      </Dialog>,
+    )
+    const backdrop = screen.getByRole('dialog').parentElement as HTMLElement
+    fireEvent.pointerDown(backdrop)
+    fireEvent.click(backdrop)
+    expect(onClose).not.toHaveBeenCalled()
+
+    rerender(
+      <Dialog open onClose={onClose} title="Padrão" closeOnBackdrop>
+        <button>ok</button>
+      </Dialog>,
+    )
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'ok' }))
+    fireEvent.click(backdrop)
+    expect(onClose).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }))
+    expect(onClose).not.toHaveBeenCalled()
+
+    fireEvent.pointerDown(backdrop)
+    fireEvent.click(backdrop)
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   // Largura (feature 024): `size="wide"` põe a classe de largura maior no painel; sem a prop, não.

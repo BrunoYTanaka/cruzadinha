@@ -204,6 +204,7 @@ export function SettingsDialog() {
       onClose={() => setSettingsOpen(false)}
       title="Configurações"
       closeButton
+      closeOnBackdrop
       size="wide"
     >
       <div className={styles.body}>
@@ -238,6 +239,17 @@ export function SettingsDialog() {
             label="Riscar a dica só quando acerta"
             checked={solvedOnly}
             onChange={(next) => updateSettings({ strikeMode: next ? 'solved' : 'filled' })}
+          />
+        </Row>
+
+        <Row
+          title="Copiar a dica"
+          hint="Dois cliques numa dica copiam o texto, o tamanho da palavra e as letras já preenchidas."
+        >
+          <Switch
+            label="Copiar a dica"
+            checked={settings.copyClue}
+            onChange={(next) => updateSettings({ copyClue: next })}
           />
         </Row>
 
