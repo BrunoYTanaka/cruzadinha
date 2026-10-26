@@ -75,7 +75,7 @@ describe('Dialog', () => {
     expect(container.querySelector('#root')).not.toHaveAttribute('inert')
   })
 
-  // Feature 032: clicar fora só fecha com `closeOnBackdrop`; o padrão dos outros diálogos não muda.
+  // Feature 033: clicar fora só fecha com `closeOnBackdrop`; o padrão dos outros diálogos não muda.
   it('clicar fora só fecha com closeOnBackdrop, e só se o toque começou fora', () => {
     const onClose = vi.fn()
     const { rerender } = render(

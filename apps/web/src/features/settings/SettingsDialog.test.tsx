@@ -65,7 +65,7 @@ describe('engrenagem do cabeçalho', () => {
   })
 })
 
-describe('fechar ao clicar fora (feature 032)', () => {
+describe('fechar ao clicar fora (feature 033)', () => {
   it('clicar fora do painel fecha e devolve o foco à engrenagem', async () => {
     const { dialog } = await openSettings()
     const backdrop = dialog.parentElement as HTMLElement
@@ -134,7 +134,7 @@ describe('modal de configurações', () => {
     expect(within(dialog).getByText(/certa ou errada/)).toBeInTheDocument()
   })
 
-  it('o switch de copiar a dica vem desligado e grava copyClue (feature 032)', async () => {
+  it('o switch de copiar a dica vem desligado e grava copyClue (feature 033)', async () => {
     const { user, dialog } = await openSettings()
     const copy = within(dialog).getByRole('switch', { name: 'Copiar a dica' })
     expect(copy).toHaveAttribute('aria-checked', 'false')

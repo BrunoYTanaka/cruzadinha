@@ -1,8 +1,8 @@
 # Implementation Plan: Copiar a dica com tamanho e letras e fechar os ajustes ao clicar fora
 
-**Branch**: `feat/032-copiar-dica` | **Date**: 2026-10-26 | **Spec**: [spec.md](spec.md)
+**Branch**: `feat/033-copiar-dica` | **Date**: 2026-10-26 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/032-copiar-dica/spec.md`
+**Input**: Feature specification from `/specs/033-copiar-dica/spec.md`
 
 ## Summary
 
@@ -48,7 +48,7 @@ Sem violações; tabela de complexidade vazia.
 ### Documentation (this feature)
 
 ```text
-specs/032-copiar-dica/
+specs/033-copiar-dica/
 ├── plan.md
 ├── research.md
 ├── data-model.md

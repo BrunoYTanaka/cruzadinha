@@ -12,7 +12,7 @@ type ClueListProps = {
   struck: ReadonlySet<string>
   strikeMode?: StrikeMode
   onSelect: (word: Word) => void
-  // Duplo clique na dica copia o texto (feature 032); sem ele a opção está desligada.
+  // Duplo clique na dica copia o texto (feature 033); sem ele a opção está desligada.
   onCopy?: (word: Word) => void
   // Computador: as listas ocupam a altura do pai e cada grupo rola por dentro, mantendo a dica
   // ativa visível.

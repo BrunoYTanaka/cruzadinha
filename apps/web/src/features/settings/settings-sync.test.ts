@@ -58,7 +58,7 @@ describe('mudanças da pessoa', () => {
     expect(api.save.mock.calls[0]?.[0].settings).toMatchObject({ theme: 'dark', helpLetters: 6 })
   })
 
-  it('copyClue vai no corpo do PUT (feature 032)', async () => {
+  it('copyClue vai no corpo do PUT (feature 033)', async () => {
     setup()
     await sync.start('open')
     api.save.mockClear()

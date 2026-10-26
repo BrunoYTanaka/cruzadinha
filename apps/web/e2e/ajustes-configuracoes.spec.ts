@@ -419,7 +419,7 @@ test.describe('F025-US1: interruptor com o desenho certo', () => {
         await page.goto('/')
         const dialog = await openSettings(page)
         const switches = dialog.getByRole('switch')
-        // Riscar a dica, copiar a dica (feature 032) e ir direto ao jogo.
+        // Riscar a dica, copiar a dica (feature 033) e ir direto ao jogo.
         await expect(switches).toHaveCount(3)
 
         for (const index of [0, 1, 2]) {

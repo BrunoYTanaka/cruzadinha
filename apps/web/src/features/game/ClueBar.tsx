@@ -17,7 +17,7 @@ type ClueBarProps = {
   // No computador a barra fica acima do tabuleiro, com botões para a dica anterior e a próxima.
   onPrevious?: () => void
   onNext?: () => void
-  // Duplo clique no texto da dica copia o texto (feature 032); sem ele a opção está desligada.
+  // Duplo clique no texto da dica copia o texto (feature 033); sem ele a opção está desligada.
   onCopy?: (word: Word) => void
 }
 
@@ -86,7 +86,7 @@ export function ClueBar({ word, onPrevious, onNext, onCopy }: ClueBarProps) {
           <b className={styles.number}>
             {word.number} {directionName(word.direction)}
           </b>
-          {/* Atalho só de mouse (feature 032): o teclado já lê e seleciona a palavra pelo tabuleiro. */}
+          {/* Atalho só de mouse (feature 033): o teclado já lê e seleciona a palavra pelo tabuleiro. */}
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <span
             ref={text}

@@ -29,7 +29,7 @@ afterEach(() => {
   resetSettingsStore()
 })
 
-describe('copyClue (feature 032)', () => {
+describe('copyClue (feature 033)', () => {
   it('registro guardado antes da feature vale desligado', () => {
     window.localStorage.setItem(
       SETTINGS_KEY,

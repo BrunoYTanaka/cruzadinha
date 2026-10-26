@@ -1,6 +1,6 @@
 # Feature Specification: Copiar a dica com tamanho e letras e fechar os ajustes ao clicar fora
 
-**Feature Branch**: `feat/032-copiar-dica`
+**Feature Branch**: `feat/033-copiar-dica`
 
 **Created**: 2026-10-26
 

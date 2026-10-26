@@ -32,7 +32,7 @@ function spyClipboard(writeText = vi.fn().mockResolvedValue(undefined)) {
 
 const clue = (name: RegExp) => screen.getByRole('button', { name })
 
-describe('copiar a dica com duplo clique (feature 032)', () => {
+describe('copiar a dica com duplo clique (feature 033)', () => {
   it('com a opção ligada copia "dica (n): letras" e avisa', async () => {
     updateSettings({ copyClue: true })
     const user = setup()

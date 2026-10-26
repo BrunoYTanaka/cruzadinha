@@ -22,7 +22,7 @@ type CopyClueArgs = {
   paused: boolean
 }
 
-// Cópia da dica com o tamanho e as letras já preenchidas (feature 032). `onCopy` é `undefined` com a
+// Cópia da dica com o tamanho e as letras já preenchidas (feature 033). `onCopy` é `undefined` com a
 // opção desligada, para que nenhum handler seja ligado e o jogo siga como era.
 export function useCopyClue({ index, cells, paused }: CopyClueArgs): {
   onCopy: ((word: Word) => void) | undefined

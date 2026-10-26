@@ -1,6 +1,6 @@
 # Tasks: Copiar a dica com tamanho e letras e fechar os ajustes ao clicar fora
 
-**Input**: `/specs/032-copiar-dica/` (plan.md, spec.md, research.md, data-model.md, contracts/settings.md, quickstart.md)
+**Input**: `/specs/033-copiar-dica/` (plan.md, spec.md, research.md, data-model.md, contracts/settings.md, quickstart.md)
 
 **Tests**: incluídos (constituição II e V: lógica de jogo pura testada, e2e e axe).
 
@@ -59,13 +59,13 @@ Sem dependência nova, sem migração, sem diretório novo.
 
 - [X] T015 [US3] Em `apps/web/src/features/settings/SettingsDialog.tsx`, passar `closeOnBackdrop` ao `<Dialog>` (R6); não mexer no padrão `false` do `Dialog` (FR-012).
 - [X] T016 [P] [US3] Em `SettingsDialog.test.tsx`, testar: `pointerdown` fora do painel fecha e devolve o foco; dentro (texto, controle, espaço vazio) não fecha; `pointerdown` dentro seguido de soltar fora não fecha; Esc e o botão de fechar continuam valendo. Verificar que um portal fora do painel (tooltip) não conta como clique fora; se contar, tratar no `Dialog` sem mudar os outros diálogos.
-- [X] T017 [P] [US3] Em `apps/web/e2e/ajustes-configuracoes.spec.ts`, acrescentar um bloco `F032-US3`: clicar na área escurecida fecha; arrastar de dentro para fora não fecha; o diálogo de conclusão e as confirmações não fecham ao clicar fora.
+- [X] T017 [P] [US3] Em `apps/web/e2e/ajustes-configuracoes.spec.ts`, acrescentar um bloco `F033-US3`: clicar na área escurecida fecha; arrastar de dentro para fora não fecha; o diálogo de conclusão e as confirmações não fecham ao clicar fora.
 
 ## Phase 6: Polish & cross-cutting
 
-- [X] T018 [P] Atualizar `CLAUDE.md` com um item "Feature 032" curto (campo `copyClue`, `clueCopyText`, `useCopyClue`/`CopyToast`, `closeOnBackdrop` nos ajustes, pedido de salvar tolerante).
+- [X] T018 [P] Atualizar `CLAUDE.md` com um item "Feature 033" curto (campo `copyClue`, `clueCopyText`, `useCopyClue`/`CopyToast`, `closeOnBackdrop` nos ajustes, pedido de salvar tolerante).
 - [X] T019 Rodar `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:int` e o e2e (quickstart.md), e conferir a compatibilidade: site novo com API antiga (sem o campo) e site anterior com API nova (PUT sem `copyClue`).
-- [ ] T020 Commits em Conventional Commits em inglês, sem atribuição de IA (regra do CLAUDE.md): `feat(shared): add copyClue setting`, `feat(web): copy clue on double click`, `feat(web): close settings on outside click`. Renomear a branch para `feat/032-copiar-dica` antes do push (`npm run check:branch`).
+- [ ] T020 Commits em Conventional Commits em inglês, sem atribuição de IA (regra do CLAUDE.md): `feat(shared): add copyClue setting`, `feat(web): copy clue on double click`, `feat(web): close settings on outside click`. Renomear a branch para `feat/033-copiar-dica` antes do push (`npm run check:branch`).
 
 ## Dependencies & Execution Order
 

@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { box, expectNear, resetAndSeed, solutionLetters, todayPuzzle, typeWord } from './support'
 
-// Feature 032: copiar a dica com duplo clique e fechar os ajustes ao clicar fora.
+// Feature 033: copiar a dica com duplo clique e fechar os ajustes ao clicar fora.
 
 test.beforeEach(async ({ context }) => {
   await resetAndSeed()

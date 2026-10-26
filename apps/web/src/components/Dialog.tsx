@@ -88,7 +88,7 @@ export function Dialog({
 
     // Fecha só quando o toque começa e termina fora do painel: arrastar de dentro para fora (para
     // selecionar texto, por exemplo) não fecha. O fechamento espera o `click`, depois de o clique
-    // ter tirado o foco, para o foco voltar ao elemento de origem e ficar lá (feature 032).
+    // ter tirado o foco, para o foco voltar ao elemento de origem e ficar lá (feature 033).
     let pressedOutside = false
     const isOutside = (target: EventTarget | null) => {
       const current = panelRef.current

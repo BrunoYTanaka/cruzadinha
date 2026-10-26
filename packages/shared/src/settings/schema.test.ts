@@ -60,7 +60,7 @@ describe('parseSettings', () => {
     })
   })
 
-  it('troca copyClue inválido pelo padrão (feature 032)', () => {
+  it('troca copyClue inválido pelo padrão (feature 033)', () => {
     expect(parseSettings({ ...full, copyClue: 'sim' }, defaults).copyClue).toBe(false)
     expect(parseSettings({ theme: 'light' }, defaults).copyClue).toBe(false)
   })
@@ -121,7 +121,7 @@ describe('parseStoredSettings', () => {
 describe('saveSettingsRequestSchema', () => {
   const savedAt = '2026-10-21T13:05:40.120Z'
 
-  it('aceita o pedido sem copyClue, de um site anterior (feature 032)', () => {
+  it('aceita o pedido sem copyClue, de um site anterior (feature 033)', () => {
     const older = Object.fromEntries(Object.entries(full).filter(([key]) => key !== 'copyClue'))
     expect(saveSettingsRequestSchema.safeParse({ settings: older, savedAt }).success).toBe(true)
   })
