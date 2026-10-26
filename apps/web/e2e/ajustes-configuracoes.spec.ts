@@ -82,7 +82,8 @@ test.describe('US2: botão de tema com o mesmo tamanho nos três estados', () =>
     for (const width of [1280, 360]) {
       test(`tema do sistema ${scheme}, janela em ${width} px`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme })
-        await page.setViewportSize({ width, height: 1000 })
+        // Alto o bastante para o diálogo caber inteiro: se ele rolar, o clique no tema o desloca.
+        await page.setViewportSize({ width, height: 1400 })
         await page.goto('/')
         const dialog = await openSettings(page)
         const theme = dialog.getByRole('button', { name: /^Tema:/ })
