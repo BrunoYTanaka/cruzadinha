@@ -260,6 +260,8 @@ Migrações não são desfeitas. Toda migração segue a regra de compatibilidad
 
 O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzle do dia de cada fonte (O Globo, Cruzada Online e Cruzadas Clube) direto no Neon, às 00:01 e às 08:00 de Brasília, sem depender da API acordada.
 
+Quando uma fonte falha, o workflow abre uma issue com o rótulo `fonte-quebrada` e o título `[Fonte] <nome> parou de coletar` (uma por fonte, sem repetir enquanto estiver aberta). Feche a issue depois de corrigir a fonte. Limite de uso da fonte, banco fora do ar e segredo ausente não abrem issue; o workflow só fica vermelho.
+
 1. Cadastre o secret `DATABASE_URL` (em **Repository secrets**) com a string do Neon, a mesma do Render. Sem ele, cada execução agendada termina em segundos com "coleta ignorada".
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
