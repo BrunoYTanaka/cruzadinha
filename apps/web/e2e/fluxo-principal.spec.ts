@@ -12,7 +12,7 @@ test.beforeEach(async () => {
   await resetAndSeed()
 })
 
-// O cadastro só cria a conta depois de o e-mail ser confirmado (feature 034); o e-mail não é lido
+// O cadastro só cria a conta depois de o e-mail ser confirmado (feature 035); o e-mail não é lido
 // aqui, então a conta vem da CLI do autor e o cadastro por link é coberto em
 // `confirmar-email.spec.ts`, com a API simulada.
 test('conta criada pela CLI, biblioteca, jogo, conclusão, modo leitura e jogar de novo', async ({

@@ -57,7 +57,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           COLLECT_HISTORY_DAYS: ${{ vars.COLLECT_HISTORY_DAYS }}
         run: node apps/api/dist/cli.mjs puzzles collect
-      # Limpeza de pendências de cadastro e tokens de recuperação vencidos (feature 034). Roda mesmo
+      # Limpeza de pendências de cadastro e tokens de recuperação vencidos (feature 035). Roda mesmo
       # se a coleta falhar, porque não depende dela.
       - if: always() && steps.guard.outputs.enabled == 'true'
         env:

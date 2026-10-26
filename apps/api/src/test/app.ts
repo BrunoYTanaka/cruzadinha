@@ -47,7 +47,7 @@ export function sessionCookieFrom(setCookie: string | string[] | undefined): str
 }
 
 // Conta pronta e sessão aberta para os testes que não tratam do cadastro (que agora só cria a
-// conta depois de confirmar o e-mail, feature 034): grava o usuário direto e entra pelo login.
+// conta depois de confirmar o e-mail, feature 035): grava o usuário direto e entra pelo login.
 export async function signUpForTest(
   app: FastifyInstance,
   database: Database,

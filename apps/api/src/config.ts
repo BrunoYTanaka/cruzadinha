@@ -83,7 +83,7 @@ const envSchema = z.object({
     (value) => (value === '' ? undefined : value),
     z.enum(['true', 'false'], { error: 'deve ser true ou false' }).default('false'),
   ),
-  // E-mail de confirmação e de recuperação de senha pelo Resend (feature 034). Tudo opcional: sem
+  // E-mail de confirmação e de recuperação de senha pelo Resend (feature 035). Tudo opcional: sem
   // a chave, a produção responde `email-unavailable` e o desenvolvimento escreve o link no log.
   RESEND_API_KEY: z.preprocess(
     emptyAsUndefined,

@@ -14,7 +14,7 @@ export const authMessages = {
   wrongAccount: 'Entre com a conta desta partida.',
   confirming: 'Confirmando o seu e-mail…',
   passwordsDiffer: 'As senhas não são iguais.',
-  // Sem citar cota nem provedor (feature 034, FR-018).
+  // Sem citar cota nem provedor (feature 035, FR-018).
   emailUnavailable: 'Não foi possível enviar o e-mail agora. Tente novamente mais tarde.',
 } as const
 

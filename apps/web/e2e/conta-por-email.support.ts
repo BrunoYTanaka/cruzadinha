@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, type Route } from '@playwright/test'
 
 // API simulada no navegador (sem banco) para as telas de confirmação de e-mail e de recuperação de
-// senha (feature 034). Cada chamada fica anotada em `calls`.
+// senha (feature 035). Cada chamada fica anotada em `calls`.
 
 export const TOKEN = 'k'.repeat(43)
 export const NEW_PASSWORD = 'senha-nova-456'

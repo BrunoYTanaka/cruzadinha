@@ -192,7 +192,7 @@ export const userSettings = pgTable('user_settings', {
   ...timestamps,
 })
 
-// Cadastro ainda não confirmado (feature 034): vira um usuário quando o link é aberto.
+// Cadastro ainda não confirmado (feature 035): vira um usuário quando o link é aberto.
 export const pendingRegistrations = pgTable(
   'pending_registrations',
   {

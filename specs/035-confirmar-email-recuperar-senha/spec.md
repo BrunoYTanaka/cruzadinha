@@ -1,6 +1,6 @@
 # Feature Specification: Confirmar e-mail no cadastro e recuperar senha
 
-**Feature Branch**: `feat/034-confirmar-email-recuperar-senha` (o trabalho segue na branch já aberta `feature-confirmar-e-mail-no-cadastro-e-recuperar`)
+**Feature Branch**: `feat/035-confirmar-email-recuperar-senha` (o trabalho segue na branch já aberta `feature-confirmar-e-mail-no-cadastro-e-recuperar`)
 
 **Created**: 2026-10-26
 

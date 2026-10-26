@@ -71,7 +71,7 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   return 0
 }
 
-// Limpeza agendada de pendências de cadastro e tokens vencidos (feature 034).
+// Limpeza agendada de pendências de cadastro e tokens vencidos (feature 035).
 async function cleanupAuth(args: string[], deps: CliDeps): Promise<number> {
   parseArgs({ args, options: {}, allowPositionals: false })
   const counts = await deleteExpiredAuthRows(deps.db, deps.clock())

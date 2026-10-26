@@ -88,7 +88,7 @@ jobs:
       SEED_USER_EMAIL: dev@cruzadinha.local
       SEED_USER_PASSWORD: senha-de-teste-123
       # Cadastro aberto para as telas do site; a conta do E2E real vem da CLI, porque o cadastro agora
-      # exige confirmar o e-mail (feature 034).
+      # exige confirmar o e-mail (feature 035).
       REGISTRATION_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v7

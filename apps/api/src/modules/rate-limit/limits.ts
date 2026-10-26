@@ -21,7 +21,7 @@ export const defaultRateLimits: RateLimits = {
   // Configurações salvas na conta (feature 021): o site agrupa as mudanças, então uma pessoa fica
   // muito abaixo disso.
   settingsSave: { max: 120, windowMinutes: 60 },
-  // Rotas que enviam e-mail ou consomem token (feature 034), por endereço.
+  // Rotas que enviam e-mail ou consomem token (feature 035), por endereço.
   forgotPassword: { max: 10, windowMinutes: 60 },
   resendVerification: { max: 10, windowMinutes: 60 },
   verifyToken: { max: 30, windowMinutes: 60 },

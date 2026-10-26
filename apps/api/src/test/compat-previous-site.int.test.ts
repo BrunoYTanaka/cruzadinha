@@ -11,7 +11,7 @@ const PASSWORD = 'senha-boa-123'
 
 let app: FastifyInstance
 
-// Produção antes do lançamento B: cadastro fechado, site anterior (feature 034, FR-025).
+// Produção antes do lançamento B: cadastro fechado, site anterior (feature 035, FR-025).
 beforeEach(async () => {
   await truncateAll(db)
   app = buildTestApp({

@@ -17,7 +17,7 @@ import {
 import { endAllSessionsForUser } from './sessions.repository'
 import { findUserByEmail, updatePasswordHash } from './users.repository'
 
-// Validade do link de recuperação (feature 034).
+// Validade do link de recuperação (feature 035).
 export const RESET_TTL_MINUTES = 60
 
 export type ResetPasswordResult = { ok: true } | { ok: false; reason: 'invalid-token' }

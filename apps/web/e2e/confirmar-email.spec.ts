@@ -8,7 +8,7 @@ import {
   TOKEN,
 } from './conta-por-email.support'
 
-// Feature 034: cadastro com "enviamos um link", reenvio com contagem regressiva, confirmação do
+// Feature 035: cadastro com "enviamos um link", reenvio com contagem regressiva, confirmação do
 // e-mail com o token no fragmento e o aviso genérico quando o e-mail está indisponível.
 
 const THEMES = ['light', 'dark'] as const

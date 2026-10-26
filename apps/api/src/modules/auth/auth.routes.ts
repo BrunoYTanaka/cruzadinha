@@ -57,7 +57,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
 ) => {
   // Com a chave desligada, a recusa vem antes de tudo: não conta tentativa nem lê o corpo, e não
   // revela nada sobre contas (feature 013, FR-016). Aberto, o cadastro só grava uma pendência e
-  // manda o link; a conta nasce em verify-email (feature 034).
+  // manda o link; a conta nasce em verify-email (feature 035).
   app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
     if (!config.registrationEnabled) return sendError(reply, 403, 'registration-closed')
 

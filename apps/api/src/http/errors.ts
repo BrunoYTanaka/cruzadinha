@@ -39,7 +39,7 @@ export function sendError(
   return reply.status(status).send(apiError(code, fields, retryAfter))
 }
 
-// `retryAfter` no corpo só nas rotas de e-mail (feature 034): o site anterior valida o corpo do
+// `retryAfter` no corpo só nas rotas de e-mail (feature 035): o site anterior valida o corpo do
 // erro de forma estrita e recusaria a chave nova no 429 do login.
 export function sendTooManyAttempts(
   reply: FastifyReply,
@@ -55,7 +55,7 @@ export function sendTooManyAttempts(
   )
 }
 
-// Cota do provedor esgotada ou envio desligado: o site mostra um aviso genérico (feature 034).
+// Cota do provedor esgotada ou envio desligado: o site mostra um aviso genérico (feature 035).
 export function sendEmailUnavailable(reply: FastifyReply, retryAfterSeconds: number): FastifyReply {
   return sendError(
     reply.header('retry-after', String(retryAfterSeconds)),

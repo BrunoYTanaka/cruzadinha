@@ -11,7 +11,7 @@ import { useSettingsSync } from '../features/settings/settings-sync'
 import styles from './AppLayout.module.css'
 import { clearEnded, useSessionEnded } from './session-ended'
 
-// Telas de conta da feature 034, além do login e do cadastro.
+// Telas de conta da feature 035, além do login e do cadastro.
 const ACCOUNT_PATHS = new Set(['/verificar-email', '/esqueci-a-senha', '/redefinir-senha'])
 
 export function AppLayout() {

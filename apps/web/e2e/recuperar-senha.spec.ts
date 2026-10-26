@@ -9,7 +9,7 @@ import {
   TOKEN,
 } from './conta-por-email.support'
 
-// Feature 034: "esqueci a senha" e redefinição com o token no fragmento. A API é simulada.
+// Feature 035: "esqueci a senha" e redefinição com o token no fragmento. A API é simulada.
 
 const THEMES = ['light', 'dark'] as const
 const UNAVAILABLE = 'Não foi possível enviar o e-mail agora. Tente novamente mais tarde.'

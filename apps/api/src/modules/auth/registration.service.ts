@@ -12,7 +12,7 @@ import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { consumePendingByTokenHash, renewPendingToken, upsertPending } from './pending.repository'
 import { findUserByEmail, insertIfEmailFree } from './users.repository'
 
-// Validade do link de confirmação (feature 034).
+// Validade do link de confirmação (feature 035).
 export const VERIFICATION_TTL_DAYS = 1
 
 export type EmailRequestResult = { retryAfter: number }

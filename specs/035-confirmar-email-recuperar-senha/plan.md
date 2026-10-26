@@ -1,8 +1,8 @@
 # Implementation Plan: Confirmar e-mail no cadastro e recuperar senha
 
-**Branch**: `feat/034-confirmar-email-recuperar-senha` (trabalho na branch `feature-confirmar-e-mail-no-cadastro-e-recuperar`) | **Date**: 2026-10-26 | **Spec**: [spec.md](spec.md)
+**Branch**: `feat/035-confirmar-email-recuperar-senha` (trabalho na branch `feature-confirmar-e-mail-no-cadastro-e-recuperar`) | **Date**: 2026-10-26 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/034-confirmar-email-recuperar-senha/spec.md` (issue #82)
+**Input**: Feature specification from `/specs/035-confirmar-email-recuperar-senha/spec.md` (issue #82)
 
 ## Summary
 
@@ -52,7 +52,7 @@ Sem violações: nada em Complexity Tracking.
 ### Documentation (this feature)
 
 ```text
-specs/034-confirmar-email-recuperar-senha/
+specs/035-confirmar-email-recuperar-senha/
 ├── plan.md
 ├── research.md
 ├── data-model.md

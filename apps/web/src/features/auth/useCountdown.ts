@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 type Countdown = { endsAt: number; now: number; total: number; hidden: boolean }
 
 // Contagem regressiva até o próximo reenvio permitido. O tempo vem sempre da API (`retryAfter`),
-// nunca de um número fixo (feature 034, FR-014).
+// nunca de um número fixo (feature 035, FR-014).
 export function useCountdown(): {
   secondsLeft: number
   total: number

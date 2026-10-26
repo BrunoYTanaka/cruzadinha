@@ -4,7 +4,7 @@ export const emailSchema = z.string().trim().toLowerCase().pipe(z.email().max(25
 
 export const passwordSchema = z.string().min(8).max(128)
 
-// O cadastro só pede o link (feature 034): a senha é escolhida por quem abre o link, para ninguém
+// O cadastro só pede o link (feature 035): a senha é escolhida por quem abre o link, para ninguém
 // poder cadastrar o e-mail de outra pessoa com uma senha que só essa pessoa conhece.
 export const registerRequestSchema = z.strictObject({
   email: emailSchema,
@@ -42,7 +42,7 @@ export const authResponseSchema = z.object({
 
 export type AuthResponse = z.infer<typeof authResponseSchema>
 
-// Confirmação de e-mail e recuperação de senha (feature 034).
+// Confirmação de e-mail e recuperação de senha (feature 035).
 export const tokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/)
 
 export const resendVerificationRequestSchema = z.strictObject({ email: emailSchema })

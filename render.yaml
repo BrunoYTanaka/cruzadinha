@@ -34,7 +34,7 @@ services:
       # Sem `value` aqui: um valor no Blueprint voltaria a cada sincronização e desfaria o painel.
       - key: REGISTRATION_ENABLED
         sync: false
-      # E-mail de confirmação e de recuperação de senha (feature 034). Só no painel do Render; sem
+      # E-mail de confirmação e de recuperação de senha (feature 035). Só no painel do Render; sem
       # elas as rotas que enviam e-mail respondem `email-unavailable`. Ver docs/deploy.md.
       - key: RESEND_API_KEY
         sync: false

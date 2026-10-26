@@ -134,7 +134,7 @@ Desde a feature 013 não há convites: qualquer pessoa joga como visitante, e o 
 
 ### E-mail: confirmação do cadastro e recuperação de senha
 
-Desde a feature 034 o cadastro só cria a conta depois de a pessoa abrir um link enviado ao e-mail, e quem esquece a senha recebe um link para redefini-la. Os e-mails saem pelo [Resend](https://resend.com) (plano grátis: 100 e-mails por dia e 3.000 por mês). Sem captcha: a proteção contra abuso é o limite persistido por endereço, por e-mail e um teto global por dia.
+Desde a feature 035 o cadastro só cria a conta depois de a pessoa abrir um link enviado ao e-mail, e quem esquece a senha recebe um link para redefini-la. Os e-mails saem pelo [Resend](https://resend.com) (plano grátis: 100 e-mails por dia e 3.000 por mês). Sem captcha: a proteção contra abuso é o limite persistido por endereço, por e-mail e um teto global por dia.
 
 **Ordem do lançamento.** (1) Lançamento A (`shared` e API) com `REGISTRATION_ENABLED` ausente ou `false`; o site anterior segue funcionando, porque nunca chama as rotas novas. (2) Configure o Resend e as variáveis abaixo. (3) Lançamento B (o site). (4) Só então `REGISTRATION_ENABLED=true`. A recuperação de senha não depende dessa chave: atende contas que já existem (inclusive as criadas pela CLI).
 
@@ -264,7 +264,7 @@ O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzl
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
 
-Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 034), que apaga pendências de cadastro e tokens de recuperação vencidos e as contagens antigas de envio de e-mail, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
+Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro e tokens de recuperação vencidos e as contagens antigas de envio de e-mail, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
 
 Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem atividade. O job `keepalive` do próprio workflow reativa o agendamento todo dia 1. Para conferir ou reativar à mão:
 

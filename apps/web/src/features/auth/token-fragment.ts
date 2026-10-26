@@ -2,7 +2,7 @@ import { tokenSchema } from '@cruzadinha/shared'
 import { useEffect, useState } from 'react'
 
 // O token dos links de e-mail vem no fragmento (`#token=...`), que não vai ao servidor nem a
-// outros sites. Lê uma vez e limpa o endereço (feature 034, FR-017).
+// outros sites. Lê uma vez e limpa o endereço (feature 035, FR-017).
 const reads = new Map<string, string | undefined>()
 let pendingForget: ReturnType<typeof setTimeout> | undefined
 

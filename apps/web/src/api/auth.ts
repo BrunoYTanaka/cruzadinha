@@ -40,7 +40,7 @@ export function login(body: LoginRequest): Promise<AuthResponse> {
   })
 }
 
-// O cadastro só pede o link de confirmação: não cria conta nem sessão (feature 034).
+// O cadastro só pede o link de confirmação: não cria conta nem sessão (feature 035).
 export function register(body: RegisterRequest): Promise<EmailRequestAccepted> {
   return apiRequest('/api/auth/register', emailRequestAcceptedSchema, {
     method: 'POST',
@@ -59,7 +59,7 @@ export function resendVerification(body: ResendVerificationRequest): Promise<Ema
 
 const emptySchema = z.object({})
 
-// A senha é escolhida aqui, por quem abriu o link (feature 034).
+// A senha é escolhida aqui, por quem abriu o link (feature 035).
 export async function verifyEmail(body: VerifyEmailRequest): Promise<void> {
   await apiRequest('/api/auth/verify-email', emptySchema, {
     method: 'POST',

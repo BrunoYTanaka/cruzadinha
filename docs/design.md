@@ -274,7 +274,7 @@ Link × botão:
 
 18. Quem não tem conta joga como visitante: abre o calendário direto, joga e conclui. Letras, tempo, ajudas, conclusão e recorde ficam só no navegador (IndexedDB) e nunca vão ao servidor.
 19. Entrar numa conta não leva o progresso do visitante: ele fica guardado no navegador e volta ao sair da conta.
-20. O cadastro pede só o e-mail, envia um link de confirmação e a senha é escolhida ao abri-lo (feature 034; há também "esqueci a senha" por link), e fica atrás da chave `REGISTRATION_ENABLED`, desligada por padrão. Com ela desligada, o site não oferece "Criar conta" e a API recusa qualquer cadastro (`403 registration-closed`).
+20. O cadastro pede só o e-mail, envia um link de confirmação e a senha é escolhida ao abri-lo (feature 035; há também "esqueci a senha" por link), e fica atrás da chave `REGISTRATION_ENABLED`, desligada por padrão. Com ela desligada, o site não oferece "Criar conta" e a API recusa qualquer cadastro (`403 registration-closed`).
 21. O site pergunta à API se o cadastro está aberto (`GET /api/auth/registration`); sem resposta, trata como fechado.
 22. Com o cadastro fechado, o autor cria contas pela linha de comando (`users create --email`), que pede a senha sem eco e não tem limite de tentativas.
 23. O e-mail já cadastrado recebe a mesma mensagem genérica de falha; o limite por endereço reduz o uso disso para descobrir contas.

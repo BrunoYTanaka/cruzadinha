@@ -4,7 +4,7 @@
 
 | Version | Date       | Changes                                      |
 | ------- | ---------- | -------------------------------------------- |
-| `0.0.1` | 2026-10-26 | - Versão inicial derivada da spec 034 (#82). |
+| `0.0.1` | 2026-10-26 | - Versão inicial derivada da spec 035 (#82). |
 
 ## Scope
 
@@ -14,9 +14,9 @@ Cobre as tabelas da confirmação de e-mail no cadastro, da recuperação de sen
 
 | Source                                                                                                                   | Type | Description                                     |
 | ------------------------------------------------------------------------------------------------------------------------ | ---- | ----------------------------------------------- |
-| [specs/034-confirmar-email-recuperar-senha/spec.md](../../specs/034-confirmar-email-recuperar-senha/spec.md)             | Spec | Requisitos FR-001 a FR-025 e entidades          |
-| [specs/034-confirmar-email-recuperar-senha/data-model.md](../../specs/034-confirmar-email-recuperar-senha/data-model.md) | Plan | Colunas, restrições, índices, estados e limpeza |
-| [specs/034-confirmar-email-recuperar-senha/research.md](../../specs/034-confirmar-email-recuperar-senha/research.md)     | Plan | Validades, tetos, trava de cota e limpeza       |
+| [specs/035-confirmar-email-recuperar-senha/spec.md](../../specs/035-confirmar-email-recuperar-senha/spec.md)             | Spec | Requisitos FR-001 a FR-025 e entidades          |
+| [specs/035-confirmar-email-recuperar-senha/data-model.md](../../specs/035-confirmar-email-recuperar-senha/data-model.md) | Plan | Colunas, restrições, índices, estados e limpeza |
+| [specs/035-confirmar-email-recuperar-senha/research.md](../../specs/035-confirmar-email-recuperar-senha/research.md)     | Plan | Validades, tetos, trava de cota e limpeza       |
 
 ## Entity Summary
 

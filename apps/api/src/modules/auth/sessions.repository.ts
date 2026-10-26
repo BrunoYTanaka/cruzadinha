@@ -56,7 +56,7 @@ export async function endSessionByTokenHash(
     .where(and(eq(sessions.tokenHash, tokenHash), isNull(sessions.endedAt)))
 }
 
-// Encerra todas as sessões abertas do usuário (redefinição de senha, feature 034).
+// Encerra todas as sessões abertas do usuário (redefinição de senha, feature 035).
 export async function endAllSessionsForUser(
   db: Executor,
   userId: string,

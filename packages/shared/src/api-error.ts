@@ -17,7 +17,7 @@ export const apiErrorCodeSchema = z.enum([
   'forbidden',
   'service-unavailable',
   'internal-error',
-  // Confirmação de e-mail e recuperação de senha (feature 034).
+  // Confirmação de e-mail e recuperação de senha (feature 035).
   'invalid-token',
   'email-unavailable',
 ])
@@ -28,7 +28,7 @@ export const apiErrorSchema = z.strictObject({
   error: apiErrorCodeSchema,
   message: z.string().min(1),
   fields: z.array(z.string()).optional(),
-  // Segundos até a próxima tentativa (feature 034).
+  // Segundos até a próxima tentativa (feature 035).
   retryAfter: z.number().int().min(1).optional(),
 })
 

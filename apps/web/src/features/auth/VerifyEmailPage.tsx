@@ -13,7 +13,7 @@ import { useFragmentToken } from './token-fragment'
 const MIN_PASSWORD = 8
 
 // O link do e-mail abre esta tela; a senha é escolhida aqui, por quem tem o link, e só então a
-// conta é criada (feature 034). Ninguém consegue escolher a senha de um e-mail que não é seu.
+// conta é criada (feature 035). Ninguém consegue escolher a senha de um e-mail que não é seu.
 export function VerifyEmailPage() {
   const token = useFragmentToken('/verificar-email')
   const mutation = useMutation({ mutationFn: verifyEmail })
