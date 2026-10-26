@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.11.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.10.0...web-v0.11.0) (2026-10-26)
+
+
+### Features
+
+* confirm the e-mail on sign-up and recover the password by e-mail ([fbd23d0](https://github.com/BrunoYTanaka/cruzadinha/commit/fbd23d06230d83165a27b866c98b445468ed49f6))
+* **web:** add e-mail confirmation and password recovery screens ([af8d249](https://github.com/BrunoYTanaka/cruzadinha/commit/af8d2498d06e03a83594cc54c0a79705a56d9992))
+
+
+### Bug Fixes
+
+* **api:** drop the unused invites table and action ([1fa0f56](https://github.com/BrunoYTanaka/cruzadinha/commit/1fa0f566ba47fb3e4b8a3d5b7fad82bf4bbf1898))
+* **api:** fix the audit findings (login limit, PROXY_SECRET, sessions and more) ([790ed08](https://github.com/BrunoYTanaka/cruzadinha/commit/790ed081c9cd47f9cc75a074c920174c71c0b520))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.23.0 to 0.24.0
+
 ## [0.10.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.9.3...web-v0.10.0) (2026-10-26)
 
 
