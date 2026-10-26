@@ -140,6 +140,8 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       failed: [],
       pending: [],
     }
+    // A edição em andamento, para a falha apontar a data certa.
+    let current = today
     try {
       for await (const listing of source.listRecent!({
         oldestDate: window[window.length - 1]!,
@@ -151,6 +153,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
           break
         }
         const { date } = listing
+        current = date
         // Edição com data futura não é jogável hoje: fica para uma coleta futura.
         if (date > today) {
           report.unavailable.push(date)
@@ -182,8 +185,8 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       }
     } catch (error) {
       // Um erro inesperado do adaptador não pode impedir a coleta das outras fontes.
-      onError?.({ source: source.id, date: today, error })
-      report.failed.push({ date: today, reason: 'source-down' })
+      onError?.({ source: source.id, date: current, error })
+      report.failed.push({ date: current, reason: 'source-down' })
     }
     return report
   }

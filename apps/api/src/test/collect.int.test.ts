@@ -502,6 +502,19 @@ describe('collect (fonte que lista edições, feature 030)', () => {
     expect(seen[0]).toMatchObject({ source: 'clube', date: today() })
   })
 
+  it('aponta a edição que falhou, não a de hoje', async () => {
+    const seen: Parameters<CollectErrorHandler>[0][] = []
+    const older = dayOffset(7)
+    const source = fakeListedSource([{ date: today() }, { date: older }], {
+      throwOnLoad: new Set([older]),
+    })
+    const report = lastReport(await withListed(source, { onError: (i) => seen.push(i) }).collect())
+
+    expect(seen.map((i) => i.date)).toEqual([older])
+    expect(report.saved).toEqual([today()])
+    expect(report.failed).toEqual([{ date: older, reason: 'source-down' }])
+  })
+
   it('uma falha ao carregar uma edição não impede a coleta das outras fontes', async () => {
     const globo = fakeSource(new Map([[today(), okResult(today())]]))
     const source = fakeListedSource([{ date: today() }], { throwOnLoad: new Set([today()]) })

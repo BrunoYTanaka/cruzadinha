@@ -74,7 +74,6 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     const sending = await email.admit()
     if (!sending.ok) return sendEmailUnavailable(reply, sending.retryAfterSeconds)
 
-    // O `inviteCode` do site anterior é aceito pelo schema e ignorado aqui.
     const result = await registration.requestRegistration({ email: parsed.data.email })
     const accepted: EmailRequestAccepted = { retryAfter: result.retryAfter }
     return reply.status(202).send(accepted)

@@ -69,7 +69,7 @@ describe('auth cleanup', () => {
     ])
 
     expect(await cli('auth', 'cleanup')).toBe(0)
-    expect(out).toBe('Limpeza: 1 pendências, 2 tokens de recuperação, 1 contagens de envio.\n')
+    expect(out).toBe('Limpeza: 1 pendências, 2 tokens de recuperação, 2 contagens de tentativas.\n')
     expect(err).toBe('')
 
     expect((await db.select().from(pendingRegistrations)).map((row) => row.tokenHash)).toEqual([
@@ -78,7 +78,8 @@ describe('auth cleanup', () => {
     expect(
       (await db.select().from(passwordResetTokens)).map((row) => row.tokenHash).sort(),
     ).toEqual(['t3', 't4'])
-    expect(await db.select().from(rateLimitAttempts)).toHaveLength(2)
+    // Qualquer ação some depois de 2 dias; só a de 1 dia fica.
+    expect(await db.select().from(rateLimitAttempts)).toHaveLength(1)
   })
 
   it('não faz nada numa base limpa', async () => {
