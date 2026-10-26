@@ -1,21 +1,20 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
-import { isServerReady, waitForServer } from '../api/server-wake'
-import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage'
-import { LoginPage } from '../features/auth/LoginPage'
-import { RegisterPage } from '../features/auth/RegisterPage'
-import { ResetPasswordPage } from '../features/auth/ResetPasswordPage'
-import { VerifyEmailPage } from '../features/auth/VerifyEmailPage'
-import { DayRoute } from '../features/library/DayRoute'
-import { LibraryPage } from '../features/library/LibraryPage'
-import { ServerWake } from '../features/status/ServerWake'
-import { StatusPage } from '../features/status/StatusPage'
+import { isServerReady, waitForServer } from '../shared/services/api/server-wake/server-wake'
+import { ForgotPasswordPage } from '../pages/forgot-password/ForgotPasswordPage'
+import { LoginPage } from '../pages/login/LoginPage'
+import { RegisterPage } from '../pages/register/RegisterPage'
+import { ResetPasswordPage } from '../pages/reset-password/ResetPasswordPage'
+import { VerifyEmailPage } from '../pages/verify-email/VerifyEmailPage'
+import { DayRoute } from '../pages/day/DayRoute'
+import { LibraryPage } from '../pages/library/LibraryPage'
+import { ServerWake } from '../features/status'
+import { StatusPage } from '../pages/status/StatusPage'
 import { AppLayout } from './AppLayout'
-import { directPlayLoader } from './direct-play'
-import { NotFoundPage } from './NotFoundPage'
+import { directPlayLoader } from '../pages/library/direct-play'
+import { NotFoundPage } from '../shared/components/NotFoundPage/NotFoundPage'
 import { RouteError } from './RouteError'
-import { viewerLoader } from './viewer'
-import { installSessionHandlers } from './session-handlers'
+import { viewerLoader, installSessionHandlers } from '../features/session'
 
 const serverReadyLoader: LoaderFunction = async ({ request }) => {
   await waitForServer({ signal: request.signal })
@@ -53,7 +52,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
                   path: '/jogo/:puzzleId',
                   // O código do jogo (tabuleiro, relógio, fila de salvamento) só carrega ao jogar.
                   lazy: async () => ({
-                    Component: (await import('../features/game/GamePage')).GamePage,
+                    Component: (await import('../pages/game/GamePage')).GamePage,
                   }),
                 },
               ],

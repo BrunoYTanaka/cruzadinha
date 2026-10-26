@@ -1,4 +1,4 @@
-import type { EmailMessage, EmailSender, SendResult } from '../modules/email/types'
+import type { EmailMessage, EmailSender, SendResult } from '../platform/email/types'
 
 export type FakeEmailSender = EmailSender & {
   sent: EmailMessage[]

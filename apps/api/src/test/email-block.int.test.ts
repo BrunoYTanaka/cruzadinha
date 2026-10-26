@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { emailSendBlock, pendingRegistrations } from '../db/schema'
+import { emailSendBlock, pendingRegistrations } from '../platform/db/schema'
 import { buildTestApp, signUpForTest } from './app'
 import { MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 import { fakeEmailSender, type FakeEmailSender } from './fake-email'

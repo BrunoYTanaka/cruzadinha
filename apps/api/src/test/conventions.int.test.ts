@@ -1,8 +1,7 @@
 import { eq, sql } from 'drizzle-orm'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { inject } from 'vitest'
-import { runMigrations } from '../db/migrations'
-import { users } from '../db/schema'
+import { afterAll, beforeEach, describe, expect, it, inject } from 'vitest'
+import { runMigrations } from '../platform/db/migrations'
+import { users } from '../platform/db/schema'
 import { openTestDatabase, tableNames, truncateAll } from './database'
 
 const handle = openTestDatabase()

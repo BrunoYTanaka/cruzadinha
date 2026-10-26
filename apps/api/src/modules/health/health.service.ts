@@ -1,5 +1,5 @@
 import type { HealthStatus } from '@cruzadinha/shared'
-import type { DatabaseProbe } from '../../db/probe'
+import type { DatabaseProbe } from '../../platform/db/probe'
 
 export type ReleaseInfo = { version: string; commit: string | undefined }
 

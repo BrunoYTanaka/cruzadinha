@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { inject } from 'vitest'
-import { createDatabase, type Database, type DatabaseHandle } from '../db/client'
+import { createDatabase, type Database, type DatabaseHandle } from '../platform/db/client'
 
 export function openTestDatabase(): DatabaseHandle {
   return createDatabase(inject('databaseUrl'))

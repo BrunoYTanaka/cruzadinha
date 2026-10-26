@@ -3,11 +3,10 @@ import {
   type SaveSettingsRequest,
   type SettingsEnvelope,
 } from '@cruzadinha/shared'
-import type { Database } from '../../db/client'
-import type { Clock } from '../../lib/clock'
-import { savedAtTooFar } from '../../lib/saved-at'
-import type { RateWindow } from '../rate-limit/limits'
-import type { RateLimiter } from '../rate-limit/rate-limit.service'
+import type { Database } from '../../platform/db/client'
+import type { Clock } from '../../platform/lib/clock'
+import { savedAtTooFar } from '../../platform/lib/saved-at'
+import type { RateWindow, RateLimiter } from '../../platform/rate-limit'
 import { findSettings, upsertSettings, type StoredSettings } from './settings.repository'
 
 export type SettingsSaveDecision =

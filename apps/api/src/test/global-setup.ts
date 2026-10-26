@@ -1,6 +1,6 @@
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import type { TestProject } from 'vitest/node'
-import { runMigrations } from '../db/migrations'
+import { runMigrations } from '../platform/db/migrations'
 
 let container: StartedPostgreSqlContainer | undefined
 

@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify'
-import type { DatabaseProbe } from '../../db/probe'
+import type { DatabaseProbe } from '../../platform/db/probe'
 import { healthSchema } from './health.schemas'
 import { getHealth, type ReleaseInfo } from './health.service'
 

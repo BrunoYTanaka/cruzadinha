@@ -1,31 +1,34 @@
 import cookie from '@fastify/cookie'
 import Fastify, { type FastifyInstance } from 'fastify'
 import type { ServerConfig } from './config'
-import type { Database } from './db/client'
-import { describeError, isConnectionError } from './db/errors'
-import type { DatabaseProbe } from './db/probe'
-import { apiError } from './http/errors'
-import { proxyGuard } from './http/proxy-guard'
-import { systemClock, type Clock } from './lib/clock'
-import { authRoutes } from './modules/auth/auth.routes'
-import { createAuthService } from './modules/auth/auth.service'
-import { createRecoveryService } from './modules/auth/recovery.service'
-import { createRegistrationService } from './modules/auth/registration.service'
-import { createEmailService } from './modules/email/email.service'
-import { createLogSender } from './modules/email/log-sender'
-import { createResendSender } from './modules/email/resend-sender'
-import type { EmailSender } from './modules/email/types'
-import { createOptionalSession, createRequireSession } from './modules/auth/session.plugin'
+import type { Database } from './platform/db/client'
+import { describeError, isConnectionError } from './platform/db/errors'
+import type { DatabaseProbe } from './platform/db/probe'
+import { apiError } from './platform/http/errors'
+import { proxyGuard } from './platform/http/proxy-guard'
+import { systemClock, type Clock } from './platform/lib/clock'
+import {
+  identityRoutes,
+  createAuthService,
+  createRecoveryService,
+  createRegistrationService,
+  createOptionalSession,
+  createRequireSession,
+} from './modules/identity'
+import { createEmailService, createLogSender, createResendSender } from './platform/email'
+import type { EmailSender } from './platform/email'
 import { healthRoutes } from './modules/health/health.routes'
-import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
-import { createRateLimitRepository } from './modules/rate-limit/rate-limit.repository'
-import { createRateLimiter } from './modules/rate-limit/rate-limit.service'
+import {
+  defaultRateLimits,
+  type RateLimits,
+  createRateLimitRepository,
+  createRateLimiter,
+} from './platform/rate-limit'
 import { libraryRoutes } from './modules/library/library.routes'
 import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
-import { puzzlesRoutes } from './modules/puzzles/puzzles.routes'
-import { createPuzzlesService } from './modules/puzzles/puzzles.service'
+import { puzzlesRoutes, createPuzzlesService } from './modules/puzzles'
 import { settingsRoutes } from './modules/settings/settings.routes'
 import { createSettingsService } from './modules/settings/settings.service'
 import { createClubeSource } from './sources/clube/clube'
@@ -90,7 +93,7 @@ export function buildApp({
   // Documentação só fora de produção, sem configuração que a ligue; registrada antes das
   // rotas para que todas entrem no documento.
   if (config.nodeEnv !== 'production') {
-    app.register(import('./docs/docs.plugin'))
+    app.register(import('./platform/docs/docs.plugin'))
   }
 
   app.setErrorHandler((error, request, reply) => {
@@ -141,7 +144,7 @@ export function buildApp({
   const requireSession = createRequireSession(auth, config, clock)
   const optionalSession = createOptionalSession(auth, config, clock)
 
-  app.register(authRoutes, {
+  app.register(identityRoutes, {
     auth,
     config,
     clock,

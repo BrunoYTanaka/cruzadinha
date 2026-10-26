@@ -1,7 +1,7 @@
 import type { SaveSettingsRequest } from '@cruzadinha/shared'
 import { eq, lt, sql } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { userSettings } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import { userSettings } from '../../platform/db/schema'
 
 // `settings` chega do banco como unknown e é relido pelo serviço.
 export type StoredSettings = { settings: unknown; savedAt: Date }

@@ -5,8 +5,8 @@ import {
   type ProgressStatus,
 } from '@cruzadinha/shared'
 import { and, eq } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { progress } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import { progress } from '../../platform/db/schema'
 
 // Estado de uma partida como o serviço o enxerga: datas como Date, sem identificadores.
 export type ProgressState = {

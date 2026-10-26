@@ -1,6 +1,6 @@
 import { progressEnvelopeSchema, saveProgressRequestSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { commonErrors, errorResponse, toDocSchema } from '../../docs/doc-schema'
+import { commonErrors, errorResponse, toDocSchema } from '../../platform/docs/doc-schema'
 
 const unauthenticated = errorResponse('`unauthenticated`: sem sessão válida.')
 const unavailable = errorResponse('`puzzle-unavailable`: identificador inexistente ou inválido.')

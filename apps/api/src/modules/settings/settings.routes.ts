@@ -1,7 +1,7 @@
 import { saveSettingsRequestSchema, type SettingsEnvelope } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
-import { sendError, sendTooManyAttempts } from '../../http/errors'
-import type { RequireSession } from '../auth/session.plugin'
+import { sendError, sendTooManyAttempts } from '../../platform/http/errors'
+import type { RequireSession } from '../identity'
 import { getSettingsSchema, saveSettingsSchema } from './settings.schemas'
 import type { SettingsService } from './settings.service'
 

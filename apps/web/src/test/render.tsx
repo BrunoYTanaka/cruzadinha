@@ -2,9 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router'
-import { setUnauthenticatedHandler } from '../api/client'
-import { waitForServer } from '../api/server-wake'
-import { installSessionHandlers } from '../app/session-handlers'
+import { setUnauthenticatedHandler } from '../shared/services/api/client/client'
+import { waitForServer } from '../shared/services/api/server-wake/server-wake'
+import { installSessionHandlers } from '../features/session/services/session-handlers'
 
 export function makeQueryClient() {
   return new QueryClient({

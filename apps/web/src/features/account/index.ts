@@ -1,0 +1,6 @@
+export { ForgotPasswordForm } from './components/ForgotPasswordForm/ForgotPasswordForm'
+export { LoginForm } from './components/LoginForm/LoginForm'
+export { RegisterForm } from './components/RegisterForm/RegisterForm'
+export { ResetPasswordForm } from './components/ResetPasswordForm/ResetPasswordForm'
+export { VerifyEmailForm } from './components/VerifyEmailForm/VerifyEmailForm'
+export { forgetFragmentTokens } from './helpers/token-fragment'

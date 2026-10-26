@@ -7,7 +7,7 @@ import {
   retryAfterHeader,
   sourceQueryProperty,
   toDocSchema,
-} from '../../docs/doc-schema'
+} from '../../platform/docs/doc-schema'
 
 const unauthenticated = errorResponse(
   '`unauthenticated`: cookie de sessão presente, mas inválido (vencido ou encerrado); a resposta o apaga.',
