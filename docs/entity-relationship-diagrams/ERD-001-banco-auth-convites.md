@@ -19,21 +19,9 @@ erDiagram
         datetime updated_at
     }
 
-    INVITE["INVITE (sem uso)"] {
-        uuid invite_id PK "sem uso desde a feature 013; sai no lançamento B"
-        string code_hash UK
-        uuid created_by_user_id FK
-        uuid used_by_user_id FK, UK
-        datetime expires_at
-        datetime used_at
-        datetime revoked_at
-        datetime created_at
-        datetime updated_at
-    }
-
     RATE_LIMIT_ATTEMPT {
         uuid rate_limit_attempt_id PK
-        string action "LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE, INVITE_CREATE (sem uso)"
+        string action "LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE"
         string key_type
         string key_value
         datetime created_at
@@ -41,6 +29,4 @@ erDiagram
     }
 
     USER ||--o{ SESSION : "abre"
-    USER |o--o{ INVITE : "gera (antigo)"
-    USER |o--o| INVITE : "consome (antigo)"
 ```

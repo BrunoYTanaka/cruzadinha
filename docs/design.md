@@ -148,7 +148,6 @@ As colunas, os valores permitidos e os relacionamentos de cada tabela estão nas
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `users`               | Contas ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                                                                    |
 | `sessions`            | Sessões abertas no login, guardadas só como hash ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                          |
-| `invites`             | Convites do cadastro antigo, sem uso desde a feature 013 e removidos no lançamento B ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))      |
 | `rate_limit_attempts` | Tentativas sujeitas a limite: login, cadastro, busca na fonte e gravação de configurações ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md)) |
 | `puzzles`             | Um puzzle por fonte, nível e data, com a parte pública e a solução separadas ([DDE-002](data-definitions/DDE-002-coleta-puzzles.md))                   |
 | `progress`            | Progresso de cada conta em cada puzzle ([DDE-003](data-definitions/DDE-003-progresso-usuario-puzzle.md))                                               |
@@ -278,7 +277,7 @@ Link × botão:
 21. O site pergunta à API se o cadastro está aberto (`GET /api/auth/registration`); sem resposta, trata como fechado.
 22. Com o cadastro fechado, o autor cria contas pela linha de comando (`users create --email`), que pede a senha sem eco e não tem limite de tentativas.
 23. O e-mail já cadastrado recebe a mesma mensagem genérica de falha; o limite por endereço reduz o uso disso para descobrir contas.
-24. Os convites (código, cota, Konami) deixaram de existir. A tabela `invites` sai num lançamento seguinte, por migração.
+24. Os convites (código, cota, Konami) deixaram de existir. A tabela `invites` saiu na feature 034 (migração `0008`).
 25. Uma sessão vencida ou encerrada vira visitante: fora do tabuleiro, com o aviso "Sua sessão terminou"; no tabuleiro, o jogo da conta continua e o login abre por cima (feature 010).
 26. O cadastro tem limite de tentativas por IP.
 27. A CLI (`users create`, `puzzles collect`) é do autor.

@@ -47,7 +47,7 @@
 
 **Rationale**: a API não usa a tabela desde a 013. A rota `/api/invites` responde 404 e o site atual não envia `inviteCode`. Um lançamento só da API (e do `shared`, patch) basta; a verificação da versão do site no ar entra no `quickstart.md`.
 
-**Compatibilidade**: `registerRequestSchema` é `z.strictObject`, então remover `inviteCode` faz um corpo com o campo falhar com 400; só abas de antes da feature 013 o enviam. Aceito e registrado na spec (US5, cenário 2). A conferência da versão do site no ar (T021) é o portão.
+**Compatibilidade**: `registerRequestSchema` é `z.strictObject`, então remover `inviteCode` faz um corpo com o campo falhar com 400; só abas de antes da feature 013 o enviam. Aceito e registrado na spec (US5, cenário 2). A conferência da versão do site no ar (T021) é o portão: em 2026-10-26 `GET /version.json` do site devolveu `0.10.0` (API `0.6.0`), posterior à feature 013, e `apps/web/src` não cita `inviteCode`.
 
 **Riscos**: `invites` tem chaves estrangeiras para `users`, mas é a tabela que referencia; remover não afeta `users`. A migração é de ida.
 
