@@ -11,6 +11,6 @@ Mudança de schema única, migração `0008_remove_invites`.
 | `rate_limit_attempts` | Sem mudança de schema; o login insere antes de verificar e pode apagar as próprias linhas (recusa ou sucesso). |
 
 Regra de limpeza de sessões (`now` = instante da execução):
-`expires_at < now OR absolute_expires_at < now OR ended_at < now - 7 dias`.
+`expires_at < now OR ended_at < now - 7 dias`. O banco garante `expires_at <= absolute_expires_at`, então `expires_at` passado já inclui o limite absoluto.
 
 Documentos a atualizar: `docs/data-definitions/DDE-001-banco-auth-convites.md` (entidade Invite e relações, valores de `action`), `docs/entity-relationship-diagrams/ERD-001-banco-auth-convites.md`, `docs/design.md` (linhas 151, 281, 335). Os arquivos DDE/ERD mantêm o nome por estabilidade dos links; o título passa a "banco e autenticação" no conteúdo.

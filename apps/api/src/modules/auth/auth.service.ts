@@ -7,6 +7,7 @@ import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
 import {
   createSession,
+  deleteStaleSessions,
   endSessionByTokenHash,
   findSessionByTokenHash,
   renewSession,
@@ -40,6 +41,8 @@ export type AuthService = {
   login(input: { email: string; password: string; address: string }): Promise<LoginResult>
   authenticate(sessionToken: string | undefined): Promise<Authenticated | null>
   logout(sessionToken: string | undefined): Promise<void>
+  // Apaga as sessões vencidas e as encerradas há mais de 7 dias; devolve quantas (`puzzles collect`).
+  purgeStaleSessions(): Promise<number>
 }
 
 // Valor do cookie: 32 bytes em base64url. Outro formato nem chega ao banco.
@@ -165,6 +168,8 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       await renewSession(db, session.sessionId, decision.renewTo)
       return { user, renewedExpiresAt: decision.renewTo }
     },
+
+    purgeStaleSessions: () => deleteStaleSessions(db, clock()),
 
     async logout(sessionToken) {
       if (!sessionToken || !SESSION_TOKEN.test(sessionToken)) return

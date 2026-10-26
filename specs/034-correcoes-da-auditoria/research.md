@@ -29,7 +29,7 @@
 
 ## R4. Limpeza de sessões
 
-**Decision**: `deleteStaleSessions(db, now)` apaga onde `expires_at < now` OU `absolute_expires_at < now` OU `ended_at < now - 7 dias`. Chamada por `auth.service.purgeStaleSessions()`, executada pela CLI `puzzles collect` **depois** da coleta, num `try/catch` próprio: falha escreve em `stderr`, define código de saída 1 e não desfaz a coleta. Imprime `Sessões apagadas: N`.
+**Decision**: `deleteStaleSessions(db, now)` apaga onde `expires_at < now` OU `ended_at < now - 7 dias` (a restrição `sessions_expiry_within_absolute` garante `expires_at <= absolute_expires_at`, então o limite absoluto vencido já entra em `expires_at`). Chamada por `auth.service.purgeStaleSessions()`, executada pela CLI `puzzles collect` **depois** da coleta, num `try/catch` próprio: falha escreve em `stderr`, define código de saída 1 e não desfaz a coleta. Imprime `Sessões apagadas: N`.
 
 **Rationale**: uma sessão com `expires_at` passado já não renova (`decideSession` devolve `expired`), então só o limite absoluto, como a issue sugere, deixaria sessões inativas por até 1 ano. Incluir `expires_at` é a leitura correta de "vencida"; a spec foi ajustada.
 

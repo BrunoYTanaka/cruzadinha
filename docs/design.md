@@ -160,7 +160,7 @@ As configurações (tema, limites de ajuda, modo de riscar, cruzada padrão, ir 
 
 O puzzle é o mesmo para todos, então fica uma vez só na tabela `puzzles`, compartilhada; só o `progress` é por usuário. Um puzzle guardado não é buscado de novo.
 
-**Coleta diária:** um comando da API (`cli.ts puzzles collect`) busca o puzzle do dia (nível `daily`, o único publicado) e grava no banco. Ele roda por agendamento (seção 9), sem depender de a API estar acordada.
+**Coleta diária:** um comando da API (`cli.ts puzzles collect`) busca o puzzle do dia (nível `daily`, o único publicado) e grava no banco. Ele roda por agendamento (seção 9), sem depender de a API estar acordada. Ao fim, apaga as sessões vencidas e as encerradas há mais de 7 dias.
 
 - Grava com upsert em `(source, level, date)`, então rodar duas vezes não muda nada.
 - Roda duas vezes por dia, para tolerar atraso ou falha do agendamento.
