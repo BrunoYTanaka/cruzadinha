@@ -10,7 +10,7 @@ loadDotEnvIfPresent()
 
 let config: ServerConfig
 try {
-  config = loadConfig(process.env)
+  config = loadConfig(process.env, { requireProxySecret: true })
 } catch (error) {
   process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`)
   process.exit(1)
