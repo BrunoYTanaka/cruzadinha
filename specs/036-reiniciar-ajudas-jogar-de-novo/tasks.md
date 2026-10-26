@@ -45,8 +45,8 @@ description: 'Task list for 036-reiniciar-ajudas-jogar-de-novo'
 
 **Independent Test**: the T004 spec (visitor and account) passes; `npx vitest run src/features/game/PlayAgainHelps.test.tsx` stays green.
 
-- [ ] T008 [US1] _Conditional on T005 "Fails"._ Fix the root cause named in `research.md`, in the layer that owns it: pure rules in `apps/web/src/game-logic/` (with a unit test), reset flow in `apps/web/src/features/game/useGame.ts` (`playAgain`), account helps in `apps/web/src/features/game/help-storage.ts`, visitor record in `apps/web/src/features/guest/guest-store.ts` or `apps/web/src/game-logic/guest-progress.ts`. Change the smallest thing; do not touch the API, shared schemas or settings
-- [ ] T009 [US1] Commit the red test from T004/T006 together with T008 (bug flow: regression test with the fix), conventional commit `fix(web): reset helps when playing again`
+- [X] T008 [US1] _Conditional on T005 "Fails"._ Fix the root cause named in `research.md`, in the layer that owns it: pure rules in `apps/web/src/game-logic/` (with a unit test), reset flow in `apps/web/src/features/game/useGame.ts` (`playAgain`), account helps in `apps/web/src/features/game/help-storage.ts`, visitor record in `apps/web/src/features/guest/guest-store.ts` or `apps/web/src/game-logic/guest-progress.ts`. Change the smallest thing; do not touch the API, shared schemas or settings
+- [X] T009 [US1] Commit the red test from T004/T006 together with T008 (bug flow: regression test with the fix), conventional commit `fix(web): reset helps when playing again`
 
 **Checkpoint**: US1 verified for visitor and account.
 
@@ -58,8 +58,8 @@ description: 'Task list for 036-reiniciar-ajudas-jogar-de-novo'
 
 **Independent Test**: T004 after `page.reload()` and the two-tab case of T006.
 
-- [ ] T010 [US2] _Conditional._ If T008 does not already cover reload, second-tab and pending-save persistence (spec US2 scenario 3 and the pending-save edge case), extend the fix so the reset helps are not regrabbed; add the failing case first in `apps/web/e2e/jogar-de-novo-ajudas.spec.ts`
-- [ ] T011 [US2] Add a component test in `apps/web/src/features/game/PlayAgainHelps.test.tsx`: after "Jogar de novo" use one help and reopen; only that help counts (spec US2 scenario 2, SC-003)
+- [X] T010 [US2] _Conditional._ If T008 does not already cover reload, second-tab and pending-save persistence (spec US2 scenario 3 and the pending-save edge case), extend the fix so the reset helps are not regrabbed; add the failing case first in `apps/web/e2e/jogar-de-novo-ajudas.spec.ts`
+- [X] T011 [US2] Add a component test in `apps/web/src/features/game/PlayAgainHelps.test.tsx`: after "Jogar de novo" use one help and reopen; only that help counts (spec US2 scenario 2, SC-003)
 
 **Checkpoint**: US1 and US2 verified.
 

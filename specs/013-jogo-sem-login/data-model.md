@@ -19,6 +19,7 @@ Banco `cruzadinha-visitante`, versão 1, store `progress`, `keyPath: 'puzzleId'`
 | `finishedMs` | inteiro ou `null` | Tempo da conclusão. |
 | `bestMs` | inteiro ou `null` | Menor tempo de conclusão. Sobrevive a "Jogar de novo". |
 | `bestAt` | instante ISO ou `null` | Vem junto com `bestMs` (os dois nulos ou os dois preenchidos). |
+| `game` | inteiro ≥ 0, opcional | Geração do jogo (feature 036): "Jogar de novo" soma 1; ausente conta como 0. Um salvamento de outra geração é ignorado. |
 | `help` | `HelpSnapshot` ou `null` | Uso das ajudas, marcas e células travadas, no mesmo formato de `help-storage.ts`. Nunca a solução. |
 
 Nenhum campo guarda a solução, e-mail, senha ou token.
@@ -36,7 +37,7 @@ Nenhum campo guarda a solução, e-mail, senha ou token.
 | `in_progress → in_progress` | `apply` com letras, tempo, ajudas e `savedAt` novos. |
 | `in_progress → completed` | `apply`: `completedAt = now`, `finishedMs = elapsedMs`, recorde = menor entre `bestMs` e `elapsedMs` (com `bestAt = now` quando bate o recorde). |
 
-`decideGuestReset(current, now) → next`: `cells` todas nulas, `elapsedMs = 0`, `status = in_progress`, `completedAt`/`finishedMs` nulos, `help = null`, `savedAt = now`. `bestMs`/`bestAt` mantidos.
+`decideGuestReset(current, now) → next`: `cells` todas nulas, `elapsedMs = 0`, `status = in_progress`, `completedAt`/`finishedMs` nulos, `help = null`, `savedAt = now`. `bestMs`/`bestAt` mantidos. `game` soma 1 (feature 036).
 
 A leitura e a gravação de cada decisão acontecem numa única transação `readwrite` (R1). Assim, duas abas não perdem a gravação mais nova.
 

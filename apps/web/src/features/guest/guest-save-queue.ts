@@ -10,6 +10,8 @@ export type GuestSaveQueueOptions = {
   date: string
   store: GuestStore
   now?: () => number
+  // Geração do jogo desta aba (muda em "Jogar de novo").
+  game?: number
   onSaved?: (record: GuestProgress) => void
 }
 
@@ -19,6 +21,7 @@ export type GuestSaveQueueOptions = {
 export function createGuestSaveQueue(options: GuestSaveQueueOptions): SaveQueue {
   const { puzzleId, date, store, onSaved } = options
   const now = options.now ?? Date.now
+  const game = options.game ?? 0
   const stateNow = (): SaveState => (store.isAvailable() ? 'saved' : 'local-only')
 
   // As ajudas vêm junto das letras (R7); a fila do servidor não as recebe.
@@ -31,8 +34,10 @@ export function createGuestSaveQueue(options: GuestSaveQueueOptions): SaveQueue 
       status: snapshot.status,
       savedAt: new Date(now()).toISOString(),
       help: snapshot.help ?? null,
+      game,
     })
-    if (record) onSaved?.(record)
+    // O registro de outra geração (jogo reiniciado em outra aba) não é o desta aba.
+    if (record && (record.game ?? 0) === game) onSaved?.(record)
   }
 
   return {

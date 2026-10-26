@@ -50,4 +50,6 @@ Cause of the failing case: the visitor store keeps the newest save per puzzle (`
 
 Not run: the "Sem limite" and lowered-limit variants (the reducer `reset` zeroes `usage` regardless of the limit, and no unit test showed otherwise).
 
-Conclusion: the single-tab defect from the issue does not reproduce for visitor or account. The two-tab visitor behaviour is a documented rule, and changing it needs a decision (spec update first, per the constitution).
+Resolution (decision of the repository owner, 2026-10-26): the visitor record now carries a game generation (`game`); "Jogar de novo" adds 1 and a save from an older generation is ignored (`decideGuestSave`), so a stale tab cannot undo the reset. Old records without `game` count as 0; no IndexedDB version bump (optional field). The account case needed no change.
+
+Conclusion (before the resolution): the single-tab defect from the issue does not reproduce for visitor or account. The two-tab visitor behaviour is a documented rule, and changing it needs a decision (spec update first, per the constitution).

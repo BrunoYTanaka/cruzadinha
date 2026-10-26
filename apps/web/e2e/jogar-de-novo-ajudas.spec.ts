@@ -58,9 +58,10 @@ test('conta: jogar de novo zera as ajudas, também depois de recarregar', async 
   await expectHelpsReset(page)
 })
 
-// Duas abas da mesma cruzada (só conta: no visitante vale o salvamento mais recente, feature 013): a aba aberta com a ajuda já usada guarda o estado antigo e não pode
+// Duas abas da mesma cruzada: a aba aberta com a ajuda já usada guarda o jogo antigo e não pode
+// devolvê-lo depois que a outra jogou de novo (issue #86).
 // devolvê-lo depois que a outra jogou de novo.
-for (const kind of ['conta'] as const) {
+for (const kind of ['visitante', 'conta'] as const) {
   test(`${kind}: a outra aba não devolve as ajudas depois de jogar de novo`, async ({
     page,
     context,

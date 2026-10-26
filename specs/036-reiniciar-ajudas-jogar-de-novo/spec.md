@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-26
 
-**Status**: Draft
+**Status**: Implemented (visitor two-tab case)
 
 **Input**: User description: "https://github.com/BrunoYTanaka/cruzadinha/issues/86" ([Bug]: ajudas não são reiniciadas ao clicar em "Jogar novamente")
 
@@ -48,6 +48,7 @@ Depois de jogar de novo, recarregar a página, sair e voltar ou abrir a mesma cr
 
 1. **Given** uma partida recém-reiniciada sem ajudas usadas, **When** a pessoa recarrega a página, **Then** os contadores continuam no limite completo e sem marcas.
 2. **Given** uma partida recém-reiniciada, **When** a pessoa usa uma ajuda e recarrega, **Then** só essa ajuda aparece como usada (a da partida anterior não volta).
+3. **Given** a mesma cruzada aberta em duas abas do mesmo aparelho (visitante ou conta), **When** a pessoa joga de novo em uma delas, **Then** a outra aba, ao continuar jogando ou ao recarregar, não devolve as ajudas nem as letras da partida anterior.
 
 ---
 
@@ -71,7 +72,7 @@ Se "Jogar de novo" não puder ser concluído (por exemplo, sem conexão, no caso
 - Reduzir o limite nos ajustes antes de jogar de novo: a nova partida usa o limite vigente, não o de quando a primeira partida começou.
 - Ajudas de outras cruzadas do mesmo aparelho não são alteradas.
 - Ajudas guardadas pelo visitante e pela conta não se misturam; reiniciar uma não altera a outra.
-- Duas abas do visitante na mesma cruzada seguem a regra já documentada (feature 013): o salvamento mais recente vence. Mudar isso é outra feature e fica fora desta correção.
+- Duas abas do visitante na mesma cruzada: o reinício feito em uma não é desfeito pelo salvamento da outra, que ainda guarda o jogo anterior. Isso refina a regra "o salvamento mais recente vence entre abas" da feature 013, que continua valendo dentro do mesmo jogo.
 - Melhor tempo e recorde continuam mantidos ao jogar de novo (regra existente).
 - Um salvamento ainda pendente da partida anterior não pode devolver as ajudas depois do reinício.
 
@@ -85,6 +86,7 @@ Se "Jogar de novo" não puder ser concluído (por exemplo, sem conexão, no caso
 - **FR-004**: O estado de ajudas reiniciado MUST persistir: depois de recarregar a página ou reabrir a cruzada no mesmo aparelho, as ajudas da partida anterior MUST NOT reaparecer.
 - **FR-005**: Se o reinício não puder ser concluído, o sistema MUST NOT alterar as ajudas, as marcas nem o tabuleiro.
 - **FR-006**: O reinício MUST afetar apenas a cruzada reiniciada: ajudas de outras cruzadas e os ajustes da pessoa MUST permanecer como estavam.
+- **FR-009**: Depois de um reinício, o salvamento de uma aba aberta antes dele MUST NOT sobrescrever o jogo novo (letras, tempo ou ajudas); a aba antiga mostra o jogo novo ao recarregar.
 - **FR-007**: O melhor tempo e o recorde MUST continuar mantidos, e as regras de "Jogar de novo" das specs 010 e 013 (conta exige o servidor; visitante reinicia no aparelho) MUST continuar valendo.
 - **FR-008**: O comportamento MUST ter testes automatizados cobrindo visitante e conta. Se o defeito for reproduzido, o teste de regressão MUST falhar sem a correção; se não for reproduzível, os testes ficam como proteção, a não reprodução é registrada e a pessoa que relatou é consultada antes de fechar a questão.
 
@@ -103,6 +105,8 @@ Se "Jogar de novo" não puder ser concluído (por exemplo, sem conexão, no caso
 - **SC-004**: Se o defeito for reproduzido, o teste de regressão falha antes da correção e passa depois dela; se não, os testes de proteção passam e o resultado da investigação fica registrado.
 
 ## Assumptions
+
+- O caso de duas abas do visitante foi o único que reproduziu (ver `research.md` §5) e, por mudar a regra de salvamento entre abas da feature 013, foi tratado aqui como parte desta correção por decisão da pessoa responsável.
 
 - A causa ainda não está confirmada; a investigação e a correção são tarefas do plano, e a spec só fixa o comportamento esperado.
 - O defeito está no site; não se espera mudança no servidor nem no banco.

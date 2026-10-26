@@ -28,6 +28,7 @@ export const guestProgressRecordSchema: z.ZodType<GuestProgress> = z
     bestMs: msSchema.nullable(),
     bestAt: instantSchema.nullable(),
     help: helpSchema.nullable(),
+    game: z.number().int().min(0).optional(),
   })
   .refine((record) => (record.bestMs === null) === (record.bestAt === null), {
     message: 'bestMs e bestAt devem vir juntos',
