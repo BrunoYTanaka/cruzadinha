@@ -37,14 +37,15 @@ GitHub Actions ──▶ coleta diária (direto no Neon), lançamento de versõe
 
 Onde fica cada valor:
 
-| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                         |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------ |
-| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                            |
-| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse                               |
-| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha |
-| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                 |
-| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                       |
-| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                  |
+| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                                                                                     |
+| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse                                                                                        |
+| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha                                                          |
+| Render                        | `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL`                                                                   | secret   | e-mail do cadastro e da recuperação, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha) |
+| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                                                                          |
+| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                                                                                |
+| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                                                                           |
 
 ## 2. Contas
 
@@ -130,6 +131,47 @@ Desde a feature 013 não há convites: qualquer pessoa joga como visitante, e o 
 ```
 
 `NODE_ENV=production` faz a CLI ignorar o `.env` local. O comando sai com `1` se o e-mail já tem conta (sem mudar nada) e com `2` para e-mail ou senha inválidos.
+
+### E-mail: confirmação do cadastro e recuperação de senha
+
+Desde a feature 034 o cadastro só cria a conta depois de a pessoa abrir um link enviado ao e-mail, e quem esquece a senha recebe um link para redefini-la. Os e-mails saem pelo [Resend](https://resend.com) (plano grátis: 100 e-mails por dia e 3.000 por mês). Sem captcha: a proteção contra abuso é o limite persistido por endereço, por e-mail e um teto global por dia.
+
+**Ordem do lançamento.** (1) Lançamento A (`shared` e API) com `REGISTRATION_ENABLED` ausente ou `false`; o site anterior segue funcionando, porque nunca chama as rotas novas. (2) Configure o Resend e as variáveis abaixo. (3) Lançamento B (o site). (4) Só então `REGISTRATION_ENABLED=true`. A recuperação de senha não depende dessa chave: atende contas que já existem (inclusive as criadas pela CLI).
+
+**Resend e DNS.**
+
+1. Crie a conta em <https://resend.com>, entrando com o GitHub, sem cartão.
+2. Em **Domains**, adicione o domínio de envio (um subdomínio, como `mail.seudominio.com`, mantém o resto do DNS intocado) e crie, no DNS da Cloudflare, os registros que o Resend mostra, **todos com o proxy desligado ("DNS only")**:
+   - **SPF**: um `TXT` e um `MX` do subdomínio de envio, como indicado pelo Resend;
+   - **DKIM**: o `TXT` `resend._domainkey` com a chave pública;
+   - **DMARC**: um `TXT` `_dmarc` com a política, por exemplo `v=DMARC1; p=none; rua=mailto:voce@seudominio.com` (comece com `p=none` e endureça depois de ver os relatórios).
+3. Espere o domínio ficar **Verified** no painel do Resend.
+4. Em **API Keys**, crie uma chave só com permissão de envio. Ela aparece uma vez: copie direto para o Render, nunca para o repositório, uma issue ou um chat. Uma chave exposta deve ser tratada como comprometida e rotacionada.
+
+**Variáveis no Render** (**`cruzadinha-api` → Environment**; todas com `sync: false` no `render.yaml`, então a sincronização do Blueprint não desfaz o painel):
+
+| Variável                        | Obrigatória          | Padrão | Conteúdo                                                                              |
+| ------------------------------- | -------------------- | ------ | ------------------------------------------------------------------------------------- |
+| `RESEND_API_KEY`                | para enviar e-mails  | —      | chave do Resend; sem ela as rotas que enviam e-mail respondem `503 email-unavailable` |
+| `MAIL_FROM`                     | com `RESEND_API_KEY` | —      | remetente de um domínio verificado: `Cruzadinha <nao-responda@mail.seudominio.com>`   |
+| `APP_BASE_URL`                  | com `RESEND_API_KEY` | —      | endereço público do site, `https`, sem barra final: `https://seusite.pages.dev`       |
+| `EMAIL_RESEND_INTERVAL_SECONDS` | não                  | 60     | intervalo mínimo entre envios ao mesmo e-mail, inteiro de 30 a 3600                   |
+| `EMAIL_PER_ADDRESS_DAILY_MAX`   | não                  | 5      | e-mails por destinatário por dia, inteiro de 1 a 20                                   |
+| `EMAIL_DAILY_CEILING`           | não                  | 90     | teto global por dia, inteiro de 1 a 99 (mantenha abaixo dos 100 do plano grátis)      |
+| `EMAIL_RECOVERY_RESERVE`        | não                  | 20     | as últimas vagas do teto, usadas só pela recuperação de senha; menor que o teto       |
+
+Um valor inválido, ou `RESEND_API_KEY` sem `MAIL_FROM` e `APP_BASE_URL`, impede a API de subir (a mensagem diz qual variável). Em desenvolvimento, sem a chave, o link aparece no log da API.
+
+**Cota e como ler a falha.** O teto global conta uma janela móvel de 24 horas, enquanto o Resend zera a cota diária à meia-noite UTC; por isso o teto interno nunca fica atrás do real. Quando o Resend responde `daily_quota_exceeded` ou `monthly_quota_exceeded`, a API grava a trava na tabela `email_send_block` e, até `blocked_until`, cadastro, reenvio e recuperação respondem `503 email-unavailable` sem chamar o Resend (o site mostra "Não foi possível enviar o e-mail agora. Tente novamente mais tarde.", sem citar cota). A tentativa que descobre a cota esgotada já tinha sido respondida; a trava vale da seguinte em diante. `rate_limit_exceeded` (pedidos por segundo) não cria trava. Para conferir:
+
+```sql
+SELECT blocked_until, reason FROM email_send_block;   -- linha vencida é ignorada
+SELECT count(*) FROM rate_limit_attempts WHERE action = 'EMAIL_SENT' AND key_type = 'GLOBAL' AND created_at > now() - interval '24 hours';
+```
+
+Falhas de envio que não são cota aparecem só no log da API (`e-mail não enviado`, com o motivo, sem endereço nem token); a pessoa usa o reenvio. Para liberar a trava antes da hora (por exemplo, depois de subir de plano), apague a linha: `DELETE FROM email_send_block;`.
+
+**Limpeza.** O passo `auth cleanup` do workflow `collect.yml` (duas vezes por dia, com o segredo `DATABASE_URL`) apaga pendências e tokens vencidos há mais de 7 dias e as contagens de envio com mais de 2 dias. Manualmente: `node apps/api/dist/cli.mjs auth cleanup`.
 
 ## 9. Verificação
 
@@ -221,6 +263,8 @@ O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzl
 1. Cadastre o secret `DATABASE_URL` (em **Repository secrets**) com a string do Neon, a mesma do Render. Sem ele, cada execução agendada termina em segundos com "coleta ignorada".
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
+
+Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 034), que apaga pendências de cadastro e tokens de recuperação vencidos e as contagens antigas de envio de e-mail, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
 
 Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem atividade. O job `keepalive` do próprio workflow reativa o agendamento todo dia 1. Para conferir ou reativar à mão:
 

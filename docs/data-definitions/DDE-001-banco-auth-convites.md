@@ -4,6 +4,7 @@
 
 | Version | Date       | Changes                                                                                                                                                                         |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.0.5` | 2026-10-26 | - A conta nasce depois de confirmar o e-mail por link e a senha é escolhida ali; recuperação de senha e novas tabelas na DDE-005 (034).                                         |
 | `0.0.4` | 2026-10-21 | - Gravação de configurações no limite de tentativas (021). - O que some com a conta (008, 021). - Links para a DDE-004.                                                         |
 | `0.0.3` | 2026-10-21 | - Ação SETTINGS_SAVE (021).                                                                                                                                                     |
 | `0.0.2` | 2026-10-20 | - Cadastro só com e-mail e senha, atrás de chave, e conta criada pelo autor (013). - Convites e INVITE_CREATE sem uso até o lançamento B (013). - Ação PUZZLE_FETCH (006, 013). |
@@ -50,7 +51,7 @@ Cobre o modelo de dados de contas, sessões, convites e tentativas sujeitas a li
 | created_at    | Data e hora do cadastro                        | Date      | Yes       | Preenchido pelo banco; UTC                                                |
 | updated_at    | Data e hora da última alteração                | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                    |
 
-A conta nasce pelo cadastro (só e-mail e senha, aceito só com a chave de configuração ligada; desligada por padrão) ou pela linha de comando do autor, com ou sem a chave e com as mesmas regras de e-mail e senha (spec 013, FR-014 a FR-019). As contas criadas com convite continuam válidas. Remover a conta remove as sessões dela, o progresso ([DDE-003](./DDE-003-progresso-usuario-puzzle.md); spec 008, FR-014) e as configurações ([DDE-004](./DDE-004-configuracoes-usuario.md); spec 021, FR-026).
+A conta nasce pelo cadastro (o e-mail é pedido, um link é enviado e a pessoa escolhe a senha ao abri-lo, [DDE-005](./DDE-005-verificacao-email-recuperacao-senha.md); aceito só com a chave de configuração ligada, desligada por padrão) ou pela linha de comando do autor, com ou sem a chave e com as mesmas regras de e-mail e senha (spec 013, FR-014 a FR-019). As contas criadas com convite continuam válidas. Remover a conta remove as sessões dela, o progresso ([DDE-003](./DDE-003-progresso-usuario-puzzle.md); spec 008, FR-014) e as configurações ([DDE-004](./DDE-004-configuracoes-usuario.md); spec 021, FR-026).
 
 ### Session
 
