@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getSettings, updateSettings } from '../services/settings-store'
-import { expectNoA11yViolations } from '../../test/axe'
-import { installThemeSync } from './theme'
+import { getSettings, updateSettings } from '../../services/settings-store'
+import { expectNoA11yViolations } from '../../../test/axe'
+import { installThemeSync } from '../theme/theme'
 import { ThemeButton } from './ThemeButton'
-import * as transition from './theme-transition'
+import * as transition from '../theme-transition/theme-transition'
 
 let stopSync: () => void = () => {}
 

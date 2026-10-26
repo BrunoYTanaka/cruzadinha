@@ -1,11 +1,11 @@
 import { useState, type MouseEvent } from 'react'
 import { flushSync } from 'react-dom'
-import { Tooltip } from '../components/Tooltip'
-import { buttonClass } from '../components/Button'
-import { VisuallyHidden } from '../components/VisuallyHidden'
-import { updateSettings, useSettings } from '../services/settings-store'
-import { nextTheme, themeLabel, type Theme } from './theme'
-import { startThemeTransition } from './theme-transition'
+import { Tooltip } from '../../components/Tooltip'
+import { buttonClass } from '../../components/Button'
+import { VisuallyHidden } from '../../components/VisuallyHidden'
+import { updateSettings, useSettings } from '../../services/settings-store'
+import { nextTheme, themeLabel, type Theme } from '../theme/theme'
+import { startThemeTransition } from '../theme-transition/theme-transition'
 import styles from './ThemeButton.module.css'
 
 // Ordem fixa dos rótulos empilhados; não é a ordem do ciclo (`nextTheme`).

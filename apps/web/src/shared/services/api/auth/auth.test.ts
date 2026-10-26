@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apiError, jsonResponse, mockApi } from '../../../test/http'
+import { apiError, jsonResponse, mockApi } from '../../../../test/http'
 import { getMe, getRegistration } from './auth'
-import { ApiRequestError, setUnauthenticatedHandler } from './client'
+import { ApiRequestError, setUnauthenticatedHandler } from '../client/client'
 
 const user = { id: '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a', email: 'ana@exemplo.com' }
 

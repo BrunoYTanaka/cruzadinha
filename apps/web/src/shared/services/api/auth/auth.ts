@@ -13,7 +13,7 @@ import {
   type VerifyEmailRequest,
 } from '@cruzadinha/shared'
 import { z } from 'zod'
-import { ApiRequestError, apiRequest, apiRequestNoContent } from './client'
+import { ApiRequestError, apiRequest, apiRequestNoContent } from '../client/client'
 
 // Sem sessão a pessoa é visitante (feature 013): o 401 vira `null` e não chama o tratador de 401.
 export async function getMe(): Promise<AuthResponse | null> {

@@ -3,7 +3,7 @@ import {
   type ProgressEnvelope,
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
-import { apiRequest } from './client'
+import { apiRequest } from '../client/client'
 
 function path(puzzleId: string): string {
   return `/api/progress/${encodeURIComponent(puzzleId)}`

@@ -1,5 +1,5 @@
 import { puzzleResponseSchema, type PuzzleResponse, type PuzzleSourceId } from '@cruzadinha/shared'
-import { apiRequest } from './client'
+import { apiRequest } from '../client/client'
 
 export function getPuzzleById(id: string): Promise<PuzzleResponse> {
   return apiRequest(`/api/puzzles/${encodeURIComponent(id)}`, puzzleResponseSchema)

@@ -3,7 +3,7 @@ import {
   type SaveSettingsRequest,
   type SettingsEnvelope,
 } from '@cruzadinha/shared'
-import { apiRequest } from './client'
+import { apiRequest } from '../client/client'
 
 // Configurações da conta (feature 021). A API anterior não tem a rota e responde 404. A
 // sincronização roda em segundo plano: uma sessão vencida não leva ao login por aqui (o 401 só
