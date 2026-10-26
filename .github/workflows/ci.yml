@@ -87,7 +87,8 @@ jobs:
       HOST: 127.0.0.1
       SEED_USER_EMAIL: dev@cruzadinha.local
       SEED_USER_PASSWORD: senha-de-teste-123
-      # O E2E cadastra conta pelo site (feature 013).
+      # Cadastro aberto para as telas do site; a conta do E2E real vem da CLI, porque o cadastro agora
+      # exige confirmar o e-mail (feature 034).
       REGISTRATION_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v7
