@@ -20,10 +20,12 @@
     "check:branch": "node scripts/check-branch-name.mjs",
     "check:ids": "node scripts/check-unique-ids.mjs",
     "check:ids:remote": "node scripts/check-unique-ids.mjs --remote",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:deps": "depcruise apps/web/src apps/api/src --config .dependency-cruiser.cjs --output-type err"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "dependency-cruiser": "^18.7.0",
     "eslint": "10.12",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "6.10",
