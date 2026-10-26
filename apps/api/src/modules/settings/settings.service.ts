@@ -6,6 +6,7 @@ import {
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
 import { savedAtTooFar } from '../../lib/saved-at'
+import { admitAddress } from '../rate-limit/address-gate'
 import type { RateWindow } from '../rate-limit/limits'
 import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { findSettings, upsertSettings, type StoredSettings } from './settings.repository'
@@ -63,20 +64,20 @@ export function createSettingsService({
 
     async save(userId, request, address) {
       const now = clock()
-      const key = {
-        action: 'SETTINGS_SAVE',
-        keyType: 'NETWORK_ADDRESS',
-        keyValue: address,
-      } as const
-      const limit = await rateLimiter.check([{ key, window: limits.settingsSave }], now)
-      if (!limit.allowed) {
+      const limit = await admitAddress(
+        rateLimiter,
+        now,
+        'SETTINGS_SAVE',
+        address,
+        limits.settingsSave,
+      )
+      if (!limit.ok) {
         return {
           ok: false,
           reason: 'too-many-attempts',
           retryAfterSeconds: limit.retryAfterSeconds,
         }
       }
-      await rateLimiter.record([key], now)
 
       const current = await findSettings(db, userId)
       const decision = decideSettingsSave(current, request, now)

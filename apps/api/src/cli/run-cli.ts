@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
 import { createAuthService } from '../modules/auth/auth.service'
+import { describeError } from '../db/errors'
 import { deleteExpiredAuthRows } from '../modules/auth/cleanup.repository'
 import { defaultRateLimits } from '../modules/rate-limit/limits'
 import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
@@ -97,6 +98,11 @@ async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
     rateLimiter: createRateLimiter(createRateLimitRepository(deps.db)),
     limits: defaultRateLimits,
     historyDays: deps.historyDays,
+    // Só nomes e códigos: a mensagem do erro pode trazer parâmetros de consulta ou corpo da fonte.
+    onError: ({ source, date, error }) =>
+      deps.stderr(
+        `[${puzzleSourceNames[source]}] Erro em ${date}: ${JSON.stringify(describeError(error))}\n`,
+      ),
   })
   const run = await puzzles.collect()
 

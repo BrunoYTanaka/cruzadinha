@@ -181,4 +181,19 @@ describe('GET/PUT /api/settings', () => {
     expect(blocked.json()).toMatchObject({ error: 'too-many-attempts' })
     expect(Number(blocked.headers['retry-after'])).toBeGreaterThan(0)
   })
+
+  it('pedidos simultâneos não passam do limite por endereço', async () => {
+    build({ ...defaultRateLimits, settingsSave: { max: 3, windowMinutes: 60 } })
+    const sid = await register('ana@exemplo.com')
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, (_, i) => putSettings({ settings, savedAt: at(-20 + i) }, sid)),
+    )
+    const codes = responses.map((response) => response.statusCode)
+    expect(codes.filter((code) => code === 200)).toHaveLength(3)
+    const blocked = responses.filter((response) => response.statusCode === 429)
+    expect(blocked).toHaveLength(5)
+    for (const response of blocked) {
+      expect(Number(response.headers['retry-after'])).toBeGreaterThan(0)
+    }
+  })
 })

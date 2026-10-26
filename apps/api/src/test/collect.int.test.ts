@@ -5,7 +5,7 @@ import { defaultRateLimits } from '../modules/rate-limit/limits'
 import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
 import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
-import type { CollectRun } from '../modules/puzzles/puzzles.service'
+import type { CollectErrorHandler, CollectRun } from '../modules/puzzles/puzzles.service'
 import type { FetchPuzzleResult } from '../sources/types'
 import { fakeListedSource, fakeSource, okResult, type FakeListedSource } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
@@ -206,7 +206,12 @@ describe('collect (várias fontes)', () => {
   function twoSources(
     globo: Map<string, FetchPuzzleResult>,
     cruzada: Map<string, FetchPuzzleResult>,
-    options: { historyDays?: number; throwOn?: ReadonlySet<string>; pauses?: number[] } = {},
+    options: {
+      historyDays?: number
+      throwOn?: ReadonlySet<string>
+      pauses?: number[]
+      onError?: CollectErrorHandler
+    } = {},
   ) {
     const first = fakeSource(globo, { throwOn: options.throwOn })
     const second = fakeSource(cruzada, { id: 'cruzadaonline' })
@@ -217,6 +222,7 @@ describe('collect (várias fontes)', () => {
       rateLimiter: createRateLimiter(createRateLimitRepository(db)),
       limits: defaultRateLimits,
       historyDays: options.historyDays ?? 0,
+      onError: options.onError,
       sleep: async (ms) => {
         options.pauses?.push(ms)
       },
@@ -261,6 +267,20 @@ describe('collect (várias fontes)', () => {
 
     expect(globo?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
     expect(cruzada?.report.saved).toEqual([today()])
+  })
+
+  it('entrega o erro inesperado do adaptador ao gancho com a fonte e a data', async () => {
+    const seen: Parameters<CollectErrorHandler>[0][] = []
+    const { service } = twoSources(
+      new Map([[today(), okResult(today())]]),
+      new Map([[today(), okResult(today(), 'cruzadaonline')]]),
+      { throwOn: new Set([today()]), onError: (info) => seen.push(info) },
+    )
+    await service.collect()
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toMatchObject({ source: 'oglobo', date: today() })
+    expect(seen[0]?.error).toBeInstanceOf(Error)
   })
 
   it('a data guardada de uma fonte não conta como guardada na outra', async () => {
@@ -334,6 +354,7 @@ describe('collect (fonte que lista edições, feature 030)', () => {
       historyDays?: number
       pauses?: number[]
       others?: ReturnType<typeof fakeSource>[]
+      onError?: CollectErrorHandler
     } = {},
   ) {
     return createPuzzlesService({
@@ -343,6 +364,7 @@ describe('collect (fonte que lista edições, feature 030)', () => {
       rateLimiter: createRateLimiter(createRateLimitRepository(db)),
       limits: defaultRateLimits,
       historyDays: options.historyDays ?? 31,
+      onError: options.onError,
       sleep: async (ms) => {
         options.pauses?.push(ms)
       },
@@ -469,6 +491,15 @@ describe('collect (fonte que lista edições, feature 030)', () => {
 
     expect(run.sources[0]?.report.saved).toEqual([today()])
     expect(run.sources[1]?.report.failed).toEqual([{ date: today(), reason: 'source-down' }])
+  })
+
+  it('entrega ao gancho o erro de uma fonte listada', async () => {
+    const seen: Parameters<CollectErrorHandler>[0][] = []
+    const boom = fakeListedSource([{ date: today() }], { throwOnList: true })
+    await withListed(boom, { onError: (info) => seen.push(info) }).collect()
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toMatchObject({ source: 'clube', date: today() })
   })
 
   it('uma falha ao carregar uma edição não impede a coleta das outras fontes', async () => {

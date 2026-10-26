@@ -2,6 +2,7 @@ import type { Database } from '../../db/client'
 import { addDays, type Clock } from '../../lib/clock'
 import { createDummyHash, hashPassword, verifyPassword } from '../../lib/password'
 import { generateSessionToken, sha256Hex } from '../../lib/tokens'
+import { admitAddress } from '../rate-limit/address-gate'
 import type { RateLimits } from '../rate-limit/limits'
 import type { RateLimiter } from '../rate-limit/rate-limit.service'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
@@ -74,17 +75,10 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
   return {
     async admitRegistration(address) {
       const now = clock()
-      const key = { action: 'REGISTER', keyType: 'NETWORK_ADDRESS', keyValue: address } as const
-      const decision = await rateLimiter.check([{ key, window: limits.register }], now)
-      if (!decision.allowed) {
-        return {
-          ok: false,
-          reason: 'too-many-attempts',
-          retryAfterSeconds: decision.retryAfterSeconds,
-        }
-      }
-      await rateLimiter.record([key], now)
-      return { ok: true }
+      const admission = await admitAddress(rateLimiter, now, 'REGISTER', address, limits.register)
+      return admission.ok
+        ? { ok: true }
+        : { ok: false, reason: 'too-many-attempts', retryAfterSeconds: admission.retryAfterSeconds }
     },
 
     async createAccount({ email, password }) {
