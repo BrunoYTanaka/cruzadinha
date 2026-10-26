@@ -14,8 +14,7 @@ import { AppLayout } from './AppLayout'
 import { directPlayLoader } from '../pages/library/direct-play'
 import { NotFoundPage } from '../shared/components/NotFoundPage'
 import { RouteError } from './RouteError'
-import { viewerLoader } from '../features/session'
-import { installSessionHandlers } from '../features/session'
+import { viewerLoader, installSessionHandlers } from '../features/session'
 
 const serverReadyLoader: LoaderFunction = async ({ request }) => {
   await waitForServer({ signal: request.signal })
@@ -53,7 +52,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
                   path: '/jogo/:puzzleId',
                   // O código do jogo (tabuleiro, relógio, fila de salvamento) só carrega ao jogar.
                   lazy: async () => ({
-                    Component: (await import('../features/game/GamePage')).GamePage,
+                    Component: (await import('../pages/game/GamePage')).GamePage,
                   }),
                 },
               ],

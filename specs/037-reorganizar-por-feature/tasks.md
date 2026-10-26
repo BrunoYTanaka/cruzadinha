@@ -77,19 +77,19 @@ description: 'Task list for 037-reorganizar-por-feature'
 
 ### PR 5: `refactor/web-guest-library-settings`
 
-- [ ] T023 [P] [US3] `features/guest/`: split into `services/` (`guest-store`, `guest-save-queue`, IndexedDB code) and `helpers/` (`guest-library`, `guest-record` if pure); add `index.ts`; the rule "guest imports no feature" is the target
-- [ ] T024 [P] [US3] `features/library/`: `components/` (`Calendar`, `DayCell`, `LibraryLegend`, `SourceTabs`, `TodayCards`), `hooks/` (`useSourceLibraries`, `useLibraryWidth`), `helpers/` (`calendar`, `today-cards`, `source-down`), `services/` (`library-width`, `source-choice`); add `index.ts`
-- [ ] T025 [P] [US3] `features/settings/`: `components/` (`SettingsButton`, `SettingsDialog`), `services/` (`settings-sync`, `settings-open`); add `index.ts`
-- [ ] T026 [US3] Replace cross-feature deep imports with the `index.ts` entries (`session < guest < library < settings < game`); Gate, open PR 5
+- [X] T023 [P] [US3] `features/guest/`: split into `services/` (`guest-store`, `guest-save-queue`, IndexedDB code) and `helpers/` (`guest-library`, `guest-record` if pure); add `index.ts`; the rule "guest imports no feature" is the target
+- [X] T024 [P] [US3] `features/library/`: `components/` (`Calendar`, `DayCell`, `LibraryLegend`, `SourceTabs`, `TodayCards`), `hooks/` (`useSourceLibraries`, `useLibraryWidth`), `helpers/` (`calendar`, `today-cards`, `source-down`), `services/` (`library-width`, `source-choice`); add `index.ts`
+- [X] T025 [P] [US3] `features/settings/`: `components/` (`SettingsButton`, `SettingsDialog`), `services/` (`settings-sync`, `settings-open`); add `index.ts`
+- [X] T026 [US3] Replace cross-feature deep imports with the `index.ts` entries (`session < guest < library < settings < game`); Gate, open PR 5
 
 ### PR 6: `refactor/web-game-and-pages`
 
-- [ ] T027 [US3] Split `apps/web/src/features/game/` (68 flat files) into `components/` (board, clue, help, keyboard, dialogs, toolbar), `hooks/` (`useGame`, `useClock`, `useBoardSize`, `useCopyClue`, `useDesktopLayout`, `useMeasuredSpace`, `useOnScreenKeyboard`), `services/` (`help-storage`, `save-queue`, `board-size` and `clock` when they use `localStorage` or the settings store) and `helpers/` (pure files: `attribution`, `board-keys`); record in `research.md` which files went where and any that did not fit; at most 20 files directly in any subfolder (SC-005)
-- [ ] T028 [US3] Create `apps/web/src/pages/` with one folder each and move only composition into it: `login`, `register`, `verify-email`, `forgot-password`, `reset-password` (from `features/auth`, now thin), `library` (`LibraryPage*` plus `app/direct-play*`), `day` (`DayRoute*`), `game` (`GamePage*` and its css/tests), `status` (`StatusPage*`)
-- [ ] T029 [US3] Slim `pages/game/GamePage.tsx`: move logic that is not composition into `features/game/hooks/` (for example the source-library requests on completion and the opening/loading of the puzzle) until the page holds only composition: no `useQuery`/`useMutation`, no storage or save-queue logic and no import of a feature file other than its `index.ts` (`check:deps` clean); write in `research.md` what left the page and why (spec, Edge Cases)
-- [ ] T030 [US3] `apps/web/src/app/router.tsx`: import pages by direct path (`../pages/<name>/<Page>`), keep `lazy: import('../pages/game/GamePage')`; add the `router` exception to the rule in `.dependency-cruiser.cjs` (still `warn`)
-- [ ] T031 [US3] Compare `apps/web/dist/assets` with the baseline of T002 (research.md D6); if the entry chunk grew above +5% or the game chunk was absorbed, fix the entry-point imports before continuing
-- [ ] T032 [US3] Gate, open PR 6; `apps/web/src/` has no folder from the old layout (`api/`, `components/`, `lib/`, `themes/`, `game-logic/`, `features/auth`)
+- [X] T027 [US3] Split `apps/web/src/features/game/` (68 flat files) into `components/` (board, clue, help, keyboard, dialogs, toolbar), `hooks/` (`useGame`, `useClock`, `useBoardSize`, `useCopyClue`, `useDesktopLayout`, `useMeasuredSpace`, `useOnScreenKeyboard`), `services/` (`help-storage`, `save-queue`, `board-size` and `clock` when they use `localStorage` or the settings store) and `helpers/` (pure files: `attribution`, `board-keys`); record in `research.md` which files went where and any that did not fit; at most 20 files directly in any subfolder (SC-005)
+- [X] T028 [US3] Create `apps/web/src/pages/` with one folder each and move only composition into it: `login`, `register`, `verify-email`, `forgot-password`, `reset-password` (from `features/auth`, now thin), `library` (`LibraryPage*` plus `app/direct-play*`), `day` (`DayRoute*`), `game` (`GamePage*` and its css/tests), `status` (`StatusPage*`)
+- [X] T029 [US3] Slim `pages/game/GamePage.tsx`: move logic that is not composition into `features/game/hooks/` (for example the source-library requests on completion and the opening/loading of the puzzle) until the page holds only composition: no `useQuery`/`useMutation`, no storage or save-queue logic and no import of a feature file other than its `index.ts` (`check:deps` clean); write in `research.md` what left the page and why (spec, Edge Cases)
+- [X] T030 [US3] `apps/web/src/app/router.tsx`: import pages by direct path (`../pages/<name>/<Page>`), keep `lazy: import('../pages/game/GamePage')`; add the `router` exception to the rule in `.dependency-cruiser.cjs` (still `warn`)
+- [X] T031 [US3] Compare `apps/web/dist/assets` with the baseline of T002 (research.md D6); if the entry chunk grew above +5% or the game chunk was absorbed, fix the entry-point imports before continuing
+- [X] T032 [US3] Gate, open PR 6; `apps/web/src/` has no folder from the old layout (`api/`, `components/`, `lib/`, `themes/`, `game-logic/`, `features/auth`)
 
 ---
 

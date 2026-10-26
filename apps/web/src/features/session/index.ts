@@ -1,14 +1,14 @@
-export { SessionExpiredNotice } from './SessionExpiredNotice'
+export { SessionExpiredNotice } from './components/SessionExpiredNotice'
 export {
   authMessages,
   emailRequestErrorMessage,
   invalidFields,
   loginErrorMessage,
-} from './messages'
-export { buildLoginPath, safeNext } from './redirect'
-export { clearEnded, useSessionEnded } from './session-ended'
-export { clearExpired } from './session-expired'
-export { installSessionHandlers } from './session-handlers'
+} from './helpers/messages'
+export { buildLoginPath, safeNext } from './helpers/redirect'
+export { clearEnded, useSessionEnded } from './services/session-ended'
+export { clearExpired } from './services/session-expired'
+export { installSessionHandlers } from './services/session-handlers'
 export {
   sessionQueryOptions,
   toViewer,
@@ -17,6 +17,6 @@ export {
   useSessionQuery,
   useViewer,
   viewerKey,
-} from './useSession'
-export type { Viewer } from './useSession'
-export { viewerLoader } from './viewer'
+} from './hooks/useSession'
+export type { Viewer } from './hooks/useSession'
+export { viewerLoader } from './services/viewer'
