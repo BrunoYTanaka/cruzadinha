@@ -4,8 +4,8 @@ import {
   type EmailRequestAccepted,
 } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
-import { sendEmailUnavailable, sendError, sendTooManyAttempts } from '../../../http/errors'
-import type { EmailService } from '../../email/email.service'
+import { sendEmailUnavailable, sendError, sendTooManyAttempts } from '../../../platform/http/errors'
+import type { EmailService } from '../../../platform/email'
 import { clearSessionCookie } from '../sessions/session-cookie'
 import { invalidFields, TOO_MANY_WITH_BODY } from '../route-helpers'
 import { forgotPasswordSchema, resetPasswordSchema } from './recovery.schemas'

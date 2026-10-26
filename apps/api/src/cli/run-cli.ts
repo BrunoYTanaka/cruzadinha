@@ -1,12 +1,13 @@
 import { emailSchema, passwordSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { parseArgs } from 'node:util'
-import type { Database } from '../db/client'
-import type { Clock } from '../lib/clock'
-import { createAuthService } from '../modules/identity'
-import { deleteExpiredAuthRows } from '../modules/identity'
-import { defaultRateLimits } from '../modules/rate-limit/limits'
-import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
-import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
+import type { Database } from '../platform/db/client'
+import type { Clock } from '../platform/lib/clock'
+import { createAuthService, deleteExpiredAuthRows } from '../modules/identity'
+import {
+  defaultRateLimits,
+  createRateLimitRepository,
+  createRateLimiter,
+} from '../platform/rate-limit'
 import { createPuzzlesService } from '../modules/puzzles'
 import type { PuzzleSource } from '../sources/types'
 

@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import type { ServerConfig } from '../../../config'
-import { sendError } from '../../../http/errors'
-import type { Clock } from '../../../lib/clock'
+import { sendError } from '../../../platform/http/errors'
+import type { Clock } from '../../../platform/lib/clock'
 import type { AuthService, AuthUser } from './auth.service'
 import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session-cookie'
 

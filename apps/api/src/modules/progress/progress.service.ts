@@ -4,9 +4,9 @@ import {
   type ProgressCells,
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
-import type { Database } from '../../db/client'
-import type { Clock } from '../../lib/clock'
-import { savedAtTooFar } from '../../lib/saved-at'
+import type { Database } from '../../platform/db/client'
+import type { Clock } from '../../platform/lib/clock'
+import { savedAtTooFar } from '../../platform/lib/saved-at'
 import { findPuzzleGridById } from '../puzzles'
 import {
   ensureRow,

@@ -9,8 +9,12 @@ import { ErrorState, LoadingState } from '../../shared/components/ErrorState'
 import { NotFoundPage } from '../../shared/components/NotFoundPage'
 import { parseIsoDate, todayInBrasilia } from '../../shared/helpers/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
-import { loadSourceChoice } from '../../features/library'
-import { clearSourceDown, markNoPuzzle, markSourceDown } from '../../features/library'
+import {
+  loadSourceChoice,
+  clearSourceDown,
+  markNoPuzzle,
+  markSourceDown,
+} from '../../features/library'
 
 export function DayRoute() {
   const { date } = useParams()

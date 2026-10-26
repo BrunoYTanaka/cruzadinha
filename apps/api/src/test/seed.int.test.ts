@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
-import { puzzles, users } from '../db/schema'
-import { createDatabase } from '../db/client'
+import { puzzles, users } from '../platform/db/schema'
+import { createDatabase } from '../platform/db/client'
 import { runSeed } from '../seed/seed-user'
 import {
   validatePuzzleWithSolution,
@@ -10,7 +10,7 @@ import {
   puzzleSchema,
   solutionSchema,
 } from '@cruzadinha/shared'
-import { todayInSaoPaulo } from '../lib/dates'
+import { todayInSaoPaulo } from '../platform/lib/dates'
 import { buildTestApp } from './app'
 import { fakeSource, okResult } from './fake-source'
 import { openTestDatabase, testClock, truncateAll } from './database'

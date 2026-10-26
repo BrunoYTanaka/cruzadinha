@@ -6,7 +6,7 @@ import {
   optionalSessionSecurity,
   sourceQueryProperty,
   toDocSchema,
-} from '../../docs/doc-schema'
+} from '../../platform/docs/doc-schema'
 
 export const getLibrarySchema = {
   tags: ['library'],

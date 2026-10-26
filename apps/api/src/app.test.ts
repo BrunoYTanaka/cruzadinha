@@ -3,8 +3,8 @@ import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from './app'
 import { loadConfig } from './config'
-import { createDatabase } from './db/client'
-import type { DatabaseProbe } from './db/probe'
+import { createDatabase } from './platform/db/client'
+import type { DatabaseProbe } from './platform/db/probe'
 import { API_VERSION } from './version'
 
 const config = loadConfig({

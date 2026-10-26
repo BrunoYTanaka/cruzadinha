@@ -10,7 +10,7 @@ import {
   errorResponse,
   toDocSchema,
   withFieldDescription,
-} from '../../../docs/doc-schema'
+} from '../../../platform/docs/doc-schema'
 import {
   emailDescription,
   tooManyAttempts,

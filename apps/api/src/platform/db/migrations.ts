@@ -4,7 +4,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 
-// Sobe a partir deste arquivo até achar apps/api/drizzle: funciona em src/db/ (tsx) e em dist/.
+// Sobe a partir deste arquivo até achar apps/api/drizzle: funciona em src/platform/db/ (tsx) e em dist/.
 function findMigrationsFolder(start: string): string {
   let dir = start
   for (;;) {

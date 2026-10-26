@@ -17,10 +17,10 @@ import {
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { buildApp } from '../app'
-import { loadConfig } from '../config'
+import { buildApp } from '../../app'
+import { loadConfig } from '../../config'
 import { createDatabase } from '../db/client'
-import { buildSamplePuzzle } from '../seed/seed-puzzle'
+import { buildSamplePuzzle } from '../../seed/seed-puzzle'
 import type { DatabaseProbe } from '../db/probe'
 import { toDocSchema } from './doc-schema'
 

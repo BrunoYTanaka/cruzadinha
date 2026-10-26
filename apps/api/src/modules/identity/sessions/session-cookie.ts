@@ -1,6 +1,6 @@
 import type { FastifyReply } from 'fastify'
 import type { ServerConfig } from '../../../config'
-import { SESSION_COOKIE } from '../../../http/session-cookie-name'
+import { SESSION_COOKIE } from '../../../platform/http/session-cookie-name'
 
 export { SESSION_COOKIE }
 

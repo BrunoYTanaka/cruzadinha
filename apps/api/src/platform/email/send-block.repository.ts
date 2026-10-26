@@ -1,6 +1,6 @@
 import { eq, gt, and, sql } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { emailSendBlock } from '../../db/schema'
+import type { Executor } from '../db/client'
+import { emailSendBlock } from '../db/schema'
 import type { QuotaReason } from './quota'
 
 const BLOCK_ID = 1

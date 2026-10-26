@@ -6,7 +6,7 @@ import {
   setCookieHeader,
   toDocSchema,
   withFieldDescription,
-} from '../../../docs/doc-schema'
+} from '../../../platform/docs/doc-schema'
 import { emailDescription, sessionOpened, authenticated, tooManyAttempts } from '../doc-parts'
 
 export const loginSchema = {

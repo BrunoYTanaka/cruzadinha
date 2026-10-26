@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const workflow = readFileSync(
-  new URL('../../../../.github/workflows/collect.yml', import.meta.url),
+  new URL('../../../../../.github/workflows/collect.yml', import.meta.url),
   'utf8',
 )
 
@@ -45,7 +45,7 @@ describe('workflow de coleta', () => {
   })
 
   it('não traz valores do .env.example', () => {
-    const example = readFileSync(new URL('../../../../.env.example', import.meta.url), 'utf8')
+    const example = readFileSync(new URL('../../../../../.env.example', import.meta.url), 'utf8')
     const values = example
       .split('\n')
       .filter((line) => /^[A-Z_]+=./.test(line))

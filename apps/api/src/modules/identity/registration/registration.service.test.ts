@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Database } from '../../../db/client'
-import { sha256Hex } from '../../../lib/tokens'
-import type { EmailService } from '../../email/email.service'
-import type { EmailMessage } from '../../email/types'
-import { defaultRateLimits } from '../../rate-limit/limits'
-import { createMemoryRateRepository } from '../../rate-limit/memory-repository'
-import { createRateLimiter } from '../../rate-limit/rate-limit.service'
+import type { Database } from '../../../platform/db/client'
+import { sha256Hex } from '../../../platform/lib/tokens'
+import type { EmailService } from '../../../platform/email/email.service'
+import type { EmailMessage } from '../../../platform/email/types'
+import { defaultRateLimits } from '../../../platform/rate-limit/limits'
+import { createMemoryRateRepository } from '../../../platform/rate-limit/memory-repository'
+import { createRateLimiter } from '../../../platform/rate-limit/rate-limit.service'
 import { createRegistrationService } from './registration.service'
 
 const repos = vi.hoisted(() => ({
@@ -36,7 +36,9 @@ vi.mock('../users.repository', () => ({
     return { userId: 'u1', email: values.email }
   },
 }))
-vi.mock('../../../lib/password', () => ({ hashPassword: async (value: string) => `hash:${value}` }))
+vi.mock('../../../platform/lib/password', () => ({
+  hashPassword: async (value: string) => `hash:${value}`,
+}))
 
 let now: Date
 let sent: { kind: string; message: EmailMessage; undo: (() => Promise<void>) | undefined }[]

@@ -4,7 +4,7 @@ import {
   retryAfterHeader,
   setCookieHeader,
   toDocSchema,
-} from '../../docs/doc-schema'
+} from '../../platform/docs/doc-schema'
 
 export const emailDescription =
   'Espaços nas pontas são removidos e maiúsculas viram minúsculas antes da checagem.'

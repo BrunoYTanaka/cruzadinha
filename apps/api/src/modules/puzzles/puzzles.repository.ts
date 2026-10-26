@@ -8,8 +8,8 @@ import {
   type Solution,
 } from '@cruzadinha/shared'
 import { and, eq, inArray, sql } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { puzzles } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import { puzzles } from '../../platform/db/schema'
 
 export type StoredPuzzle = { puzzleId: string; puzzle: Puzzle; solution: Solution }
 

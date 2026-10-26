@@ -1,6 +1,10 @@
 import { and, eq, lt, or } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { passwordResetTokens, pendingRegistrations, rateLimitAttempts } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import {
+  passwordResetTokens,
+  pendingRegistrations,
+  rateLimitAttempts,
+} from '../../platform/db/schema'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 // Pendências e tokens ficam uma semana depois de vencer ou ser usados, para um suporte ver o que

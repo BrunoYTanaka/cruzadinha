@@ -1,10 +1,10 @@
 import { and, eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { rateLimitAttempts } from '../db/schema'
-import { hashPassword } from '../lib/password'
+import { rateLimitAttempts } from '../platform/db/schema'
+import { hashPassword } from '../platform/lib/password'
 import { insertIfEmailFree } from '../modules/identity/users.repository'
-import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
+import { defaultRateLimits, type RateLimits } from '../platform/rate-limit/limits'
 import { buildTestApp } from './app'
 import { openTestDatabase, testClock, truncateAll } from './database'
 

@@ -1,14 +1,16 @@
 import { createHash } from 'node:crypto'
-import type { Database } from '../../../db/client'
-import { addDays, type Clock } from '../../../lib/clock'
-import { hashPassword } from '../../../lib/password'
-import { generateSessionToken, sha256Hex } from '../../../lib/tokens'
-import type { EmailService } from '../../email/email.service'
-import { existingAccountNotice, verificationEmail } from '../../email/templates'
-import { admitAddress, type AddressAdmission } from '../../rate-limit/address-gate'
-import { enterIntervalGate } from '../../rate-limit/interval-gate'
-import type { RateLimits } from '../../rate-limit/limits'
-import type { RateLimiter } from '../../rate-limit/rate-limit.service'
+import type { Database } from '../../../platform/db/client'
+import { addDays, type Clock } from '../../../platform/lib/clock'
+import { hashPassword } from '../../../platform/lib/password'
+import { generateSessionToken, sha256Hex } from '../../../platform/lib/tokens'
+import type { EmailService } from '../../../platform/email'
+import { existingAccountNotice, verificationEmail } from '../../../platform/email'
+import {
+  admitAddress,
+  type AddressAdmission,
+  enterIntervalGate,
+} from '../../../platform/rate-limit'
+import type { RateLimits, RateLimiter } from '../../../platform/rate-limit'
 import { consumePendingByTokenHash, renewPendingToken, upsertPending } from './pending.repository'
 import { findUserByEmail, insertIfEmailFree } from '../users.repository'
 

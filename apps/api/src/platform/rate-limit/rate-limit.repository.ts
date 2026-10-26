@@ -1,6 +1,6 @@
 import { and, count, eq, gt, inArray, lt, min, sql } from 'drizzle-orm'
-import type { Database, Executor } from '../../db/client'
-import { rateLimitAttempts, type rateLimitActions, type rateLimitKeyTypes } from '../../db/schema'
+import type { Database, Executor } from '../db/client'
+import { rateLimitAttempts, type rateLimitActions, type rateLimitKeyTypes } from '../db/schema'
 
 export type RateLimitKey = {
   action: (typeof rateLimitActions)[number]

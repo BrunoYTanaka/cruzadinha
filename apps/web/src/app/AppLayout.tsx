@@ -2,14 +2,16 @@ import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../shared/components/Button'
 import { Notice } from '../shared/components/Notice'
-import { buildLoginPath } from '../features/session'
+import {
+  buildLoginPath,
+  useLogoutMutation,
+  useSessionQuery,
+  clearEnded,
+  useSessionEnded,
+} from '../features/session'
 import { clearRememberedSource } from '../features/library'
-import { useLogoutMutation, useSessionQuery } from '../features/session'
-import { SettingsButton } from '../features/settings'
-import { SettingsDialog } from '../features/settings'
-import { useSettingsSync } from '../features/settings'
+import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import styles from './AppLayout.module.css'
-import { clearEnded, useSessionEnded } from '../features/session'
 
 // Telas de conta da feature 035, além do login e do cadastro.
 const ACCOUNT_PATHS = new Set(['/verificar-email', '/esqueci-a-senha', '/redefinir-senha'])

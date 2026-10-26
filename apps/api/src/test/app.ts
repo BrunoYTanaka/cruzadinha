@@ -1,12 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../app'
 import { loadConfig } from '../config'
-import type { Database } from '../db/client'
-import type { Clock } from '../lib/clock'
-import { hashPassword } from '../lib/password'
+import type { Database } from '../platform/db/client'
+import type { Clock } from '../platform/lib/clock'
+import { hashPassword } from '../platform/lib/password'
 import { insertIfEmailFree } from '../modules/identity/users.repository'
-import type { RateLimits } from '../modules/rate-limit/limits'
-import type { EmailSender } from '../modules/email/types'
+import type { RateLimits } from '../platform/rate-limit/limits'
+import type { EmailSender } from '../platform/email/types'
 import type { PuzzleSource } from '../sources/types'
 
 export function buildTestApp(options: {

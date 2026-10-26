@@ -1,6 +1,6 @@
 import { isoDateSchema, levelSchema } from '@cruzadinha/shared'
-import { systemClock, type Clock } from '../../lib/clock'
-import { todayInSaoPaulo } from '../../lib/dates'
+import { systemClock, type Clock } from '../../platform/lib/clock'
+import { todayInSaoPaulo } from '../../platform/lib/dates'
 import type { FetchFailureReason, FetchPuzzleResult, PuzzleSource } from '../types'
 import { convertCruzadasBrasil } from './convert'
 import { readPageData } from './page-data'

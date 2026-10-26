@@ -1,6 +1,6 @@
 import { healthStatusSchema } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import type { DatabaseProbe } from '../../db/probe'
+import type { DatabaseProbe } from '../../platform/db/probe'
 import { getHealth } from './health.service'
 
 function probe(check: () => Promise<boolean>): DatabaseProbe {

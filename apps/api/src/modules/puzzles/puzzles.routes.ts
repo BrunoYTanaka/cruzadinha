@@ -6,7 +6,7 @@ import {
 } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { sendError, sendTooManyAttempts } from '../../http/errors'
+import { sendError, sendTooManyAttempts } from '../../platform/http/errors'
 import type { OptionalSession } from '../identity'
 import { getPuzzleByDateSchema, getPuzzleByIdSchema } from './puzzles.schemas'
 import type { GetPuzzleResult, PuzzlesService } from './puzzles.service'

@@ -2,7 +2,7 @@ import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import fp from 'fastify-plugin'
 import { z } from 'zod'
-import packageJson from '../../package.json' with { type: 'json' }
+import packageJson from '../../../package.json' with { type: 'json' }
 import { SESSION_COOKIE } from '../http/session-cookie-name'
 
 const { version } = z.object({ version: z.string().min(1) }).parse(packageJson)

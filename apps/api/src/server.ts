@@ -1,8 +1,8 @@
 import { buildApp } from './app'
 import { loadConfig, type ServerConfig } from './config'
-import { createDatabase } from './db/client'
-import { describeMigrationError, runMigrations } from './db/migrations'
-import { createPostgresProbe } from './db/probe'
+import { createDatabase } from './platform/db/client'
+import { describeMigrationError, runMigrations } from './platform/db/migrations'
+import { createPostgresProbe } from './platform/db/probe'
 import { loadDotEnvIfPresent } from './env-file'
 import { describeListenError } from './listen-error'
 

@@ -9,8 +9,7 @@ import { useQueries, type UseQueryResult } from '@tanstack/react-query'
 import { getLibrary } from '../../../shared/services/api/library'
 import { queryKeys } from '../../../shared/services/api/query-keys'
 import { useViewer, viewerKey, type Viewer } from '../../session'
-import { mergeGuestLibrary } from '../../guest'
-import { guestStore } from '../../guest'
+import { mergeGuestLibrary, guestStore } from '../../guest'
 
 export type SourceLibrary = {
   source: PuzzleSourceId

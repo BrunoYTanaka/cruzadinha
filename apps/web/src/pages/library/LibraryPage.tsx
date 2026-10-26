@@ -14,18 +14,23 @@ import {
   compareMonths,
   currentMonth,
   firstNavigableMonth,
+  Calendar,
+  LibraryLegend,
+  KEYBOARD_STEP,
+  MIN_WIDTH,
+  widthFromDrag,
+  clearRememberedSource,
+  useSourceChoice,
+  isSourceDown,
+  readNoPuzzleDates,
+  SourceTabs,
+  completedInMonth,
+  TodayCards,
+  useLibraryWidth,
+  libraryOf,
+  useSourceLibraries,
 } from '../../features/library'
-import { Calendar } from '../../features/library'
 import styles from './LibraryPage.module.css'
-import { LibraryLegend } from '../../features/library'
-import { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from '../../features/library'
-import { clearRememberedSource, useSourceChoice } from '../../features/library'
-import { isSourceDown, readNoPuzzleDates } from '../../features/library'
-import { SourceTabs } from '../../features/library'
-import { completedInMonth } from '../../features/library'
-import { TodayCards } from '../../features/library'
-import { useLibraryWidth } from '../../features/library'
-import { libraryOf, useSourceLibraries } from '../../features/library'
 
 // Computador: o calendário fica largo e pode ser redimensionado pela alça da borda.
 export const LIBRARY_DESKTOP_QUERY = '(min-width: 861px)'

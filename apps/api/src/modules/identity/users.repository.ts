@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { users } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import { users } from '../../platform/db/schema'
 
 export type UserRow = { userId: string; email: string; passwordHash: string }
 

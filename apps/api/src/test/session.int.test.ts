@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { sessions } from '../db/schema'
-import { sha256Hex } from '../lib/tokens'
-import type { RateLimits } from '../modules/rate-limit/limits'
+import { sessions } from '../platform/db/schema'
+import { sha256Hex } from '../platform/lib/tokens'
+import type { RateLimits } from '../platform/rate-limit/limits'
 import { buildTestApp, sessionCookieFrom, signUpForTest } from './app'
 import { DAY, MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 

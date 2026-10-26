@@ -105,14 +105,14 @@ description: 'Task list for 037-reorganizar-por-feature'
 - [X] T034 [US4] Create `apps/api/src/modules/identity/index.ts` exporting `createRequireSession`, `createOptionalSession`, `SESSION_COOKIE`, `createAccount` and the route registrars; switch `modules/{puzzles,library,progress,settings}`, `platform/docs` (still `docs/` until T038), `cli/run-cli.ts`, `app.ts` and `src/test/app.ts` to it
 - [X] T035 [US4] `git mv` `apps/api/src/db/{seed,seed-user,seed-puzzle}.ts` (+ tests) to `apps/api/src/seed/`; fix the script `db:seed` in `apps/api/package.json` and the references in `docs/` and CLAUDE.md
 - [X] T036 [US4] Decide in `research.md` how `modules/progress` reaches `puzzles.repository` (entry `modules/puzzles/index.ts` or a named exception in the config), apply it
-- [ ] T037 [US4] Gate (with `test:int`), compare `GET /api/docs/json` with `openapi-before.json` (empty diff), open PR 7
+- [X] T037 [US4] Gate (with `test:int`), compare `GET /api/docs/json` with `openapi-before.json` (empty diff), open PR 7
 
 ### PR 8: `refactor/api-platform`
 
-- [ ] T038 [P] [US4] `git mv` `apps/api/src/{db,http,lib,docs}` to `apps/api/src/platform/` (the `db/` seed files already left in T035); fix every import in `src/`, `apps/api/drizzle.config.ts` (`schema: './src/db/schema.ts'` becomes `./src/platform/db/schema.ts`), `vitest*.config.ts`, `package.json` scripts (`db:generate`, `db:migrate`), `Dockerfile`, `apps/api/tsdown.config.ts` entries and the file lookups of `version.test.ts`, `collect-workflow.test.ts`, `resend-sender.test.ts` and the `sources/*/fixtures.ts` files
-- [ ] T039 [P] [US4] `git mv` `modules/rate-limit` and `modules/email` to `apps/api/src/platform/rate-limit/` and `platform/email/`; add `index.ts` in each exporting only the public API (limits, `RateLimiter`, gates; `EmailService`, senders, templates, `EmailSender`); switch `identity`, `puzzles`, `settings`, `cli/run-cli.ts`, `app.ts` and `src/test/*` to the entries; `platform/email` imports `platform/rate-limit` by its entry
-- [ ] T040 [US4] Reduce `apps/api/src/app.ts` imports through the new entries (target: fewer than 36, no numeric goal beyond that); behaviour untouched
-- [ ] T041 [US4] Gate (with `test:int`), compare the OpenAPI document again (empty diff), verify `docker build -f apps/api/Dockerfile .` still works, open PR 8
+- [X] T038 [P] [US4] `git mv` `apps/api/src/{db,http,lib,docs}` to `apps/api/src/platform/` (the `db/` seed files already left in T035); fix every import in `src/`, `apps/api/drizzle.config.ts` (`schema: './src/db/schema.ts'` becomes `./src/platform/db/schema.ts`), `vitest*.config.ts`, `package.json` scripts (`db:generate`, `db:migrate`), `Dockerfile`, `apps/api/tsdown.config.ts` entries and the file lookups of `version.test.ts`, `collect-workflow.test.ts`, `resend-sender.test.ts` and the `sources/*/fixtures.ts` files
+- [X] T039 [P] [US4] `git mv` `modules/rate-limit` and `modules/email` to `apps/api/src/platform/rate-limit/` and `platform/email/`; add `index.ts` in each exporting only the public API (limits, `RateLimiter`, gates; `EmailService`, senders, templates, `EmailSender`); switch `identity`, `puzzles`, `settings`, `cli/run-cli.ts`, `app.ts` and `src/test/*` to the entries; `platform/email` imports `platform/rate-limit` by its entry
+- [X] T040 [US4] Reduce `apps/api/src/app.ts` imports through the new entries (target: fewer than 36, no numeric goal beyond that); behaviour untouched
+- [X] T041 [US4] Gate (with `test:int`), compare the OpenAPI document again (empty diff), verify `docker build -f apps/api/Dockerfile .` still works, open PR 8
 
 ---
 

@@ -12,7 +12,7 @@ export type IdentityRoutesOptions = SessionsRoutesOptions &
 
 // As três partes respondem sob `/api/auth`; cada uma tem as suas rotas e esquemas.
 export const identityRoutes: FastifyPluginAsync<IdentityRoutesOptions> = async (app, options) => {
-  await app.register(sessionsRoutes, options)
   await app.register(registrationRoutes, options)
   await app.register(recoveryRoutes, options)
+  await app.register(sessionsRoutes, options)
 }

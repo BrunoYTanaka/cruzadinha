@@ -1,5 +1,5 @@
-import { loadConfig } from '../config'
-import { loadDotEnvIfPresent } from '../env-file'
+import { loadConfig } from '../../config'
+import { loadDotEnvIfPresent } from '../../env-file'
 import { describeMigrationError, runMigrations } from './migrations'
 
 // Entrada de npm run db:migrate (tsx) e de dist/migrate.mjs (imagem).

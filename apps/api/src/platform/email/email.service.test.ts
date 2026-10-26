@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EmailConfig } from '../../config'
-import type { Executor } from '../../db/client'
+import type { Executor } from '../db/client'
 import { createMemoryRateRepository } from '../rate-limit/memory-repository'
 import { createRateLimiter } from '../rate-limit/rate-limit.service'
 import { createEmailService } from './email.service'

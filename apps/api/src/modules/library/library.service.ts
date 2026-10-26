@@ -1,5 +1,5 @@
 import { LIBRARY_LIMIT, type LibraryItem, type PuzzleSourceId } from '@cruzadinha/shared'
-import type { Database } from '../../db/client'
+import type { Database } from '../../platform/db/client'
 import {
   listLibraryRows,
   listPuzzleRows,

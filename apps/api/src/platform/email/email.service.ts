@@ -1,8 +1,8 @@
-import type { Executor } from '../../db/client'
+import type { Executor } from '../db/client'
 import type { EmailConfig } from '../../config'
-import type { Clock } from '../../lib/clock'
+import type { Clock } from '../lib/clock'
 
-import type { RateLimiter } from '../rate-limit/rate-limit.service'
+import type { RateLimiter } from '../rate-limit'
 import { blockedUntilFor } from './quota'
 import { findActiveBlock, upsertBlock } from './send-block.repository'
 import type { EmailKind, EmailMessage, EmailSender } from './types'

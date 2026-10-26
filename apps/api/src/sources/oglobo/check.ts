@@ -3,8 +3,8 @@
 import { isoDateSchema, levelSchema, type Level } from '@cruzadinha/shared'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { setTimeout as sleep } from 'node:timers/promises'
-import { systemClock } from '../../lib/clock'
-import { todayInSaoPaulo } from '../../lib/dates'
+import { systemClock } from '../../platform/lib/clock'
+import { todayInSaoPaulo } from '../../platform/lib/dates'
 import { createOgloboSource } from './oglobo'
 
 const PAUSE_MS = 2_000

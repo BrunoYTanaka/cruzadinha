@@ -1,9 +1,8 @@
-import type { Database } from '../../../db/client'
-import { addDays, type Clock } from '../../../lib/clock'
-import { createDummyHash, hashPassword, verifyPassword } from '../../../lib/password'
-import { generateSessionToken, sha256Hex } from '../../../lib/tokens'
-import type { RateLimits } from '../../rate-limit/limits'
-import type { RateLimiter } from '../../rate-limit/rate-limit.service'
+import type { Database } from '../../../platform/db/client'
+import { addDays, type Clock } from '../../../platform/lib/clock'
+import { createDummyHash, hashPassword, verifyPassword } from '../../../platform/lib/password'
+import { generateSessionToken, sha256Hex } from '../../../platform/lib/tokens'
+import type { RateLimits, RateLimiter } from '../../../platform/rate-limit'
 import { decideSession, SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from './session-policy'
 import {
   createSession,
