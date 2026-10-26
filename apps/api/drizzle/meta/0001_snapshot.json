@@ -87,26 +87,18 @@
         "invites_created_by_user_id_users_user_id_fk": {
           "name": "invites_created_by_user_id_users_user_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "user_id"
-          ],
+          "columnsTo": ["user_id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "invites_used_by_user_id_users_user_id_fk": {
           "name": "invites_used_by_user_id_users_user_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "used_by_user_id"
-          ],
+          "columnsFrom": ["used_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "user_id"
-          ],
+          "columnsTo": ["user_id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -115,16 +107,12 @@
       "uniqueConstraints": {
         "invites_code_hash_unique": {
           "name": "invites_code_hash_unique",
-          "columns": [
-            "code_hash"
-          ],
+          "columns": ["code_hash"],
           "nullsNotDistinct": false
         },
         "invites_used_by_user_id_unique": {
           "name": "invites_used_by_user_id_unique",
-          "columns": [
-            "used_by_user_id"
-          ],
+          "columns": ["used_by_user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -328,13 +316,9 @@
         "sessions_user_id_users_user_id_fk": {
           "name": "sessions_user_id_users_user_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "user_id"
-          ],
+          "columnsTo": ["user_id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -343,9 +327,7 @@
       "uniqueConstraints": {
         "sessions_token_hash_unique": {
           "name": "sessions_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },

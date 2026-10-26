@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { sessions } from '../db/schema'
 import { sha256Hex } from '../lib/tokens'
 import type { RateLimits } from '../modules/rate-limit/limits'
-import { buildTestApp, sessionCookieFrom } from './app'
+import { buildTestApp, sessionCookieFrom, signUpForTest } from './app'
 import { DAY, MINUTE, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
@@ -26,17 +26,7 @@ const UNAUTHENTICATED = { error: 'unauthenticated', message: 'Não autenticado.'
 const CLEARED_COOKIE = /^sid=;.*Expires=Thu, 01 Jan 1970/
 const INVALID_CREDENTIALS = { error: 'invalid-credentials', message: 'E-mail ou senha incorretos.' }
 
-async function createAccount(email: string): Promise<string> {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/auth/register',
-    payload: { email, password: PASSWORD },
-  })
-  expect(response.statusCode).toBe(201)
-  const cookie = sessionCookieFrom(response.headers['set-cookie'])
-  if (!cookie) throw new Error('cadastro sem cookie')
-  return cookie
-}
+const createAccount = (email: string) => signUpForTest(app, db, email, PASSWORD)
 
 function login(email: string, password: string, remoteAddress?: string) {
   return app.inject({
@@ -240,6 +230,10 @@ describe('timing and speed', () => {
     register: { max: 1000, windowMinutes: 60 },
     puzzleFetch: { max: 1000, windowMinutes: 60 },
     settingsSave: { max: 1000, windowMinutes: 60 },
+    forgotPassword: { max: 1000, windowMinutes: 60 },
+    resendVerification: { max: 1000, windowMinutes: 60 },
+    verifyToken: { max: 1000, windowMinutes: 60 },
+    resetPassword: { max: 1000, windowMinutes: 60 },
   }
 
   function mean(values: number[]): number {
@@ -283,7 +277,7 @@ describe('timing and speed', () => {
     },
   )
 
-  it('answers register, login, me and logout in under 1 second each (SC-008)', async () => {
+  it('answers register (202), login, me and logout in under 1 second each (SC-008)', async () => {
     const timed = async <T>(run: () => Promise<T>): Promise<T> => {
       const start = performance.now()
       const result = await run()

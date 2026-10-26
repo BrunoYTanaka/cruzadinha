@@ -4,7 +4,7 @@ import type { FastifyInstance } from 'fastify'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { userSettings, users } from '../db/schema'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
-import { buildTestApp, sessionCookieFrom } from './app'
+import { buildTestApp, signUpForTest } from './app'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()
@@ -20,16 +20,7 @@ function build(rateLimits: RateLimits = defaultRateLimits) {
   app = buildTestApp({ database: db, clock: clock.now, rateLimits })
 }
 
-async function register(email: string): Promise<string> {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/auth/register',
-    payload: { email, password: PASSWORD },
-  })
-  const sid = sessionCookieFrom(response.headers['set-cookie'])
-  if (!sid) throw new Error('cadastro sem cookie')
-  return sid
-}
+const register = (email: string) => signUpForTest(app, db, email, PASSWORD)
 
 const asUser = (sid?: string) => (sid ? { cookie: `sid=${sid}` } : {})
 

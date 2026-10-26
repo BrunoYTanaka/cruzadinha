@@ -9,6 +9,12 @@ import { proxyGuard } from './http/proxy-guard'
 import { systemClock, type Clock } from './lib/clock'
 import { authRoutes } from './modules/auth/auth.routes'
 import { createAuthService } from './modules/auth/auth.service'
+import { createRecoveryService } from './modules/auth/recovery.service'
+import { createRegistrationService } from './modules/auth/registration.service'
+import { createEmailService } from './modules/email/email.service'
+import { createLogSender } from './modules/email/log-sender'
+import { createResendSender } from './modules/email/resend-sender'
+import type { EmailSender } from './modules/email/types'
 import { createOptionalSession, createRequireSession } from './modules/auth/session.plugin'
 import { healthRoutes } from './modules/health/health.routes'
 import { defaultRateLimits, type RateLimits } from './modules/rate-limit/limits'
@@ -29,6 +35,13 @@ import { createOgloboSource } from './sources/oglobo/oglobo'
 import type { PuzzleSource } from './sources/types'
 import { API_VERSION } from './version'
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    /** Aguarda os e-mails em andamento; só os testes e o desligamento usam. */
+    flushEmail(): Promise<void>
+  }
+}
+
 export type AppDeps = {
   config: ServerConfig
   probe: DatabaseProbe
@@ -37,6 +50,8 @@ export type AppDeps = {
   rateLimits?: RateLimits
   /** Um adaptador por fonte de puzzles; os testes passam fontes falsas. */
   puzzleSources?: readonly PuzzleSource[]
+  /** Envio de e-mail; os testes passam um falso, e sem ele vale o Resend, o log ou nenhum. */
+  emailSender?: EmailSender
   /** Destino do log; só os testes trocam (para conferir o que é registrado). */
   logStream?: NodeJS.WritableStream
 }
@@ -53,6 +68,7 @@ export function buildApp({
     createCruzadasBrasilSource(),
     createClubeSource(),
   ],
+  emailSender,
   logStream,
 }: AppDeps): FastifyInstance {
   const app = Fastify({
@@ -96,6 +112,27 @@ export function buildApp({
 
   const rateLimiter = createRateLimiter(createRateLimitRepository(database))
   const auth = createAuthService({ db: database, clock, rateLimiter, limits: rateLimits })
+  const email = createEmailService({
+    db: database,
+    clock,
+    sender: emailSender ?? defaultEmailSender(config, app.log),
+    rateLimiter,
+    config: config.email,
+    logger: app.log,
+  })
+  const emailParts = {
+    db: database,
+    clock,
+    email,
+    rateLimiter,
+    limits: rateLimits,
+    baseUrl: config.email.baseUrl ?? '',
+  }
+  const registration = createRegistrationService(emailParts)
+  const recovery = createRecoveryService(emailParts)
+  // Os envios em andamento terminam antes de a API fechar.
+  app.decorate('flushEmail', () => email.flush())
+  app.addHook('onClose', () => email.flush())
 
   app.register(healthRoutes, {
     probe,
@@ -104,7 +141,15 @@ export function buildApp({
   const requireSession = createRequireSession(auth, config, clock)
   const optionalSession = createOptionalSession(auth, config, clock)
 
-  app.register(authRoutes, { auth, config, clock, requireSession })
+  app.register(authRoutes, {
+    auth,
+    config,
+    clock,
+    requireSession,
+    email,
+    registration,
+    recovery,
+  })
   const puzzles = createPuzzlesService({
     db: database,
     clock,
@@ -125,4 +170,15 @@ export function buildApp({
   })
   app.register(settingsRoutes, { settings, requireSession })
   return app
+}
+
+// Resend com a chave configurada; sem ela, o log em desenvolvimento e nenhum envio em produção
+// (as rotas respondem `email-unavailable`).
+export function defaultEmailSender(
+  config: ServerConfig,
+  log: Parameters<typeof createLogSender>[0],
+): EmailSender | undefined {
+  const { apiKey, from } = config.email
+  if (apiKey && from) return createResendSender({ apiKey, from })
+  return config.nodeEnv === 'production' ? undefined : createLogSender(log)
 }

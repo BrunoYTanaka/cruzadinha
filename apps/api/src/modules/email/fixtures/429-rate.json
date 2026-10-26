@@ -1,0 +1,6 @@
+{
+  "_source": "https://resend.com/docs/api-reference/errors (formato documentado; não é resposta real)",
+  "statusCode": 429,
+  "name": "rate_limit_exceeded",
+  "message": "Too many requests. Please reduce the number of requests per second."
+}

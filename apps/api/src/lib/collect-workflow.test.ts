@@ -13,14 +13,21 @@ describe('workflow de coleta', () => {
     expect(workflow).toContain('workflow_dispatch:')
   })
 
-  it('usa o segredo só no passo da coleta e como booleano no passo guard', () => {
+  it('usa o segredo só nos passos da coleta e da limpeza e como booleano no passo guard', () => {
     const mentions = workflow.match(/secrets\.DATABASE_URL/g) ?? []
-    expect(mentions).toHaveLength(2)
+    expect(mentions).toHaveLength(3)
     expect(workflow).toContain("HAS_DATABASE_URL: ${{ secrets.DATABASE_URL != '' }}")
     expect(workflow).toMatch(/env:\n\s+DATABASE_URL: \$\{\{ secrets\.DATABASE_URL \}\}/)
     // Nunca no nível do workflow ou do job.
     const header = workflow.slice(0, workflow.indexOf('jobs:'))
     expect(header).not.toContain('secrets.')
+  })
+
+  it('roda a limpeza de contas depois da coleta, mesmo se ela falhar, sob a mesma guarda', () => {
+    expect(workflow).toContain(
+      "- if: always() && steps.guard.outputs.enabled == 'true'\n        env:\n          DATABASE_URL: ${{ secrets.DATABASE_URL }}\n        run: node apps/api/dist/cli.mjs auth cleanup",
+    )
+    expect(workflow.indexOf('puzzles collect')).toBeLessThan(workflow.indexOf('auth cleanup'))
   })
 
   it('tem o passo guard e todos os outros passos dependem dele', () => {

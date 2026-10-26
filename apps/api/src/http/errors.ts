@@ -16,12 +16,17 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   forbidden: 'Acesso negado.',
   'service-unavailable': 'Serviço indisponível, tente mais tarde.',
   'internal-error': 'Erro interno.',
+  'invalid-token': 'Link inválido ou vencido.',
+  'email-unavailable': 'Não foi possível enviar o e-mail agora.',
 }
 
-export function apiError(code: ApiErrorCode, fields?: string[]): ApiError {
-  return fields
-    ? { error: code, message: errorMessages[code], fields }
-    : { error: code, message: errorMessages[code] }
+export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {
+  return {
+    error: code,
+    message: errorMessages[code],
+    ...(fields ? { fields } : {}),
+    ...(retryAfter ? { retryAfter } : {}),
+  }
 }
 
 export function sendError(
@@ -29,10 +34,34 @@ export function sendError(
   status: number,
   code: ApiErrorCode,
   fields?: string[],
+  retryAfter?: number,
 ): FastifyReply {
-  return reply.status(status).send(apiError(code, fields))
+  return reply.status(status).send(apiError(code, fields, retryAfter))
 }
 
-export function sendTooManyAttempts(reply: FastifyReply, retryAfterSeconds: number): FastifyReply {
-  return sendError(reply.header('retry-after', String(retryAfterSeconds)), 429, 'too-many-attempts')
+// `retryAfter` no corpo só nas rotas de e-mail (feature 034): o site anterior valida o corpo do
+// erro de forma estrita e recusaria a chave nova no 429 do login.
+export function sendTooManyAttempts(
+  reply: FastifyReply,
+  retryAfterSeconds: number,
+  options: { withRetryAfterBody?: boolean } = {},
+): FastifyReply {
+  return sendError(
+    reply.header('retry-after', String(retryAfterSeconds)),
+    429,
+    'too-many-attempts',
+    undefined,
+    options.withRetryAfterBody ? retryAfterSeconds : undefined,
+  )
+}
+
+// Cota do provedor esgotada ou envio desligado: o site mostra um aviso genérico (feature 034).
+export function sendEmailUnavailable(reply: FastifyReply, retryAfterSeconds: number): FastifyReply {
+  return sendError(
+    reply.header('retry-after', String(retryAfterSeconds)),
+    503,
+    'email-unavailable',
+    undefined,
+    retryAfterSeconds,
+  )
 }

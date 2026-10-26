@@ -24,3 +24,11 @@ export async function findUserByEmail(db: Executor, email: string): Promise<User
     .where(eq(users.email, email))
   return row
 }
+
+export async function updatePasswordHash(
+  db: Executor,
+  userId: string,
+  passwordHash: string,
+): Promise<void> {
+  await db.update(users).set({ passwordHash }).where(eq(users.userId, userId))
+}

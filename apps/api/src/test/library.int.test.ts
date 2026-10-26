@@ -8,7 +8,7 @@ import { sql } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { puzzles } from '../db/schema'
-import { buildTestApp, sessionCookieFrom } from './app'
+import { buildTestApp, signUpForTest } from './app'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 import { fakeSource, okResult, type FakeSource } from './fake-source'
 
@@ -23,16 +23,7 @@ let source: FakeSource
 let emptyCells: ProgressCells
 let openPosition: { row: number; col: number }
 
-async function register(email: string): Promise<string> {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/auth/register',
-    payload: { email, password: PASSWORD },
-  })
-  const sid = sessionCookieFrom(response.headers['set-cookie'])
-  if (!sid) throw new Error('cadastro sem cookie')
-  return sid
-}
+const register = (email: string) => signUpForTest(app, db, email, PASSWORD)
 
 const asUser = (sid?: string) => (sid ? { cookie: `sid=${sid}` } : {})
 

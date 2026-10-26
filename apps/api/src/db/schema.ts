@@ -6,6 +6,7 @@ import {
   index,
   integer,
   jsonb,
+  smallint,
   pgTable,
   primaryKey,
   text,
@@ -77,8 +78,13 @@ export const rateLimitActions = [
   'INVITE_CREATE',
   'PUZZLE_FETCH',
   'SETTINGS_SAVE',
+  'FORGOT_PASSWORD',
+  'RESEND_VERIFICATION',
+  'VERIFY_TOKEN',
+  'EMAIL_SENT',
+  'RESET_PASSWORD',
 ] as const
-export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS'] as const
+export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL'] as const
 
 export const rateLimitAttempts = pgTable(
   'rate_limit_attempts',
@@ -99,11 +105,11 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH', 'SETTINGS_SAVE')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'INVITE_CREATE', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
-      sql`${table.keyType} IN ('EMAIL', 'NETWORK_ADDRESS')`,
+      sql`${table.keyType} IN ('EMAIL', 'NETWORK_ADDRESS', 'GLOBAL')`,
     ),
   ],
 )
@@ -185,3 +191,57 @@ export const userSettings = pgTable('user_settings', {
   savedAt: instant('saved_at').notNull(),
   ...timestamps,
 })
+
+// Cadastro ainda não confirmado (feature 034): vira um usuário quando o link é aberto.
+export const pendingRegistrations = pgTable(
+  'pending_registrations',
+  {
+    pendingId: uuid('pending_id').primaryKey().defaultRandom(),
+    email: text('email').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: instant('expires_at').notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('pending_registrations_email_unique').on(table.email)],
+)
+
+export const passwordResetTokens = pgTable(
+  'password_reset_tokens',
+  {
+    tokenId: uuid('token_id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.userId, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: instant('expires_at').notNull(),
+    usedAt: instant('used_at'),
+    ...timestamps,
+  },
+  (table) => [
+    index('password_reset_tokens_user_id_idx').on(table.userId),
+    // No máximo um token aberto por usuário, mesmo com dois pedidos ao mesmo tempo.
+    uniqueIndex('password_reset_tokens_open_user_unique')
+      .on(table.userId)
+      .where(sql`${table.usedAt} IS NULL`),
+  ],
+)
+
+export const emailBlockReasons = ['daily_quota_exceeded', 'monthly_quota_exceeded'] as const
+
+// Linha única: até quando o provedor de e-mail está sem cota.
+export const emailSendBlock = pgTable(
+  'email_send_block',
+  {
+    blockId: smallint('block_id').primaryKey(),
+    blockedUntil: instant('blocked_until').notNull(),
+    reason: text('reason', { enum: emailBlockReasons }).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    check('email_send_block_single_row', sql`${table.blockId} = 1`),
+    check(
+      'email_send_block_reason_check',
+      sql`${table.reason} IN ('daily_quota_exceeded', 'monthly_quota_exceeded')`,
+    ),
+  ],
+)

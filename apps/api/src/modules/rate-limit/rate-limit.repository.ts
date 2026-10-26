@@ -37,7 +37,10 @@ export function createRateLimitRepository(db: Executor): RateLimitRepository {
     },
 
     async record(keys, now) {
-      if (keys.length > 0) await db.insert(rateLimitAttempts).values(keys)
+      // A data da tentativa é a do relógio injetado, a mesma que a janela usa ao contar.
+      if (keys.length > 0) {
+        await db.insert(rateLimitAttempts).values(keys.map((key) => ({ ...key, createdAt: now })))
+      }
       // Limpeza oportunista: nenhuma janela passa de 1 dia.
       await db
         .delete(rateLimitAttempts)

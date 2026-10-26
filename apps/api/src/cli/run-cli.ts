@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import type { Database } from '../db/client'
 import type { Clock } from '../lib/clock'
 import { createAuthService } from '../modules/auth/auth.service'
+import { deleteExpiredAuthRows } from '../modules/auth/cleanup.repository'
 import { defaultRateLimits } from '../modules/rate-limit/limits'
 import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
 import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
@@ -26,6 +27,7 @@ const USAGE = [
   'Uso:',
   '  users create --email <email>   cria uma conta (a senha é pedida sem eco ou lida da entrada padrão)',
   '  puzzles collect                guarda o puzzle do dia (e o histórico que faltar)',
+  '  auth cleanup                   apaga pendências, tokens e contagens de envio vencidos',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -69,6 +71,17 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   return 0
 }
 
+// Limpeza agendada de pendências de cadastro e tokens vencidos (feature 034).
+async function cleanupAuth(args: string[], deps: CliDeps): Promise<number> {
+  parseArgs({ args, options: {}, allowPositionals: false })
+  const counts = await deleteExpiredAuthRows(deps.db, deps.clock())
+  deps.stdout(
+    `Limpeza: ${counts.pending} pendências, ${counts.resetTokens} tokens de recuperação, ` +
+      `${counts.emailSends} contagens de envio.\n`,
+  )
+  return 0
+}
+
 async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
   parseArgs({ args, options: {}, allowPositionals: false })
   const puzzles = createPuzzlesService({
@@ -107,6 +120,7 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
   try {
     if (group === 'users' && command === 'create') return await createUser(rest, deps)
     if (group === 'puzzles' && command === 'collect') return await collectPuzzles(rest, deps)
+    if (group === 'auth' && command === 'cleanup') return await cleanupAuth(rest, deps)
     return usageError(deps.stderr, 'Comando desconhecido.')
   } catch (error) {
     // parseArgs lança TypeError com code ERR_PARSE_ARGS_* para opção desconhecida ou sem valor.
