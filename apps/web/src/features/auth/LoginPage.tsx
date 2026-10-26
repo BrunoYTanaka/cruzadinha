@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
-import { clearExpired } from '../../app/session-expired'
+import { clearExpired } from '../session/session-expired'
 import { Button } from '../../components/Button'
 import { Field } from '../../components/Field'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import styles from './AuthPage.module.css'
 import { authMessages, invalidFields, loginErrorMessage } from './messages'
-import { safeNext } from './redirect'
+import { safeNext } from '../session/redirect'
 import { useRegistration } from './useRegistration'
-import { useLoginMutation, useSessionQuery } from './useSession'
+import { useLoginMutation, useSessionQuery } from '../session/useSession'
 
 export function LoginPage() {
   useDocumentTitle('Entrar')

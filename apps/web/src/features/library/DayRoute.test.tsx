@@ -5,7 +5,7 @@ import { makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { renderRoutes, resetSessionHandlers } from '../../test/render'
 import { DayRoute } from './DayRoute'
-import { getSettings, updateSettings } from '../settings/settings-store'
+import { getSettings, updateSettings } from '../../shared/services/settings-store'
 import { sourceDownKey } from './source-down'
 
 const SOURCE_DOWN_KEY = sourceDownKey('oglobo')

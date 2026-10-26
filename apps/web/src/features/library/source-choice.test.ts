@@ -1,7 +1,11 @@
 import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import { renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getSettings, resetSettingsStore, updateSettings } from '../settings/settings-store'
+import {
+  getSettings,
+  resetSettingsStore,
+  updateSettings,
+} from '../../shared/services/settings-store'
 import {
   DEFAULT_SOURCE,
   clearRememberedSource,

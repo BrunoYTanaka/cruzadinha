@@ -9,7 +9,7 @@ import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { aUser, makeQueryClient } from '../../test/render'
 import { ReloginDialog } from './ReloginDialog'
 import { SessionExpiredNotice } from './SessionExpiredNotice'
-import { clearExpired, markExpired } from '../../app/session-expired'
+import { clearExpired, markExpired } from './session-expired'
 
 function Harness({ onSuccess = () => {} }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false)

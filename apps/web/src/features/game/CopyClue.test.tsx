@@ -10,7 +10,7 @@ import {
   setup,
 } from '../../test/game-harness'
 import { jsonResponse } from '../../test/http'
-import { resetSettingsStore, updateSettings } from '../settings/settings-store'
+import { resetSettingsStore, updateSettings } from '../../shared/services/settings-store'
 import { COPY_NOTICE_MS } from './useCopyClue'
 
 installGameTestLifecycle()

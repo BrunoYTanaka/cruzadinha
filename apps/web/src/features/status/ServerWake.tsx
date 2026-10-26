@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { WAKE_NOTICE_DELAY_MS } from '../../api/server-wake'
-import { LoadingState } from '../../app/ErrorState'
+import { LoadingState } from '../../shared/components/ErrorState'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import styles from './ServerWake.module.css'
 

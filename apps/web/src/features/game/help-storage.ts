@@ -1,12 +1,6 @@
-import { z } from 'zod'
+import { helpSchema } from '../../game-logic/help-schema'
 import type { HelpSnapshot } from '../../game-logic/reducer'
 import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
-
-export const helpSchema = z.object({
-  usage: z.object({ letters: z.number().int().min(0), words: z.number().int().min(0) }),
-  marks: z.record(z.string(), z.enum(['helped', 'wrong'])),
-  locked: z.array(z.string()),
-})
 
 export function helpKey(userId: string, puzzleId: string): string {
   return `cruzadinha:help:${userId}:${puzzleId}`

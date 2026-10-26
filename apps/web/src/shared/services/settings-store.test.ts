@@ -1,6 +1,6 @@
 import { defaultSettings } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { config } from '../../config'
+import { config } from './config'
 import {
   getSettingsRecord,
   replaceSettings,

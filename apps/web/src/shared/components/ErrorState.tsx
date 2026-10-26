@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { Button } from '../components/Button'
-import { useSlowServer } from '../features/status/useSlowServer'
-import { formatWait } from '../lib/time'
+import { Button } from '../../components/Button'
+import { useSlowServer } from '../hooks/useSlowServer'
+import { formatWait } from '../../lib/time'
 import styles from './ErrorState.module.css'
 
 // Com um pedido esperando há 2 s ou mais, explica que o servidor gratuito pode estar acordando

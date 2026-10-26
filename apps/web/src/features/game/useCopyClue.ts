@@ -2,7 +2,7 @@ import type { Word } from '@cruzadinha/shared'
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { clueCopyText } from '../../game-logic/clue-text'
 import type { PuzzleIndex } from '../../game-logic/navigation'
-import { useSettings } from '../settings/settings-store'
+import { useSettings } from '../../shared/services/settings-store'
 
 // Quanto o aviso de cópia fica na tela.
 export const COPY_NOTICE_MS = 2500

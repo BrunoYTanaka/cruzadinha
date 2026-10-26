@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resetSettingsStore, SETTINGS_KEY } from '../features/settings/settings-store'
+import { resetSettingsStore, SETTINGS_KEY } from '../shared/services/settings-store'
 import { applyTheme, installThemeSync, nextTheme, readTheme, saveTheme, themeLabel } from './theme'
 
 afterEach(() => {

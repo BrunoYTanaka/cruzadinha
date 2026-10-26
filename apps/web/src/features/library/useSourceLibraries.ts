@@ -8,7 +8,7 @@ import {
 import { useQueries, type UseQueryResult } from '@tanstack/react-query'
 import { getLibrary } from '../../api/library'
 import { queryKeys } from '../../api/query-keys'
-import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
+import { useViewer, viewerKey, type Viewer } from '../session/useSession'
 import { mergeGuestLibrary } from '../guest/guest-library'
 import { guestStore } from '../guest/guest-store'
 

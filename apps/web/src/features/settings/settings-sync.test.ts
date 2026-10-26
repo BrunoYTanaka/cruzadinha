@@ -8,7 +8,7 @@ import {
   settingsDefaults,
   subscribeSettings,
   updateSettings,
-} from './settings-store'
+} from '../../shared/services/settings-store'
 
 type Api = {
   get: ReturnType<typeof vi.fn<() => Promise<SettingsEnvelope>>>

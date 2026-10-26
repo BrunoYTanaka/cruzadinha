@@ -2,22 +2,22 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { libraryResponseSchema } from '@cruzadinha/shared'
-import { apiRequest } from '../api/client'
-import { resetServerWake, waitForServer } from '../api/server-wake'
-import { queryKeys } from '../api/query-keys'
-import { useViewer } from '../features/auth/useSession'
-import { apiError, jsonResponse, mockApi } from '../test/http'
+import { apiRequest } from '../../api/client'
+import { resetServerWake, waitForServer } from '../../api/server-wake'
+import { queryKeys } from '../../api/query-keys'
+import { useViewer } from './useSession'
+import { apiError, jsonResponse, mockApi } from '../../test/http'
 import {
   aUser,
   makeQueryClient,
   renderRoutes,
   resetSessionHandlers,
   serverIsReady,
-} from '../test/render'
-import { AppLayout } from './AppLayout'
-import { RouteError } from './RouteError'
+} from '../../test/render'
+import { AppLayout } from '../../app/AppLayout'
+import { RouteError } from '../../app/RouteError'
 import { clearExpired, getSessionExpired } from './session-expired'
-import { expectNoA11yViolations } from '../test/axe'
+import { expectNoA11yViolations } from '../../test/axe'
 import { clearEnded } from './session-ended'
 import { viewerLoader } from './viewer'
 

@@ -4,7 +4,7 @@ import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router'
 import { setUnauthenticatedHandler } from '../api/client'
 import { waitForServer } from '../api/server-wake'
-import { installSessionHandlers } from '../app/session-handlers'
+import { installSessionHandlers } from '../features/session/session-handlers'
 
 export function makeQueryClient() {
   return new QueryClient({

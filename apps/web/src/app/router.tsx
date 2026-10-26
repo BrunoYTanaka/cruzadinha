@@ -12,10 +12,10 @@ import { ServerWake } from '../features/status/ServerWake'
 import { StatusPage } from '../features/status/StatusPage'
 import { AppLayout } from './AppLayout'
 import { directPlayLoader } from './direct-play'
-import { NotFoundPage } from './NotFoundPage'
+import { NotFoundPage } from '../shared/components/NotFoundPage'
 import { RouteError } from './RouteError'
-import { viewerLoader } from './viewer'
-import { installSessionHandlers } from './session-handlers'
+import { viewerLoader } from '../features/session/viewer'
+import { installSessionHandlers } from '../features/session/session-handlers'
 
 const serverReadyLoader: LoaderFunction = async ({ request }) => {
   await waitForServer({ signal: request.signal })

@@ -5,17 +5,8 @@ import {
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
 import { ApiRequestError, getServerClockOffsetMs } from '../../api/client'
+import type { SaveQueue, SaveSnapshot, SaveState } from '../../game-logic/save-types'
 import { readStorage, removeStorage, writeStorage } from '../../lib/storage'
-
-// `local-only`: só a fila do visitante, quando o navegador não deixa guardar (feature 013, FR-009).
-export type SaveState =
-  'saved' | 'saving' | 'offline' | 'session-expired' | 'completed-elsewhere' | 'local-only'
-
-export type SaveSnapshot = {
-  cells: (string | null)[][]
-  elapsedMs: number
-  status: 'in_progress' | 'completed'
-}
 
 export type SaveFn = (
   puzzleId: string,
@@ -33,19 +24,7 @@ export type SaveQueueOptions = {
   onProgress?: (progress: Progress | null, body: SaveProgressRequest) => void
 }
 
-export type SaveQueue = {
-  getState: () => SaveState
-  subscribe: (listener: () => void) => () => void
-  // Agenda o salvamento com atraso (debounce); só o último estado é enviado.
-  schedule: (snapshot: SaveSnapshot) => void
-  // Envia já (conclusão, ou a página sendo fechada com `keepalive`).
-  sendNow: (snapshot: SaveSnapshot, options?: { keepalive?: boolean }) => Promise<void>
-  // Reenvia o que está pendente ou na fila local (depois do novo login, ou de voltar a rede).
-  retry: () => Promise<void>
-  // Corpo ainda não confirmado, guardado no aparelho.
-  readOutbox: () => SaveProgressRequest | null
-  dispose: () => void
-}
+export type { SaveQueue, SaveSnapshot, SaveState }
 
 export const DEBOUNCE_MS = 1500
 const BACKOFF_MS = [1_000, 2_000, 4_000, 8_000, 16_000, 30_000]

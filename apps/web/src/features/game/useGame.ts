@@ -10,17 +10,17 @@ import {
 } from 'react'
 import { ApiRequestError } from '../../api/client'
 import { getProgress, resetProgress, saveProgress } from '../../api/progress'
-import { config } from '../../config'
+import { config } from '../../shared/services/config'
 import { removeStorage } from '../../lib/storage'
 import { struckWords, type StrikeMode } from '../../game-logic/clue-strike'
 import { isSolved } from '../../game-logic/completion'
 import type { GuestProgress } from '../../game-logic/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../game-logic/reducer'
 import type { GameLimits, GameState } from '../../game-logic/state'
-import { createGuestSaveQueue } from '../guest/guest-save-queue'
-import { guestStore as defaultGuestStore, type GuestStore } from '../guest/guest-store'
+import type { GuestSaveQueueOptions } from '../guest/guest-save-queue'
+import type { GuestStore } from '../guest/guest-store'
 import { useSettingsOpen } from '../settings/settings-open'
-import { useSettings } from '../settings/settings-store'
+import { useSettings } from '../../shared/services/settings-store'
 import { clearHelp, loadHelp, saveHelp } from './help-storage'
 import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from './save-queue'
 import { useClock } from './useClock'
@@ -29,7 +29,13 @@ import { useClock } from './useClock'
 // nunca leem nem gravam o lugar do outro (FR-011).
 export type GameOwner =
   | { kind: 'user'; user: User; progress: Progress | null }
-  | { kind: 'guest'; record: GuestProgress | null; store?: GuestStore }
+  | {
+      kind: 'guest'
+      record: GuestProgress | null
+      store: GuestStore
+      // A página entrega a fila do visitante, para o jogo não depender da feature guest.
+      createQueue: (options: GuestSaveQueueOptions) => SaveQueue
+    }
 
 // O que a tela mostra de tempo final e recorde, venha do servidor ou do navegador.
 export type ProgressSummary = Pick<Progress, 'status' | 'finishedMs' | 'bestMs'>
@@ -82,7 +88,8 @@ export function useGame({ response, owner }: UseGameArgs) {
   )
   const guest = owner.kind === 'guest'
   const userId = owner.kind === 'user' ? owner.user.id : null
-  const store = owner.kind === 'guest' ? (owner.store ?? defaultGuestStore) : null
+  const store = owner.kind === 'guest' ? owner.store : null
+  const createGuestQueue = owner.kind === 'guest' ? owner.createQueue : null
 
   // Geração do jogo do visitante: sobe em "Jogar de novo" e ancora os salvamentos desta aba.
   const [generation, setGeneration] = useState(() =>
@@ -132,8 +139,8 @@ export function useGame({ response, owner }: UseGameArgs) {
   const { readElapsedMs, stop: stopClock } = clock
 
   const queue: SaveQueue = useMemo(() => {
-    if (store) {
-      return createGuestSaveQueue({
+    if (store && createGuestQueue) {
+      return createGuestQueue({
         puzzleId,
         date: puzzle.date,
         store,
@@ -153,7 +160,7 @@ export function useGame({ response, owner }: UseGameArgs) {
         if (body.status === 'completed') dispatch({ type: 'confirmCompletion' })
       },
     })
-  }, [puzzleId, puzzle.date, userId, store, generation, dispatch])
+  }, [puzzleId, puzzle.date, userId, store, createGuestQueue, generation, dispatch])
   const saveState = useSyncExternalStore(queue.subscribe, queue.getState, queue.getState)
 
   // O que vai para a fila. O visitante leva junto as ajudas atuais (R7); a conta não, porque o corpo

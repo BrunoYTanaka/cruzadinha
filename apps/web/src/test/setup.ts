@@ -6,7 +6,7 @@ import { afterEach, beforeEach } from 'vitest'
 import { resetServerWake, waitForServer } from '../api/server-wake'
 import { forgetFragmentTokens } from '../features/auth/token-fragment'
 import { setSettingsOpen } from '../features/settings/settings-open'
-import { resetSettingsStore } from '../features/settings/settings-store'
+import { resetSettingsStore } from '../shared/services/settings-store'
 
 // O axe tenta usar canvas para ler cores de ícones; o jsdom não tem e avisa a cada teste.
 // Os arquivos em ambiente node (Function, plugin de versão) não têm HTMLCanvasElement.

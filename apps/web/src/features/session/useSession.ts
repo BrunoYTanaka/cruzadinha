@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { getMe, login, logout } from '../../api/auth'
 import { queryKeys } from '../../api/query-keys'
-import { clearEnded } from '../../app/session-ended'
-import { useServerReady } from '../status/useSlowServer'
+import { clearEnded } from './session-ended'
+import { useServerReady } from '../../shared/hooks/useSlowServer'
 
 // `null` é visitante (sem sessão), feature 013.
 export function sessionQueryOptions() {

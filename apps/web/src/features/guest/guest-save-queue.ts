@@ -1,6 +1,6 @@
 import type { GuestProgress } from '../../game-logic/guest-progress'
 import type { HelpSnapshot } from '../../game-logic/reducer'
-import type { SaveQueue, SaveSnapshot, SaveState } from '../game/save-queue'
+import type { SaveQueue, SaveSnapshot, SaveState } from '../../game-logic/save-types'
 import type { GuestStore } from './guest-store'
 
 export type GuestSnapshot = SaveSnapshot & { help?: HelpSnapshot | null }

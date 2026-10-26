@@ -13,7 +13,7 @@ import { guestStore } from '../guest/guest-store'
 import { LibraryPage } from './LibraryPage'
 import { rememberGameSource } from './source-choice'
 import { loadLibraryWidth } from './library-width'
-import { getSettings, updateSettings } from '../settings/settings-store'
+import { getSettings, updateSettings } from '../../shared/services/settings-store'
 import { sourceDownKey } from './source-down'
 
 const SOURCE_DOWN_KEY = sourceDownKey('oglobo')

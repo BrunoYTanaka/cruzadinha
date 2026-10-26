@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resetSettingsStore } from '../settings/settings-store'
+import { resetSettingsStore } from '../../shared/services/settings-store'
 import {
   clampWidth,
   clearLibraryWidth,

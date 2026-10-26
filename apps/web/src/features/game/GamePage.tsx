@@ -6,17 +6,18 @@ import { ApiRequestError } from '../../api/client'
 import { getProgress } from '../../api/progress'
 import { getPuzzleById } from '../../api/puzzles'
 import { queryKeys } from '../../api/query-keys'
-import { ErrorState, LoadingState } from '../../app/ErrorState'
+import { ErrorState, LoadingState } from '../../shared/components/ErrorState'
 import { activeWord } from '../../game-logic/navigation'
 import { todayInBrasilia } from '../../lib/dates'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
-import { buildLoginPath } from '../auth/redirect'
-import { useViewer, viewerKey, type Viewer } from '../auth/useSession'
+import { buildLoginPath } from '../session/redirect'
+import { useViewer, viewerKey, type Viewer } from '../session/useSession'
+import { createGuestSaveQueue } from '../guest/guest-save-queue'
 import { guestStore } from '../guest/guest-store'
 import { isNoPuzzle, isSourceDown } from '../library/source-down'
 import { otherSourceShortcut } from '../library/today-cards'
 import { useSourceLibraries } from '../library/useSourceLibraries'
-import { SessionExpiredNotice } from '../auth/SessionExpiredNotice'
+import { SessionExpiredNotice } from '../session/SessionExpiredNotice'
 import { boardKeyToAction } from './board-keys'
 import { Board } from './Board'
 import { ClueBar } from './ClueBar'
@@ -141,7 +142,9 @@ function ownerOf(
   if (viewer.kind === 'user') {
     return progress === undefined ? null : { kind: 'user', user: viewer.user, progress }
   }
-  return record === undefined ? null : { kind: 'guest', record }
+  return record === undefined
+    ? null
+    : { kind: 'guest', record, store: guestStore, createQueue: createGuestSaveQueue }
 }
 
 type GameOwnerProgress = Extract<GameOwner, { kind: 'user' }>['progress']

@@ -1,4 +1,4 @@
-import { getSettings, updateSettings } from '../settings/settings-store'
+import { getSettings, updateSettings } from '../../shared/services/settings-store'
 
 // Largura do calendário no computador, escolhida pela alça da borda.
 export const MIN_WIDTH = 720

@@ -8,11 +8,11 @@ import { Field } from '../../components/Field'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import styles from './AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from './messages'
-import { safeNext } from './redirect'
+import { safeNext } from '../session/redirect'
 import { ResendLink } from './ResendLink'
 import { useCountdown } from './useCountdown'
 import { useRegistration } from './useRegistration'
-import { useSessionQuery } from './useSession'
+import { useSessionQuery } from '../session/useSession'
 
 export function RegisterPage() {
   useDocumentTitle('Criar conta')

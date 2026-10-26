@@ -4,13 +4,18 @@ import { Link, useLocation } from 'react-router'
 import { Button, buttonClass } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
 import { ThemeButton } from '../../themes/ThemeButton'
-import { buildLoginPath } from '../auth/redirect'
-import { useViewer } from '../auth/useSession'
+import { buildLoginPath } from '../session/redirect'
+import { useViewer } from '../session/useSession'
 import { loadSourceChoice } from '../library/source-choice'
 import { Notice } from '../../components/Notice'
 import { setSettingsOpen, useSettingsOpen } from './settings-open'
 import { useSettingsSyncStatus } from './settings-sync'
-import { restoreDefaults, settingsDefaults, updateSettings, useSettings } from './settings-store'
+import {
+  restoreDefaults,
+  settingsDefaults,
+  updateSettings,
+  useSettings,
+} from '../../shared/services/settings-store'
 import styles from './SettingsDialog.module.css'
 
 const MAX_HELP = 99

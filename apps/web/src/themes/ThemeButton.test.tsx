@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getSettings, updateSettings } from '../features/settings/settings-store'
+import { getSettings, updateSettings } from '../shared/services/settings-store'
 import { expectNoA11yViolations } from '../test/axe'
 import { installThemeSync } from './theme'
 import { ThemeButton } from './ThemeButton'

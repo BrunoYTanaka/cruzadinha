@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { clearExpired, useSessionExpired } from '../../app/session-expired'
+import { clearExpired, useSessionExpired } from './session-expired'
 import { Notice } from '../../components/Notice'
 import { ReloginDialog } from './ReloginDialog'
 

@@ -7,7 +7,7 @@ import { expectNoA11yViolations } from '../../test/axe'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
 import { SourcePicker } from './SettingsDialog'
-import { getSettings, settingsDefaults, updateSettings } from './settings-store'
+import { getSettings, settingsDefaults, updateSettings } from '../../shared/services/settings-store'
 
 const routes = [
   {

@@ -1,7 +1,7 @@
 import { defaultSettings, parseSettings, type Settings } from '@cruzadinha/shared'
 import { useSyncExternalStore } from 'react'
 import { getServerClockOffsetMs } from '../../api/client'
-import { config } from '../../config'
+import { config } from './config'
 import { readStorage, writeStorage } from '../../lib/storage'
 
 // Configurações da pessoa (feature 021): um registro só no aparelho, para visitante e conta. A

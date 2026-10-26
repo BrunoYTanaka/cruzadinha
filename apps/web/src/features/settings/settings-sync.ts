@@ -2,14 +2,14 @@ import { parseSettings, type SaveSettingsRequest, type SettingsEnvelope } from '
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { ApiRequestError } from '../../api/client'
 import { getSettings as fetchSettings, saveSettings as sendSettings } from '../../api/settings'
-import { useViewer } from '../auth/useSession'
+import { useViewer } from '../session/useSession'
 import {
   getSettingsRecord,
   replaceSettings,
   settingsDefaults,
   subscribeSettings,
   type SettingsRecord,
-} from './settings-store'
+} from '../../shared/services/settings-store'
 
 // Cópia das configurações na conta (feature 021). O aparelho é a versão em uso; a conta recebe as
 // mudanças da pessoa (agrupadas) e as entrega a outros aparelhos. Nada aqui bloqueia o site: uma

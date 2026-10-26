@@ -1,6 +1,6 @@
 import { puzzleSourceIdSchema, type PuzzleSourceId } from '@cruzadinha/shared'
 import { useState } from 'react'
-import { getSettings, updateSettings } from '../settings/settings-store'
+import { getSettings, updateSettings } from '../../shared/services/settings-store'
 
 // A primeira fonte da lista é a padrão; uma fonte guardada que saiu da lista volta a ela (feature 015).
 export const DEFAULT_SOURCE: PuzzleSourceId = firstSource()
