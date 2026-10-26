@@ -154,6 +154,20 @@ describe('createSaveQueue', () => {
     expect(queue.getState()).toBe('offline')
   })
 
+  it('o 429 também fica na fila e é repetido', async () => {
+    const save = vi
+      .fn<SaveFn>()
+      .mockRejectedValueOnce(new ApiRequestError(429))
+      .mockResolvedValue({ progress: null })
+    const { queue } = setup(save)
+    queue.schedule(snapshot('C..'))
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(queue.getState()).toBe('offline')
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(save).toHaveBeenCalledTimes(2)
+    expect(queue.getState()).toBe('saved')
+  })
+
   it('409 num corpo in_progress para o reenvio, mantém as letras e sinaliza "outro aparelho"', async () => {
     const save = vi
       .fn<SaveFn>()

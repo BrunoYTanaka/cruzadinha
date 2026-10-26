@@ -132,7 +132,9 @@ export function createSaveQueue(options: SaveQueueOptions): SaveQueue {
         return attemptSend(fresh, keepalive, true)
       }
       setState('offline')
-      return error.status === 0 || error.status >= 500 ? 'retry-later' : 'stop'
+      return error.status === 0 || error.status === 429 || error.status >= 500
+        ? 'retry-later'
+        : 'stop'
     }
   }
 
