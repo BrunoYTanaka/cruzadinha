@@ -1,17 +1,28 @@
 export { apiErrorCodeSchema, apiErrorSchema, type ApiError, type ApiErrorCode } from './api-error'
 export {
   authResponseSchema,
+  emailRequestAcceptedSchema,
   emailSchema,
+  forgotPasswordRequestSchema,
   loginRequestSchema,
   passwordSchema,
   registerRequestSchema,
   registrationStatusSchema,
+  resendVerificationRequestSchema,
+  resetPasswordRequestSchema,
+  tokenSchema,
   userSchema,
+  verifyEmailRequestSchema,
   type AuthResponse,
+  type EmailRequestAccepted,
+  type ForgotPasswordRequest,
   type LoginRequest,
   type RegisterRequest,
   type RegistrationStatus,
+  type ResendVerificationRequest,
+  type ResetPasswordRequest,
   type User,
+  type VerifyEmailRequest,
 } from './auth/schema'
 export { healthStatusSchema, type HealthStatus } from './health'
 export {

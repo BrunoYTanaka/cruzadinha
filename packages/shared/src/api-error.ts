@@ -17,6 +17,9 @@ export const apiErrorCodeSchema = z.enum([
   'forbidden',
   'service-unavailable',
   'internal-error',
+  // Confirmação de e-mail e recuperação de senha (feature 034).
+  'invalid-token',
+  'email-unavailable',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>
@@ -25,6 +28,8 @@ export const apiErrorSchema = z.strictObject({
   error: apiErrorCodeSchema,
   message: z.string().min(1),
   fields: z.array(z.string()).optional(),
+  // Segundos até a próxima tentativa (feature 034).
+  retryAfter: z.number().int().min(1).optional(),
 })
 
 export type ApiError = z.infer<typeof apiErrorSchema>
