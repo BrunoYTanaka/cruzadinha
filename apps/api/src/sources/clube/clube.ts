@@ -1,5 +1,5 @@
 import { isoDateSchema, levelSchema } from '@cruzadinha/shared'
-import { readXml } from '../cruzadaonline/xml'
+import { readXml } from '../common/xml'
 import type { EditionListing, FetchFailureReason, FetchPuzzleResult, PuzzleSource } from '../types'
 import { convertClube } from './convert'
 import { isEditionPath, parseEditionPage, parseLatestEdition } from './page'

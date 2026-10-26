@@ -119,8 +119,8 @@ Nada bloqueante: cada história toca arquivos próprios. Atenção a dois pontos
 
 **Independent Test**: testes dos adaptadores e `grep` sem importações cruzadas.
 
-- [ ] T032 [P] [US7] `git mv` de `apps/api/src/sources/cruzadaonline/{xml.ts,xml.test.ts,clue-text.ts,clue-text.test.ts}` para `apps/api/src/sources/common/` e corrigir as importações em `apps/api/src/sources/cruzadaonline/*.ts`, `apps/api/src/sources/clube/{clube.ts,page.ts,convert.ts,convert.test.ts}` e `apps/api/src/db/seed-puzzle.ts`
-- [ ] T033 [US7] Conferir `grep -rnE "from '\.\./(cruzadaonline|clube|oglobo|cruzadasbrasil)/" apps/api/src/sources` sem resultado fora do próprio adaptador; `npx vitest run src/sources` sem alterar expectativas; atualizar o parágrafo de adaptadores em `CLAUDE.md` (pasta `sources/common/`); commit `refactor(api): move shared xml and clue helpers to sources/common`
+- [X] T032 [P] [US7] `git mv` de `apps/api/src/sources/cruzadaonline/{xml.ts,xml.test.ts,clue-text.ts,clue-text.test.ts}` para `apps/api/src/sources/common/` e corrigir as importações em `apps/api/src/sources/cruzadaonline/*.ts`, `apps/api/src/sources/clube/{clube.ts,page.ts,convert.ts,convert.test.ts}` e `apps/api/src/db/seed-puzzle.ts`
+- [X] T033 [US7] Conferir `grep -rnE "from '\.\./(cruzadaonline|clube|oglobo|cruzadasbrasil)/" apps/api/src/sources` sem resultado fora do próprio adaptador; `npx vitest run src/sources` sem alterar expectativas; atualizar o parágrafo de adaptadores em `CLAUDE.md` (pasta `sources/common/`); commit `refactor(api): move shared xml and clue helpers to sources/common`
 
 ---
 

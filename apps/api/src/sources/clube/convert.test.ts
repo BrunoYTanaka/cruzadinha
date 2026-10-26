@@ -1,6 +1,6 @@
 import { wordBoundaries } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import { readXml } from '../cruzadaonline/xml'
+import { readXml } from '../common/xml'
 import { convertClube, type ConvertResult } from './convert'
 import { readFixture } from './fixtures'
 
