@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
-import { clearExpired } from '../session/session-expired'
-import { Button } from '../../shared/components/Button'
-import { Field } from '../../shared/components/Field'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
-import styles from './AuthPage.module.css'
-import { authMessages, invalidFields, loginErrorMessage } from './messages'
-import { safeNext } from '../session/redirect'
-import { useRegistration } from './useRegistration'
-import { useLoginMutation, useSessionQuery } from '../session/useSession'
+import { clearExpired } from '../../session/session-expired'
+import { Button } from '../../../shared/components/Button'
+import { Field } from '../../../shared/components/Field'
+import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
+import styles from '../../../shared/components/AuthPage.module.css'
+import { authMessages, invalidFields, loginErrorMessage } from '../../session/messages'
+import { safeNext } from '../../session/redirect'
+import { useRegistration } from '../hooks/useRegistration'
+import { useLoginMutation, useSessionQuery } from '../../session/useSession'
 
-export function LoginPage() {
+export function LoginForm() {
   useDocumentTitle('Entrar')
   const navigate = useNavigate()
   const [params] = useSearchParams()

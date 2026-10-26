@@ -100,3 +100,9 @@ CSS: `index` 22.92, `GamePage` 13.50. Tolerância do passo 4: `index` até 87.97
 | `no-cycles` | **0** |
 
 Achado: os ciclos da issue são **entre features**, não entre arquivos (`settings-store` não importa a biblioteca, então `madge`/`no-cycles` de arquivo não os vê). Quem os pega são `web-feature-order-*` e `web-guest-no-feature`. A regra `no-cycles` continua valendo como proteção contra ciclos de arquivo. `api-modules-isolated` ainda conta `rate-limit` e `email` como módulos; o aviso some quando forem para `platform/` (PR 8).
+
+## Registro da execução
+
+- **PR 4 (account)**: `ReloginDialog` (sessão) usa o estilo e as mensagens das telas de autenticação; como `session` não pode importar `account`, `AuthPage.module.css` foi para `shared/components/` e `messages.ts` para `features/session/`. As cinco páginas de autenticação já nasceram em `pages/<rota>/` (finas, só renderizam o `*Form` de `features/account`, que mantém o título da aba); o restante das páginas move no PR 6.
+- **PR 2 (useGame)**: `game → guest` é permitido pela ordem; o ciclo real era `guest → game`, resolvido ao extrair `help-schema.ts` e `save-types.ts`. Mesmo assim `useGame` deixou de importar `guest`: `GamePage` entrega `store` e `createQueue` no `GameOwner` do visitante (FR-010).
+- **Testes que leem CSS** (`touch-targets`, `button-states`, `a11y`, `tokens-contrast`) passaram a usar `test/css-file.ts` (`readCss('Nome.css')`), que acha o arquivo pelo nome em `src/`, para não quebrar a cada mudança de pasta.

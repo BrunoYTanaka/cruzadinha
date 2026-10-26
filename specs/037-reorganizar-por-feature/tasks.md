@@ -71,9 +71,9 @@ description: 'Task list for 037-reorganizar-por-feature'
 
 ### PR 4: `refactor/web-status-session-account`
 
-- [ ] T020 [US3] `features/status/`: `git mv` `ServerWake*` into `components/`, add `features/status/index.ts` (the page `StatusPage*` moves in T028)
-- [ ] T021 [P] [US3] Create `apps/web/src/features/account/`: extract the forms out of `LoginPage.tsx`, `RegisterPage.tsx`, `VerifyEmailPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx` into `features/account/components/{Login,Register,VerifyEmail,ForgotPassword,ResetPassword}Form.tsx`; move `ResendLink.tsx`, `AuthPage.module.css`, `useCountdown.*`, `token-fragment.*`, `useRegistration.ts`, `messages.ts` into the right subfolders; add `features/account/index.ts`. The page files keep only composition (heading, layout, the form); their tests move to the form when they test the form
-- [ ] T022 [US3] Gate, open PR 4
+- [X] T020 [US3] `features/status/`: `git mv` `ServerWake*` into `components/`, add `features/status/index.ts` (the page `StatusPage*` moves in T028)
+- [X] T021 [P] [US3] Create `apps/web/src/features/account/`: extract the forms out of `LoginPage.tsx`, `RegisterPage.tsx`, `VerifyEmailPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx` into `features/account/components/{Login,Register,VerifyEmail,ForgotPassword,ResetPassword}Form.tsx`; move `ResendLink.tsx`, `AuthPage.module.css`, `useCountdown.*`, `token-fragment.*`, `useRegistration.ts`, `messages.ts` into the right subfolders; add `features/account/index.ts`. The page files keep only composition (heading, layout, the form); their tests move to the form when they test the form
+- [X] T022 [US3] Gate, open PR 4
 
 ### PR 5: `refactor/web-guest-library-settings`
 

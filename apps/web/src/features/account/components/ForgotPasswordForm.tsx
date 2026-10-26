@@ -1,17 +1,17 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { forgotPassword } from '../../shared/services/api/auth'
-import { ApiRequestError } from '../../shared/services/api/client'
-import { Button } from '../../shared/components/Button'
-import { Field } from '../../shared/components/Field'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
-import styles from './AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from './messages'
+import { forgotPassword } from '../../../shared/services/api/auth'
+import { ApiRequestError } from '../../../shared/services/api/client'
+import { Button } from '../../../shared/components/Button'
+import { Field } from '../../../shared/components/Field'
+import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
+import styles from '../../../shared/components/AuthPage.module.css'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
 import { ResendLink } from './ResendLink'
-import { useCountdown } from './useCountdown'
+import { useCountdown } from '../hooks/useCountdown'
 
-export function ForgotPasswordPage() {
+export function ForgotPasswordForm() {
   useDocumentTitle('Esqueci a senha')
   const mutation = useMutation({ mutationFn: forgotPassword })
   const countdown = useCountdown()

@@ -6,8 +6,8 @@ import { queryKeys } from '../../shared/services/api/query-keys'
 import { Button } from '../../shared/components/Button'
 import { Dialog } from '../../shared/components/Dialog'
 import { Field } from '../../shared/components/Field'
-import styles from '../auth/AuthPage.module.css'
-import { authMessages, loginErrorMessage } from '../auth/messages'
+import styles from '../../shared/components/AuthPage.module.css'
+import { authMessages, loginErrorMessage } from './messages'
 
 type ReloginDialogProps = {
   open: boolean

@@ -1,22 +1,22 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { resetPassword } from '../../shared/services/api/auth'
-import { queryKeys } from '../../shared/services/api/query-keys'
-import { ApiRequestError } from '../../shared/services/api/client'
-import { Button, buttonClass } from '../../shared/components/Button'
-import { Field } from '../../shared/components/Field'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
-import styles from './AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from './messages'
-import { useFragmentToken } from './token-fragment'
+import { verifyEmail } from '../../../shared/services/api/auth'
+import { ApiRequestError } from '../../../shared/services/api/client'
+import { Button, buttonClass } from '../../../shared/components/Button'
+import { Field } from '../../../shared/components/Field'
+import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
+import styles from '../../../shared/components/AuthPage.module.css'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
+import { useFragmentToken } from '../helpers/token-fragment'
 
 const MIN_PASSWORD = 8
 
-export function ResetPasswordPage() {
-  const token = useFragmentToken('/redefinir-senha')
-  const queryClient = useQueryClient()
-  const mutation = useMutation({ mutationFn: resetPassword })
+// O link do e-mail abre esta tela; a senha é escolhida aqui, por quem tem o link, e só então a
+// conta é criada (feature 035). Ninguém consegue escolher a senha de um e-mail que não é seu.
+export function VerifyEmailForm() {
+  const token = useFragmentToken('/verificar-email')
+  const mutation = useMutation({ mutationFn: verifyEmail })
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +25,7 @@ export function ResetPasswordPage() {
   const [expired, setExpired] = useState(false)
 
   const invalid = token === undefined || expired
-  const title = done ? 'Senha alterada' : invalid ? 'Este link não vale mais' : 'Nova senha'
+  const title = done ? 'Conta criada' : invalid ? 'Este link não vale mais' : 'Escolha sua senha'
   useDocumentTitle(title)
 
   async function onSubmit(event: FormEvent) {
@@ -50,8 +50,6 @@ export function ResetPasswordPage() {
     setFields([])
     try {
       await mutation.mutateAsync({ token, password })
-      // A API encerrou todas as sessões, inclusive a deste navegador: a pessoa passa a visitante.
-      queryClient.setQueryData(queryKeys.session, null)
       setDone(true)
     } catch (failure) {
       if (failure instanceof ApiRequestError && failure.code === 'invalid-token') {
@@ -70,7 +68,7 @@ export function ResetPasswordPage() {
         {done ? (
           <>
             <p role="status" className={styles.lead}>
-              Senha alterada. Entre com a nova senha.
+              Pronto, seu e-mail foi confirmado e a conta foi criada. Agora é só entrar.
             </p>
             <Link to="/login" className={buttonClass({ variant: 'primary', block: true })}>
               Entrar
@@ -81,16 +79,15 @@ export function ResetPasswordPage() {
             <p role="status" className={styles.lead}>
               O link venceu, já foi usado ou foi trocado por outro mais novo. Peça um novo link.
             </p>
-            <Link
-              to="/esqueci-a-senha"
-              className={buttonClass({ variant: 'primary', block: true })}
-            >
-              Pedir novo link
+            <Link to="/cadastro" className={buttonClass({ variant: 'primary', block: true })}>
+              Criar conta de novo
             </Link>
           </>
         ) : (
           <>
-            <p className={styles.lead}>Escolha uma senha nova para a sua conta.</p>
+            <p className={styles.lead}>
+              Seu e-mail foi reconhecido. Escolha a senha para ativar a conta.
+            </p>
             {error ? (
               <div role="alert" className={styles.alert}>
                 {error}
@@ -98,7 +95,7 @@ export function ResetPasswordPage() {
             ) : null}
             <form onSubmit={onSubmit} noValidate className={styles.form}>
               <Field
-                label="Nova senha"
+                label="Senha"
                 type="password"
                 name="password"
                 autoComplete="new-password"
@@ -108,7 +105,7 @@ export function ResetPasswordPage() {
                 error={fields.includes('password') ? 'Confira este campo.' : undefined}
               />
               <Field
-                label="Repita a nova senha"
+                label="Repita a senha"
                 type="password"
                 name="confirmation"
                 autoComplete="new-password"
@@ -117,7 +114,7 @@ export function ResetPasswordPage() {
                 error={fields.includes('confirmation') ? 'Confira este campo.' : undefined}
               />
               <Button type="submit" variant="primary" block disabled={mutation.isPending}>
-                {mutation.isPending ? 'Salvando…' : 'Salvar senha'}
+                {mutation.isPending ? 'Criando…' : 'Criar conta'}
               </Button>
             </form>
           </>

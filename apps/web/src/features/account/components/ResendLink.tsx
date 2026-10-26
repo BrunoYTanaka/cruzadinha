@@ -1,7 +1,7 @@
-import { formatWait } from '../../shared/helpers/time'
-import { Button } from '../../shared/components/Button'
-import { VisuallyHidden } from '../../shared/components/VisuallyHidden'
-import type { useCountdown } from './useCountdown'
+import { formatWait } from '../../../shared/helpers/time'
+import { Button } from '../../../shared/components/Button'
+import { VisuallyHidden } from '../../../shared/components/VisuallyHidden'
+import type { useCountdown } from '../hooks/useCountdown'
 
 type Props = {
   label: string

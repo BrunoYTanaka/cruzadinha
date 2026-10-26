@@ -1,7 +1,7 @@
 import { useRevalidator, useRouteError } from 'react-router'
 import { ApiRequestError } from '../shared/services/api/client'
 import { ServerWakeTimeoutError } from '../shared/services/api/server-wake'
-import { ServerWake } from '../features/status/ServerWake'
+import { ServerWake } from '../features/status'
 import { ErrorState } from '../shared/components/ErrorState'
 
 // Tela de erro das rotas: falha de rede ou do servidor ao carregar a guarda, por exemplo.

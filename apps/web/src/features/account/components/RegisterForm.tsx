@@ -1,20 +1,20 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router'
-import { register, resendVerification } from '../../shared/services/api/auth'
-import { ApiRequestError } from '../../shared/services/api/client'
-import { Button } from '../../shared/components/Button'
-import { Field } from '../../shared/components/Field'
-import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle'
-import styles from './AuthPage.module.css'
-import { authMessages, emailRequestErrorMessage, invalidFields } from './messages'
-import { safeNext } from '../session/redirect'
+import { register, resendVerification } from '../../../shared/services/api/auth'
+import { ApiRequestError } from '../../../shared/services/api/client'
+import { Button } from '../../../shared/components/Button'
+import { Field } from '../../../shared/components/Field'
+import { useDocumentTitle } from '../../../shared/hooks/useDocumentTitle'
+import styles from '../../../shared/components/AuthPage.module.css'
+import { authMessages, emailRequestErrorMessage, invalidFields } from '../../session/messages'
+import { safeNext } from '../../session/redirect'
 import { ResendLink } from './ResendLink'
-import { useCountdown } from './useCountdown'
-import { useRegistration } from './useRegistration'
-import { useSessionQuery } from '../session/useSession'
+import { useCountdown } from '../hooks/useCountdown'
+import { useRegistration } from '../hooks/useRegistration'
+import { useSessionQuery } from '../../session/useSession'
 
-export function RegisterPage() {
+export function RegisterForm() {
   useDocumentTitle('Criar conta')
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))

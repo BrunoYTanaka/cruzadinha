@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getRegistration } from '../../shared/services/api/auth'
-import { queryKeys } from '../../shared/services/api/query-keys'
+import { getRegistration } from '../../../shared/services/api/auth'
+import { queryKeys } from '../../../shared/services/api/query-keys'
 
 // Se o cadastro está aberto (chave da API, feature 013). Carregando, com erro ou com uma API
 // anterior que não tem a rota, vale como fechado (FR-017).
