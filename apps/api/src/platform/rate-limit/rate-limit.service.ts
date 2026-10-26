@@ -20,7 +20,6 @@ export type RateLimiter = {
    * só `max` reservas passam por janela. Uma reserva recusada não grava nada.
    */
   reserve(rules: RateRule[], now: Date): Promise<Reservation>
-  record(keys: RateLimitKey[], now: Date): Promise<void>
   clear(key: RateLimitKey): Promise<void>
 }
 
@@ -71,7 +70,6 @@ export function createRateLimiter(repository: RateLimitRepository): RateLimiter 
       }
     },
 
-    record: (keys, now) => repository.record(keys, now),
     clear: (key) => repository.clear(key),
   }
 }

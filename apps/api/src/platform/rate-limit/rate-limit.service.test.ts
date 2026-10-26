@@ -9,7 +9,6 @@ const key = { action: 'LOGIN', keyType: 'EMAIL', keyValue: 'ana@x.com' } as cons
 function repositoryReturning(result: AttemptCount): RateLimitRepository {
   return {
     countSince: async () => result,
-    record: async () => {},
     insert: async () => [],
     deleteByIds: async () => {},
     clear: async () => {},
@@ -28,7 +27,6 @@ function memoryRepository() {
       ).length,
       oldest: now,
     }),
-    record: async () => {},
     insert: async (keys) =>
       keys.map((key) => {
         const id = String(next++)
@@ -72,6 +70,7 @@ describe('rate limiter', () => {
       resendVerification: { max: 10, windowMinutes: 60 },
       verifyToken: { max: 30, windowMinutes: 60 },
       resetPassword: { max: 30, windowMinutes: 60 },
+      progressSave: { max: 1800, windowMinutes: 60 },
     })
   })
 })

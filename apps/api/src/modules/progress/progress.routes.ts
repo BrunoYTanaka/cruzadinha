@@ -1,7 +1,7 @@
 import { saveProgressRequestSchema, type ProgressEnvelope } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { sendError } from '../../platform/http/errors'
+import { sendError, sendTooManyAttempts } from '../../platform/http/errors'
 import type { RequireSession } from '../identity'
 import { getProgressSchema, resetProgressSchema, saveProgressSchema } from './progress.schemas'
 import type { ProgressService } from './progress.service'
@@ -49,6 +49,9 @@ export const progressRoutes: FastifyPluginAsync<ProgressRoutesOptions> = async (
       }
       const result = await progress.save(request.user.id, puzzleId.data, parsed.data)
       if (!result.ok) {
+        if (result.reason === 'too-many-attempts') {
+          return sendTooManyAttempts(reply, result.retryAfterSeconds)
+        }
         if (result.reason === 'invalid-input') {
           return sendError(reply, 400, 'invalid-input', result.fields)
         }
@@ -70,7 +73,12 @@ export const progressRoutes: FastifyPluginAsync<ProgressRoutesOptions> = async (
       const puzzleId = puzzleIdSchema.safeParse((request.params as { puzzleId?: unknown }).puzzleId)
       if (!puzzleId.success) return sendError(reply, 404, 'puzzle-unavailable')
       const result = await progress.reset(request.user.id, puzzleId.data)
-      if (!result.ok) return sendError(reply, 404, 'puzzle-unavailable')
+      if (!result.ok) {
+        if (result.reason === 'too-many-attempts') {
+          return sendTooManyAttempts(reply, result.retryAfterSeconds)
+        }
+        return sendError(reply, 404, 'puzzle-unavailable')
+      }
       const body: ProgressEnvelope = { progress: result.progress }
       return body
     },

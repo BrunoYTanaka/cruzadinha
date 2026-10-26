@@ -1,0 +1,4 @@
+ALTER TABLE "rate_limit_attempts" DROP CONSTRAINT "rate_limit_attempts_action_check";--> statement-breakpoint
+ALTER TABLE "rate_limit_attempts" DROP CONSTRAINT "rate_limit_attempts_key_type_check";--> statement-breakpoint
+ALTER TABLE "rate_limit_attempts" ADD CONSTRAINT "rate_limit_attempts_action_check" CHECK ("rate_limit_attempts"."action" IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE'));--> statement-breakpoint
+ALTER TABLE "rate_limit_attempts" ADD CONSTRAINT "rate_limit_attempts_key_type_check" CHECK ("rate_limit_attempts"."key_type" IN ('EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER'));

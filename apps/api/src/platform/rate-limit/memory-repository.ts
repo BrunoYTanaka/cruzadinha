@@ -27,9 +27,6 @@ export function createMemoryRateRepository(): MemoryRateRepository {
         return id
       })
     },
-    async record(keys, now) {
-      await repository.insert(keys, now)
-    },
     async deleteByIds(ids) {
       for (let i = rows.length - 1; i >= 0; i--) {
         if (ids.includes((rows[i] as { id: string }).id)) rows.splice(i, 1)

@@ -99,6 +99,6 @@ describe('migrations', () => {
     const before = await count()
     await runMigrations(inject('databaseUrl'))
     expect(await count()).toBe(before)
-    expect(before).toBe(10)
+    expect(before).toBe(11)
   })
 })

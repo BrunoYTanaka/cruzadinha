@@ -1,4 +1,4 @@
-import { and, count, eq, gt, inArray, lt, min, sql } from 'drizzle-orm'
+import { and, count, eq, gt, inArray, min, sql } from 'drizzle-orm'
 import type { Database, Executor } from '../db/client'
 import { rateLimitAttempts, type rateLimitActions, type rateLimitKeyTypes } from '../db/schema'
 
@@ -12,7 +12,6 @@ export type AttemptCount = { count: number; oldest: Date | null }
 
 export type RateLimitRepository = {
   countSince(key: RateLimitKey, since: Date): Promise<AttemptCount>
-  record(keys: RateLimitKey[], now: Date): Promise<void>
   /** Grava uma linha por chave e devolve os ids, para quem a gravou poder devolvê-las. */
   insert(keys: RateLimitKey[], createdAt?: Date): Promise<string[]>
   deleteByIds(ids: string[]): Promise<void>
@@ -26,8 +25,6 @@ export type RateLimitRepository = {
     run: (locked: RateLimitRepository) => Promise<T>,
   ): Promise<T>
 }
-
-const RETENTION_MS = 24 * 60 * 60 * 1000
 
 function matches(key: RateLimitKey) {
   return and(
@@ -52,14 +49,6 @@ export function createRateLimitRepository(database: Database): RateLimitReposito
           .from(rateLimitAttempts)
           .where(and(matches(key), gt(rateLimitAttempts.createdAt, since)))
         return { count: row?.count ?? 0, oldest: row?.oldest ?? null }
-      },
-
-      async record(keys, now) {
-        if (keys.length > 0) await db.insert(rateLimitAttempts).values(withDate(keys, now))
-        // Limpeza oportunista: nenhuma janela passa de 1 dia.
-        await db
-          .delete(rateLimitAttempts)
-          .where(lt(rateLimitAttempts.createdAt, new Date(now.getTime() - RETENTION_MS)))
       },
 
       async insert(keys, createdAt) {
