@@ -8,7 +8,7 @@ import {
 import { setTimeout as delay } from 'node:timers/promises'
 import type { Database } from '../../db/client'
 import type { Clock } from '../../lib/clock'
-import { candidateDates, todayInSaoPaulo } from '../../lib/dates'
+import { addDaysToIsoDate, candidateDates, todayInSaoPaulo } from '../../lib/dates'
 import type {
   FetchFailureReason,
   FetchPuzzleResult,
@@ -75,6 +75,9 @@ export type CollectErrorHandler = (info: {
   date: string
   error: unknown
 }) => void
+
+// Dias para trás que ainda se buscam na fonte; é o tamanho da biblioteca (366 por fonte).
+const FETCH_WINDOW_DAYS = 366
 
 export type PuzzlesDeps = {
   db: Database
@@ -262,7 +265,13 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       // consome o limite de pedidos.
       if (source.onDemand === false) return { ok: false, reason: 'unavailable' }
 
-      if (date > todayInSaoPaulo(clock)) return { ok: false, reason: 'unavailable' }
+      const today = todayInSaoPaulo(clock)
+      if (date > today) return { ok: false, reason: 'unavailable' }
+      // Mesma janela da biblioteca: um dia mais antigo não é buscado, senão qualquer visitante faria
+      // o servidor pedir à fonte datas que ela não tem, e a resposta "indisponível" não é guardada.
+      if (date < addDaysToIsoDate(today, -FETCH_WINDOW_DAYS)) {
+        return { ok: false, reason: 'unavailable' }
+      }
 
       // Só a ida à fonte conta no limite: puzzle guardado nunca chega aqui.
       const now = clock()

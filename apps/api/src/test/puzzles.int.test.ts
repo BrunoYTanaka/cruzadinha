@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { Writable } from 'node:stream'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { puzzles } from '../db/schema'
+import { puzzles, rateLimitAttempts } from '../db/schema'
 import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
 import { defaultRateLimits, type RateLimits } from '../modules/rate-limit/limits'
@@ -184,6 +184,28 @@ describe('GET /api/puzzles', () => {
     expect(response.statusCode).toBe(404)
     expect(response.body).not.toContain('solution')
     expect(response.json().error).toBe('puzzle-unavailable')
+    expect(source.calls).toEqual([])
+  })
+
+  it('responde 404 para data além da janela da biblioteca sem consultar a fonte nem gastar o limite', async () => {
+    await start(okFor(daysAgo(367), daysAgo(366)))
+    const tooOld = await get(`/api/puzzles?date=${daysAgo(367)}`)
+
+    expect(tooOld.statusCode).toBe(404)
+    expect(tooOld.json().error).toBe('puzzle-unavailable')
+    expect(source.calls).toEqual([])
+    expect(await db.select().from(rateLimitAttempts)).toHaveLength(0)
+
+    // O último dia da janela ainda é buscado.
+    expect((await get(`/api/puzzles?date=${daysAgo(366)}`)).statusCode).toBe(200)
+    expect(source.calls).toEqual([daysAgo(366)])
+  })
+
+  it('continua servindo um puzzle antigo que já está guardado', async () => {
+    await start(new Map())
+    await insertPuzzleIfAbsent(db, okResult(daysAgo(400)))
+
+    expect((await get(`/api/puzzles?date=${daysAgo(400)}`)).statusCode).toBe(200)
     expect(source.calls).toEqual([])
   })
 

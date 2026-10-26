@@ -47,6 +47,23 @@ describe('limits behind the site proxy', () => {
     expect(spoofed.statusCode).toBe(429)
   })
 
+  it('counts an IPv6 client by its /64 block, and an IPv4-mapped one by its IPv4', async () => {
+    const first = { 'x-cruzadinha-client-ip': '2001:db8:1:2:aaaa::1' }
+    expect((await login('a@x.com', first)).statusCode).toBe(401)
+    expect((await login('b@x.com', first)).statusCode).toBe(401)
+
+    const sameBlock = { 'x-cruzadinha-client-ip': '2001:db8:1:2:bbbb::9' }
+    expect((await login('c@x.com', sameBlock)).statusCode).toBe(429)
+
+    const otherBlock = { 'x-cruzadinha-client-ip': '2001:db8:1:3::1' }
+    expect((await login('d@x.com', otherBlock)).statusCode).toBe(401)
+
+    const mappedA = { 'x-cruzadinha-client-ip': '::ffff:203.0.113.5' }
+    const mappedB = { 'x-cruzadinha-client-ip': '::ffff:203.0.113.6' }
+    expect((await login('e@x.com', mappedA)).statusCode).toBe(401)
+    expect((await login('f@x.com', mappedB)).statusCode).toBe(401)
+  })
+
   it('refuses a request that did not come through the site', async () => {
     const response = await app.inject({ method: 'GET', url: '/api/auth/me' })
     expect(response.statusCode).toBe(403)
