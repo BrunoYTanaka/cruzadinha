@@ -1,6 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { runCli } from '../cli/run-cli'
-import { passwordResetTokens, pendingRegistrations, rateLimitAttempts, users } from '../db/schema'
+import {
+  passwordResetTokens,
+  pendingRegistrations,
+  rateLimitAttempts,
+  users,
+} from '../platform/db/schema'
 import { DAY, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()

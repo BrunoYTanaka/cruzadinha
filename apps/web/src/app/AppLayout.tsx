@@ -1,15 +1,17 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
-import { Button, buttonClass } from '../components/Button'
-import { Notice } from '../components/Notice'
-import { buildLoginPath } from '../features/auth/redirect'
-import { clearRememberedSource } from '../features/library/source-choice'
-import { useLogoutMutation, useSessionQuery } from '../features/auth/useSession'
-import { SettingsButton } from '../features/settings/SettingsButton'
-import { SettingsDialog } from '../features/settings/SettingsDialog'
-import { useSettingsSync } from '../features/settings/settings-sync'
+import { Button, buttonClass } from '../shared/components/Button/Button'
+import { Notice } from '../shared/components/Notice/Notice'
+import {
+  buildLoginPath,
+  useLogoutMutation,
+  useSessionQuery,
+  clearEnded,
+  useSessionEnded,
+} from '../features/session'
+import { clearRememberedSource } from '../features/library'
+import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import styles from './AppLayout.module.css'
-import { clearEnded, useSessionEnded } from './session-ended'
 
 // Telas de conta da feature 035, além do login e do cadastro.
 const ACCOUNT_PATHS = new Set(['/verificar-email', '/esqueci-a-senha', '/redefinir-senha'])

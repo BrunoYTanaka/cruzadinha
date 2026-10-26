@@ -6,17 +6,16 @@ import {
   type Solution,
 } from '@cruzadinha/shared'
 import { setTimeout as delay } from 'node:timers/promises'
-import type { Database } from '../../db/client'
-import type { Clock } from '../../lib/clock'
-import { addDaysToIsoDate, candidateDates, todayInSaoPaulo } from '../../lib/dates'
+import type { Database } from '../../platform/db/client'
+import type { Clock } from '../../platform/lib/clock'
+import { addDaysToIsoDate, candidateDates, todayInSaoPaulo } from '../../platform/lib/dates'
 import type {
   FetchFailureReason,
   FetchPuzzleResult,
   FetchPuzzleSuccess,
   PuzzleSource,
 } from '../../sources/types'
-import type { RateLimits } from '../rate-limit/limits'
-import type { RateLimiter } from '../rate-limit/rate-limit.service'
+import type { RateLimits, RateLimiter } from '../../platform/rate-limit'
 import {
   existingDates,
   findPuzzle,

@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { rateLimitAttempts } from '../db/schema'
+import { rateLimitAttempts } from '../platform/db/schema'
 import { openTestDatabase, tableNames, truncateAll } from './database'
 
 const handle = openTestDatabase()

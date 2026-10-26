@@ -1,6 +1,6 @@
 import { healthStatusSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { errorResponse, toDocSchema } from '../../docs/doc-schema'
+import { errorResponse, toDocSchema } from '../../platform/docs/doc-schema'
 
 export const healthSchema = {
   tags: ['health'],

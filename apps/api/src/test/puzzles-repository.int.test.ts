@@ -1,7 +1,7 @@
 import { puzzleSchema } from '@cruzadinha/shared'
 import { sql } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { puzzles } from '../db/schema'
+import { puzzles } from '../platform/db/schema'
 import {
   existingDates,
   findPuzzle,

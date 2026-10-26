@@ -1,14 +1,15 @@
 import { emailSchema, passwordSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { parseArgs } from 'node:util'
-import type { Database } from '../db/client'
-import type { Clock } from '../lib/clock'
-import { createAuthService } from '../modules/auth/auth.service'
-import { describeError } from '../db/errors'
-import { deleteExpiredAuthRows } from '../modules/auth/cleanup.repository'
-import { defaultRateLimits } from '../modules/rate-limit/limits'
-import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
-import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
-import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
+import { describeError } from '../platform/db/errors'
+import type { Database } from '../platform/db/client'
+import type { Clock } from '../platform/lib/clock'
+import { createAccount, createAuthService, deleteExpiredAuthRows } from '../modules/identity'
+import {
+  defaultRateLimits,
+  createRateLimitRepository,
+  createRateLimiter,
+} from '../platform/rate-limit'
+import { createPuzzlesService } from '../modules/puzzles'
 import type { PuzzleSource } from '../sources/types'
 
 export type CliDeps = {
@@ -68,8 +69,7 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   const confirmation = await deps.readSecret('Confirme a senha: ')
   if (confirmation !== password) throw new UsageError('As senhas não conferem.')
 
-  const auth = authService(deps)
-  const result = await auth.createAccount({ email: email.data, password })
+  const result = await createAccount(deps.db, { email: email.data, password })
   if (!result.ok) {
     deps.stderr('Já existe uma conta com esse e-mail.\n')
     return 1

@@ -1,7 +1,7 @@
 import type { Level, ProgressStatus, PuzzleSourceId } from '@cruzadinha/shared'
 import { and, asc, desc, eq, sql } from 'drizzle-orm'
-import type { Executor } from '../../db/client'
-import { progress, puzzles } from '../../db/schema'
+import type { Executor } from '../../platform/db/client'
+import { progress, puzzles } from '../../platform/db/schema'
 
 // Uma linha da biblioteca: metadados do puzzle e, se o usuário já jogou, o resumo do progresso.
 // As colunas de progresso vêm nulas quando não há linha; `hasLetters` evita trazer as letras.

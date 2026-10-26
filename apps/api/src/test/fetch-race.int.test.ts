@@ -1,9 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
+import { addDaysToIsoDate, todayInSaoPaulo } from '../platform/lib/dates'
 import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
-import { defaultRateLimits } from '../modules/rate-limit/limits'
-import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
-import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
+import {
+  createRateLimitRepository,
+  createRateLimiter,
+  defaultRateLimits,
+} from '../platform/rate-limit'
 import { fakeSource, okResult } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 

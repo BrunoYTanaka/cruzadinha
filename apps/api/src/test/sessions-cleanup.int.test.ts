@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { sessions, users } from '../db/schema'
-import { createAuthService } from '../modules/auth/auth.service'
-import { defaultRateLimits } from '../modules/rate-limit/limits'
-import { createRateLimitRepository } from '../modules/rate-limit/rate-limit.repository'
-import { createRateLimiter } from '../modules/rate-limit/rate-limit.service'
+import { sessions, users } from '../platform/db/schema'
+import { createAuthService } from '../modules/identity/sessions/auth.service'
+import { defaultRateLimits } from '../platform/rate-limit/limits'
+import { createRateLimitRepository } from '../platform/rate-limit/rate-limit.repository'
+import { createRateLimiter } from '../platform/rate-limit/rate-limit.service'
 import { DAY, openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()

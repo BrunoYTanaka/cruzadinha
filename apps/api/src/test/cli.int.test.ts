@@ -1,10 +1,10 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { sessions, users } from '../db/schema'
+import { sessions, users } from '../platform/db/schema'
 import { runCli } from '../cli/run-cli'
 import { buildTestApp } from './app'
 import { fakeListedSource, fakeSource, okResult, type FakeSource } from './fake-source'
 import type { FetchPuzzleResult } from '../sources/types'
-import { addDaysToIsoDate, todayInSaoPaulo } from '../lib/dates'
+import { addDaysToIsoDate, todayInSaoPaulo } from '../platform/lib/dates'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
 const handle = openTestDatabase()

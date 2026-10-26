@@ -7,7 +7,7 @@ import {
 import { sql } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { puzzles } from '../db/schema'
+import { puzzles } from '../platform/db/schema'
 import { buildTestApp, signUpForTest } from './app'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 import { fakeSource, okResult, type FakeSource } from './fake-source'

@@ -1,6 +1,11 @@
 import { saveSettingsRequestSchema, settingsEnvelopeSchema } from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
-import { commonErrors, errorResponse, retryAfterHeader, toDocSchema } from '../../docs/doc-schema'
+import {
+  commonErrors,
+  errorResponse,
+  retryAfterHeader,
+  toDocSchema,
+} from '../../platform/docs/doc-schema'
 
 const unauthenticated = errorResponse('`unauthenticated`: sem sessão válida.')
 

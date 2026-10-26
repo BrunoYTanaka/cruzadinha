@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readCss } from './css-file'
 
-const themesDir = join(import.meta.dirname, '..', 'themes')
-const lightCss = readFileSync(join(themesDir, 'light.css'), 'utf8')
-const darkCss = readFileSync(join(themesDir, 'dark.css'), 'utf8')
+const lightCss = readCss('light.css')
+const darkCss = readCss('dark.css')
 
 type Tokens = Record<string, string>
 

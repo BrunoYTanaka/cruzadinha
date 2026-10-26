@@ -184,19 +184,21 @@ Fora de produção, a API também serve a documentação OpenAPI em `/api/docs/`
 
 ```
 apps/web/src/
-  app/            rotas, layout, quem está usando (visitante ou conta), provedor de tema
+  app/            roteador, layout, tela de erro de rota, recarga após deploy
+  pages/          uma pasta por rota (login, cadastro, biblioteca, dia, jogo, status...); só compõe features
   features/
-    auth/         login e cadastro
-    library/      "Hoje" com um cartão por fonte e o calendário mensal com abas de fonte
-    game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro, ajudas, conclusão
+    session/      quem está usando (visitante ou conta), fim de sessão, redirecionamento ao login
+    account/      formulários de entrar, cadastro, confirmar e-mail e recuperar senha
     guest/        progresso do visitante no navegador (IndexedDB) e biblioteca do visitante
-  game-logic/     lógica pura do tabuleiro, sem React (reducer testável)
-  api/            cliente HTTP único, com tipos de packages/shared
-  themes/         tokens claro e escuro
-  components/     peças genéricas (botão, modal)
+    library/      "Hoje" com um cartão por fonte e o calendário mensal com abas de fonte
+    settings/     janela de ajustes e a sincronização com a conta
+    game/         tela do jogo: tabuleiro, dicas, teclado, cronômetro, ajudas, conclusão
+    status/       espera do servidor gratuito
+  domain/         regra pura do tabuleiro e do visitante, sem React (reducer testável)
+  shared/         cliente HTTP único (services/api), armazenamento, componentes genéricos, hooks, helpers e temas
 ```
 
-- **Estado:** o estado da partida vive no `game-logic` (reducer). O restante vem do TanStack Query, sem biblioteca global de estado.
+- **Estado:** o estado da partida vive em `domain/game` (reducer). O restante vem do TanStack Query, sem biblioteca global de estado.
 - **Visual:** CSS com variáveis, sem biblioteca de UI pronta. Os componentes não têm cores nem medidas fixas e leem tokens. O tema padrão tem dois conjuntos de valores, claro e escuro. Um tema novo no futuro é um novo arquivo de tokens.
 - **Responsivo:** o jogo precisa funcionar bem no celular, com teclado próprio na tela.
 
@@ -251,7 +253,7 @@ Link × botão:
 9. Grade completa e correta marca o jogo como concluído. Grade completa e errada não mostra aviso.
 10. **Ajudas (v1 do front):** revelar letra (limite 4 por cruzada), revelar palavra (limite 2) e verificar (sem limite); `VITE_HELP_LETTER_LIMIT` e `VITE_HELP_WORD_LIMIT` (lidos no build) são o padrão, e a pessoa escolhe outro número (0 a 99) ou "sem limite" para cada uma nas configurações. Mudar o limite com a partida aberta vale na hora; baixar abaixo do já usado só esgota a ajuda (feature 021). A célula revelada fica travada e ganha um cantinho roxo; a verificação marca as certas de roxo e as erradas de vermelho. O uso de ajuda e as marcas ficam só no aparelho (`localStorage` por usuário e cruzada), sem enviar ao servidor; o melhor tempo conta normalmente com ajuda.
 11. A solução da fonte pode trazer letras acentuadas (Ã, É). A comparação e as ajudas usam a letra simples, a mesma que o jogador digita.
-12. Uma dica da lista fica marcada como resolvida só quando a palavra está **certa** (completa e com as letras da solução, pela mesma comparação da conclusão); completa e errada, ela fica normal. A dica resolvida fica riscada (feature 019), com o fundo de sucesso do tema (`--ok-tint`) e um visto (✓) verde (`--ok`) no fim da linha (feature 017), e o texto continua na cor normal, sem ficar apagado; a dica ativa e resolvida mantém o fundo da palavra ativa e o visto. Toda dica reserva à direita o espaço do visto, então resolver ou desfazer não muda a quebra de linha nem a altura da lista. O risco e o visto são decorativos: o leitor de tela ouve ", resolvida". A marca sai só das letras e da solução: não conta como ajuda, não é salvo e não aparece no tabuleiro nem na barra da dica ativa. A regra fica em `game-logic/clue-strike.ts` com um modo (`StrikeMode`). Nas configurações, desligar "Riscar a dica só quando acerta" passa ao modo "ao preencher": a dica completa, certa ou errada, fica só riscada, sem fundo de sucesso e sem visto, e o leitor de tela ouve ", preenchida" (feature 021).
+12. Uma dica da lista fica marcada como resolvida só quando a palavra está **certa** (completa e com as letras da solução, pela mesma comparação da conclusão); completa e errada, ela fica normal. A dica resolvida fica riscada (feature 019), com o fundo de sucesso do tema (`--ok-tint`) e um visto (✓) verde (`--ok`) no fim da linha (feature 017), e o texto continua na cor normal, sem ficar apagado; a dica ativa e resolvida mantém o fundo da palavra ativa e o visto. Toda dica reserva à direita o espaço do visto, então resolver ou desfazer não muda a quebra de linha nem a altura da lista. O risco e o visto são decorativos: o leitor de tela ouve ", resolvida". A marca sai só das letras e da solução: não conta como ajuda, não é salvo e não aparece no tabuleiro nem na barra da dica ativa. A regra fica em `domain/game/clue-strike.ts` com um modo (`StrikeMode`). Nas configurações, desligar "Riscar a dica só quando acerta" passa ao modo "ao preencher": a dica completa, certa ou errada, fica só riscada, sem fundo de sucesso e sem visto, e o leitor de tela ouve ", preenchida" (feature 021).
 13. A barra da dica ativa fica sempre numa linha, com a altura de sempre: a dica que não cabe termina em reticências, com o número e a direção inteiros, e o tabuleiro não se move ao trocar de palavra. No computador, o texto fica alinhado à esquerda e no centro ótico da barra: o meio das minúsculas (do topo do "x" à linha de base) fica no meio da altura dela e na altura das setas anterior e próxima, com o número e a dica na mesma linha de base (feature 019). O leitor de tela ouve a dica inteira, e ela aparece completa na lista de dicas ou na barra de letras acima do teclado do celular (feature 017).
 14. No computador, a barra da dica ativa (e a faixa de modo leitura, que ocupa o lugar dela) tem a largura do tabuleiro: a dica nunca alarga a coluna nem empurra as colunas de dicas. Num tabuleiro com menos de 320 px (poucas colunas e a alça perto do mínimo), a barra fica com 320 px, centralizada sobre ele, para caberem as setas, o número e a direção. Com o mouse parado meio segundo sobre uma dica cortada, um balão logo acima da barra mostra a dica inteira, por cima da faixa de ferramentas, sem cobrir o tabuleiro e sem mover nada (feature 019); se não couber acima na janela (página rolada), ele abre abaixo da barra. Na janela estreita sem teclado na tela, em que a barra fica abaixo do tabuleiro, o balão abre abaixo dela; ele some quando o mouse sai da barra e do balão, com Esc ou ao trocar de palavra. Não aparece com toque nem quando a dica cabe, e é só visual (o leitor de tela já ouve a dica inteira) (feature 018).
 
@@ -300,7 +302,7 @@ Link × botão:
 
 ## 8. Testes
 
-- **`game-logic` (Vitest):** seleção, digitação, direção, avanço, conclusão. É a parte com mais regras.
+- **`domain/game` (Vitest):** seleção, digitação, direção, avanço, conclusão. É a parte com mais regras.
 - **Conversão de formato:** testes com respostas reais da Agilmente salvas como fixtures. Se o formato mudar, o teste quebra e avisa.
 - **Cadastro e autenticação:** integração com Postgres real em container, cobrindo a chave de cadastro, sessão opcional, `users create` e limite de tentativas.
 - **Progresso:** integração do salvamento e da leitura.
@@ -333,6 +335,6 @@ Meta: custo zero, sem prazo de expiração.
 3. `packages/shared` (formato interno) e adaptador `oglobo` com fixtures.
 4. Banco, `auth` e `invites`.
 5. `puzzles` (com a coleta diária e o workflow agendado), `library` e `progress`.
-6. `game-logic` e tela do jogo, com temas claro e escuro.
+6. `domain/game` e tela do jogo, com temas claro e escuro.
 7. Biblioteca, convites pelo easter egg e acabamento.
 8. Implantação. Concluído (feature 012).

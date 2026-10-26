@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { defaultRateLimits } from '../modules/rate-limit/limits'
+import { defaultRateLimits } from '../platform/rate-limit/limits'
 import { buildTestApp } from './app'
 import { openTestDatabase, testClock, truncateAll } from './database'
 

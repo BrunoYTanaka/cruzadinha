@@ -68,7 +68,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: node apps/api/dist/cli.mjs auth cleanup
-      # Uma issue por fonte que falhou (feature 037). Só as linhas "Falhou em" acusam uma fonte:
+      # Uma issue por fonte que falhou (feature 038). Só as linhas "Falhou em" acusam uma fonte:
       # limite de uso, banco fora do ar e segredo ausente não abrem issue. O corpo leva apenas as
       # linhas da fonte, nunca a saída inteira.
       - if: failure() && steps.guard.outputs.enabled == 'true'
