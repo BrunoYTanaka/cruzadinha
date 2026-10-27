@@ -126,3 +126,14 @@
   color: var(--accent-ink);
   font-weight: 500;
 }
+
+.download {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+/* O botão e o resumo ficam na linha do título: a seção não ganha altura (calendário de 6 semanas). */
+.head .download {
+  margin-left: auto;
+}

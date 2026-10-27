@@ -1,12 +1,14 @@
-import {
-  saveProgressRequestSchema,
-  type Progress,
-  type ProgressEnvelope,
-  type SaveProgressRequest,
-} from '@cruzadinha/shared'
+import { type Progress, type ProgressEnvelope, type SaveProgressRequest } from '@cruzadinha/shared'
 import { ApiRequestError, getServerClockOffsetMs } from '../../../shared/services/api/client/client'
 import type { SaveQueue, SaveSnapshot, SaveState } from '../../../domain/game/save-types'
-import { readStorage, removeStorage, writeStorage } from '../../../shared/services/storage/storage'
+import {
+  applyOutboxEvent,
+  BACKOFF_MS,
+  readOutbox,
+  readOutboxItems,
+  sendPendingReset,
+  writeKnownProgress,
+} from '../../offline'
 
 export type SaveFn = (
   puzzleId: string,
@@ -27,32 +29,15 @@ export type SaveQueueOptions = {
 export type { SaveQueue, SaveSnapshot, SaveState }
 
 export const DEBOUNCE_MS = 1500
-const BACKOFF_MS = [1_000, 2_000, 4_000, 8_000, 16_000, 30_000]
-
-export function outboxKey(userId: string, puzzleId: string): string {
-  return `cruzadinha:outbox:${userId}:${puzzleId}`
-}
-
-// Corpo ainda não confirmado, guardado no aparelho; ignora o que estiver corrompido.
-export function readOutbox(userId: string, puzzleId: string): SaveProgressRequest | null {
-  const raw = readStorage(outboxKey(userId, puzzleId))
-  if (raw === null) return null
-  try {
-    const parsed = saveProgressRequestSchema.safeParse(JSON.parse(raw) as unknown)
-    return parsed.success ? parsed.data : null
-  } catch {
-    return null
-  }
-}
 
 export function createSaveQueue(options: SaveQueueOptions): SaveQueue {
   const { puzzleId, userId, save, onProgress } = options
   const now = options.now ?? Date.now
   const offset = options.serverClockOffsetMs ?? getServerClockOffsetMs
   const debounceMs = options.debounceMs ?? DEBOUNCE_MS
-  const key = outboxKey(userId, puzzleId)
 
-  let state: SaveState = 'saved'
+  // Pendência vinda de antes (outra abertura, sem rede): começa dizendo que ainda não foi enviada.
+  let state: SaveState = readOutboxItems(userId, puzzleId).length > 0 ? 'offline' : 'saved'
   const listeners = new Set<() => void>()
   let pending: SaveProgressRequest | null = null
   let inFlight: Promise<void> | null = null
@@ -74,14 +59,23 @@ export function createSaveQueue(options: SaveQueueOptions): SaveQueue {
   }
 
   const readOutboxBody = () => readOutbox(userId, puzzleId)
+  const resetPending = () => readOutboxItems(userId, puzzleId)[0]?.kind === 'reset'
 
   function writeOutbox(body: SaveProgressRequest) {
-    writeStorage(key, JSON.stringify(body))
+    applyOutboxEvent(userId, puzzleId, { type: 'save', body })
   }
 
   function clearOutboxUpTo(body: SaveProgressRequest) {
-    const stored = readOutboxBody()
-    if (!stored || stored.savedAt <= body.savedAt) removeStorage(key)
+    applyOutboxEvent(userId, puzzleId, { type: 'save-confirmed', savedAt: body.savedAt })
+  }
+
+  // Um "Jogar de novo" feito sem rede vai ao servidor antes de qualquer letra nova (feature 041).
+  async function settleReset(): Promise<'done' | 'retry-later' | 'stop'> {
+    if (!resetPending()) return 'done'
+    const outcome = await sendPendingReset(userId, puzzleId)
+    if (outcome === 'stop') setState('session-expired')
+    else if (outcome === 'retry-later') setState('offline')
+    return outcome
   }
 
   function clearTimers() {
@@ -106,10 +100,16 @@ export function createSaveQueue(options: SaveQueueOptions): SaveQueue {
     keepalive: boolean,
     restamped = false,
   ): Promise<'done' | 'retry-later' | 'stop'> {
+    const reset = await settleReset()
+    if (reset !== 'done') {
+      writeOutbox(body)
+      return reset
+    }
     try {
       const envelope = await save(puzzleId, body, { keepalive })
       clearOutboxUpTo(body)
       attempt = 0
+      if (envelope.progress) void writeKnownProgress(userId, envelope.progress)
       onProgress?.(envelope.progress, body)
       return 'done'
     } catch (error) {
@@ -145,6 +145,12 @@ export function createSaveQueue(options: SaveQueueOptions): SaveQueue {
       if (!pending) return
     }
     const body = pending ?? readOutboxBody()
+    if (!body && resetPending()) {
+      const outcome = await settleReset()
+      if (outcome === 'retry-later') scheduleRetry()
+      else if (outcome === 'done') setState('saved')
+      return
+    }
     if (!body) {
       setState(state === 'saving' ? 'saved' : state)
       return

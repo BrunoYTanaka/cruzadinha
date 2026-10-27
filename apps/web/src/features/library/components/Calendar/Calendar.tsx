@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
 import type { MonthView } from '../../helpers/calendar'
 import styles from './Calendar.module.css'
+import { useOfflinePuzzleIds } from '../../../offline'
 import { DayCell, MONTH_NAMES } from '../DayCell/DayCell'
 
 const WEEKDAYS = [
@@ -36,6 +37,7 @@ export function Calendar({
   onNext,
   resizeHandle,
 }: CalendarProps) {
+  const stored = useOfflinePuzzleIds()
   const title = `${MONTH_NAMES[view.month - 1] ?? ''} de ${view.year}`
   const cells: (number | null)[] = [
     ...Array.from({ length: view.leadingBlanks }, () => null),
@@ -95,7 +97,12 @@ export function Calendar({
                     <td className={styles.blank} />
                   ) : (
                     <td className={styles.cell}>
-                      <DayCell day={view.days[dayIndex]!} month={view.month} source={source} />
+                      <DayCell
+                        day={view.days[dayIndex]!}
+                        month={view.month}
+                        source={source}
+                        stored={stored}
+                      />
                     </td>
                   )}
                 </Fragment>

@@ -2,7 +2,8 @@ import { act, cleanup, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { expectNoA11yViolations } from '../../test/axe'
-import { cellsFrom, makeProgress, PUZZLE_ID } from '../../test/fixtures'
+import { cellsFrom, makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from '../../test/fixtures'
+import { savePuzzle } from '../../features/offline'
 import {
   installGameTestLifecycle,
   openGame,
@@ -93,7 +94,8 @@ describe('jogo do visitante (feature 013, US1)', () => {
       screen.getByRole('button', { name: /^1 ?Dica 1 horizontal, resolvida$/ }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^1 ?Dica 1 vertical$/ })).toBeInTheDocument()
-    expect(calls.map((call) => call.key)).toEqual([`GET /api/puzzles/${PUZZLE_ID}`])
+    // A cópia guardada na primeira abertura serve a segunda, sem pedir de novo (feature 041).
+    expect(calls.map((call) => call.key)).toEqual([])
   })
 
   it('uma verificação que só marca células também fica guardada (FR-004)', async () => {
@@ -151,7 +153,9 @@ describe('jogo do visitante (feature 013, US1)', () => {
 
 describe('conclusão do visitante (feature 013, US2)', () => {
   it('a janela abre na hora com o tempo e o recorde do aparelho, sem "Vamos registrar", também sem rede', async () => {
-    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    // Sem rede só abre a cruzada que já está guardada (feature 041).
+    await savePuzzle(makePuzzleResponse(TINY))
+    const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     const user = setup()
     const { calls } = openGuestGame()
     await screen.findByRole('grid')
@@ -162,6 +166,7 @@ describe('conclusão do visitante (feature 013, US2)', () => {
     await waitFor(() => expect(within(dialog).queryByText('—')).not.toBeInTheDocument())
     expect((await stored())?.status).toBe('completed')
     expect(calls.some((call) => toProgress(call.key))).toBe(false)
+    onLine.mockRestore()
   })
 
   it('reabrir uma concluída abre em modo leitura; "Jogar de novo" reinicia sem rede e mantém o recorde', async () => {

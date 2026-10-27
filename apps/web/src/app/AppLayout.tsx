@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../shared/components/Button/Button'
 import { Notice } from '../shared/components/Notice/Notice'
 import {
@@ -10,6 +10,16 @@ import {
   useSessionEnded,
 } from '../features/session'
 import { clearRememberedSource } from '../features/library'
+import {
+  clearAccountData,
+  discardOtherAccounts,
+  hasOutbox,
+  InstallButton,
+  LogoutConfirm,
+  OfflineNotice,
+  PendingOwnerNotice,
+  useOutboxDrain,
+} from '../features/offline'
 import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import styles from './AppLayout.module.css'
 
@@ -34,6 +44,18 @@ export function AppLayout() {
   const loginPath = buildLoginPath(location.pathname + location.search)
   // Configurações na conta (feature 021): liga para quem entrou, desliga para visitante.
   useSettingsSync()
+  // Pendências offline da conta (feature 041): enviadas fora do jogo, e nunca para outra conta.
+  const userId = session.data?.user.id ?? null
+  useOutboxDrain(userId, useMatch('/jogo/:puzzleId')?.params.puzzleId ?? null)
+  useEffect(() => {
+    if (userId) void discardOtherAccounts(userId)
+  }, [userId])
+  const [confirmingLogout, setConfirmingLogout] = useState(false)
+  async function leave() {
+    setConfirmingLogout(false)
+    if (userId) await clearAccountData(userId)
+    logout.mutate()
+  }
   return (
     <div className={styles.shell}>
       <a href="#conteudo" className={styles.skip}>
@@ -44,11 +66,18 @@ export function AppLayout() {
           Cruzadinha
         </Link>
         <div className={styles.actions}>
+          <InstallButton />
           <SettingsButton />
           {session.data ? (
             <>
               <span className={`${styles.who} ${styles.email}`}>{session.data.user.email}</span>
-              <Button variant="quiet" onClick={() => logout.mutate()} disabled={logout.isPending}>
+              <Button
+                variant="quiet"
+                onClick={() =>
+                  userId !== null && hasOutbox(userId) ? setConfirmingLogout(true) : logout.mutate()
+                }
+                disabled={logout.isPending}
+              >
                 Sair
               </Button>
             </>
@@ -68,6 +97,8 @@ export function AppLayout() {
           ) : null}
         </div>
       </header>
+      <OfflineNotice />
+      <PendingOwnerNotice guest={session.data === null} loginPath={loginPath} />
       {sessionEnded && session.data === null && !onAuthPage ? (
         // Sessão terminada fora do tabuleiro (FR-013): segue como visitante, sem tirar o foco.
         <div className={styles.notice}>
@@ -84,6 +115,11 @@ export function AppLayout() {
         <Outlet />
       </main>
       <SettingsDialog />
+      <LogoutConfirm
+        open={confirmingLogout}
+        onConfirm={() => void leave()}
+        onCancel={() => setConfirmingLogout(false)}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { libraryResponseSchema } from '@cruzadinha/shared'
@@ -22,6 +22,7 @@ import { RouteError } from '../../../app/RouteError'
 import { clearExpired, getSessionExpired } from './session-expired'
 import { expectNoA11yViolations } from '../../../test/axe'
 import { clearEnded } from './session-ended'
+import { readLastUser, writeLastUser } from './last-user/last-user'
 import { viewerLoader } from './viewer'
 
 function ViewerProbe() {
@@ -245,5 +246,65 @@ describe('viewerLoader e useViewer', () => {
     expect(
       screen.queryByText('Sua sessão terminou. Você está como visitante.'),
     ).not.toBeInTheDocument()
+  })
+})
+
+describe('last user (feature 041)', () => {
+  const setOnline = (value: boolean) =>
+    Object.defineProperty(navigator, 'onLine', { value, configurable: true })
+
+  beforeEach(() => localStorage.clear())
+  afterEach(() => setOnline(true))
+
+  it('remembers the user the server confirmed and forgets it without a session', async () => {
+    mockApi({ 'GET /api/auth/me': withSession })
+    const first = makeQueryClient()
+    renderRoutes(routesFor(first), ['/'], first)
+    await screen.findByText(`é ${aUser.email}`)
+    expect(readLastUser()).toEqual(aUser)
+    cleanup()
+    mockApi({ 'GET /api/auth/me': noSession })
+    const second = makeQueryClient()
+    renderRoutes(routesFor(second), ['/'], second)
+    await screen.findByText('é visitante')
+    expect(readLastUser()).toBeNull()
+  })
+
+  it('without a network uses the last user and never asks the server', async () => {
+    writeLastUser(aUser)
+    setOnline(false)
+    const { calls } = mockApi({})
+    const queryClient = makeQueryClient()
+    renderRoutes(routesFor(queryClient), ['/'], queryClient)
+    expect(await screen.findByText(`é ${aUser.email}`)).toBeInTheDocument()
+    expect(calls.map((call) => call.key)).not.toContain('GET /api/auth/me')
+  })
+
+  it('without a network and without a last user is a guest', async () => {
+    setOnline(false)
+    mockApi({})
+    const queryClient = makeQueryClient()
+    renderRoutes(routesFor(queryClient), ['/'], queryClient)
+    expect(await screen.findByText('é visitante')).toBeInTheDocument()
+  })
+
+  it('confirms the session once the server is ready and ends it when it is gone', async () => {
+    writeLastUser(aUser)
+    setOnline(false)
+    resetServerWake()
+    // O portão do roteador já esperou sem rede e deixou a retomada armada.
+    await waitForServer()
+    mockApi({
+      'GET /api/health': () => jsonResponse(200, { status: 'ok', database: 'up' }),
+      'GET /api/auth/me': noSession,
+    })
+    const queryClient = makeQueryClient()
+    renderRoutes(routesFor(queryClient), ['/'], queryClient)
+    await screen.findByText(`é ${aUser.email}`)
+    setOnline(true)
+    window.dispatchEvent(new Event('online'))
+    expect(await screen.findByText('é visitante')).toBeInTheDocument()
+    expect(readLastUser()).toBeNull()
+    expect(await screen.findByText(/Sua sessão terminou/)).toBeInTheDocument()
   })
 })

@@ -69,6 +69,7 @@
 }
 
 .day {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -179,4 +180,14 @@ a.day:active {
   .status {
     font-size: clamp(10.5px, 0.95cqi, 15px);
   }
+}
+
+/* Marca de cruzada guardada para jogar sem rede (feature 041); o texto está no nome acessível. */
+.offline {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  color: var(--mute);
+  font-size: 11px;
+  line-height: 1;
 }

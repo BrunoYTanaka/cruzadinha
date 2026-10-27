@@ -1,6 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { cellsFrom, makeProgress } from '../../test/fixtures'
+import { cellsFrom, makeProgress, PUZZLE_ID } from '../../test/fixtures'
+import { aUser } from '../../test/render'
+import { readOutboxItems } from '../../features/offline'
 import { openGame, PROGRESS, RESET, setup, installGameTestLifecycle } from '../../test/game-harness'
 import { apiError, jsonResponse } from '../../test/http'
 
@@ -69,7 +71,7 @@ describe('modo leitura', () => {
     expect(screen.getByText('Concluída em 07:48')).toBeInTheDocument()
   })
 
-  it('sem conexão mostra "Sem conexão. Tente de novo quando voltar." e mantém o modo leitura', async () => {
+  it('sem conexão, "Jogar de novo" entra na fila e a partida recomeça (feature 041, FR-008)', async () => {
     const user = setup()
     openGame({
       [PROGRESS]: () => jsonResponse(200, { progress: completed() }),
@@ -79,7 +81,14 @@ describe('modo leitura', () => {
     })
     await screen.findByRole('grid')
     await user.click(screen.getByRole('button', { name: 'Jogar de novo' }))
-    expect(await screen.findByText('Sem conexão. Tente de novo quando voltar.')).toBeInTheDocument()
-    expect(screen.getByText('Concluída em 07:48')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        screen.getByRole('gridcell', { name: 'Linha 1, coluna 1, vazia' }),
+      ).toBeInTheDocument(),
+    )
+    expect(screen.queryByText('Concluída em 07:48')).not.toBeInTheDocument()
+    expect(readOutboxItems(aUser.id, PUZZLE_ID)).toEqual([
+      { kind: 'reset', at: expect.any(String) },
+    ])
   })
 })

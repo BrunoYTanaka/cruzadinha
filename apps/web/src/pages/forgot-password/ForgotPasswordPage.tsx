@@ -1,5 +1,10 @@
 import { ForgotPasswordForm } from '../../features/account'
+import { RequiresConnection } from '../../shared/components/RequiresConnection/RequiresConnection'
 
 export function ForgotPasswordPage() {
-  return <ForgotPasswordForm />
+  return (
+    <RequiresConnection>
+      <ForgotPasswordForm />
+    </RequiresConnection>
+  )
 }

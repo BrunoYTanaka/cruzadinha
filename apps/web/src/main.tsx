@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { registerSW } from 'virtual:pwa-register'
 import { RouterProvider } from 'react-router'
 import { ApiRequestError } from './shared/services/api/client/client'
 import { installReloadAfterDeploy } from './app/reload-after-deploy'
 import { createAppRouter } from './app/router'
+import { captureInstallPrompt } from './features/offline'
 import { installThemeSync } from './shared/themes/theme/theme'
 import './shared/themes/fonts.css'
 import './shared/themes/tokens.css'
@@ -27,7 +29,10 @@ const queryClient = new QueryClient({
 })
 
 installReloadAfterDeploy(window)
+// Sem onNeedRefresh: a versão nova espera todas as abas fecharem (feature 041, FR-007).
+registerSW({ immediate: true })
 installThemeSync()
+captureInstallPrompt()
 
 const router = createAppRouter(queryClient)
 

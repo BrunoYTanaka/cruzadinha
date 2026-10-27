@@ -3,6 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetServerWake } from '../shared/services/api/server-wake/server-wake'
 import { jsonResponse, mockApi } from '../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../test/render'
+import { makePuzzleResponse, TINY, PUZZLE_ID } from '../test/fixtures'
+import { savePuzzle } from '../features/offline'
+import { writeLastUser } from '../features/session/services/last-user/last-user'
 import { createAppRoutes } from './router'
 
 const healthUp = () => jsonResponse(200, { status: 'ok', database: 'up' })
@@ -20,6 +23,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.restoreAllMocks()
   resetSessionHandlers()
   resetServerWake()
   vi.unstubAllGlobals()
@@ -128,4 +132,22 @@ describe('entrada do site com a espera do servidor', () => {
     await new Promise((resolve) => setTimeout(resolve, 2_500))
     expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
   }, 8000)
+
+  it('uma cruzada guardada abre sem rede e sem esperar o servidor nem a sessão (feature 041, FR-019)', async () => {
+    await savePuzzle(makePuzzleResponse(TINY))
+    writeLastUser(aUser)
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const { calls } = mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
+    const { router } = renderApp(`/jogo/${PUZZLE_ID}`)
+    await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
+    expect(await screen.findByRole('grid')).toBeInTheDocument()
+    expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
+  })
+
+  it('sem cópia guardada, /jogo espera o servidor como as outras telas', async () => {
+    mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
+    renderApp(`/jogo/${PUZZLE_ID}`)
+    expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument()
+  })
 })
