@@ -21,7 +21,7 @@ erDiagram
 
     RATE_LIMIT_ATTEMPT {
         uuid rate_limit_attempt_id PK
-        string action "LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE, PROGRESS_SAVE"
+        string action "LOGIN, REGISTER, PUZZLE_FETCH, SETTINGS_SAVE, PROGRESS_SAVE, FORGOT_PASSWORD, RESEND_VERIFICATION, VERIFY_TOKEN, EMAIL_SENT, RESET_PASSWORD, PASSWORD_CONFIRM, CHANGE_EMAIL"
         string key_type
         string key_value
         datetime created_at

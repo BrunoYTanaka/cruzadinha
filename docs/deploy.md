@@ -273,7 +273,7 @@ Quando uma fonte falha, o workflow abre uma issue com o rótulo `fonte-quebrada`
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
 
-Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro e tokens de recuperação vencidos e as contagens de tentativas com mais de 2 dias, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
+Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro, tokens de recuperação e pedidos de troca de e-mail vencidos e as contagens de tentativas com mais de 2 dias, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
 
 Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem atividade. O job `keepalive` do próprio workflow reativa o agendamento todo dia 1. Para conferir ou reativar à mão:
 
