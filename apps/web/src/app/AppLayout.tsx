@@ -6,7 +6,9 @@ import {
   buildLoginPath,
   useLogoutMutation,
   useSessionQuery,
+  clearAccountDeleted,
   clearEnded,
+  useAccountDeleted,
   useSessionEnded,
 } from '../features/session'
 import { clearRememberedSource } from '../features/library'
@@ -23,8 +25,13 @@ import {
 import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import styles from './AppLayout.module.css'
 
-// Telas de conta da feature 035, além do login e do cadastro.
-const ACCOUNT_PATHS = new Set(['/verificar-email', '/esqueci-a-senha', '/redefinir-senha'])
+// Telas de conta das features 035 e 042, além do login e do cadastro.
+const ACCOUNT_PATHS = new Set([
+  '/verificar-email',
+  '/esqueci-a-senha',
+  '/redefinir-senha',
+  '/confirmar-email',
+])
 
 export function AppLayout() {
   // `useSessionQuery` só consulta a sessão depois de o servidor acordar, para não competir com a
@@ -41,6 +48,7 @@ export function AppLayout() {
     if (onAccountPage) clearRememberedSource()
   }, [onAccountPage])
   const sessionEnded = useSessionEnded()
+  const accountDeleted = useAccountDeleted()
   const loginPath = buildLoginPath(location.pathname + location.search)
   // Configurações na conta (feature 021): liga para quem entrou, desliga para visitante.
   useSettingsSync()
@@ -70,7 +78,13 @@ export function AppLayout() {
           <SettingsButton />
           {session.data ? (
             <>
-              <span className={`${styles.who} ${styles.email}`}>{session.data.user.email}</span>
+              <Link
+                to="/conta"
+                className={`${styles.who} ${styles.email}`}
+                aria-label={`Sua conta (${session.data.user.email})`}
+              >
+                {session.data.user.email}
+              </Link>
               <Button
                 variant="quiet"
                 onClick={() =>
@@ -109,6 +123,11 @@ export function AppLayout() {
           >
             Sua sessão terminou. Você está como visitante.
           </Notice>
+        </div>
+      ) : null}
+      {accountDeleted ? (
+        <div className={styles.notice}>
+          <Notice onDismiss={clearAccountDeleted}>Sua conta foi excluída.</Notice>
         </div>
       ) : null}
       <main id="conteudo" className={styles.main} tabIndex={-1}>

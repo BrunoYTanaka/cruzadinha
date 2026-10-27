@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
 import { isServerReady, waitForServer } from '../shared/services/api/server-wake/server-wake'
+import { AccountPage } from '../pages/account/AccountPage'
+import { ConfirmEmailPage } from '../pages/confirm-email/ConfirmEmailPage'
 import { ForgotPasswordPage } from '../pages/forgot-password/ForgotPasswordPage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { RegisterPage } from '../pages/register/RegisterPage'
@@ -63,12 +65,14 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
             { path: '/verificar-email', element: <VerifyEmailPage /> },
             { path: '/esqueci-a-senha', element: <ForgotPasswordPage /> },
             { path: '/redefinir-senha', element: <ResetPasswordPage /> },
+            { path: '/confirmar-email', element: <ConfirmEmailPage /> },
             {
               loader: viewerLoader(queryClient),
               children: [
                 // "Ir direto ao jogo" decide antes de desenhar o calendário (feature 021).
                 { path: '/', element: <LibraryPage />, loader: directPlayLoader(queryClient) },
                 { path: '/dia/:date', element: <DayRoute /> },
+                { path: '/conta', element: <AccountPage /> },
               ],
             },
             { path: '*', element: <NotFoundPage /> },

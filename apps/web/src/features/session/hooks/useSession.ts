@@ -94,18 +94,21 @@ export function useLoginMutation() {
   })
 }
 
-// Ao sair, limpa tudo o que está em memória e volta à biblioteca como visitante, mesmo se a
-// chamada falhar.
-export function useLogoutMutation() {
+// Termina a sessão só neste aparelho: limpa tudo o que está em memória e volta à biblioteca como
+// visitante. Sair e excluir a conta usam o mesmo caminho (feature 042).
+export function useEndLocalSession(): () => void {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  return useMutation({
-    mutationFn: logout,
-    onSettled: () => {
-      clearLastUser()
-      queryClient.clear()
-      queryClient.setQueryData(queryKeys.session, null)
-      void navigate('/', { replace: true })
-    },
-  })
+  return () => {
+    clearLastUser()
+    queryClient.clear()
+    queryClient.setQueryData(queryKeys.session, null)
+    void navigate('/', { replace: true })
+  }
+}
+
+// Ao sair, termina a sessão local mesmo se a chamada falhar.
+export function useLogoutMutation() {
+  const endLocalSession = useEndLocalSession()
+  return useMutation({ mutationFn: logout, onSettled: endLocalSession })
 }

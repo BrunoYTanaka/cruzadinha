@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mockApi } from '../test/http'
 import { renderRoutes } from '../test/render'
+import { AccountPage } from './account/AccountPage'
+import { ConfirmEmailPage } from './confirm-email/ConfirmEmailPage'
 import { ForgotPasswordPage } from './forgot-password/ForgotPasswordPage'
 import { LoginPage } from './login/LoginPage'
 import { RegisterPage } from './register/RegisterPage'
@@ -19,6 +21,8 @@ describe('telas que precisam de conexão', () => {
     ['/verificar-email', <VerifyEmailPage />],
     ['/esqueci-a-senha', <ForgotPasswordPage />],
     ['/redefinir-senha', <ResetPasswordPage />],
+    ['/confirmar-email', <ConfirmEmailPage />],
+    ['/conta', <AccountPage />],
     ['/status', <StatusPage />],
   ])('%s avisa e não mostra o formulário', async (path, element) => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
