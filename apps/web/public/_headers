@@ -22,3 +22,10 @@
 
 /redefinir-senha
   Referrer-Policy: no-referrer
+
+# O navegador sempre confere se há service worker ou manifesto novo (feature 041).
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: no-cache
