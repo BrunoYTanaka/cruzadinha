@@ -59,6 +59,8 @@ export const rateLimitActions = [
   'EMAIL_SENT',
   'RESET_PASSWORD',
   'PROGRESS_SAVE',
+  'PASSWORD_CONFIRM',
+  'CHANGE_EMAIL',
 ] as const
 export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER'] as const
 
@@ -81,7 +83,7 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE', 'PASSWORD_CONFIRM', 'CHANGE_EMAIL')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
@@ -200,6 +202,22 @@ export const passwordResetTokens = pgTable(
       .on(table.userId)
       .where(sql`${table.usedAt} IS NULL`),
   ],
+)
+
+// Pedido de troca de e-mail ainda não confirmado: no máximo um por conta (feature 042).
+export const emailChangeRequests = pgTable(
+  'email_change_requests',
+  {
+    requestId: uuid('request_id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.userId, { onDelete: 'cascade' }),
+    newEmail: text('new_email').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: instant('expires_at').notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex('email_change_requests_user_unique').on(table.userId)],
 )
 
 export const emailBlockReasons = ['daily_quota_exceeded', 'monthly_quota_exceeded'] as const

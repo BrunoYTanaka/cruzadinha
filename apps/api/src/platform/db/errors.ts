@@ -48,3 +48,9 @@ export function describeError(error: unknown): { name: string; code?: string }[]
   }
   return items.length > 0 ? items : [{ name: typeof error }]
 }
+
+// Violação de índice único do Postgres (23505), mesmo embrulhada pelo Drizzle.
+export function isUniqueViolation(error: unknown): boolean {
+  for (const item of chain(error)) if (codeOf(item) === '23505') return true
+  return false
+}

@@ -39,9 +39,11 @@ function describe(
   row: number,
   col: number,
   letter: string | null,
+  draft: string | null,
   mark: GameState['marks'][string] | undefined,
 ): string {
-  const base = `Linha ${row + 1}, coluna ${col + 1}, ${letter ? `letra ${letter}` : 'vazia'}`
+  const content = letter ? `letra ${letter}` : draft ? `rascunho ${draft}` : 'vazia'
+  const base = `Linha ${row + 1}, coluna ${col + 1}, ${content}`
   if (mark === 'helped') return `${base}, com ajuda`
   if (mark === 'wrong') return `${base}, errada na verificação`
   return base
@@ -168,13 +170,20 @@ export function Board({
                   col={col}
                   open={cell.kind === 'open'}
                   number={cell.kind === 'open' ? cell.number : null}
-                  letter={state.cells[row]?.[col] ?? null}
+                  letter={state.cells[row]?.[col] ?? state.draft[row]?.[col] ?? null}
+                  draft={state.cells[row]?.[col] == null && state.draft[row]?.[col] != null}
                   selected={!readOnly && selectedKey === key}
                   inWord={!readOnly && inWord.has(key)}
                   mark={state.marks[key]}
                   barAcross={bars.get(key)?.across}
                   barDown={bars.get(key)?.down}
-                  label={describe(row, col, state.cells[row]?.[col] ?? null, state.marks[key])}
+                  label={describe(
+                    row,
+                    col,
+                    state.cells[row]?.[col] ?? null,
+                    state.draft[row]?.[col] ?? null,
+                    state.marks[key],
+                  )}
                 />
               )
             })}

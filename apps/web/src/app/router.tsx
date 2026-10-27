@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
 import { isServerReady, waitForServer } from '../shared/services/api/server-wake/server-wake'
+import { AccountPage } from '../pages/account/AccountPage'
+import { ConfirmEmailPage } from '../pages/confirm-email/ConfirmEmailPage'
 import { ForgotPasswordPage } from '../pages/forgot-password/ForgotPasswordPage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { RegisterPage } from '../pages/register/RegisterPage'
@@ -14,11 +16,24 @@ import { AppLayout } from './AppLayout'
 import { directPlayLoader } from '../pages/library/direct-play'
 import { NotFoundPage } from '../shared/components/NotFoundPage/NotFoundPage'
 import { RouteError } from './RouteError'
-import { viewerLoader, installSessionHandlers } from '../features/session'
+import { readPuzzle } from '../features/offline'
+import { viewerLoader, installSessionHandlers, seedSessionFromLastUser } from '../features/session'
 
 const serverReadyLoader: LoaderFunction = async ({ request }) => {
   await waitForServer({ signal: request.signal })
   return null
+}
+
+// A cruzada guardada abre sem esperar o servidor acordar nem a sessão (feature 041, FR-019): vale o
+// último usuário conhecido e o servidor confirma depois. Sem cópia, é o que as outras telas fazem.
+function gameLoader(queryClient: QueryClient): LoaderFunction {
+  const waitForViewer = viewerLoader(queryClient)
+  return async (args) => {
+    const stored = await readPuzzle(args.params.puzzleId ?? '')
+    if (stored && seedSessionFromLastUser(queryClient)) return null
+    await serverReadyLoader(args)
+    return waitForViewer(args)
+  }
 }
 
 export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
@@ -29,6 +44,14 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
       children: [
         // A página de status mostra o próprio health; não espera o servidor acordar.
         { path: '/status', element: <StatusPage /> },
+        {
+          path: '/jogo/:puzzleId',
+          loader: gameLoader(queryClient),
+          hydrateFallbackElement: <ServerWake />,
+          errorElement: <RouteError />,
+          // O código do jogo (tabuleiro, relógio, fila de salvamento) só carrega ao jogar.
+          lazy: async () => ({ Component: (await import('../pages/game/GamePage')).GamePage }),
+        },
         {
           // Espera a API gratuita acordar antes de qualquer outra tela (feature 012, FR-008). O
           // fallback aparece dentro do layout; depois de pronto, o loader não roda de novo.
@@ -42,19 +65,14 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
             { path: '/verificar-email', element: <VerifyEmailPage /> },
             { path: '/esqueci-a-senha', element: <ForgotPasswordPage /> },
             { path: '/redefinir-senha', element: <ResetPasswordPage /> },
+            { path: '/confirmar-email', element: <ConfirmEmailPage /> },
             {
               loader: viewerLoader(queryClient),
               children: [
                 // "Ir direto ao jogo" decide antes de desenhar o calendário (feature 021).
                 { path: '/', element: <LibraryPage />, loader: directPlayLoader(queryClient) },
                 { path: '/dia/:date', element: <DayRoute /> },
-                {
-                  path: '/jogo/:puzzleId',
-                  // O código do jogo (tabuleiro, relógio, fila de salvamento) só carrega ao jogar.
-                  lazy: async () => ({
-                    Component: (await import('../pages/game/GamePage')).GamePage,
-                  }),
-                },
+                { path: '/conta', element: <AccountPage /> },
               ],
             },
             { path: '*', element: <NotFoundPage /> },

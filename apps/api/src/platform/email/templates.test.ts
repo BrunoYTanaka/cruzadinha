@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { existingAccountNotice, passwordResetEmail, verificationEmail } from './templates'
+import {
+  emailChangeEmail,
+  emailChangeNotice,
+  existingAccountNotice,
+  passwordResetEmail,
+  verificationEmail,
+} from './templates'
 
 const link = 'https://cruzadinha.example.com/verificar-email#token=abc'
 
@@ -22,5 +28,24 @@ describe('e-mail templates', () => {
     const notice = existingAccountNotice()
     expect(notice.text).not.toContain('http')
     expect(notice.html).not.toContain('href=')
+  })
+})
+
+describe('e-mail change templates', () => {
+  it('asks for the link within 60 minutes and says to ignore it otherwise', () => {
+    const mail = emailChangeEmail('https://x.test/confirmar-email#token=abc')
+    expect(mail.subject).toBe('Confirme seu novo e-mail na Cruzadinha')
+    expect(mail.text).toContain('60 minutos')
+    expect(mail.text).toContain('ignore')
+    expect(mail.text).toContain('https://x.test/confirmar-email#token=abc')
+  })
+
+  it('shows the request time in Brasília and carries neither a link nor an address', () => {
+    const mail = emailChangeNotice(new Date('2026-10-27T15:30:00Z'))
+    expect(mail.subject).toBe('Pedido de troca de e-mail')
+    expect(mail.text).toContain('27/10/2026')
+    expect(mail.text).toContain('12:30')
+    expect(mail.text).toContain('troque sua senha')
+    expect(mail.text + mail.html).not.toMatch(/https?:|@/)
   })
 })

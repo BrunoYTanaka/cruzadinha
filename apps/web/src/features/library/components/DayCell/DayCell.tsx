@@ -62,13 +62,19 @@ export function DayCell({
   day,
   month,
   source,
+  stored,
 }: {
   day: CalendarDay
   month: number
   source: PuzzleSourceId
+  // Ids das cruzadas guardadas no aparelho (feature 041).
+  stored?: ReadonlySet<string>
 }) {
   const { state } = day
-  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}`
+  const playable =
+    state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started'
+  const offline = playable && stored?.has(state.puzzleId) === true
+  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}${offline ? ', disponível sem rede' : ''}`
   const status = visibleStatus(day)
   const classes = [styles.day, styles[state.kind], day.isToday ? styles.today : '']
     .filter(Boolean)
@@ -78,6 +84,11 @@ export function DayCell({
       <span className={styles.number} aria-hidden="true">
         {day.day}
       </span>
+      {offline ? (
+        <span className={styles.offline} aria-hidden="true">
+          ⤓
+        </span>
+      ) : null}
       {status ? (
         <small className={styles.status} aria-hidden="true">
           {status}

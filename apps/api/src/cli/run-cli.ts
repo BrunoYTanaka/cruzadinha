@@ -83,7 +83,7 @@ async function cleanupAuth(args: string[], deps: CliDeps): Promise<number> {
   parseArgs({ args, options: {}, allowPositionals: false })
   const counts = await deleteExpiredAuthRows(deps.db, deps.clock())
   deps.stdout(
-    `Limpeza: ${counts.pending} pendências, ${counts.resetTokens} tokens de recuperação, ` +
+    `Limpeza: ${counts.pending} pendências, ${counts.resetTokens} tokens de recuperação, ${counts.emailChanges} trocas de e-mail, ` +
       `${counts.attempts} contagens de tentativas.\n`,
   )
   return 0

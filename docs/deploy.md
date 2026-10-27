@@ -98,6 +98,13 @@ openssl rand -base64 48 | tr '+/' '-_' | tr -d '='
 
    Deixe o ambiente **Preview** sem variáveis: assim nenhuma prévia fala com a API de produção.
 
+### PWA e modo offline (feature 041)
+
+O site é instalável e guarda a casca para abrir sem rede. Nada muda no deploy, só duas coisas a saber:
+
+- `dist/sw.js` e `dist/manifest.webmanifest` saem do build (`vite-plugin-pwa`). O `public/_headers` os serve com `Cache-Control: no-cache`, para o navegador sempre perguntar se há versão nova; os arquivos com hash em `/assets/` seguem imutáveis.
+- O service worker não guarda nada de `/api` e não assume a página: uma versão nova só vale depois de fechar todas as abas do site e abrir de novo, nunca no meio de uma partida. Para forçar o teste de uma versão, feche as abas e reabra.
+
 ## 7. Primeiro deploy
 
 Feito **depois do merge** da feature 012 na `main` (o Render publica a `main`). Até os segredos do GitHub existirem, os workflows `Release` e `Deploy` terminam com um aviso, sem erro.
@@ -266,7 +273,7 @@ Quando uma fonte falha, o workflow abre uma issue com o rótulo `fonte-quebrada`
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
 
-Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro e tokens de recuperação vencidos e as contagens de tentativas com mais de 2 dias, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
+Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro, tokens de recuperação e pedidos de troca de e-mail vencidos e as contagens de tentativas com mais de 2 dias, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
 
 Em repositório público, o GitHub desativa agendamentos depois de 60 dias sem atividade. O job `keepalive` do próprio workflow reativa o agendamento todo dia 1. Para conferir ou reativar à mão:
 

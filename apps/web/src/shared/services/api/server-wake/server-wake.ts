@@ -87,6 +87,26 @@ function pause(ms: number, signal: AbortSignal | undefined): Promise<void> {
   })
 }
 
+function isOffline(): boolean {
+  return typeof navigator !== 'undefined' && navigator.onLine === false
+}
+
+// Sem rede o portão deixa passar sem marcar o servidor pronto (feature 041); quando a rede volta, a
+// espera recomeça em segundo plano e marca pronto assim que o health responde.
+let restartArmed = false
+function restartWhenOnline(): void {
+  if (restartArmed || typeof window === 'undefined') return
+  restartArmed = true
+  window.addEventListener(
+    'online',
+    () => {
+      restartArmed = false
+      waitForServer().catch(() => undefined)
+    },
+    { once: true },
+  )
+}
+
 export async function waitForServer(
   options: { signal?: AbortSignal; fetch?: typeof fetch } = {},
 ): Promise<void> {
@@ -96,11 +116,19 @@ export async function waitForServer(
   const startedAt = Date.now()
   for (;;) {
     if (signal?.aborted) throw abortError()
+    if (isOffline()) {
+      restartWhenOnline()
+      return
+    }
     if (await attempt(doFetch, signal)) {
       markReady()
       return
     }
     if (signal?.aborted) throw abortError()
+    if (isOffline()) {
+      restartWhenOnline()
+      return
+    }
     if (Date.now() - startedAt + WAKE_RETRY_MS > WAKE_TIMEOUT_MS) throw new ServerWakeTimeoutError()
     await pause(WAKE_RETRY_MS, signal)
   }
@@ -109,7 +137,7 @@ export async function waitForServer(
 // Espera o laço de `waitForServer` (rodado pelo loader pai) terminar, sem fazer pedido próprio.
 // Loaders irmãos que consultam a API usam isto para não sair antes de o servidor acordar.
 export function whenServerReady(signal?: AbortSignal): Promise<void> {
-  if (ready) return Promise.resolve()
+  if (ready || isOffline()) return Promise.resolve()
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
       reject(abortError())
@@ -117,8 +145,14 @@ export function whenServerReady(signal?: AbortSignal): Promise<void> {
     }
     const stop = () => {
       unsubscribe()
+      window.removeEventListener('offline', onOffline)
       signal?.removeEventListener('abort', onAbort)
     }
+    function onOffline() {
+      stop()
+      resolve()
+    }
+    window.addEventListener('offline', onOffline)
     const unsubscribe = subscribeServerReady(() => {
       stop()
       resolve()

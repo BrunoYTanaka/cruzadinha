@@ -1,4 +1,4 @@
-import type { Progress, PuzzleResponse, SaveProgressRequest, User } from '@cruzadinha/shared'
+import type { Progress, PuzzleResponse, User } from '@cruzadinha/shared'
 import {
   useCallback,
   useEffect,
@@ -8,16 +8,16 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import { ApiRequestError } from '../../../shared/services/api/client/client'
+import { ApiRequestError, getServerClockOffsetMs } from '../../../shared/services/api/client/client'
 import {
   getProgress,
   resetProgress,
   saveProgress,
 } from '../../../shared/services/api/progress/progress'
 import { config } from '../../../shared/services/config/config'
-import { removeStorage } from '../../../shared/services/storage/storage'
 import { struckWords, type StrikeMode } from '../../../domain/game/clue-strike'
 import { isSolved } from '../../../domain/game/completion'
+import { hasAnyDraft } from '../../../domain/game/draft'
 import type { GuestProgress } from '../../../domain/guest/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../../domain/game/reducer'
 import type { GameLimits, GameState } from '../../../domain/game/state'
@@ -25,7 +25,16 @@ import type { GuestSaveQueueOptions, GuestStore } from '../../guest'
 import { useSettingsOpen } from '../../settings'
 import { useSettings } from '../../../shared/services/settings-store/settings-store'
 import { clearHelp, loadHelp, saveHelp } from '../services/help-storage'
-import { createSaveQueue, outboxKey, readOutbox, type SaveQueue } from '../services/save-queue'
+import { loadPencil, savePencil } from '../services/pencil-preference'
+import { createSaveQueue, type SaveQueue } from '../services/save-queue'
+import {
+  applyOutboxEvent,
+  clearDraft,
+  clearOutbox,
+  loadDraft,
+  readOutboxItems,
+  saveDraft,
+} from '../../offline'
 import { useClock } from './useClock'
 
 // Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
@@ -45,7 +54,13 @@ export type ProgressSummary = Pick<Progress, 'status' | 'finishedMs' | 'bestMs'>
 
 type UseGameArgs = { response: PuzzleResponse; owner: GameOwner }
 
-type Source = { cells: (string | null)[][] | null; elapsedMs: number; fromOutbox: boolean }
+type Source = {
+  cells: (string | null)[][] | null
+  elapsedMs: number
+  fromOutbox: boolean
+  // "Jogar de novo" feito sem rede e ainda não enviado: o tabuleiro abre vazio.
+  freshStart?: boolean
+}
 
 // Escolhe de onde vêm as letras ao abrir: o servidor, ou a fila local se ela for mais nova (letras
 // que não chegaram a ser enviadas antes da página fechar). O visitante só tem o registro local.
@@ -56,9 +71,14 @@ function initialSource(owner: GameOwner, puzzleId: string): Source {
       : { cells: null, elapsedMs: 0, fromOutbox: false }
   }
   const { progress } = owner
-  const outbox: SaveProgressRequest | null = readOutbox(owner.user.id, puzzleId)
+  const items = readOutboxItems(owner.user.id, puzzleId)
+  const outbox = items.find((item) => item.kind === 'save')?.body ?? null
+  const reset = items.find((item) => item.kind === 'reset')
   if (outbox && (!progress || outbox.savedAt > progress.savedAt)) {
     return { cells: outbox.cells, elapsedMs: outbox.elapsedMs, fromOutbox: true }
+  }
+  if (reset && (!progress || reset.at > progress.savedAt)) {
+    return { cells: null, elapsedMs: 0, fromOutbox: true, freshStart: true }
   }
   return progress
     ? { cells: progress.cells, elapsedMs: progress.elapsedMs, fromOutbox: false }
@@ -90,6 +110,7 @@ export function useGame({ response, owner }: UseGameArgs) {
     [puzzle, solution],
   )
   const guest = owner.kind === 'guest'
+  const draftOwner = owner.kind === 'user' ? owner.user.id : 'guest'
   const userId = owner.kind === 'user' ? owner.user.id : null
   const store = owner.kind === 'guest' ? owner.store : null
   const createGuestQueue = owner.kind === 'guest' ? owner.createQueue : null
@@ -99,21 +120,31 @@ export function useGame({ response, owner }: UseGameArgs) {
     owner.kind === 'guest' ? (owner.record?.game ?? 0) : 0,
   )
 
-  const [summary, setSummary] = useState<ProgressSummary | null>(() => summaryOf(owner))
-
   // O estado inicial junta o progresso guardado e a fila local, uma única vez.
   const [source] = useState(() => initialSource(owner, puzzleId))
 
+  const [summary, setSummary] = useState<ProgressSummary | null>(() => {
+    const opened = summaryOf(owner)
+    return source.freshStart && opened
+      ? { status: 'in_progress', finishedMs: null, bestMs: opened.bestMs }
+      : opened
+  })
+
   const [state, dispatch] = useReducer(game.reducer, game.initialState, (start): GameState => {
     const opened = owner.kind === 'guest' ? owner.record : owner.progress
-    if (opened?.status === 'completed') {
+    if (opened?.status === 'completed' && !source.freshStart) {
       return game.reducer(start, { type: 'viewServerProgress', cells: opened.cells })
     }
     // Ajudas ficam só neste aparelho: no registro do visitante, ou por conta e cruzada.
     const help =
       owner.kind === 'guest' ? (owner.record?.help ?? null) : loadHelp(owner.user.id, puzzleId)
-    if (source.cells) return game.reducer(start, { type: 'hydrate', cells: source.cells, help })
-    return help ? game.reducer(start, { type: 'hydrate', cells: start.cells, help }) : start
+    // O rascunho fica só neste aparelho; visitante sem registro não tem rascunho que valha (FR-018).
+    const draft = owner.kind === 'guest' && !owner.record ? null : loadDraft(draftOwner, puzzleId)
+    const loaded =
+      source.cells || help || draft
+        ? game.reducer(start, { type: 'hydrate', cells: source.cells ?? start.cells, help, draft })
+        : start
+    return game.reducer(loaded, { type: 'setPencil', on: loadPencil() })
   })
 
   const stateRef = useRef(state)
@@ -128,6 +159,13 @@ export function useGame({ response, owner }: UseGameArgs) {
     const snapshot = helpOf({ usage, marks, locked })
     if (hasHelp(snapshot)) saveHelp(userId, puzzleId, snapshot)
   }, [usage, marks, locked, userId, puzzleId])
+
+  // Rascunho e lápis: só neste aparelho. Concluída ou em leitura, o rascunho some.
+  useEffect(() => {
+    if (state.mode === 'playing') saveDraft(draftOwner, puzzleId, state.draft)
+    else clearDraft(draftOwner, puzzleId)
+  }, [state.draft, state.mode, draftOwner, puzzleId])
+  useEffect(() => savePencil(state.pencil), [state.pencil])
 
   // Configurações (feature 021): limites de ajuda e modo de riscar valem na hora; a modal aberta
   // suspende o relógio.
@@ -182,6 +220,7 @@ export function useGame({ response, owner }: UseGameArgs) {
   // quando só as ajudas mudam (uma verificação que só marca células, FR-004).
   const savedCells = useRef(state.cells)
   const savedHelp = useRef({ usage: state.usage, marks: state.marks, locked: state.locked })
+  const savedDraft = useRef(state.draft)
   useEffect(() => {
     if (state.mode !== 'playing') return
     const helpChanged =
@@ -189,12 +228,16 @@ export function useGame({ response, owner }: UseGameArgs) {
       (state.usage !== savedHelp.current.usage ||
         state.marks !== savedHelp.current.marks ||
         state.locked !== savedHelp.current.locked)
-    if (state.cells === savedCells.current && !helpChanged) return
+    // O rascunho do visitante também cria o registro em andamento (FR-018); nunca vai no corpo.
+    const draftChanged = guest && state.draft !== savedDraft.current
+    savedDraft.current = state.draft
+    if (state.cells === savedCells.current && !helpChanged && !draftChanged) return
     savedCells.current = state.cells
     savedHelp.current = { usage: state.usage, marks: state.marks, locked: state.locked }
     queue.schedule(snapshotOf(stateRef.current, 'in_progress', readElapsedMs()))
   }, [
     state.cells,
+    state.draft,
     state.usage,
     state.marks,
     state.locked,
@@ -218,14 +261,17 @@ export function useGame({ response, owner }: UseGameArgs) {
   useEffect(
     () => () => {
       const current = stateRef.current
-      if (current.mode === 'playing' && current.cells.some((row) => row.some(Boolean))) {
+      if (
+        current.mode === 'playing' &&
+        (current.cells.some((row) => row.some(Boolean)) || (guest && hasAnyDraft(current.draft)))
+      ) {
         void queue.sendNow(snapshotOf(current, 'in_progress', readElapsedMs()), {
           keepalive: true,
         })
       }
       queue.dispose()
     },
-    [queue, readElapsedMs, snapshotOf],
+    [queue, readElapsedMs, snapshotOf, guest],
   )
 
   // Letras da fila local que ainda não chegaram ao servidor seguem na abertura.
@@ -285,13 +331,29 @@ export function useGame({ response, owner }: UseGameArgs) {
           setGeneration(fresh.game ?? 0)
           setSummary(fresh)
         }
-      } else {
-        const { progress: fresh } = await resetProgress(puzzleId)
-        setSummary(fresh)
-        if (userId) {
-          clearHelp(userId, puzzleId)
-          removeStorage(outboxKey(userId, puzzleId))
+      } else if (userId) {
+        // Sem rede, o reinício entra na fila e o tabuleiro já volta ao começo (feature 041, FR-008).
+        const queued = () => {
+          const at = new Date(Date.now() + getServerClockOffsetMs()).toISOString()
+          applyOutboxEvent(userId, puzzleId, { type: 'reset', at })
+          setSummary((current) => ({
+            status: 'in_progress',
+            finishedMs: null,
+            bestMs: current?.bestMs ?? null,
+          }))
         }
+        if (navigator.onLine === false) queued()
+        else {
+          try {
+            const { progress: fresh } = await resetProgress(puzzleId)
+            setSummary(fresh)
+            clearOutbox(userId, puzzleId)
+          } catch (error) {
+            if (!(error instanceof ApiRequestError && error.isOffline)) throw error
+            queued()
+          }
+        }
+        clearHelp(userId, puzzleId)
       }
       savedCells.current = game.initialState.cells
       savedHelp.current = {

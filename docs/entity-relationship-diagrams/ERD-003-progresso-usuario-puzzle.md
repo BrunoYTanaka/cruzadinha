@@ -34,6 +34,18 @@ erDiagram
         datetime updated_at
     }
 
+    DRAFT {
+        string owner PK
+        uuid puzzle_id PK, FK
+        json cells
+    }
+
+    PENCIL_PREFERENCE {
+        boolean enabled
+    }
+
+    USER ||--o{ DRAFT : "anota no aparelho"
+    PUZZLE ||--o{ DRAFT : "recebe"
     USER ||--o{ PROGRESS : "joga"
     PUZZLE ||--o{ PROGRESS : "recebe"
 ```

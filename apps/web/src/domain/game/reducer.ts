@@ -1,5 +1,6 @@
 import type { Puzzle, Solution } from '@cruzadinha/shared'
 import { isSolved } from './completion'
+import { pruneDraft } from './draft'
 import { revealLetter, revealWord, verify } from './help'
 import { normalizeLetter } from './letters'
 import {
@@ -54,7 +55,15 @@ export type GameAction =
   | { type: 'revealLetter'; limits?: GameLimits }
   | { type: 'revealWord'; limits?: GameLimits }
   | { type: 'verify' }
-  | { type: 'hydrate'; cells: (string | null)[][]; help?: HelpSnapshot | null }
+  | { type: 'setPencil'; on: boolean }
+  | { type: 'confirmDraft' }
+  | { type: 'discardDraft' }
+  | {
+      type: 'hydrate'
+      cells: (string | null)[][]
+      help?: HelpSnapshot | null
+      draft?: (string | null)[][] | null
+    }
   | { type: 'confirmCompletion' }
   | { type: 'markElsewhere' }
   | { type: 'viewServerProgress'; cells: (string | null)[][] }
@@ -99,7 +108,39 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
     return { ...state, mode: 'completed', completion: 'pending', selected: null }
   }
 
+  // A invariante do rascunho vale depois de toda ação.
   function reducer(state: GameState, action: GameAction): GameState {
+    return pruneDraft(step(state, action))
+  }
+
+  // Pode apagar: a letra definitiva não travada (sem lápis) ou o rascunho.
+  function erasable(state: GameState, { row, col }: Position): boolean {
+    if (state.locked[row]?.[col]) return false
+    return state.draft[row]?.[col] != null || (!state.pencil && state.cells[row]?.[col] != null)
+  }
+
+  function erase(state: GameState, position: Position): GameState {
+    return {
+      ...state,
+      cells: withCell(state.cells, position, null),
+      draft: withCell(state.draft, position, null),
+      marks:
+        state.marks[cellKey(position)] === 'wrong'
+          ? withoutMark(state.marks, position)
+          : state.marks,
+    }
+  }
+
+  // Próxima célula da palavra que não seja travada; no fim da palavra fica na última letra.
+  function advance(state: GameState, from: Position): Position | null {
+    let next = nextCellInWord(index, from, state.direction)
+    while (next && state.locked[next.row]?.[next.col]) {
+      next = nextCellInWord(index, next, state.direction)
+    }
+    return next
+  }
+
+  function step(state: GameState, action: GameAction): GameState {
     switch (action.type) {
       case 'hydrate': {
         if (!sameShape(puzzle, action.cells)) return state
@@ -107,6 +148,7 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
         return finish({
           ...state,
           cells: action.cells,
+          draft: action.draft && sameShape(puzzle, action.draft) ? action.draft : state.draft,
           usage: help?.usage ?? state.usage,
           marks: help?.marks ?? state.marks,
           locked: help
@@ -125,6 +167,7 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
         return {
           ...state,
           cells: action.cells,
+          draft: emptyCells(puzzle),
           selected: null,
           mode: 'completed',
           completion: 'confirmed',
@@ -136,6 +179,7 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
         return {
           ...state,
           cells: emptyCells(puzzle),
+          draft: emptyCells(puzzle),
           selected,
           direction,
           locked: emptyLocks(puzzle),
@@ -176,65 +220,61 @@ export function createGame({ puzzle, solution, limits }: GameContext): Game {
         const other = otherDirection(state.direction)
         return index.wordAt(state.selected, other) ? { ...state, direction: other } : state
       }
+      case 'setPencil':
+        return state.pencil === action.on ? state : { ...state, pencil: action.on }
+      case 'confirmDraft': {
+        const word = activeWord(index, state.selected, state.direction)
+        if (!word) return state
+        let cells = state.cells
+        for (const position of index.cellsOf(word)) {
+          const letter = state.draft[position.row]?.[position.col]
+          if (letter != null) cells = withCell(cells, position, letter)
+        }
+        return cells === state.cells ? state : finish({ ...state, cells })
+      }
+      case 'discardDraft': {
+        const word = activeWord(index, state.selected, state.direction)
+        if (!word) return state
+        let draft = state.draft
+        for (const position of index.cellsOf(word)) draft = withCell(draft, position, null)
+        return { ...state, draft }
+      }
       case 'type': {
         const letter = normalizeLetter(action.key)
         const at = state.selected
         if (!letter || !at) return state
         if (state.locked[at.row]?.[at.col]) return state
+        const next = advance(state, at)
+        if (state.pencil) {
+          // Casa com letra definitiva ignora o rascunho; o cursor avança igual.
+          const written =
+            state.cells[at.row]?.[at.col] == null
+              ? { ...state, draft: withCell(state.draft, at, letter) }
+              : state
+          return next ? { ...written, selected: next } : written
+        }
         const wasWrong = state.marks[cellKey(at)] === 'wrong'
         const filled: GameState = {
           ...state,
           cells: withCell(state.cells, at, letter),
           marks: wasWrong ? { ...state.marks, [cellKey(at)]: 'helped' } : state.marks,
         }
-        // Avança para a próxima célula da palavra que não seja travada; no fim da palavra o
-        // cursor fica na última letra.
-        let next = nextCellInWord(index, at, state.direction)
-        while (next && filled.locked[next.row]?.[next.col]) {
-          next = nextCellInWord(index, next, state.direction)
-        }
         return finish(next ? { ...filled, selected: next } : filled)
       }
       case 'backspace': {
         const at = state.selected
         if (!at) return state
-        const hasLetter = state.cells[at.row]?.[at.col] != null && !state.locked[at.row]?.[at.col]
         const previous = previousCellInWord(index, at, state.direction)
-        if (hasLetter) {
-          return {
-            ...state,
-            cells: withCell(state.cells, at, null),
-            marks:
-              state.marks[cellKey(at)] === 'wrong' ? withoutMark(state.marks, at) : state.marks,
-            selected: previous ?? at,
-          }
-        }
+        if (erasable(state, at)) return { ...erase(state, at), selected: previous ?? at }
         if (!previous) return state
-        const erasable =
-          state.cells[previous.row]?.[previous.col] != null &&
-          !state.locked[previous.row]?.[previous.col]
-        return {
-          ...state,
-          cells: erasable ? withCell(state.cells, previous, null) : state.cells,
-          marks:
-            erasable && state.marks[cellKey(previous)] === 'wrong'
-              ? withoutMark(state.marks, previous)
-              : state.marks,
-          selected: previous,
-        }
+        const erased = erasable(state, previous) ? erase(state, previous) : state
+        return { ...erased, selected: previous }
       }
       // Delete: apaga a letra da célula selecionada e o cursor fica onde está.
-      case 'delete': {
-        const at = state.selected
-        if (!at || state.cells[at.row]?.[at.col] == null || state.locked[at.row]?.[at.col]) {
-          return state
-        }
-        return {
-          ...state,
-          cells: withCell(state.cells, at, null),
-          marks: state.marks[cellKey(at)] === 'wrong' ? withoutMark(state.marks, at) : state.marks,
-        }
-      }
+      case 'delete':
+        return state.selected && erasable(state, state.selected)
+          ? erase(state, state.selected)
+          : state
       // Home e End: primeira e última célula da palavra ativa, sem mudar a direção.
       case 'wordStart':
       case 'wordEnd': {

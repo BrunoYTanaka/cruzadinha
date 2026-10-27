@@ -10,6 +10,7 @@ import { systemClock, type Clock } from './platform/lib/clock'
 import {
   identityRoutes,
   createAuthService,
+  createAccountService,
   createRecoveryService,
   createRegistrationService,
   createOptionalSession,
@@ -133,6 +134,7 @@ export function buildApp({
   }
   const registration = createRegistrationService(emailParts)
   const recovery = createRecoveryService(emailParts)
+  const account = createAccountService(emailParts)
   // Os envios em andamento terminam antes de a API fechar.
   app.decorate('flushEmail', () => email.flush())
   app.addHook('onClose', () => email.flush())
@@ -152,6 +154,7 @@ export function buildApp({
     email,
     registration,
     recovery,
+    account,
   })
   const puzzles = createPuzzlesService({
     db: database,

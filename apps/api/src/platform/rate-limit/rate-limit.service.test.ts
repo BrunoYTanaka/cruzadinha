@@ -71,6 +71,8 @@ describe('rate limiter', () => {
       verifyToken: { max: 30, windowMinutes: 60 },
       resetPassword: { max: 30, windowMinutes: 60 },
       progressSave: { max: 1800, windowMinutes: 60 },
+      passwordConfirm: { max: 5, windowMinutes: 15 },
+      changeEmail: { max: 10, windowMinutes: 60 },
     })
   })
 })

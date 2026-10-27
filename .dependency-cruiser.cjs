@@ -5,7 +5,7 @@ const SEVERITY = 'error'
 const WEB = '^apps/web/src'
 const API = '^apps/api/src'
 // Uma feature só importa de feature anterior (D2); conta e status só de session.
-const FEATURE_ORDER = ['session', 'guest', 'library', 'settings', 'game']
+const FEATURE_ORDER = ['session', 'guest', 'offline', 'library', 'settings', 'game']
 const NOT_INDEX = '(?!index\\.tsx?$)'
 
 const featureOrderRules = FEATURE_ORDER.flatMap((name, rank) => {
@@ -138,20 +138,27 @@ module.exports = {
       comment: 'identity/sessions não importa de registration nem de recovery.',
       severity: SEVERITY,
       from: { path: `${API}/modules/identity/sessions/` },
-      to: { path: `${API}/modules/identity/(registration|recovery)/` },
+      to: { path: `${API}/modules/identity/(registration|recovery|account)/` },
     },
     {
       name: 'api-identity-registration-alone',
       comment: 'identity/registration não importa de sessions nem de recovery.',
       severity: SEVERITY,
       from: { path: `${API}/modules/identity/registration/` },
-      to: { path: `${API}/modules/identity/(sessions|recovery)/` },
+      to: { path: `${API}/modules/identity/(sessions|recovery|account)/` },
     },
     {
       name: 'api-identity-recovery-no-registration',
       comment: 'identity/recovery só usa sessions (para encerrar sessões), nunca registration.',
       severity: SEVERITY,
       from: { path: `${API}/modules/identity/recovery/` },
+      to: { path: `${API}/modules/identity/(registration|account)/` },
+    },
+    {
+      name: 'api-identity-account-no-registration',
+      comment: 'identity/account usa sessions e recovery, nunca registration.',
+      severity: SEVERITY,
+      from: { path: `${API}/modules/identity/account/` },
       to: { path: `${API}/modules/identity/registration/` },
     },
     {

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
+import { listStoredPuzzles, readPuzzle, savePuzzle } from '../../features/offline'
 import { getPuzzleByDate } from '../../shared/services/api/puzzles/puzzles'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
@@ -33,6 +34,16 @@ function BackLink() {
   return <Link to="/">Voltar à biblioteca</Link>
 }
 
+// Sem rede, o dia guardado abre da cópia local (feature 041).
+async function loadDay(source: PuzzleSourceId, date: string) {
+  if (navigator.onLine === false) {
+    const hit = (await listStoredPuzzles()).find((p) => p.source === source && p.date === date)
+    const stored = hit ? await readPuzzle(hit.puzzleId) : null
+    if (stored) return stored
+  }
+  return getPuzzleByDate(source, date)
+}
+
 // Busca um dia passado que ainda não está guardado. O erro aparece aqui, com o motivo, e não
 // dentro de uma célula do calendário.
 function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
@@ -42,7 +53,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
   const isFuture = date > todayInBrasilia()
   const query = useQuery({
     queryKey: queryKeys.puzzleByDate(source, date),
-    queryFn: () => getPuzzleByDate(source, date),
+    queryFn: () => loadDay(source, date),
     enabled: !isFuture,
     retry: false,
     gcTime: 0,
@@ -56,6 +67,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
   useEffect(() => {
     if (!data) return
     clearSourceDown(source)
+    void savePuzzle(data)
     queryClient.setQueryData(queryKeys.puzzle(data.puzzleId), data)
     void queryClient.invalidateQueries({ queryKey: queryKeys.libraryAll })
     void navigate(`/jogo/${data.puzzleId}`, { replace: true })

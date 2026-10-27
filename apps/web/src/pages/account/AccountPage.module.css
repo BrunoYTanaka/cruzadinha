@@ -1,0 +1,42 @@
+.page {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 28px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.email {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.danger {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.dangerTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+}

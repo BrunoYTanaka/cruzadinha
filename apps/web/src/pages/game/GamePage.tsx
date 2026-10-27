@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
-import { formatDate, GameScreen, useGameData } from '../../features/game'
+import { formatDate, GameScreen, NeedsConnectionError, useGameData } from '../../features/game'
 import { viewerKey } from '../../features/session'
 
 function BackLink() {
@@ -20,6 +20,13 @@ export function GamePage() {
   )
 
   if (failure) {
+    if (failure instanceof NeedsConnectionError) {
+      return (
+        <ErrorState level={1} title="Esta cruzada só abre com conexão.">
+          <BackLink />
+        </ErrorState>
+      )
+    }
     if (failure instanceof ApiRequestError && failure.status === 404) {
       return (
         <ErrorState level={1} title="Cruzada não encontrada.">

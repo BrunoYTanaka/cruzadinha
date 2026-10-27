@@ -3,13 +3,14 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../test/axe'
-import { makeLibraryItem } from '../../test/fixtures'
+import { makeLibraryItem, makePuzzleResponse, TINY } from '../../test/fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { desktop, mockMatchMedia, phone } from '../../test/media'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
 import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../../features/guest/services/guest-store'
+import { savePuzzle } from '../../features/offline'
 import { LibraryPage } from './LibraryPage'
 import { rememberGameSource } from '../../features/library/services/source-choice'
 import { loadLibraryWidth } from '../../features/library/services/library-width'
@@ -54,6 +55,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.useRealTimers()
   window.localStorage.clear()
   window.sessionStorage.clear()
@@ -85,6 +87,18 @@ describe('LibraryPage', () => {
       'aria-selected',
       'true',
     )
+  })
+
+  it('sem rede lista só os dias guardados, sem pedir a biblioteca (feature 041)', async () => {
+    await savePuzzle(makePuzzleResponse(TINY, { date: '2026-10-13' }))
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const { calls } = mockApi({})
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByText(/Sem conexão: mostrando só as cruzadas guardadas/)).toBeVisible()
+    expect(calls.some((call) => call.key.startsWith('GET /api/library'))).toBe(false)
+    expect(
+      await screen.findByRole('link', { name: '13 de outubro, não iniciado, disponível sem rede' }),
+    ).toBeInTheDocument()
   })
 
   it('mostra o mês atual com a situação de cada dia por texto', async () => {

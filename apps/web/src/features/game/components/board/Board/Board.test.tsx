@@ -292,4 +292,23 @@ describe('Board', () => {
       await expectNoA11yViolations(container)
     })
   })
+
+  it('descreve a casa com rascunho e a desenha como rascunho (feature 043)', () => {
+    render(
+      <Harness
+        patch={(state) => ({
+          ...state,
+          draft: state.draft.map((line, row) =>
+            line.map((_, col) => (row === 0 && col === 1 ? 'C' : null)),
+          ),
+        })}
+      />,
+    )
+    const cell = screen.getByRole('gridcell', { name: 'Linha 1, coluna 2, rascunho C' })
+    expect(cell).toHaveTextContent('C')
+    expect(cell.className).toMatch(/draft/)
+    expect(
+      screen.getByRole('gridcell', { name: 'Linha 1, coluna 3, vazia' }).className,
+    ).not.toMatch(/draft/)
+  })
 })

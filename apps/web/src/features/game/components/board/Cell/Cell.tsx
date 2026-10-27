@@ -9,6 +9,8 @@ export type CellProps = {
   open: boolean
   number: number | null
   letter: string | null
+  // A letra é um rascunho (lápis): itálico e mais leve.
+  draft?: boolean
   selected: boolean
   inWord: boolean
   mark: HelpMark | undefined
@@ -27,6 +29,7 @@ export const Cell = memo(function Cell({
   open,
   number,
   letter,
+  draft,
   selected,
   inWord,
   mark,
@@ -40,6 +43,7 @@ export const Cell = memo(function Cell({
   const classes = [
     styles.cell,
     selected ? styles.selected : inWord ? styles.word : '',
+    draft ? styles.draft : '',
     mark === 'helped' ? styles.helped : '',
     mark === 'wrong' ? styles.wrong : '',
   ]

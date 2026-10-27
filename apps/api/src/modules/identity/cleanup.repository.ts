@@ -1,6 +1,7 @@
 import { lt, or } from 'drizzle-orm'
 import type { Executor } from '../../platform/db/client'
 import {
+  emailChangeRequests,
   passwordResetTokens,
   pendingRegistrations,
   rateLimitAttempts,
@@ -12,7 +13,12 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const KEEP_TOKENS_DAYS = 7
 const KEEP_ATTEMPTS_DAYS = 2
 
-export type CleanupCounts = { pending: number; resetTokens: number; attempts: number }
+export type CleanupCounts = {
+  pending: number
+  resetTokens: number
+  emailChanges: number
+  attempts: number
+}
 
 export async function deleteExpiredAuthRows(db: Executor, now: Date): Promise<CleanupCounts> {
   const tokenLimit = new Date(now.getTime() - KEEP_TOKENS_DAYS * DAY_MS)
@@ -28,11 +34,20 @@ export async function deleteExpiredAuthRows(db: Executor, now: Date): Promise<Cl
       or(lt(passwordResetTokens.expiresAt, tokenLimit), lt(passwordResetTokens.usedAt, tokenLimit)),
     )
     .returning({ id: passwordResetTokens.tokenId })
+  const emailChanges = await db
+    .delete(emailChangeRequests)
+    .where(lt(emailChangeRequests.expiresAt, tokenLimit))
+    .returning({ id: emailChangeRequests.requestId })
   // Só `record` limpava linhas velhas e quase ninguém o chama mais (`reserve` não limpa).
   const attempts = await db
     .delete(rateLimitAttempts)
     .where(lt(rateLimitAttempts.createdAt, attemptLimit))
     .returning({ id: rateLimitAttempts.rateLimitAttemptId })
 
-  return { pending: pending.length, resetTokens: resetTokens.length, attempts: attempts.length }
+  return {
+    pending: pending.length,
+    resetTokens: resetTokens.length,
+    emailChanges: emailChanges.length,
+    attempts: attempts.length,
+  }
 }

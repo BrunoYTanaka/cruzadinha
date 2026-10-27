@@ -10,7 +10,7 @@ test.beforeEach(async () => {
 const axe = (page: Page) => new AxeBuilder({ page }).exclude('[role="grid"]')
 
 const todayCell = (page: Page, state: string) =>
-  page.getByRole('link', { name: new RegExp(`^Hoje, .*, ${state}$`) })
+  page.getByRole('link', { name: new RegExp(`^Hoje, .*, ${state}(, disponível sem rede)?$`) })
 
 const card = (page: Page, source: string) =>
   page.getByRole('link', { name: new RegExp(`^${source}: `) })
@@ -67,7 +67,9 @@ test.describe('volta do jogo para o calendário', () => {
   async function openOnlineGame(page: Page) {
     await page.goto('/')
     await cruzada(page).click()
-    await page.getByRole('link', { name: /^Hoje, .*, não iniciado$/ }).click()
+    await page
+      .getByRole('link', { name: /^Hoje, .*, não iniciado(, disponível sem rede)?$/ })
+      .click()
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzada Online')
   }
 
@@ -84,6 +86,8 @@ test.describe('volta do jogo para o calendário', () => {
     await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
 
     await page.goBack()
+    // O jogo agora carrega a cruzada guardada antes de abrir: espera a tela antes de voltar de novo.
+    await expect(page.getByRole('grid')).toBeVisible()
     await page.goBack()
     await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
   })

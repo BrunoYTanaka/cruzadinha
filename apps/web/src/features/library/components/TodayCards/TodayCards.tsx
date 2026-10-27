@@ -1,6 +1,10 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
+import { puzzleSourceNames } from '@cruzadinha/shared'
 import { Link } from 'react-router'
 import { Button } from '../../../../shared/components/Button/Button'
+import { Notice } from '../../../../shared/components/Notice/Notice'
+import { useOnline } from '../../../../shared/hooks/useOnline/useOnline'
+import { downloadToday, useOfflinePuzzleIds, type DownloadSummary } from '../../../offline'
 import { isNoPuzzle, isSourceDown, isSourceUnsupported } from '../../helpers/source-down'
 import { todayCard, type TodayCard } from '../../helpers/today-cards'
 import styles from './TodayCards.module.css'
@@ -30,6 +34,7 @@ function longDate(date: string): string {
 // Seção "Hoje": um cartão por fonte, na ordem da lista, cada um carregando e falhando sozinho
 // (feature 015, FR-002 a FR-004 e FR-014).
 export function TodayCards({ libraries, today }: TodayCardsProps) {
+  const stored = useOfflinePuzzleIds()
   return (
     <section aria-labelledby="today-title" className={styles.today}>
       <div className={styles.head}>
@@ -37,11 +42,12 @@ export function TodayCards({ libraries, today }: TodayCardsProps) {
           Hoje
         </h1>
         <p className={styles.date}>{longDate(today)}</p>
+        <DownloadToday />
       </div>
       <ul className={styles.cards} style={{ '--source-count': libraries.length } as CSSProperties}>
         {libraries.map((library) => (
           <li key={library.source}>
-            <SourceCard library={library} today={today} />
+            <SourceCard library={library} today={today} stored={stored} />
           </li>
         ))}
       </ul>
@@ -49,7 +55,15 @@ export function TodayCards({ libraries, today }: TodayCardsProps) {
   )
 }
 
-function SourceCard({ library, today }: { library: TodayCardsSource; today: string }) {
+function SourceCard({
+  library,
+  today,
+  stored,
+}: {
+  library: TodayCardsSource
+  today: string
+  stored: ReadonlySet<string>
+}) {
   const { query, name } = library
   if (query.isPending) {
     return (
@@ -82,11 +96,13 @@ function SourceCard({ library, today }: { library: TodayCardsSource; today: stri
     down: isSourceDown(library.source),
     noPuzzle: isNoPuzzle(library.source, today),
   })
+  const offline = card.href !== null && stored.has(card.href.slice('/jogo/'.length))
   const content = (
     <>
       <span className={styles.body}>
         <span className={styles.name}>{card.name}</span>
         <span className={`${styles.status} ${statusClass(card)}`}>{card.status}</span>
+        {offline ? <span className={styles.muted}>Disponível sem rede</span> : null}
       </span>
       {card.action ? <span className={styles.action}>{card.action}</span> : null}
     </>
@@ -96,7 +112,7 @@ function SourceCard({ library, today }: { library: TodayCardsSource; today: stri
     <Link
       to={card.href}
       className={`${styles.card} ${styles.link}`}
-      aria-label={`${card.name}: ${card.spoken}. ${card.action ?? ''}`}
+      aria-label={`${card.name}: ${card.spoken}${offline ? ', disponível sem rede' : ''}. ${card.action ?? ''}`}
     >
       {content}
     </Link>
@@ -107,4 +123,34 @@ function statusClass({ kind }: TodayCard): string {
   if (kind === 'completed') return styles.done ?? ''
   if (kind === 'in_progress') return styles.playing ?? ''
   return ''
+}
+
+// Baixa as cruzadas de hoje de todas as fontes para jogar na estrada (feature 041, FR-014).
+function DownloadToday() {
+  const online = useOnline()
+  const [state, setState] = useState<'idle' | 'busy' | DownloadSummary>('idle')
+  async function run() {
+    setState('busy')
+    setState(await downloadToday())
+  }
+  return (
+    <div className={styles.download}>
+      <Button variant="secondary" onClick={() => void run()} disabled={!online || state === 'busy'}>
+        {state === 'busy' ? 'Baixando…' : 'Baixar as cruzadas de hoje'}
+      </Button>
+      {typeof state === 'object' ? <DownloadResult summary={state} /> : null}
+    </div>
+  )
+}
+
+function DownloadResult({ summary }: { summary: DownloadSummary }) {
+  if (summary.storageFailed) {
+    return <Notice variant="warning">Não foi possível guardar para jogar sem rede.</Notice>
+  }
+  const names = summary.failed.map((source) => puzzleSourceNames[source]).join(', ')
+  return (
+    <Notice variant={summary.failed.length > 0 ? 'warning' : 'info'}>
+      Guardadas: {summary.saved}.{names ? ` Falharam: ${names}.` : ''}
+    </Notice>
+  )
 }

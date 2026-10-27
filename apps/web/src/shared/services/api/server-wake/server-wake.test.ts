@@ -168,3 +168,49 @@ describe('whenServerReady', () => {
     await expect(whenServerReady(controller.signal)).rejects.toMatchObject({ name: 'AbortError' })
   })
 })
+
+describe('without a network', () => {
+  const setOnline = (value: boolean) =>
+    Object.defineProperty(navigator, 'onLine', { value, configurable: true })
+  afterEach(() => setOnline(true))
+
+  it('waitForServer returns without marking the server ready', async () => {
+    setOnline(false)
+    const fetch = vi.fn(async () => up())
+    await waitForServer({ fetch })
+    expect(fetch).not.toHaveBeenCalled()
+    expect(isServerReady()).toBe(false)
+  })
+
+  it('waitForServer gives up when the network drops during the wait', async () => {
+    const fetch = vi.fn(async () => down())
+    const done = waitForServer({ fetch })
+    await vi.advanceTimersByTimeAsync(0)
+    setOnline(false)
+    await vi.advanceTimersByTimeAsync(WAKE_RETRY_MS)
+    await done
+    expect(isServerReady()).toBe(false)
+  })
+
+  it('whenServerReady resolves offline, also when it goes offline while waiting', async () => {
+    setOnline(false)
+    await whenServerReady()
+    setOnline(true)
+    const waiting = whenServerReady()
+    setOnline(false)
+    window.dispatchEvent(new Event('offline'))
+    await waiting
+  })
+
+  it('the online event restarts the wait and marks the server ready', async () => {
+    setOnline(false)
+    await waitForServer()
+    const fetch = vi.fn(async () => up())
+    vi.stubGlobal('fetch', fetch)
+    setOnline(true)
+    window.dispatchEvent(new Event('online'))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(isServerReady()).toBe(true)
+    vi.unstubAllGlobals()
+  })
+})

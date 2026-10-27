@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 import { siteVersionPlugin } from './version-plugin.ts'
 
 const apiProxy = {
@@ -11,7 +12,41 @@ const apiProxy = {
 }
 
 export default defineConfig({
-  plugins: [react(), siteVersionPlugin()],
+  plugins: [
+    react(),
+    siteVersionPlugin(),
+    // Service worker só da casca (feature 041): nunca guarda /api, sem skipWaiting nem clientsClaim,
+    // então a versão nova vale na próxima abertura, nunca no meio de uma partida.
+    VitePWA({
+      registerType: 'prompt',
+      injectRegister: false,
+      manifest: {
+        name: 'Cruzadinha',
+        short_name: 'Cruzadinha',
+        lang: 'pt-BR',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        theme_color: '#1d4ed8',
+        background_color: '#f6f7f9',
+        icons: [
+          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: '/pwa-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
+      },
+    }),
+  ],
   // O .env único fica na raiz; só variáveis com prefixo VITE_ chegam ao navegador.
   envDir: fileURLToPath(new URL('../..', import.meta.url)),
   build: {

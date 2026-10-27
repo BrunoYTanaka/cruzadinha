@@ -1,6 +1,11 @@
 export { apiErrorCodeSchema, apiErrorSchema, type ApiError, type ApiErrorCode } from './api-error'
 export {
   authResponseSchema,
+  changeEmailRequestSchema,
+  changePasswordRequestSchema,
+  confirmEmailChangeRequestSchema,
+  currentPasswordSchema,
+  deleteAccountRequestSchema,
   emailRequestAcceptedSchema,
   emailSchema,
   forgotPasswordRequestSchema,
@@ -14,6 +19,10 @@ export {
   userSchema,
   verifyEmailRequestSchema,
   type AuthResponse,
+  type ChangeEmailRequest,
+  type ChangePasswordRequest,
+  type ConfirmEmailChangeRequest,
+  type DeleteAccountRequest,
   type EmailRequestAccepted,
   type ForgotPasswordRequest,
   type LoginRequest,

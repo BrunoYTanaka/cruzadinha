@@ -1,0 +1,15 @@
+.pencil,
+.action {
+  min-height: var(--tap);
+}
+
+.pencil[aria-pressed='true'] {
+  background-color: var(--sel);
+  color: var(--sel-ink);
+}
+
+[aria-disabled='true'].pencil,
+.action[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

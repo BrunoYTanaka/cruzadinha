@@ -1,6 +1,10 @@
 import SwaggerParser from '@apidevtools/swagger-parser'
 import {
   authResponseSchema,
+  changeEmailRequestSchema,
+  changePasswordRequestSchema,
+  confirmEmailChangeRequestSchema,
+  deleteAccountRequestSchema,
   forgotPasswordRequestSchema,
   puzzleResponseSchema,
   libraryResponseSchema,
@@ -97,9 +101,14 @@ const catalog = [
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
   'GET /api/settings',
+  'POST /api/auth/change-email',
+  'POST /api/auth/change-password',
+  'POST /api/auth/confirm-email-change',
+  'POST /api/auth/delete-account',
   'POST /api/auth/forgot-password',
   'POST /api/auth/login',
   'POST /api/auth/logout',
+  'POST /api/auth/logout-others',
   'POST /api/auth/register',
   'POST /api/auth/resend-verification',
   'POST /api/auth/reset-password',
@@ -191,6 +200,10 @@ describe('documento OpenAPI', () => {
     '/api/auth/verify-email',
     '/api/auth/forgot-password',
     '/api/auth/reset-password',
+    '/api/auth/change-password',
+    '/api/auth/change-email',
+    '/api/auth/confirm-email-change',
+    '/api/auth/delete-account',
   ])('POST %s tem corpo com exemplo', async (path) => {
     app = build()
     const doc = await documentOf(app)
@@ -266,6 +279,10 @@ describe('documento para ferramentas', () => {
 describe('sessão', () => {
   const protectedOperations = [
     'GET /api/auth/me',
+    'POST /api/auth/change-email',
+    'POST /api/auth/change-password',
+    'POST /api/auth/delete-account',
+    'POST /api/auth/logout-others',
     'GET /api/progress/{puzzleId}',
     'PUT /api/progress/{puzzleId}',
     'POST /api/progress/{puzzleId}/reset',
@@ -375,6 +392,10 @@ describe('documentação vinda das regras de validação', () => {
     ['/api/auth/verify-email', verifyEmailRequestSchema],
     ['/api/auth/forgot-password', forgotPasswordRequestSchema],
     ['/api/auth/reset-password', resetPasswordRequestSchema],
+    ['/api/auth/change-password', changePasswordRequestSchema],
+    ['/api/auth/change-email', changeEmailRequestSchema],
+    ['/api/auth/confirm-email-change', confirmEmailChangeRequestSchema],
+    ['/api/auth/delete-account', deleteAccountRequestSchema],
   ] as const)('o corpo de POST %s é o do schema Zod da rota', async (path, schema) => {
     app = build()
     const doc = await documentOf(app)

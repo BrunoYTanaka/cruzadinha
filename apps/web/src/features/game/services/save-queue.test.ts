@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiRequestError } from '../../../shared/services/api/client/client'
 import { aUser } from '../../../test/render'
 import { cellsFrom, makeProgress, PUZZLE_ID } from '../../../test/fixtures'
-import { createSaveQueue, outboxKey, type SaveFn, type SaveSnapshot } from './save-queue'
+import { applyOutboxEvent, outboxKey, readOutboxItems } from '../../offline'
+import { jsonResponse, mockApi } from '../../../test/http'
+import { createSaveQueue, type SaveFn, type SaveSnapshot } from './save-queue'
 
 const LOCAL_NOW = Date.parse('2026-10-14T12:00:00.000Z')
 const snapshot = (letters: string, overrides: Partial<SaveSnapshot> = {}): SaveSnapshot => ({
@@ -301,5 +303,55 @@ describe('createSaveQueue', () => {
     queue.dispose()
     await vi.advanceTimersByTimeAsync(5000)
     expect(save).not.toHaveBeenCalled()
+  })
+
+  describe('com "Jogar de novo" pendente (feature 041)', () => {
+    const resetAt = '2026-10-14T11:59:00.000Z'
+
+    it('manda o reinício ao servidor antes do primeiro salvamento', async () => {
+      applyOutboxEvent(aUser.id, PUZZLE_ID, { type: 'reset', at: resetAt })
+      const order: string[] = []
+      mockApi({
+        [`GET /api/progress/${PUZZLE_ID}`]: () => jsonResponse(200, { progress: null }),
+        [`POST /api/progress/${PUZZLE_ID}/reset`]: () => {
+          order.push('reset')
+          return jsonResponse(200, { progress: makeProgress() })
+        },
+      })
+      const save = vi.fn<SaveFn>(async () => {
+        order.push('save')
+        return ok()
+      })
+      const { queue } = setup(save)
+      queue.schedule(snapshot('C..'))
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(order).toEqual(['reset', 'save'])
+      expect(readOutboxItems(aUser.id, PUZZLE_ID)).toEqual([])
+    })
+
+    it('sem rede, o reinício e as letras ficam na fila, em ordem, e o estado é "offline"', async () => {
+      applyOutboxEvent(aUser.id, PUZZLE_ID, { type: 'reset', at: resetAt })
+      mockApi({
+        [`GET /api/progress/${PUZZLE_ID}`]: () => {
+          throw new TypeError('Failed to fetch')
+        },
+      })
+      const save = vi.fn<SaveFn>(async () => ok())
+      const { queue } = setup(save)
+      queue.schedule(snapshot('C..'))
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(save).not.toHaveBeenCalled()
+      expect(queue.getState()).toBe('offline')
+      expect(readOutboxItems(aUser.id, PUZZLE_ID).map((item) => item.kind)).toEqual([
+        'reset',
+        'save',
+      ])
+      queue.dispose()
+    })
+
+    it('começa em "offline" quando já há pendência guardada', () => {
+      applyOutboxEvent(aUser.id, PUZZLE_ID, { type: 'reset', at: resetAt })
+      expect(setup(vi.fn<SaveFn>(async () => ok())).queue.getState()).toBe('offline')
+    })
   })
 })
