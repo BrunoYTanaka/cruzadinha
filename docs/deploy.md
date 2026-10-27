@@ -98,6 +98,13 @@ openssl rand -base64 48 | tr '+/' '-_' | tr -d '='
 
    Deixe o ambiente **Preview** sem variáveis: assim nenhuma prévia fala com a API de produção.
 
+### PWA e modo offline (feature 041)
+
+O site é instalável e guarda a casca para abrir sem rede. Nada muda no deploy, só duas coisas a saber:
+
+- `dist/sw.js` e `dist/manifest.webmanifest` saem do build (`vite-plugin-pwa`). O `public/_headers` os serve com `Cache-Control: no-cache`, para o navegador sempre perguntar se há versão nova; os arquivos com hash em `/assets/` seguem imutáveis.
+- O service worker não guarda nada de `/api` e não assume a página: uma versão nova só vale depois de fechar todas as abas do site e abrir de novo, nunca no meio de uma partida. Para forçar o teste de uma versão, feche as abas e reabra.
+
 ## 7. Primeiro deploy
 
 Feito **depois do merge** da feature 012 na `main` (o Render publica a `main`). Até os segredos do GitHub existirem, os workflows `Release` e `Deploy` terminam com um aviso, sem erro.
