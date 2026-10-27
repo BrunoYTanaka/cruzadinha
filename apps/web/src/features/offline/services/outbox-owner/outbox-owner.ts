@@ -3,6 +3,7 @@ import {
   removeStorage,
   writeStorage,
 } from '../../../../shared/services/storage/storage'
+import { clearDraft, listDrafts } from '../draft/draft'
 import { clearKnownProgress } from '../offline-store/offline-store'
 import { clearOutbox, listOutboxes } from '../outbox/outbox'
 
@@ -24,6 +25,9 @@ export async function clearAccountData(userId: string): Promise<void> {
   for (const owner of listOutboxes()) {
     if (owner.userId === userId) clearOutbox(owner.userId, owner.puzzleId)
   }
+  for (const draft of listDrafts()) {
+    if (draft.owner === userId) clearDraft(draft.owner, draft.puzzleId)
+  }
   await clearKnownProgress(userId)
 }
 
@@ -31,6 +35,9 @@ export async function clearAccountData(userId: string): Promise<void> {
 export async function discardOtherAccounts(userId: string): Promise<void> {
   const others = listOutboxes().filter((owner) => owner.userId !== userId)
   for (const owner of others) clearOutbox(owner.userId, owner.puzzleId)
+  for (const draft of listDrafts()) {
+    if (draft.owner !== userId && draft.owner !== 'guest') clearDraft(draft.owner, draft.puzzleId)
+  }
   await clearKnownProgress(userId, { except: true })
   if (others.length > 0) {
     writeStorage(DISCARDED_KEY, '1')

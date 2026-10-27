@@ -7,6 +7,7 @@ import {
 } from '@cruzadinha/shared'
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import { guestStore } from '../../../guest'
+import { listDrafts } from '../draft/draft'
 import { listOutboxes } from '../outbox/outbox'
 
 export const OFFLINE_DB_NAME = 'cruzadinha-offline'
@@ -89,9 +90,10 @@ function parseResponse(value: unknown): PuzzleResponse | null {
 }
 
 // Cruzadas que o limite nunca remove (FR-013): com envio pendente de qualquer conta, em andamento
-// como visitante ou em andamento no progresso conhecido de uma conta.
+// como visitante, com rascunho de qualquer dono ou em andamento no progresso conhecido de uma conta.
 async function protectedIds(db: IDBPDatabase<OfflineDB>): Promise<Set<string>> {
   const ids = new Set(listOutboxes().map((owner) => owner.puzzleId))
+  for (const draft of listDrafts()) ids.add(draft.puzzleId)
   for (const record of await guestStore.getAll()) {
     if (record.status === 'in_progress') ids.add(record.puzzleId)
   }

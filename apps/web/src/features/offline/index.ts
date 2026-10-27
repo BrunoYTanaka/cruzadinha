@@ -32,3 +32,4 @@ export { PendingOwnerNotice } from './components/PendingOwnerNotice/PendingOwner
 export { downloadToday } from './services/download-today/download-today'
 export type { DownloadSummary } from './services/download-today/download-today'
 export { useOfflinePuzzleIds } from './hooks/useOfflinePuzzleIds/useOfflinePuzzleIds'
+export { clearDraft, loadDraft, saveDraft } from './services/draft/draft'

@@ -1,6 +1,7 @@
 import type { SaveProgressRequest } from '@cruzadinha/shared'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { makeProgress, makePuzzleResponse, TINY } from '../../../../test/fixtures'
+import { loadDraft, saveDraft } from '../draft/draft'
 import { readKnownProgress, savePuzzle, writeKnownProgress } from '../offline-store/offline-store'
 import { applyOutboxEvent, readOutboxItems } from '../outbox/outbox'
 import {
@@ -57,5 +58,18 @@ describe('dono das pendências', () => {
     await discardOtherAccounts(A)
     expect(hasOutbox(A)).toBe(true)
     expect(hasDiscardedNotice()).toBe(false)
+  })
+
+  it('sair apaga os rascunhos da conta; entrar com outra apaga os das outras contas, não do visitante', async () => {
+    const d = [['A', null]]
+    saveDraft(A, P, d)
+    saveDraft(B, P, d)
+    saveDraft('guest', P, d)
+    await clearAccountData(A)
+    expect(loadDraft(A, P)).toBeNull()
+    expect(loadDraft(B, P)).not.toBeNull()
+    await discardOtherAccounts(A)
+    expect(loadDraft(B, P)).toBeNull()
+    expect(loadDraft('guest', P)).not.toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { openDB } from 'idb'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { guestStore } from '../../../guest'
 import { makeProgress, makePuzzleResponse, PUZZLE_ID, TINY } from '../../../../test/fixtures'
+import { saveDraft } from '../draft/draft'
 import { applyOutboxEvent } from '../outbox/outbox'
 import {
   clearKnownProgress,
@@ -64,7 +65,8 @@ describe('puzzles', () => {
   })
 
   it('over the limit removes the least recently opened, sparing protected ones', async () => {
-    // 1: com envio pendente; 2: visitante em andamento; 3: progresso conhecido em andamento
+    // 1: com envio pendente; 2: visitante em andamento; 3: progresso conhecido em andamento;
+    // 5: com rascunho
     for (let n = 1; n <= OFFLINE_PUZZLE_LIMIT; n += 1) await savePuzzle(response(n), n)
     applyOutboxEvent(OTHER, id(1), {
       type: 'reset',
@@ -80,10 +82,11 @@ describe('puzzles', () => {
       help: null,
     })
     await writeKnownProgress(USER, makeProgress({ puzzleId: id(3), status: 'in_progress' }))
+    saveDraft('guest', id(5), [['A']])
     await savePuzzle(response(1000), 1000)
     const kept = (await listStoredPuzzles()).map((p) => p.puzzleId)
     expect(kept).toHaveLength(OFFLINE_PUZZLE_LIMIT)
-    for (const n of [1, 2, 3, 1000]) expect(kept).toContain(id(n))
+    for (const n of [1, 2, 3, 5, 1000]) expect(kept).toContain(id(n))
     expect(kept).not.toContain(id(4))
   })
 
