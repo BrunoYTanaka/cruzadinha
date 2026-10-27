@@ -2,15 +2,16 @@
 
 ## Changelog
 
-| Version | Date       | Changes                                                                                   |
-| ------- | ---------- | ----------------------------------------------------------------------------------------- |
-| `0.0.3` | 2026-10-21 | - Configurações fora do progresso, na DDE-004 (021).                                      |
-| `0.0.2` | 2026-10-20 | - Nota sobre o progresso do visitante, guardado só no aparelho e fora deste modelo (013). |
-| `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 008 (com a clarificação do recorde).                    |
+| Version | Date       | Changes                                                                                          |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| `0.0.4` | 2026-10-27 | - Letras provisórias (rascunho) e preferência do lápis, só no aparelho e fora do servidor (043). |
+| `0.0.3` | 2026-10-21 | - Configurações fora do progresso, na DDE-004 (021).                                             |
+| `0.0.2` | 2026-10-20 | - Nota sobre o progresso do visitante, guardado só no aparelho e fora deste modelo (013).        |
+| `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 008 (com a clarificação do recorde).                           |
 
 ## Scope
 
-Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individual de cada jogador em cada cruzada. Suporta salvar e retomar letras e tempo entre dispositivos, concluir um puzzle guardando o tempo de término, manter o melhor tempo e a data em que foi obtido, reiniciar do zero e isolar o progresso de cada usuário. `User` e `Puzzle` já são definidos nas [DDE-001](./DDE-001-banco-auth-convites.md) e [DDE-002](./DDE-002-coleta-puzzles.md); aqui aparecem só com a chave, para fechar os relacionamentos. O progresso do visitante (feature 013) não faz parte deste modelo: fica só no navegador do aparelho, nunca é enviado ao servidor e nunca é lido, gravado ou mostrado como o progresso de uma conta. Seus campos estão na spec 013. As configurações da pessoa, inclusive os limites de ajuda, não fazem parte do progresso: ficam na [DDE-004](./DDE-004-configuracoes-usuario.md).
+Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individual de cada jogador em cada cruzada. Suporta salvar e retomar letras e tempo entre dispositivos, concluir um puzzle guardando o tempo de término, manter o melhor tempo e a data em que foi obtido, reiniciar do zero e isolar o progresso de cada usuário. `User` e `Puzzle` já são definidos nas [DDE-001](./DDE-001-banco-auth-convites.md) e [DDE-002](./DDE-002-coleta-puzzles.md); aqui aparecem só com a chave, para fechar os relacionamentos. O progresso do visitante (feature 013) não faz parte deste modelo: fica só no navegador do aparelho, nunca é enviado ao servidor e nunca é lido, gravado ou mostrado como o progresso de uma conta. Seus campos estão na spec 013. As configurações da pessoa, inclusive os limites de ajuda, não fazem parte do progresso: ficam na [DDE-004](./DDE-004-configuracoes-usuario.md). As letras provisórias do modo lápis (feature 043) também não são progresso: ficam só no aparelho, por dono e cruzada, nunca vão ao servidor e não entram na verificação, na conclusão nem no tempo. `Draft` e `PencilPreference` abaixo são entidades lógicas do aparelho, sem tabela no banco.
 
 ## Source Artifacts
 
@@ -21,14 +22,17 @@ Cobre a ligação entre usuários e puzzles no Cruzadinha: o progresso individua
 | [specs/008-progresso-usuario-puzzle/spec.md](../../specs/008-progresso-usuario-puzzle/spec.md) (FR-011 a FR-014, US3) | Spec | Isolamento por usuário, sessão obrigatória e remoção em cascata                    |
 | [specs/013-jogo-sem-login/spec.md](../../specs/013-jogo-sem-login/spec.md) (FR-004, FR-011, FR-012)                   | Spec | Progresso do visitante só no aparelho e separado do da conta                       |
 | [specs/021-configuracoes-usuario/spec.md](../../specs/021-configuracoes-usuario/spec.md) (FR-008, FR-020)             | Spec | Limites de ajuda e demais configurações guardados à parte do progresso             |
+| [specs/043-modo-rascunho/spec.md](../../specs/043-modo-rascunho/spec.md) (FR-002, FR-009 a FR-011, FR-016 a FR-018)   | Spec | Letras provisórias guardadas no aparelho por dono e cruzada; preferência do lápis  |
 
 ## Entity Summary
 
-| Entity                | Description                                                                          | Source                  |
-| --------------------- | ------------------------------------------------------------------------------------ | ----------------------- |
-| [Progress](#progress) | O que um usuário fez em um puzzle: letras, tempo, situação, conclusão e melhor tempo | FR-001 a FR-010, FR-014 |
-| [User](#user)         | Dono do progresso (definido na DDE-001)                                              | FR-011, FR-014          |
-| [Puzzle](#puzzle)     | Cruzada compartilhada à qual o progresso se refere (definida na DDE-002)             | FR-001, FR-013, FR-014  |
+| Entity                                | Description                                                                          | Source                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
+| [Progress](#progress)                 | O que um usuário fez em um puzzle: letras, tempo, situação, conclusão e melhor tempo | FR-001 a FR-010, FR-014                     |
+| [User](#user)                         | Dono do progresso (definido na DDE-001)                                              | FR-011, FR-014                              |
+| [Puzzle](#puzzle)                     | Cruzada compartilhada à qual o progresso se refere (definida na DDE-002)             | FR-001, FR-013, FR-014                      |
+| [Draft](#draft)                       | Letras provisórias de uma pessoa em uma cruzada, só no aparelho (043)                | 043 FR-002, FR-009 a FR-011, FR-017, FR-018 |
+| [PencilPreference](#pencilpreference) | Lápis ligado ou desligado, por aparelho (043)                                        | 043 FR-016                                  |
 
 ## Entity Definitions
 
@@ -63,12 +67,34 @@ A chave de `Progress` é composta (`user_id` + `puzzle_id`), uma exceção delib
 | --------- | ----------------------------- | --------- | --------- | ----------------------------------------------------------- |
 | puzzle_id | Identificador único do puzzle | UUID      | Yes       | PK; demais campos na [DDE-002](./DDE-002-coleta-puzzles.md) |
 
+### Draft
+
+Entidade lógica do aparelho (feature 043): vive no `localStorage`, não em tabela, e nunca é enviada ao servidor (FR-010).
+
+| Field     | Description                                  | Data Type | Mandatory | Notes                                                                                                                                                                             |
+| --------- | -------------------------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| owner     | Dono das provisórias: conta ou visitante     | Text      | Yes       | PK (junto com puzzle_id); id da conta (UUID, FK → User) ou o literal `guest` (FR-009, FR-017); chave `cruzadinha:draft:<owner>:<puzzle_id>`                                       |
+| puzzle_id | Cruzada à qual as provisórias se referem     | UUID      | Yes       | PK (junto com owner); FK → Puzzle                                                                                                                                                 |
+| cells     | Letra provisória de cada casa, no máximo uma | Text      | Yes       | Documento JSON `{ v: 1, cells }`, matriz altura x largura; A–Z e Ç ou nulo; nulo em bloco, casa com definitiva ou travada; chave removida quando todas são nulas (FR-002, FR-006) |
+
+A chave é composta (`owner` + `puzzle_id`), como em `Progress`. Duração (FR-011, FR-017, FR-018): removida na conclusão, no reinício e em "Jogar de novo", ao sair da conta, quando outra conta entra e quando a cópia da cruzada sai do armazenamento offline; sessão expirada não apaga; uma cruzada com provisórias não é descartada pelo limite de 60.
+
+### PencilPreference
+
+Entidade lógica do aparelho (feature 043): chave `cruzadinha:pencil` no `localStorage`, fora das configurações da conta (DDE-004), sem sincronização.
+
+| Field   | Description                 | Data Type | Mandatory | Notes                                                      |
+| ------- | --------------------------- | --------- | --------- | ---------------------------------------------------------- |
+| enabled | Se o modo lápis está ligado | Boolean   | Yes       | Padrão desligado; lembrado ao abrir outra cruzada (FR-016) |
+
 ## Relationships
 
-| From Entity       | Cardinality | To Entity             | Description                                                                                                   |
-| ----------------- | ----------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [User](#user)     | one-to-many | [Progress](#progress) | Um usuário tem um progresso por puzzle jogado; cada progresso pertence a um só usuário e some com ele         |
-| [Puzzle](#puzzle) | one-to-many | [Progress](#progress) | Um puzzle pode ter o progresso de vários usuários, cada um independente; cada progresso refere-se a um puzzle |
+| From Entity       | Cardinality | To Entity             | Description                                                                                                                               |
+| ----------------- | ----------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [User](#user)     | one-to-many | [Progress](#progress) | Um usuário tem um progresso por puzzle jogado; cada progresso pertence a um só usuário e some com ele                                     |
+| [Puzzle](#puzzle) | one-to-many | [Progress](#progress) | Um puzzle pode ter o progresso de vários usuários, cada um independente; cada progresso refere-se a um puzzle                             |
+| [User](#user)     | one-to-many | [Draft](#draft)       | Uma conta tem, no aparelho, um rascunho por cruzada; sai ao sair da conta ou quando outra conta entra (o visitante usa `guest`, sem User) |
+| [Puzzle](#puzzle) | one-to-many | [Draft](#draft)       | Uma cruzada pode ter rascunhos de várias pessoas no mesmo aparelho; cada rascunho refere-se a uma cruzada                                 |
 
 ## Entity Relationship Diagrams
 
