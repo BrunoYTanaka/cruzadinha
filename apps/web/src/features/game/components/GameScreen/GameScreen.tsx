@@ -1,5 +1,6 @@
 import { puzzleSourceNames, type PuzzleResponse, type Word } from '@cruzadinha/shared'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { wordHasDraft } from '../../../../domain/game/draft'
 import { activeWord } from '../../../../domain/game/navigation'
 import { todayInBrasilia } from '../../../../shared/helpers/dates/dates'
 import { buildLoginPath, SessionExpiredNotice } from '../../../session'
@@ -26,6 +27,7 @@ import { CopyToast } from '../clues/CopyToast/CopyToast'
 import { useCopyClue } from '../../hooks/useCopyClue'
 import { formatDate } from '../../helpers/format-date'
 import styles from './GameScreen.module.css'
+import { DraftControls } from '../controls/DraftControls/DraftControls'
 import { HelpButtons } from '../controls/HelpButtons/HelpButtons'
 import { Keyboard } from '../controls/Keyboard/Keyboard'
 import { LegendButton } from '../controls/LegendButton/LegendButton'
@@ -206,15 +208,25 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
           readOnly ? null : (
-            <HelpButtons
-              usage={state.usage}
-              limits={limits}
-              lastHelp={state.lastHelp}
-              disabled={clock.paused}
-              onLetter={() => help('revealLetter')}
-              onWord={() => help('revealWord')}
-              onVerify={() => help('verify')}
-            />
+            <>
+              <HelpButtons
+                usage={state.usage}
+                limits={limits}
+                lastHelp={state.lastHelp}
+                disabled={clock.paused}
+                onLetter={() => help('revealLetter')}
+                onWord={() => help('revealWord')}
+                onVerify={() => help('verify')}
+              />
+              <DraftControls
+                pencil={state.pencil}
+                hasDraft={wordHasDraft(game.index, state)}
+                disabled={clock.paused}
+                onPencil={(on) => dispatch({ type: 'setPencil', on })}
+                onConfirm={() => dispatch({ type: 'confirmDraft' })}
+                onDiscard={() => dispatch({ type: 'discardDraft' })}
+              />
+            </>
           )
         }
       />

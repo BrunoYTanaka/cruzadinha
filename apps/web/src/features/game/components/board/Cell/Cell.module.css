@@ -107,3 +107,15 @@
 .wrong::after {
   background: var(--bad);
 }
+
+/* Rascunho (feature 043): forma (itálico, leve, menor) e cor, sem mudar a caixa da célula. */
+.draft {
+  color: var(--mute);
+  font-size: calc(var(--cell-size) * 0.55);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.selected.draft {
+  color: var(--sel-ink);
+}

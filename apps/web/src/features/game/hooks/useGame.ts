@@ -17,6 +17,7 @@ import {
 import { config } from '../../../shared/services/config/config'
 import { struckWords, type StrikeMode } from '../../../domain/game/clue-strike'
 import { isSolved } from '../../../domain/game/completion'
+import { hasAnyDraft } from '../../../domain/game/draft'
 import type { GuestProgress } from '../../../domain/guest/guest-progress'
 import { createGame, type GameAction, type HelpSnapshot } from '../../../domain/game/reducer'
 import type { GameLimits, GameState } from '../../../domain/game/state'
@@ -24,8 +25,16 @@ import type { GuestSaveQueueOptions, GuestStore } from '../../guest'
 import { useSettingsOpen } from '../../settings'
 import { useSettings } from '../../../shared/services/settings-store/settings-store'
 import { clearHelp, loadHelp, saveHelp } from '../services/help-storage'
+import { loadPencil, savePencil } from '../services/pencil-preference'
 import { createSaveQueue, type SaveQueue } from '../services/save-queue'
-import { applyOutboxEvent, clearOutbox, readOutboxItems } from '../../offline'
+import {
+  applyOutboxEvent,
+  clearDraft,
+  clearOutbox,
+  loadDraft,
+  readOutboxItems,
+  saveDraft,
+} from '../../offline'
 import { useClock } from './useClock'
 
 // Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
@@ -101,6 +110,7 @@ export function useGame({ response, owner }: UseGameArgs) {
     [puzzle, solution],
   )
   const guest = owner.kind === 'guest'
+  const draftOwner = owner.kind === 'user' ? owner.user.id : 'guest'
   const userId = owner.kind === 'user' ? owner.user.id : null
   const store = owner.kind === 'guest' ? owner.store : null
   const createGuestQueue = owner.kind === 'guest' ? owner.createQueue : null
@@ -128,8 +138,13 @@ export function useGame({ response, owner }: UseGameArgs) {
     // Ajudas ficam só neste aparelho: no registro do visitante, ou por conta e cruzada.
     const help =
       owner.kind === 'guest' ? (owner.record?.help ?? null) : loadHelp(owner.user.id, puzzleId)
-    if (source.cells) return game.reducer(start, { type: 'hydrate', cells: source.cells, help })
-    return help ? game.reducer(start, { type: 'hydrate', cells: start.cells, help }) : start
+    // O rascunho fica só neste aparelho; visitante sem registro não tem rascunho que valha (FR-018).
+    const draft = owner.kind === 'guest' && !owner.record ? null : loadDraft(draftOwner, puzzleId)
+    const loaded =
+      source.cells || help || draft
+        ? game.reducer(start, { type: 'hydrate', cells: source.cells ?? start.cells, help, draft })
+        : start
+    return game.reducer(loaded, { type: 'setPencil', on: loadPencil() })
   })
 
   const stateRef = useRef(state)
@@ -144,6 +159,13 @@ export function useGame({ response, owner }: UseGameArgs) {
     const snapshot = helpOf({ usage, marks, locked })
     if (hasHelp(snapshot)) saveHelp(userId, puzzleId, snapshot)
   }, [usage, marks, locked, userId, puzzleId])
+
+  // Rascunho e lápis: só neste aparelho. Concluída ou em leitura, o rascunho some.
+  useEffect(() => {
+    if (state.mode === 'playing') saveDraft(draftOwner, puzzleId, state.draft)
+    else clearDraft(draftOwner, puzzleId)
+  }, [state.draft, state.mode, draftOwner, puzzleId])
+  useEffect(() => savePencil(state.pencil), [state.pencil])
 
   // Configurações (feature 021): limites de ajuda e modo de riscar valem na hora; a modal aberta
   // suspende o relógio.
@@ -198,6 +220,7 @@ export function useGame({ response, owner }: UseGameArgs) {
   // quando só as ajudas mudam (uma verificação que só marca células, FR-004).
   const savedCells = useRef(state.cells)
   const savedHelp = useRef({ usage: state.usage, marks: state.marks, locked: state.locked })
+  const savedDraft = useRef(state.draft)
   useEffect(() => {
     if (state.mode !== 'playing') return
     const helpChanged =
@@ -205,12 +228,16 @@ export function useGame({ response, owner }: UseGameArgs) {
       (state.usage !== savedHelp.current.usage ||
         state.marks !== savedHelp.current.marks ||
         state.locked !== savedHelp.current.locked)
-    if (state.cells === savedCells.current && !helpChanged) return
+    // O rascunho do visitante também cria o registro em andamento (FR-018); nunca vai no corpo.
+    const draftChanged = guest && state.draft !== savedDraft.current
+    savedDraft.current = state.draft
+    if (state.cells === savedCells.current && !helpChanged && !draftChanged) return
     savedCells.current = state.cells
     savedHelp.current = { usage: state.usage, marks: state.marks, locked: state.locked }
     queue.schedule(snapshotOf(stateRef.current, 'in_progress', readElapsedMs()))
   }, [
     state.cells,
+    state.draft,
     state.usage,
     state.marks,
     state.locked,
@@ -234,14 +261,17 @@ export function useGame({ response, owner }: UseGameArgs) {
   useEffect(
     () => () => {
       const current = stateRef.current
-      if (current.mode === 'playing' && current.cells.some((row) => row.some(Boolean))) {
+      if (
+        current.mode === 'playing' &&
+        (current.cells.some((row) => row.some(Boolean)) || (guest && hasAnyDraft(current.draft)))
+      ) {
         void queue.sendNow(snapshotOf(current, 'in_progress', readElapsedMs()), {
           keepalive: true,
         })
       }
       queue.dispose()
     },
-    [queue, readElapsedMs, snapshotOf],
+    [queue, readElapsedMs, snapshotOf, guest],
   )
 
   // Letras da fila local que ainda não chegaram ao servidor seguem na abertura.
