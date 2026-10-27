@@ -18,6 +18,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'internal-error': 'Erro interno.',
   'invalid-token': 'Link inválido ou vencido.',
   'email-unavailable': 'Não foi possível enviar o e-mail agora.',
+  'wrong-password': 'A senha atual não confere.',
 }
 
 export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {

@@ -11,6 +11,8 @@ export type RateLimits = {
   verifyToken: RateWindow
   resetPassword: RateWindow
   progressSave: RateWindow
+  passwordConfirm: RateWindow
+  changeEmail: RateWindow
 }
 
 // Valores de FR-027 e FR-028; os testes injetam outros quando precisam.
@@ -30,4 +32,8 @@ export const defaultRateLimits: RateLimits = {
   // Progresso salvo na conta, por usuário: o site agrupa as letras (1,5 s) e uma partida fica bem
   // abaixo disso.
   progressSave: { max: 1800, windowMinutes: 60 },
+  // Senha atual pedida por trocar senha, trocar e-mail e excluir (feature 042), por usuário; um só
+  // balde para as três, com os números do login. `changeEmail` conta por endereço antes do corpo.
+  passwordConfirm: { max: 5, windowMinutes: 15 },
+  changeEmail: { max: 10, windowMinutes: 60 },
 }

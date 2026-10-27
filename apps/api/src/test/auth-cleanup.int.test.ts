@@ -74,7 +74,9 @@ describe('auth cleanup', () => {
     ])
 
     expect(await cli('auth', 'cleanup')).toBe(0)
-    expect(out).toBe('Limpeza: 1 pendências, 2 tokens de recuperação, 2 contagens de tentativas.\n')
+    expect(out).toBe(
+      'Limpeza: 1 pendências, 2 tokens de recuperação, 0 trocas de e-mail, 2 contagens de tentativas.\n',
+    )
     expect(err).toBe('')
 
     expect((await db.select().from(pendingRegistrations)).map((row) => row.tokenHash)).toEqual([

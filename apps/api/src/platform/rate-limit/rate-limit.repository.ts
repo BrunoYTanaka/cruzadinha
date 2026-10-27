@@ -26,6 +26,13 @@ export type RateLimitRepository = {
   ): Promise<T>
 }
 
+// Exclusão da conta: as tentativas de chave `USER` dela saem junto (feature 042).
+export async function deleteUserAttempts(db: Executor, userId: string): Promise<void> {
+  await db
+    .delete(rateLimitAttempts)
+    .where(and(eq(rateLimitAttempts.keyType, 'USER'), eq(rateLimitAttempts.keyValue, userId)))
+}
+
 function matches(key: RateLimitKey) {
   return and(
     eq(rateLimitAttempts.action, key.action),

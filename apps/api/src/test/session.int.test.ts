@@ -235,6 +235,8 @@ describe('timing and speed', () => {
     resendVerification: { max: 1000, windowMinutes: 60 },
     verifyToken: { max: 1000, windowMinutes: 60 },
     resetPassword: { max: 1000, windowMinutes: 60 },
+    passwordConfirm: { max: 1000, windowMinutes: 15 },
+    changeEmail: { max: 1000, windowMinutes: 60 },
   }
 
   function mean(values: number[]): number {

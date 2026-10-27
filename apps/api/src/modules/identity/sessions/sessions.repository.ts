@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, or } from 'drizzle-orm'
+import { and, eq, isNull, lt, ne, or } from 'drizzle-orm'
 import type { Executor } from '../../../platform/db/client'
 import { sessions, users } from '../../../platform/db/schema'
 
@@ -66,6 +66,25 @@ export async function endAllSessionsForUser(
     .update(sessions)
     .set({ endedAt: now })
     .where(and(eq(sessions.userId, userId), isNull(sessions.endedAt)))
+}
+
+// Encerra as outras sessões abertas do usuário e deixa a do cookie (trocar senha, sair dos outros).
+export async function endOtherSessionsForUser(
+  db: Executor,
+  userId: string,
+  keepTokenHash: string,
+  now: Date,
+): Promise<void> {
+  await db
+    .update(sessions)
+    .set({ endedAt: now })
+    .where(
+      and(
+        eq(sessions.userId, userId),
+        isNull(sessions.endedAt),
+        ne(sessions.tokenHash, keepTokenHash),
+      ),
+    )
 }
 
 const ENDED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000

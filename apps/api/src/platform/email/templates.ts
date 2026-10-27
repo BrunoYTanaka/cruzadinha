@@ -52,3 +52,32 @@ export function passwordResetEmail(link: string): RenderedEmail {
     html: page(subject, lines, { href: link, label: 'Redefinir senha' }),
   }
 }
+
+export function emailChangeEmail(link: string): RenderedEmail {
+  const subject = 'Confirme seu novo e-mail na Cruzadinha'
+  const lines = [
+    'Para trocar o e-mail da sua conta para este endereço, use o link abaixo. Ele vale por 60 minutos e só pode ser usado uma vez.',
+    'Se você não pediu isso, ignore esta mensagem: nada muda.',
+  ]
+  return {
+    subject,
+    text: `${lines[0]}\n\n${link}\n\n${lines[1]}\n`,
+    html: page(subject, lines, { href: link, label: 'Confirmar novo e-mail' }),
+  }
+}
+
+const brasilia = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  dateStyle: 'short',
+  timeStyle: 'short',
+})
+
+// Vai ao endereço atual. Sem o novo endereço e sem link: quem lê pode não ser quem pediu.
+export function emailChangeNotice(requestedAt: Date): RenderedEmail {
+  const subject = 'Pedido de troca de e-mail'
+  const lines = [
+    `Em ${brasilia.format(requestedAt)} (horário de Brasília) alguém pediu para trocar o e-mail da sua conta na Cruzadinha. O e-mail só muda se o link enviado ao novo endereço for aberto.`,
+    'Se foi você, não precisa fazer nada aqui. Se não foi, troque sua senha.',
+  ]
+  return { subject, text: `${lines.join('\n\n')}\n`, html: page(subject, lines) }
+}
