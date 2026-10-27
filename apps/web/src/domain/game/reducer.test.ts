@@ -331,3 +331,178 @@ describe('dados do servidor e reinício', () => {
     expect(state).toEqual(game.initialState)
   })
 })
+
+describe('rascunho (lápis)', () => {
+  const pencil: GameAction = { type: 'setPencil', on: true }
+  const off: GameAction = { type: 'setPencil', on: false }
+
+  it('com o lápis a letra vai para o rascunho e o cursor avança', () => {
+    const { state } = play(TINY, [pencil, ...type('C')])
+    expect(state.draft[0]).toEqual(['C', null, null])
+    expect(state.cells[0]).toEqual([null, null, null])
+    expect(state.selected).toEqual({ row: 0, col: 1 })
+  })
+
+  it('substitui o rascunho e apaga com backspace e delete', () => {
+    const replaced = play(TINY, [pencil, ...type('C'), select(0, 0), ...type('Z')])
+    expect(replaced.state.draft[0]?.[0]).toBe('Z')
+    const back = play(TINY, [pencil, ...type('CA'), { type: 'backspace' }])
+    expect(back.state.draft[0]).toEqual(['C', null, null])
+    expect(back.state.selected).toEqual({ row: 0, col: 1 })
+    const del = play(TINY, [pencil, ...type('C'), select(0, 0), { type: 'delete' }])
+    expect(del.state.draft[0]).toEqual([null, null, null])
+    expect(del.state.selected).toEqual({ row: 0, col: 0 })
+  })
+
+  it('aceita letra com acento e Ç', () => {
+    const { state } = play(TINY, [pencil, ...type('ç')])
+    expect(state.draft[0]?.[0]).toBe('Ç')
+  })
+
+  it('letra definitiva tem prioridade: o rascunho é ignorado, mas o cursor avança', () => {
+    const { state } = play(TINY, [...type('C'), select(0, 0), pencil, ...type('Z')])
+    expect(state.cells[0]?.[0]).toBe('C')
+    expect(state.draft[0]?.[0]).toBeNull()
+    expect(state.selected).toEqual({ row: 0, col: 1 })
+  })
+
+  it('casa travada ignora o rascunho', () => {
+    const { state } = play(TINY, [{ type: 'revealLetter' }, pencil, select(0, 0), ...type('Z')])
+    expect(state.draft[0]?.[0]).toBeNull()
+    expect(state.cells[0]?.[0]).toBe('C')
+  })
+
+  it('com o lápis, backspace e delete sobre letra definitiva a mantêm', () => {
+    const del = play(TINY, [...type('C'), select(0, 0), pencil, { type: 'delete' }])
+    expect(del.state.cells[0]?.[0]).toBe('C')
+    const back = play(TINY, [...type('CA'), pencil, { type: 'backspace' }])
+    expect(back.state.cells[0]).toEqual(['C', 'A', null])
+  })
+
+  it('sem o lápis, apagar remove o rascunho e digitar a definitiva o substitui', () => {
+    const erased = play(TINY, [pencil, ...type('C'), off, select(0, 0), { type: 'delete' }])
+    expect(erased.state.draft[0]?.[0]).toBeNull()
+    const typed = play(TINY, [pencil, ...type('C'), off, select(0, 0), ...type('X')])
+    expect(typed.state.draft[0]?.[0]).toBeNull()
+    expect(typed.state.cells[0]?.[0]).toBe('X')
+  })
+
+  it('o cursor anda igual com e sem o lápis', () => {
+    const steps: GameAction[] = [
+      ...type('CAL'),
+      { type: 'backspace' },
+      { type: 'backspace' },
+      select(2, 0),
+      ...type('SO'),
+    ]
+    const normal = play(TINY, steps).state
+    const drafted = play(TINY, [pencil, ...steps]).state
+    expect(drafted.selected).toEqual(normal.selected)
+  })
+
+  it('palavra cheia de rascunho certo não é resolvida nem conclui', () => {
+    const { state } = play(TINY, [pencil, ...type('CAL')])
+    expect(state.mode).toBe('playing')
+    expect(state.cells[0]).toEqual([null, null, null])
+  })
+
+  it('confirmar passa o rascunho da palavra ativa para as letras e pode concluir', () => {
+    const rest: GameAction[] = [
+      ...type('CAL'),
+      select(1, 0),
+      ...type('A'),
+      select(1, 2),
+      ...type('O'),
+      { type: 'selectWord', number: 3, direction: 'across' },
+    ]
+    const { state } = play(TINY, [...rest, pencil, ...type('SOL'), { type: 'confirmDraft' }])
+    expect(state.mode).toBe('completed')
+    expect(state.draft.flat().every((l) => l === null)).toBe(true)
+  })
+
+  it('confirmar e descartar só afetam a palavra ativa', () => {
+    const base: GameAction[] = [pencil, ...type('CA'), select(1, 0), ...type('X')]
+    const confirmed = play(TINY, [
+      ...base,
+      { type: 'selectWord', number: 1, direction: 'across' },
+      { type: 'confirmDraft' },
+    ]).state
+    expect(confirmed.cells[0]).toEqual(['C', 'A', null])
+    expect(confirmed.draft[1]?.[0]).toBe('X')
+    const discarded = play(TINY, [
+      ...base,
+      { type: 'selectWord', number: 1, direction: 'across' },
+      { type: 'discardDraft' },
+    ]).state
+    expect(discarded.draft[0]).toEqual([null, null, null])
+    expect(discarded.draft[1]?.[0]).toBe('X')
+  })
+
+  it('descartar mantém as letras definitivas e sem rascunho nada muda', () => {
+    const { state, game } = play(TINY, [
+      ...type('C'),
+      select(0, 0),
+      pencil,
+      { type: 'discardDraft' },
+    ])
+    expect(state.cells[0]?.[0]).toBe('C')
+    expect(game.reducer(state, { type: 'confirmDraft' })).toBe(state)
+  })
+
+  it('ajuda sobre casa com rascunho a troca pela letra revelada', () => {
+    const { state } = play(TINY, [pencil, ...type('Z'), select(0, 0), { type: 'revealLetter' }])
+    expect(state.cells[0]?.[0]).toBe('C')
+    expect(state.draft[0]?.[0]).toBeNull()
+  })
+
+  it('verificar não marca nem remove rascunhos', () => {
+    const { state } = play(TINY, [pencil, ...type('Z'), { type: 'verify' }])
+    expect(state.draft[0]?.[0]).toBe('Z')
+    expect(state.marks).toEqual({})
+  })
+
+  it('em modo leitura as ações do lápis não mudam nada e o rascunho fica vazio', () => {
+    const done = play(TINY, [
+      ...type('CAL'),
+      select(1, 0),
+      ...type('A'),
+      select(1, 2),
+      ...type('O'),
+      { type: 'selectWord', number: 3, direction: 'across' },
+      ...type('SOL'),
+    ])
+    expect(done.state.mode).toBe('completed')
+    for (const action of [pencil, { type: 'confirmDraft' }, { type: 'discardDraft' }] as const) {
+      expect(done.game.reducer(done.state, action)).toBe(done.state)
+    }
+  })
+
+  it('hydrate aplica o rascunho filtrado e ignora o de forma errada', () => {
+    const cells = [
+      ['C', null, null],
+      [null, null, null],
+      [null, null, null],
+    ]
+    const draft = [
+      ['Z', 'A', null],
+      [null, null, null],
+      [null, null, null],
+    ]
+    const { state } = play(TINY, [{ type: 'hydrate', cells, draft }])
+    expect(state.draft[0]).toEqual([null, 'A', null])
+    const bad = play(TINY, [{ type: 'hydrate', cells, draft: [['A']] }])
+    expect(bad.state.cells[0]?.[0]).toBe('C')
+    expect(bad.state.draft.flat().every((l) => l === null)).toBe(true)
+  })
+
+  it('reinício e dados do servidor zeram o rascunho', () => {
+    const reset = play(TINY, [pencil, ...type('C'), { type: 'reset' }])
+    expect(reset.state.draft.flat().every((l) => l === null)).toBe(true)
+    const server = play(TINY, [
+      pencil,
+      ...type('C'),
+      { type: 'viewServerProgress', cells: cellsFrom(TINY) },
+    ])
+    expect(server.state.draft.flat().every((l) => l === null)).toBe(true)
+  })
+})

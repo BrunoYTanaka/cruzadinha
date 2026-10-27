@@ -16,6 +16,9 @@ export type GameLimits = { letters: number | null; words: number | null }
 export type GameState = {
   // Letras do jogador: mesmas dimensões da grade; maiúsculas A–Z e Ç; `null` em bloco ou vazia.
   cells: (string | null)[][]
+  // Rascunho (lápis): mesmas dimensões; só em casa livre (sem letra definitiva nem travada).
+  draft: (string | null)[][]
+  pencil: boolean
   // Nunca aponta para bloco. `null` em modo leitura.
   selected: Position | null
   direction: Direction
@@ -64,6 +67,8 @@ export function createInitialState(puzzle: Puzzle): GameState {
   const { selected, direction } = initialSelection(puzzle)
   return {
     cells: emptyCells(puzzle),
+    draft: emptyCells(puzzle),
+    pencil: false,
     selected,
     direction,
     locked: emptyLocks(puzzle),
