@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   authResponseSchema,
+  changeEmailRequestSchema,
+  changePasswordRequestSchema,
+  confirmEmailChangeRequestSchema,
+  deleteAccountRequestSchema,
   emailRequestAcceptedSchema,
   emailSchema,
   forgotPasswordRequestSchema,
@@ -125,5 +129,32 @@ describe('e-mail confirmation and recovery schemas', () => {
       retryAfter: 60,
     })
     expect(emailRequestAcceptedSchema.safeParse({ retryAfter: 0 }).success).toBe(false)
+  })
+})
+
+describe('account management requests', () => {
+  it('accepts a change-password body and applies the sign-up password rule to the new one', () => {
+    expect(
+      changePasswordRequestSchema.safeParse({ currentPassword: 'x', newPassword: 'longenough' })
+        .success,
+    ).toBe(true)
+    expect(
+      changePasswordRequestSchema.safeParse({ currentPassword: 'x', newPassword: 'short' }).success,
+    ).toBe(false)
+  })
+
+  it('normalises the new e-mail and rejects unknown keys', () => {
+    expect(
+      changeEmailRequestSchema.parse({ currentPassword: 'x', newEmail: ' Ana@X.com ' }).newEmail,
+    ).toBe('ana@x.com')
+    expect(deleteAccountRequestSchema.safeParse({ currentPassword: 'x', extra: 1 }).success).toBe(
+      false,
+    )
+    expect(deleteAccountRequestSchema.safeParse({ currentPassword: '' }).success).toBe(false)
+  })
+
+  it('requires a token of 43 characters to confirm an e-mail change', () => {
+    expect(confirmEmailChangeRequestSchema.safeParse({ token: 'A'.repeat(43) }).success).toBe(true)
+    expect(confirmEmailChangeRequestSchema.safeParse({ token: 'abc' }).success).toBe(false)
   })
 })

@@ -23,6 +23,10 @@ describe('apiErrorSchema', () => {
     expect(apiErrorCodeSchema.options).toContain('progress-completed')
   })
 
+  it('accepts the wrong-password code', () => {
+    expect(apiErrorCodeSchema.options).toContain('wrong-password')
+  })
+
   it('accepts the e-mail codes and the retryAfter seconds', () => {
     expect(apiErrorCodeSchema.options).toContain('invalid-token')
     expect(apiErrorCodeSchema.options).toContain('email-unavailable')

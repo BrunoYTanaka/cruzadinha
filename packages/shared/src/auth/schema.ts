@@ -70,3 +70,28 @@ export const emailRequestAcceptedSchema = z.object({
 })
 
 export type EmailRequestAccepted = z.infer<typeof emailRequestAcceptedSchema>
+
+// Gestão da conta (feature 042). A senha atual só precisa ser texto, como no login.
+export const currentPasswordSchema = z.string().min(1).max(128)
+
+export const changePasswordRequestSchema = z.strictObject({
+  currentPassword: currentPasswordSchema,
+  newPassword: passwordSchema,
+})
+
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>
+
+export const changeEmailRequestSchema = z.strictObject({
+  currentPassword: currentPasswordSchema,
+  newEmail: emailSchema,
+})
+
+export type ChangeEmailRequest = z.infer<typeof changeEmailRequestSchema>
+
+export const confirmEmailChangeRequestSchema = z.strictObject({ token: tokenSchema })
+
+export type ConfirmEmailChangeRequest = z.infer<typeof confirmEmailChangeRequestSchema>
+
+export const deleteAccountRequestSchema = z.strictObject({ currentPassword: currentPasswordSchema })
+
+export type DeleteAccountRequest = z.infer<typeof deleteAccountRequestSchema>

@@ -20,6 +20,8 @@ export const apiErrorCodeSchema = z.enum([
   // Confirmação de e-mail e recuperação de senha (feature 035).
   'invalid-token',
   'email-unavailable',
+  // Gestão da conta (feature 042): nunca 401, que o site trata como sessão encerrada.
+  'wrong-password',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>
