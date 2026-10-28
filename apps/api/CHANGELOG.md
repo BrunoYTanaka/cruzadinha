@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.8.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.7.1...api-v0.8.0) (2026-10-28)
+
+
+### Features
+
+* add migration, stats, offline, account and draft mode ([ef68ded](https://github.com/BrunoYTanaka/cruzadinha/commit/ef68ded08307ee8a6c916f05b1663cdd04e7a53f))
+* **api:** add account management routes and email change ([7a2ddc3](https://github.com/BrunoYTanaka/cruzadinha/commit/7a2ddc3ef4d9e92911368b262a3d683a2b8b2d90))
+
+
+### Bug Fixes
+
+* **api:** delete old rate-limit attempts and report the failing edition ([890d958](https://github.com/BrunoYTanaka/cruzadinha/commit/890d958523c98ef16213cfc79948413239c8a1da))
+* **api:** limit progress writes per user and reserve the e-mail ceiling ([2019dfb](https://github.com/BrunoYTanaka/cruzadinha/commit/2019dfbfbc7e2a7d1e4e0aa616b65dc82ea1a53f))
+* **api:** limit source fetches to the library window and count IPv6 by /64 ([ebfb617](https://github.com/BrunoYTanaka/cruzadinha/commit/ebfb6177e5692c8ed36300d5d286c3343536d31d))
+* **api:** reserve address limits atomically and log collect errors ([126a45f](https://github.com/BrunoYTanaka/cruzadinha/commit/126a45f7f6e2cd806a5f1f4a1de9a37daf4694b6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.25.0 to 0.26.0
+
 ## [0.7.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.7.0...api-v0.7.1) (2026-10-26)
 
 
