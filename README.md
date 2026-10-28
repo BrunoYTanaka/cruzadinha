@@ -9,10 +9,6 @@
 
 Site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria; o Cruzadinha entrega uma experiência única de jogo: tabuleiro, teclado, dicas e navegação, em tema claro ou escuro, com o progresso salvo no aparelho ou, com conta, entre dispositivos.
 
-As fontes são as palavras cruzadas do **O Globo**, da **Cruzada Online** (jornal Público), da **Cruzadas Brasil** e da **Cruzadas Clube**, com escolha de data. É um projeto de portfólio, aberto a quem tem o endereço, com foco na experiência de jogar e na qualidade do código. Só a página inicial aparece nos buscadores; o resto do site fica fora deles.
-
-> **Estado atual:** o jogo está completo: joga-se sem conta, com o progresso no aparelho, ou com conta, com progresso e configurações entre aparelhos; o cadastro fica fechado por padrão e o autor cria contas pela linha de comando. Há página inicial, calendário por fonte, tabuleiro com ajudas, modo rascunho, verificação automática opcional e atalhos de teclado, configurações, gestão da conta e modo offline (PWA), e a implantação está descrita em [docs/deploy.md](docs/deploy.md).
-
 ## Stack
 
 Monorepo em npm workspaces, tudo em TypeScript (modo estrito):
