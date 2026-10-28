@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.12.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.11.1...web-v0.12.0) (2026-10-28)
+
+
+### Features
+
+* add migration, stats, offline, account and draft mode ([ef68ded](https://github.com/BrunoYTanaka/cruzadinha/commit/ef68ded08307ee8a6c916f05b1663cdd04e7a53f))
+* **web:** add draft layer rules to the game reducer ([ceca549](https://github.com/BrunoYTanaka/cruzadinha/commit/ceca5495bf6263d11f632646f850e097826b43f5))
+* **web:** add the account page and e-mail confirmation ([5210d63](https://github.com/BrunoYTanaka/cruzadinha/commit/5210d63bd752ee297af0fb79f9f48e085f5ae31f))
+* **web:** add the pencil and draft controls to the game screen ([4a42a80](https://github.com/BrunoYTanaka/cruzadinha/commit/4a42a80b1c4bcfd78e60c1161f5488cb053ec69a))
+* **web:** keep drafts on the device and drop them with account data ([a4a78e6](https://github.com/BrunoYTanaka/cruzadinha/commit/a4a78e6dda520813c4f112393ddb0c41b038fe7b))
+* **web:** keep puzzles and progress playable offline ([618738f](https://github.com/BrunoYTanaka/cruzadinha/commit/618738f405f08c673c108a4d0e7e4189af0daae6))
+
+
+### Bug Fixes
+
+* **web:** add a timeout to the proxy call to the API ([1747c87](https://github.com/BrunoYTanaka/cruzadinha/commit/1747c876740dba3989d38a0491154b5be71fa456))
+* **web:** retry a progress save refused with 429 ([3f95e9a](https://github.com/BrunoYTanaka/cruzadinha/commit/3f95e9a195206b7666cca846a623e5ae53ae91f4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.25.0 to 0.26.0
+
 ## [0.11.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.11.0...web-v0.11.1) (2026-10-26)
 
 
