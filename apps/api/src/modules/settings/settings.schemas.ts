@@ -48,6 +48,7 @@ export const saveSettingsSchema = {
           boardCellSize: null,
           libraryWidth: 1200,
           copyClue: false,
+          verifyOnType: false,
         },
         savedAt: '2026-10-21T13:05:40.120Z',
       },

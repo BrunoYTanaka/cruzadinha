@@ -21,6 +21,7 @@ const full: Settings = {
   boardCellSize: 72,
   libraryWidth: 1200,
   copyClue: true,
+  verifyOnType: true,
 }
 
 describe('defaultSettings', () => {
@@ -35,6 +36,7 @@ describe('defaultSettings', () => {
       boardCellSize: null,
       libraryWidth: null,
       copyClue: false,
+      verifyOnType: false,
     })
   })
 })
@@ -58,6 +60,13 @@ describe('parseSettings', () => {
       ...full,
       libraryWidth: null,
     })
+  })
+
+  it('troca verifyOnType inválido ou ausente pelo padrão sem derrubar os outros (feature 047)', () => {
+    const parsed = parseSettings({ ...full, verifyOnType: 'sim' }, defaults)
+    expect(parsed.verifyOnType).toBe(false)
+    expect(parsed.theme).toBe('dark')
+    expect(parseSettings({ theme: 'light' }, defaults).verifyOnType).toBe(false)
   })
 
   it('troca copyClue inválido pelo padrão (feature 033)', () => {
@@ -123,6 +132,11 @@ describe('saveSettingsRequestSchema', () => {
 
   it('aceita o pedido sem copyClue, de um site anterior (feature 033)', () => {
     const older = Object.fromEntries(Object.entries(full).filter(([key]) => key !== 'copyClue'))
+    expect(saveSettingsRequestSchema.safeParse({ settings: older, savedAt }).success).toBe(true)
+  })
+
+  it('aceita o pedido sem verifyOnType, de um site anterior (feature 047)', () => {
+    const older = Object.fromEntries(Object.entries(full).filter(([key]) => key !== 'verifyOnType'))
     expect(saveSettingsRequestSchema.safeParse({ settings: older, savedAt }).success).toBe(true)
   })
 

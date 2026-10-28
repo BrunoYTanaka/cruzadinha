@@ -115,6 +115,22 @@ describe('GET/PUT /api/settings', () => {
     expect(response.json().settings).toEqual(older)
   })
 
+  it('pedido sem verifyOnType é aceito e com ele grava e devolve a chave (feature 047)', async () => {
+    const sid = await register('ana@exemplo.com')
+    const older = Object.fromEntries(
+      Object.entries(settings).filter(([key]) => key !== 'verifyOnType'),
+    )
+    const first = await putSettings({ settings: older, savedAt: at(-2) }, sid)
+    expect(first.statusCode).toBe(200)
+    expect(first.json().settings).toEqual(older)
+    const second = await putSettings(
+      { settings: { ...settings, verifyOnType: true }, savedAt: at(-1) },
+      sid,
+    )
+    expect(second.statusCode).toBe(200)
+    expect(second.json().settings).toMatchObject({ verifyOnType: true })
+  })
+
   it('savedAt mais antigo não sobrescreve e devolve o que vale (FR-022)', async () => {
     const sid = await register('ana@exemplo.com')
     const newer = at(-10)

@@ -25,6 +25,7 @@ const fields = {
   boardCellSize: boardCellSizeSchema,
   libraryWidth: libraryWidthSchema,
   copyClue: z.boolean(),
+  verifyOnType: z.boolean(),
 }
 
 // Objeto não estrito: chaves desconhecidas (de uma versão mais nova) são descartadas.
@@ -47,6 +48,7 @@ export function defaultSettings(helpLimits: { letters: number; words: number }):
     boardCellSize: null,
     libraryWidth: null,
     copyClue: false,
+    verifyOnType: false,
   }
 }
 
@@ -78,9 +80,13 @@ export function parseStoredSettings(value: unknown): Partial<Settings> {
 
 // Pedido: os campos válidos; chaves desconhecidas em `settings` são descartadas para que um
 // site mais novo não tenha o pedido recusado por esta API (research R3). `copyClue` (feature 033)
-// pode faltar, para que o site anterior, que não o envia, não leve 400.
+// e `verifyOnType` (feature 047) podem faltar, para que o site anterior, que não os envia, não
+// leve 400.
 export const saveSettingsRequestSchema = z.object({
-  settings: settingsSchema.extend({ copyClue: z.boolean().optional() }),
+  settings: settingsSchema.extend({
+    copyClue: z.boolean().optional(),
+    verifyOnType: z.boolean().optional(),
+  }),
   savedAt: instantSchema,
 })
 
