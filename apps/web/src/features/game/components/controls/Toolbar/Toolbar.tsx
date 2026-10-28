@@ -15,6 +15,8 @@ type ToolbarProps = {
   helps?: ReactNode
   // Computador: "Tamanho padrão" do tabuleiro.
   sizeReset?: ReactNode
+  // Teclado físico: botão que abre a lista de atalhos (feature 046).
+  shortcuts?: ReactNode
   // Título da cruzada (fonte e data), no começo da faixa (feature 015).
   title?: ReactNode
 }
@@ -33,6 +35,7 @@ export function Toolbar({
   saveStatus,
   helps,
   sizeReset,
+  shortcuts,
   title,
 }: ToolbarProps) {
   return (
@@ -74,6 +77,12 @@ export function Toolbar({
           <>
             <span className={styles.separator} aria-hidden="true" />
             {sizeReset}
+          </>
+        ) : null}
+        {shortcuts ? (
+          <>
+            <span className={styles.separator} aria-hidden="true" />
+            {shortcuts}
           </>
         ) : null}
         {saveStatus}
