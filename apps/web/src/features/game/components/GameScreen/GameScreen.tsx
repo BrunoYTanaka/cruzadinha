@@ -19,6 +19,8 @@ import { Notice } from '../../../../shared/components/Notice/Notice'
 import { ResizeHandle } from '../../../../shared/components/ResizeHandle/ResizeHandle'
 import { cellFromDrag, KEYBOARD_STEP, MIN_CELL } from '../../services/board-size'
 import { BoardSizeReset } from '../board/BoardSizeReset/BoardSizeReset'
+import { ShortcutsDialog } from '../dialogs/ShortcutsDialog/ShortcutsDialog'
+import { ShortcutsButton } from '../controls/ShortcutsButton/ShortcutsButton'
 import { CompletionDialog } from '../dialogs/CompletionDialog/CompletionDialog'
 import { ReadModeBanner } from '../board/ReadModeBanner/ReadModeBanner'
 import { ClueList } from '../clues/ClueList/ClueList'
@@ -48,6 +50,9 @@ function useGuestStorageAvailable(): boolean {
 
 export function GameScreen({ response, owner }: { response: PuzzleResponse; owner: GameOwner }) {
   const { puzzle } = response
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const pageRef = useRef<HTMLDivElement>(null)
+  const onScreenKeyboard = useOnScreenKeyboard()
   const {
     game,
     state,
@@ -62,7 +67,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
     struck,
     strikeMode,
     limits,
-  } = useGame({ response, owner })
+  } = useGame({ response, owner, dialogOpen: shortcutsOpen && !onScreenKeyboard })
   const guest = owner.kind === 'guest'
   const { onCopy, notice: copyNotice } = useCopyClue({
     index: game.index,
@@ -86,8 +91,24 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
   const [playAgainError, setPlayAgainError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [cluesOpen, setCluesOpen] = useState(false)
-  const onScreenKeyboard = useOnScreenKeyboard()
   const desktop = useDesktopLayout()
+
+  // `?` abre os atalhos (feature 046) com o foco na tela ou no corpo da página; nunca em campo de
+  // texto nem por cima de outro diálogo (esses ficam fora de `pageRef`, em portal).
+  useEffect(() => {
+    if (onScreenKeyboard) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== '?' || event.ctrlKey || event.altKey || event.metaKey) return
+      const target = event.target
+      if (!(target instanceof Element)) return
+      const inPage = target === document.body || pageRef.current?.contains(target)
+      if (!inPage || target.closest('input, textarea, select, [contenteditable]')) return
+      event.preventDefault()
+      setShortcutsOpen(true)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onScreenKeyboard])
   const bodyRef = useRef<HTMLDivElement>(null)
   const size = useBoardSize(bodyRef, {
     cols: puzzle.grid.width,
@@ -177,6 +198,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
 
   return (
     <div
+      ref={pageRef}
       className={styles.page}
       style={
         {
@@ -204,6 +226,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
             state={saveState}
             guest={guest ? { loginTo: buildLoginPath(`/jogo/${response.puzzleId}`) } : undefined}
           />
+        }
+        shortcuts={
+          onScreenKeyboard ? null : <ShortcutsButton onOpen={() => setShortcutsOpen(true)} />
         }
         sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
@@ -337,6 +362,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         localOnly={guest}
         otherSource={otherSource}
       />
+      {onScreenKeyboard ? null : (
+        <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      )}
       <LegendButton />
       <CopyToast notice={copyNotice} />
       <ClueSheet

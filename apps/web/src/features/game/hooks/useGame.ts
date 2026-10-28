@@ -52,7 +52,8 @@ export type GameOwner =
 // O que a tela mostra de tempo final e recorde, venha do servidor ou do navegador.
 export type ProgressSummary = Pick<Progress, 'status' | 'finishedMs' | 'bestMs'>
 
-type UseGameArgs = { response: PuzzleResponse; owner: GameOwner }
+// `dialogOpen`: um diálogo da tela (atalhos, feature 046) suspende o relógio como os ajustes.
+type UseGameArgs = { response: PuzzleResponse; owner: GameOwner; dialogOpen?: boolean }
 
 type Source = {
   cells: (string | null)[][] | null
@@ -103,7 +104,7 @@ function hasHelp(help: HelpSnapshot): boolean {
   return help.usage.letters + help.usage.words > 0 || Object.keys(help.marks).length > 0
 }
 
-export function useGame({ response, owner }: UseGameArgs) {
+export function useGame({ response, owner, dialogOpen = false }: UseGameArgs) {
   const { puzzle, solution, puzzleId } = response
   const game = useMemo(
     () => createGame({ puzzle, solution, limits: config.helpLimits }),
@@ -176,7 +177,7 @@ export function useGame({ response, owner }: UseGameArgs) {
     [settings.helpLetters, settings.helpWords],
   )
   const strikeMode: StrikeMode = settings.strikeMode
-  const clock = useClock(source.elapsedMs, state.mode === 'playing', settingsOpen)
+  const clock = useClock(source.elapsedMs, state.mode === 'playing', settingsOpen || dialogOpen)
   const { readElapsedMs, stop: stopClock } = clock
 
   const queue: SaveQueue = useMemo(() => {
