@@ -1,10 +1,13 @@
 # Cruzadinha
 
+[![CI](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/ci.yml)
+[![Deploy](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/deploy.yml/badge.svg)](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/deploy.yml)
+[![Release](https://img.shields.io/github/v/release/BrunoYTanaka/cruzadinha)](https://github.com/BrunoYTanaka/cruzadinha/releases)
+[![Licença: MIT](https://img.shields.io/github/license/BrunoYTanaka/cruzadinha)](LICENSE)
+
+**Site:** <https://cruzadinha.pages.dev>
+
 Site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria; o Cruzadinha entrega uma experiência única de jogo: tabuleiro, teclado, dicas e navegação, em tema claro ou escuro, com o progresso salvo no aparelho ou, com conta, entre dispositivos.
-
-As fontes são as palavras cruzadas do **O Globo** e a **Cruzada Online**, do jornal Público, com escolha de data. É um projeto de portfólio, pequeno, aberto a quem tem o endereço e fora dos buscadores, com foco na experiência de jogar e na qualidade do código.
-
-> **Estado atual:** o jogo está completo: joga-se sem conta, com o progresso no aparelho, ou com conta, com progresso e configurações entre aparelhos; o cadastro fica fechado por padrão e o autor cria contas pela linha de comando. Há calendário por fonte, tabuleiro, ajudas e configurações, e a implantação está descrita em [docs/deploy.md](docs/deploy.md).
 
 ## Stack
 
