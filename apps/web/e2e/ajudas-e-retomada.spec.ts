@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { login, resetAndSeed, solutionLetters, solveFirstAcrossWord, typeWord } from './support'
+import {
+  helpsItem,
+  login,
+  resetAndSeed,
+  solutionLetters,
+  solveFirstAcrossWord,
+  typeWord,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -36,7 +43,7 @@ test('ajudas, recarregar mantendo tudo, rede caída e sessão expirada sem perde
       response.ok(),
     { timeout: 10_000 },
   )
-  await page.getByRole('button', { name: 'Verificar' }).click()
+  await (await helpsItem(page, 'Verificar')).click()
   await saved
   await page.reload()
   await expect(page.getByRole('grid')).toBeVisible()

@@ -10,7 +10,6 @@ type HelpButtonsProps = {
   disabled?: boolean
   onLetter: () => void
   onWord: () => void
-  onVerify: () => void
 }
 
 function announcement(help: HelpResult | null): string {
@@ -37,7 +36,7 @@ function announcement(help: HelpResult | null): string {
   }
 }
 
-// As três ajudas na faixa de ferramentas. Esgotada fica `aria-disabled` (continua focável, para o
+// As ajudas de revelar na faixa de ferramentas. Esgotada fica `aria-disabled` (continua focável, para o
 // leitor de tela explicar o motivo) e não age.
 export function HelpButtons({
   usage,
@@ -46,7 +45,6 @@ export function HelpButtons({
   disabled = false,
   onLetter,
   onWord,
-  onVerify,
 }: HelpButtonsProps) {
   // Sem limite (feature 021) a ajuda nunca esgota e o contador mostra ∞.
   const lettersOut = limits.letters !== null && usage.letters >= limits.letters
@@ -84,13 +82,6 @@ export function HelpButtons({
         <span aria-hidden="true">
           {usage.words}/{limits.words ?? '∞'} Palavra
         </span>
-      </Pill>
-      <Pill
-        className={styles.help}
-        aria-disabled={disabled || undefined}
-        onClick={disabled ? undefined : onVerify}
-      >
-        Verificar
       </Pill>
       <VisuallyHidden role="status" aria-live="polite">
         {/* O número da ajuda muda o texto vivo mesmo quando a frase se repete. */}

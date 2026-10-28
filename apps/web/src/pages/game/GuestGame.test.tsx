@@ -11,6 +11,7 @@ import {
   PROGRESS,
   SAVE,
   setup,
+  chooseHelp,
 } from '../../test/game-harness'
 import { jsonResponse } from '../../test/http'
 import { aUser } from '../../test/render'
@@ -105,7 +106,7 @@ describe('jogo do visitante (feature 013, US1)', () => {
     await user.click(screen.getByRole('grid'))
     await user.keyboard('X')
     await waitFor(async () => expect((await stored())?.cells[0]?.[0]).toBe('X'))
-    await user.click(screen.getByRole('button', { name: 'Verificar' }))
+    await chooseHelp(user, 'Verificar')
     await waitFor(async () => expect((await stored())?.help?.marks['0,0']).toBe('wrong'))
   })
 

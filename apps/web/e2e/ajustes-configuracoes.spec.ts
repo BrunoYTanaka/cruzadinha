@@ -136,11 +136,12 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
         })
 
         // Interruptores: mesmo tamanho e a borda direita na borda direita do conteúdo (SC-008).
-        await expect(dialog.getByRole('switch')).toHaveCount(3)
+        await expect(dialog.getByRole('switch')).toHaveCount(4)
         const [first, ...others] = [
           await box(dialog.getByRole('switch').nth(0)),
           await box(dialog.getByRole('switch').nth(1)),
           await box(dialog.getByRole('switch').nth(2)),
+          await box(dialog.getByRole('switch').nth(3)),
         ]
         expectNear(first.x + first.width, content.right)
         for (const other of others) {
@@ -420,10 +421,11 @@ test.describe('F025-US1: interruptor com o desenho certo', () => {
         await page.goto('/')
         const dialog = await openSettings(page)
         const switches = dialog.getByRole('switch')
-        // Riscar a dica, copiar a dica (feature 033) e ir direto ao jogo.
-        await expect(switches).toHaveCount(3)
+        // Riscar a dica, copiar a dica (feature 033), verificar ao digitar (feature 047) e ir direto
+        // ao jogo.
+        await expect(switches).toHaveCount(4)
 
-        for (const index of [0, 1, 2]) {
+        for (const index of [0, 1, 2, 3]) {
           const toggle = switches.nth(index)
           // No meio da área visível: a faixa de toque de 44 px também precisa estar na tela.
           await toggle.evaluate((element) => element.scrollIntoView({ block: 'center' }))

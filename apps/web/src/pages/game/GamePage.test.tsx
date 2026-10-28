@@ -12,6 +12,7 @@ import { setSettingsOpen } from '../../features/settings/services/settings-open'
 import { updateSettings } from '../../shared/services/settings-store/settings-store'
 import { loadBoardSize } from '../../features/game/services/board-size'
 import { GamePage } from './GamePage'
+import { chooseHelp } from '../../test/game-harness'
 import { useMeasuredSpace } from '../../features/game/hooks/useMeasuredSpace'
 
 // Sem layout no jsdom: os testes de tamanho simulam só a medida do espaço e usam o `useBoardSize`
@@ -314,7 +315,7 @@ describe('GamePage', () => {
       await screen.findByRole('grid')
       await user.click(grid())
       await user.keyboard('x')
-      await user.click(screen.getByRole('button', { name: 'Verificar' }))
+      await chooseHelp(user, 'Verificar')
       expect(
         screen
           .getAllByRole('status')
@@ -672,7 +673,7 @@ describe('GamePage', () => {
       await typeAt(user, 3, 1, 'S')
       await typeAt(user, 3, 2, 'O')
       await typeAt(user, 3, 3, 'X')
-      await user.click(screen.getByRole('button', { name: 'Verificar' }))
+      await chooseHelp(user, 'Verificar')
       expect(clue(1, 'horizontal')).toHaveAccessibleName(/^1 ?Dica 1 horizontal, resolvida$/)
       expect(clue(3, 'horizontal')).toHaveAccessibleName(/^3 ?Dica 3 horizontal$/)
     })

@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { box, pressLetter, resetAndSeed } from './support'
+import { box, helpsItem, pressLetter, resetAndSeed } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -12,12 +12,23 @@ async function openToday(page: Page) {
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
-const pencil = (page: Page) => page.getByRole('button', { name: 'Lápis (rascunho)' })
+const pencil = (page: Page) => helpsItem(page, 'Lápis')
+
+// O menu fica aberto depois de alternar o lápis e cobre parte do tabuleiro: Esc fecha.
+async function togglePencil(page: Page) {
+  await (await pencil(page)).click()
+  await page.keyboard.press('Escape')
+}
+
+async function expectPencil(page: Page, on: boolean) {
+  await expect(await pencil(page)).toHaveAttribute('aria-checked', String(on))
+  await page.keyboard.press('Escape')
+}
 
 test('anotar, recarregar, confirmar', async ({ page }) => {
   await openToday(page)
-  await pencil(page).click()
-  await expect(pencil(page)).toHaveAttribute('aria-pressed', 'true')
+  await togglePencil(page)
+  await expectPencil(page, true)
   await page
     .getByRole('gridcell', { name: /^Linha 1, coluna \d+, vazia/ })
     .first()
@@ -27,10 +38,10 @@ test('anotar, recarregar, confirmar', async ({ page }) => {
 
   await page.reload()
   await expect(page.getByRole('grid')).toBeVisible()
-  await expect(pencil(page)).toHaveAttribute('aria-pressed', 'true')
+  await expectPencil(page, true)
   await expect(page.getByRole('gridcell', { name: /, rascunho A$/ })).toHaveCount(1)
 
-  await page.getByRole('button', { name: 'Confirmar rascunho' }).click()
+  await (await helpsItem(page, 'Confirmar rascunho')).click()
   await expect(page.getByRole('gridcell', { name: /, letra A$/ })).toHaveCount(1)
   await expect(page.getByRole('gridcell', { name: /, rascunho / })).toHaveCount(0)
 })
@@ -40,7 +51,7 @@ test('ligar o lápis e digitar com ele não move nada', async ({ page }) => {
   const toolbar = page.getByRole('toolbar', { name: 'Ferramentas do jogo' })
   const measure = async () => [await box(toolbar), await box(page.getByRole('grid'))]
   const before = await measure()
-  await pencil(page).click()
+  await togglePencil(page)
   await page
     .getByRole('gridcell', { name: /^Linha 1, coluna \d+, vazia/ })
     .first()
@@ -54,7 +65,7 @@ test.describe('janela estreita com o teclado na tela', () => {
 
   test('chega ao lápis e digita um rascunho', async ({ page }) => {
     await openToday(page)
-    await pencil(page).click()
+    await togglePencil(page)
     await page
       .getByRole('gridcell', { name: /^Linha 1, coluna \d+, vazia/ })
       .first()
@@ -75,7 +86,7 @@ for (const theme of ['light', 'dark'] as const) {
     )
     await openToday(page)
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
-    await pencil(page).click()
+    await togglePencil(page)
     await page
       .getByRole('gridcell', { name: /^Linha 1, coluna \d+, vazia/ })
       .first()
