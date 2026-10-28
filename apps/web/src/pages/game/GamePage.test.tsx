@@ -23,7 +23,7 @@ vi.mock('../../features/game/hooks/useMeasuredSpace', () => ({
 
 const routes = [
   { path: '/jogo/:puzzleId', element: <GamePage /> },
-  { path: '/', element: <p>Biblioteca</p> },
+  { path: '/calendario', element: <p>Biblioteca</p> },
 ]
 
 const PUZZLE = `GET /api/puzzles/${PUZZLE_ID}`
@@ -121,7 +121,10 @@ describe('GamePage', () => {
     openGame({ [PUZZLE]: () => apiError(404, 'puzzle-unavailable') })
     expect(await screen.findByRole('alert')).toHaveTextContent('Cruzada não encontrada.')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cruzada não encontrada.')
-    expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute(
+      'href',
+      '/calendario',
+    )
   })
 
   it('sem rede ao abrir mostra "Sem conexão" e permite tentar de novo', async () => {

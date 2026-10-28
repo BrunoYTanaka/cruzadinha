@@ -12,6 +12,7 @@ export default defineConfig({
       'src/**/*.test.{ts,tsx}',
       'functions/**/*.test.ts',
       'version-plugin.test.ts',
+      'prerender-plugin.test.ts',
       'public-headers.test.ts',
     ],
   },

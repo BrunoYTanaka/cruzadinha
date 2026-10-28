@@ -4,3 +4,12 @@
 @import '@fontsource/roboto/latin-500.css';
 @import '@fontsource/roboto/latin-700.css';
 @import '@fontsource/roboto-mono/latin-500.css';
+/* Título da landing (feature 048): só o subconjunto latino da Fraunces variável, como as demais. */
+@font-face {
+  font-family: 'Fraunces Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600 800;
+  src: url('@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2')
+    format('woff2-variations');
+}

@@ -31,7 +31,7 @@ export function DayRoute() {
 }
 
 function BackLink() {
-  return <Link to="/">Voltar à biblioteca</Link>
+  return <Link to="/calendario">Voltar à biblioteca</Link>
 }
 
 // Sem rede, o dia guardado abre da cópia local (feature 041).

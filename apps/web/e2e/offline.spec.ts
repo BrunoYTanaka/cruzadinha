@@ -16,7 +16,7 @@ test.beforeEach(async () => {
 
 // O service worker só passa a controlar a página na abertura seguinte (sem clientsClaim, feature 041).
 async function installShell(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined))
   await page.reload()
   await expect
@@ -25,7 +25,7 @@ async function installShell(page: Page) {
 }
 
 async function openToday(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }

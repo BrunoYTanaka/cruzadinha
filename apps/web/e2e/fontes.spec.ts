@@ -25,7 +25,7 @@ const card = (page: Page, source: string) =>
 test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não aparece no O Globo', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
   const globo = page.getByRole('tab', { name: /^O Globo/ })
   const cruzada = page.getByRole('tab', { name: /^Cruzada Online/ })
@@ -45,7 +45,7 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(page.getByText('Verificado: nenhuma letra errada')).toBeAttached()
   await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('link', { name: /^Cruzada Online: em andamento/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
   await expect(todayCell(page, 'não iniciado')).toBeVisible()
@@ -72,7 +72,7 @@ test.describe('volta do jogo para o calendário', () => {
   const cruzada = (page: Page) => page.getByRole('tab', { name: /^Cruzada Online/ })
 
   async function openOnlineGame(page: Page) {
-    await page.goto('/')
+    await page.goto('/calendario')
     await cruzada(page).click()
     await page
       .getByRole('link', { name: /^Hoje, .*, não iniciado(, disponível sem rede)?$/ })
@@ -89,7 +89,7 @@ test.describe('volta do jogo para o calendário', () => {
 
     await page.goBack()
     await expect(page.getByRole('grid')).toBeVisible()
-    await page.getByRole('link', { name: 'Cruzadinha' }).click()
+    await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
     await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
 
     await page.goBack()
@@ -102,7 +102,7 @@ test.describe('volta do jogo para o calendário', () => {
   test('o cartão de hoje de outra fonte também volta nessa fonte, sem mudar as configurações', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await card(page, 'Cruzada Online').click()
     await expect(page.getByRole('grid')).toBeVisible()
     await page.getByRole('link', { name: 'Escolher outro dia' }).click()
@@ -112,7 +112,7 @@ test.describe('volta do jogo para o calendário', () => {
   })
 
   test('o diálogo de conclusão volta na fonte do jogo', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await card(page, 'Cruzada Online').click()
     await expect(page.getByRole('grid')).toBeVisible()
     const response = await page.request.get(
@@ -137,13 +137,13 @@ test.describe('volta do jogo para o calendário', () => {
     await openOnlineGame(page)
     await page.getByRole('link', { name: 'Entrar', exact: true }).first().click()
     await expect(page).toHaveURL(/\/login/)
-    await page.getByRole('link', { name: 'Cruzadinha' }).click()
+    await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
     await expect(globo(page)).toHaveAttribute('aria-selected', 'true')
   })
 })
 
 test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await card(page, 'O Globo').click()
   await expect(page.getByRole('grid')).toBeVisible()
   const response = await page.request.get(
@@ -163,7 +163,7 @@ test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', 
 test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jogo em um toque', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('tab')).toHaveCount(4)
   await expect(page.getByRole('tab').nth(2)).toHaveAccessibleName(/^Cruzadas Brasil/)
 
@@ -178,7 +178,7 @@ test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jo
   await pressLetter(page, 'Ç')
   await expect(page.getByRole('gridcell', { name: /^Linha 1, coluna 2, letra Ç/ })).toBeVisible()
 
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('link', { name: /^Cruzadas Brasil: em andamento/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /^Cruzada Online: não iniciada/ })).toBeVisible()
@@ -194,7 +194,7 @@ for (const viewport of [
     await page.setViewportSize(viewport)
     for (const scheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: scheme })
-      await page.goto('/')
+      await page.goto('/calendario')
       await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
       // SC-002: todas as fontes e a situação de hoje na primeira tela.
       await expect(card(page, 'O Globo')).toBeInViewport()

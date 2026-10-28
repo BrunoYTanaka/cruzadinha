@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link, useLoaderData } from 'react-router'
+import { Link } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
-import { directPlayMessage, isDirectPlayData } from './direct-play'
+import { clearDirectPlayStay, directPlayMessage, peekDirectPlayStay } from './direct-play'
 import { Notice } from '../../shared/components/Notice/Notice'
 import {
   ResizeHandle,
@@ -47,8 +47,8 @@ export function LibraryPage() {
   // A fonte do jogo vale só para esta chegada ao calendário (feature 031).
   useEffect(() => clearRememberedSource(), [])
   // Motivo de "Ir direto ao jogo" não ter saído do calendário (feature 021).
-  const loaderData: unknown = useLoaderData()
-  const directPlay = isDirectPlayData(loaderData) ? loaderData.directPlay : null
+  const [directPlay] = useState(peekDirectPlayStay)
+  useEffect(() => clearDirectPlayStay(), [])
   const [directPlayClosed, setDirectPlayClosed] = useState(false)
   const libraries = useSourceLibraries()
   const active = libraryOf(libraries, source)

@@ -9,11 +9,13 @@ import { RegisterPage } from '../pages/register/RegisterPage'
 import { ResetPasswordPage } from '../pages/reset-password/ResetPasswordPage'
 import { VerifyEmailPage } from '../pages/verify-email/VerifyEmailPage'
 import { DayRoute } from '../pages/day/DayRoute'
+import { LandingFallback, LandingPage } from '../pages/landing/LandingPage'
 import { LibraryPage } from '../pages/library/LibraryPage'
+import { playTodayLoader } from '../pages/play-today/play-today'
 import { ServerWake } from '../features/status'
 import { StatusPage } from '../pages/status/StatusPage'
-import { AppLayout } from './AppLayout'
 import { directPlayLoader } from '../pages/library/direct-play'
+import { AppLayout } from './AppLayout'
 import { NotFoundPage } from '../shared/components/NotFoundPage/NotFoundPage'
 import { RouteError } from './RouteError'
 import { readPuzzle } from '../features/offline'
@@ -45,6 +47,15 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
         // A página de status mostra o próprio health; não espera o servidor acordar.
         { path: '/status', element: <StatusPage /> },
         {
+          // A landing não precisa da API: o loader só espera o servidor quando "Ir direto ao jogo"
+          // está ligado, e então mostra a tela de espera, nunca a landing (feature 048).
+          path: '/',
+          element: <LandingPage />,
+          loader: directPlayLoader(queryClient),
+          hydrateFallbackElement: <LandingFallback />,
+          errorElement: <RouteError />,
+        },
+        {
           path: '/jogo/:puzzleId',
           loader: gameLoader(queryClient),
           hydrateFallbackElement: <ServerWake />,
@@ -69,8 +80,9 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
             {
               loader: viewerLoader(queryClient),
               children: [
-                // "Ir direto ao jogo" decide antes de desenhar o calendário (feature 021).
-                { path: '/', element: <LibraryPage />, loader: directPlayLoader(queryClient) },
+                // O calendário saiu do endereço raiz, que é a landing (feature 048).
+                { path: '/calendario', element: <LibraryPage /> },
+                { path: '/jogar', loader: playTodayLoader() },
                 { path: '/dia/:date', element: <DayRoute /> },
                 { path: '/conta', element: <AccountPage /> },
               ],

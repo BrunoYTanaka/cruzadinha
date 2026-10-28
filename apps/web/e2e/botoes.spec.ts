@@ -35,7 +35,7 @@ async function openSettings(page: Page) {
 }
 
 async function openToday(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
@@ -66,7 +66,7 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
       await page.emulateMedia({ colorScheme: theme })
 
       // Biblioteca: ‹ e › do calendário são secundários.
-      await page.goto('/')
+      await page.goto('/calendario')
       for (const name of ['Mês anterior', 'Próximo mês']) {
         const nav = page.getByRole('button', { name })
         await expectControlBorder(page, nav)
@@ -207,7 +207,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
       await page.goto('/login')
       await expectStates(page, page.locator('form').getByRole('button', { name: 'Entrar' }))
 
-      await page.goto('/')
+      await page.goto('/calendario')
       for (const name of ['Mês anterior', 'Próximo mês']) {
         const nav = page.getByRole('button', { name })
         if (await nav.isEnabled()) await expectStates(page, nav)
@@ -234,7 +234,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
   test('desativados não reagem: −, "Tamanho padrão" no padrão e ajuda esgotada', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await setLetterLimitToZero(page)
     await expectInert(page, dialog.getByRole('button', { name: 'Menos letras' }))
     await dialog.getByRole('button', { name: 'Fechar' }).click()
@@ -254,7 +254,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
       viewport: { width: 390, height: 844 },
     })
     const page = await context.newPage()
-    await page.goto('/')
+    await page.goto('/calendario')
     const gear = page.getByRole('button', { name: 'Configurações' })
     await gear.tap()
     await page
@@ -272,7 +272,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
 
   test('com menos movimento, os estados trocam sem transição', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto('/')
+    await page.goto('/calendario')
     const durations = (
       await css(page.getByRole('button', { name: 'Mês anterior' }), 'transition-duration')
     )
@@ -282,7 +282,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
   })
 
   test('o tooltip da engrenagem aparece por cima do fundo de mouse', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await page.getByRole('button', { name: 'Configurações' }).hover()
     const tip = page.locator('[data-tooltip]', { hasText: 'Configurações' })
     await expect(tip).toBeVisible()
@@ -356,7 +356,7 @@ test.describe('023 US3: link e botão distinguíveis', () => {
     await page.goto('/cadastro')
     await expectButtonsAreNotLinks(page)
 
-    await page.goto('/')
+    await page.goto('/calendario')
     await expectButtonsAreNotLinks(page)
     const dialog = await openSettings(page)
     await expect(dialog).toBeVisible()
@@ -402,7 +402,7 @@ test.describe('023 US3: link e botão distinguíveis', () => {
   test('links com cara de botão, cartão ou controle ganham os estados do tipo', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const accent = await tokenColor(page, '--accent')
 
     // "Entrar" do visitante: link com aparência de botão discreto.
@@ -471,7 +471,7 @@ async function failSourceRequests(page: Page) {
 
 test.describe('023 US4: consistência entre telas e temas', () => {
   test('aba e chave mantêm o selecionado com o mouse por cima', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await expectSelectedKept(page, page.getByRole('tab', { selected: true }))
 
     const dialog = await openSettings(page)
@@ -524,7 +524,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
         expect(border.width, border.name).toBeGreaterThanOrEqual(1)
       }
     }
-    await page.goto('/')
+    await page.goto('/calendario')
     await expectBorders()
     const dialog = await openSettings(page)
     await expect(dialog).toBeVisible()
@@ -541,7 +541,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
       radius: await css(button, 'border-top-left-radius'),
       height: await css(button, 'min-height'),
     })
-    await page.goto('/')
+    await page.goto('/calendario')
     await page.mouse.move(0, 0)
     const calendar = await look(page.getByRole('button', { name: 'Mês anterior' }))
     await openToday(page)
@@ -560,7 +560,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
         await page.getByRole('heading', { level: 1 }).first().waitFor()
         await expectNoAxeViolations(page)
       }
-      await page.goto('/')
+      await page.goto('/calendario')
       await openSettings(page)
       await expectNoAxeViolations(page)
       await page.getByRole('dialog').getByRole('button', { name: 'Fechar' }).click()

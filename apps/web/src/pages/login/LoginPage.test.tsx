@@ -8,7 +8,8 @@ import { LoginPage } from './LoginPage'
 
 const routes = [
   { path: '/login', element: <LoginPage /> },
-  { path: '/', element: <p>Biblioteca</p> },
+  { path: '/', element: <p>Início</p> },
+  { path: '/calendario', element: <p>Biblioteca</p> },
   { path: '/jogo/:id', element: <p>Jogo</p> },
 ]
 
@@ -104,7 +105,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     const { router } = renderRoutes(routes, ['/login?next=https%3A%2F%2Fmal.example'])
     await fillAndSubmit(user)
-    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
   })
 
   it('com sessão já válida redireciona sem mostrar o formulário', async () => {
@@ -112,7 +113,7 @@ describe('LoginPage', () => {
     const queryClient = makeQueryClient()
     queryClient.setQueryData(queryKeys.session, { user: aUser })
     const { router } = renderRoutes(routes, ['/login'], queryClient)
-    await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
     expect(screen.queryByLabelText('Senha')).not.toBeInTheDocument()
   })
 

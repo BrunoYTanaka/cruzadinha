@@ -84,7 +84,7 @@ export function CompletionDialog({
           ref={primary}
           variant={otherSource ? 'secondary' : 'primary'}
           block
-          onClick={() => void navigate('/')}
+          onClick={() => void navigate('/calendario')}
         >
           Voltar à biblioteca
         </Button>

@@ -6,6 +6,10 @@ import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../t
 import { makePuzzleResponse, TINY, PUZZLE_ID } from '../test/fixtures'
 import { savePuzzle } from '../features/offline'
 import { writeLastUser } from '../features/session/services/last-user/last-user'
+import { updateSettings } from '../shared/services/settings-store/settings-store'
+import { todayInBrasilia } from '../shared/helpers/dates/dates'
+import { markSourceDown } from '../features/library/helpers/source-down'
+import { makeLibraryItem } from '../test/fixtures'
 import { createAppRoutes } from './router'
 
 const healthUp = () => jsonResponse(200, { status: 'ok', database: 'up' })
@@ -44,7 +48,7 @@ describe('entrada do site com a espera do servidor', () => {
       'GET /api/auth/me': withSession,
       'GET /api/library': () => jsonResponse(200, { items: [] }),
     })
-    renderApp('/')
+    renderApp('/calendario')
     await waitFor(() => expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(true))
     const keys = calls.map((call) => call.key)
     expect(keys[0]).toBe('GET /api/health')
@@ -57,9 +61,9 @@ describe('entrada do site com a espera do servidor', () => {
       'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
       'GET /api/library': () => jsonResponse(200, { items: [] }),
     })
-    const { router } = renderApp('/')
+    const { router } = renderApp('/calendario')
     await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
-    expect(router.state.location.pathname).toBe('/')
+    expect(router.state.location.pathname).toBe('/calendario')
     await waitFor(() =>
       expect(screen.queryByText('Carregando a biblioteca…')).not.toBeInTheDocument(),
     )
@@ -86,14 +90,14 @@ describe('entrada do site com a espera do servidor', () => {
       'GET /api/auth/me': withSession,
       'GET /api/library': () => jsonResponse(200, { items: [] }),
     })
-    const { router } = renderApp('/')
+    const { router } = renderApp('/calendario')
     await waitFor(() => expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(true))
     await router.navigate('/dia/2026-10-01?outro=1')
     await waitFor(() => expect(router.state.location.search).toBe('?outro=1'))
     expect(calls.filter((call) => call.key === 'GET /api/health')).toHaveLength(1)
   })
 
-  it.each(['/', '/dia/2026-10-01', '/jogo/abc', '/login', '/cadastro'])(
+  it.each(['/calendario', '/dia/2026-10-01', '/jogo/abc', '/login', '/cadastro'])(
     'com a API dormindo, %s só pede algo além da saúde depois de ela responder 200 e não mostra erro',
     async (path) => {
       let healthCalls = 0
@@ -126,7 +130,7 @@ describe('entrada do site com a espera do servidor', () => {
         awake ? healthUp() : jsonResponse(503, { error: 'service-unavailable' }),
       'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
     })
-    const { router } = renderApp('/')
+    const { router } = renderApp('/calendario')
     await router.navigate('/status')
     awake = true
     await new Promise((resolve) => setTimeout(resolve, 2_500))
@@ -149,5 +153,67 @@ describe('entrada do site com a espera do servidor', () => {
     renderApp(`/jogo/${PUZZLE_ID}`)
     expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
     expect(screen.queryByRole('grid')).not.toBeInTheDocument()
+  })
+})
+
+describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
+  afterEach(() => window.localStorage.clear())
+
+  it('abre a landing sem esperar o servidor nem pedir nada à API', async () => {
+    const { calls } = mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
+    renderApp('/')
+    // A rota substitui o fallback logo depois do primeiro desenho.
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { level: 1, name: 'Cruzadinha' })).toBeInTheDocument(),
+    )
+    expect(screen.getByRole('link', { name: 'Calendário' })).toHaveAttribute('href', '/calendario')
+    expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
+  })
+
+  it('com o ajuste ligado mostra a tela de espera, nunca a landing, enquanto o servidor acorda', async () => {
+    updateSettings({ directToGame: true })
+    mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
+    renderApp('/')
+    expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
+    expect(screen.queryByRole('heading', { level: 1, name: 'Cruzadinha' })).not.toBeInTheDocument()
+  })
+
+  it('com o ajuste ligado leva ao jogo, também ao voltar a / pelo logo', async () => {
+    updateSettings({ directToGame: true, defaultSource: 'cruzadaonline' })
+    const item = makeLibraryItem(todayInBrasilia(), { source: 'cruzadaonline' })
+    mockApi({
+      'GET /api/health': healthUp,
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [item] }),
+    })
+    const { router } = renderApp('/')
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${item.puzzleId}`))
+    await router.navigate('/calendario')
+    await router.navigate('/')
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${item.puzzleId}`))
+  })
+
+  it('com o ajuste ligado e sem destino vai ao calendário com o motivo', async () => {
+    markSourceDown('cruzadaonline')
+    updateSettings({ directToGame: true, defaultSource: 'cruzadaonline' })
+    mockApi({
+      'GET /api/health': healthUp,
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+    })
+    const { router } = renderApp('/')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
+    expect(await screen.findByText('Cruzada Online está fora do ar agora.')).toBeInTheDocument()
+  })
+
+  it('/jogar leva ao dia de hoje da cruzada padrão', async () => {
+    updateSettings({ defaultSource: 'cruzadaonline' })
+    mockApi({
+      'GET /api/health': healthUp,
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+    })
+    const { router } = renderApp('/jogar')
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/dia/${todayInBrasilia()}`))
+    expect(router.state.location.search).toBe('?fonte=cruzadaonline')
   })
 })

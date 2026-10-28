@@ -67,7 +67,7 @@ export function Toolbar({
           </button>
         ) : null}
         <span className={styles.separator} aria-hidden="true" />
-        <Link to="/" className={iconButton} aria-label="Escolher outro dia">
+        <Link to="/calendario" className={iconButton} aria-label="Escolher outro dia">
           <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
             <rect x="4" y="5" width="16" height="15" rx="2" />
             <path d="M4 10h16M9 3v4M15 3v4" />

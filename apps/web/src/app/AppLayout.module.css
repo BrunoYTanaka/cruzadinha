@@ -30,7 +30,6 @@
 }
 
 .brand {
-  flex: 1;
   color: var(--ink);
   font-size: 18px;
   font-weight: 700;
@@ -43,6 +42,16 @@
   .brand:hover {
     color: var(--accent);
   }
+}
+
+/* "Calendário" ao lado da marca (feature 048); o espaçador empurra as ações para a direita. */
+.calendar {
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.spacer {
+  flex: 1;
 }
 
 .actions {

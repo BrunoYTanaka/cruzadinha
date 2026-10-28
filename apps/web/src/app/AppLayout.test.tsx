@@ -85,3 +85,11 @@ describe('AppLayout e as pendências offline (feature 041)', () => {
     expect(readOutboxItems(OTHER, PUZZLE_ID)).toHaveLength(1)
   })
 })
+
+describe('AppLayout e o cabeçalho (feature 048)', () => {
+  it('liga a marca à landing e oferece o link do calendário', async () => {
+    render(null)
+    expect(await screen.findByRole('link', { name: 'Cruzadinha' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Calendário' })).toHaveAttribute('href', '/calendario')
+  })
+})

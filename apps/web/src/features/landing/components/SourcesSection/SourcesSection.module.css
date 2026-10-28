@@ -1,0 +1,46 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0 32px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+.item p {
+  margin: 0;
+  color: var(--mute);
+}
+
+.name {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.note {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+}

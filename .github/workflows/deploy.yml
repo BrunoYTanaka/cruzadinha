@@ -208,7 +208,6 @@ jobs:
           API_VERSION: ${{ steps.plan.outputs.api_version }}
           WEB_VERSION: ${{ steps.plan.outputs.web_version }}
         run: |
-          curl -fsSI "$SITE_URL/" | grep -i '^x-robots-tag:.*noindex'
           if [ "$WEB" = "true" ]; then
             for i in $(seq 1 12); do
               live=$(curl -fsS -H 'cache-control: no-cache' "$SITE_URL/version.json" | jq -r '.version // empty' || true)
@@ -216,6 +215,16 @@ jobs:
               sleep 5
             done
             [ "$live" = "$WEB_VERSION" ] || { echo "::error::site não mostra $WEB_VERSION"; exit 1; }
+            # Indexação (feature 048, constitution VIII): só a landing (/) pode ser indexada.
+            if curl -fsSI -H 'cache-control: no-cache' "$SITE_URL/" | grep -qi '^x-robots-tag:'; then
+              echo "::error::a landing (/) não pode ter X-Robots-Tag"; exit 1
+            fi
+            for path in /calendario /jogo/x /conta; do
+              curl -fsSI "$SITE_URL$path" | grep -qi '^x-robots-tag:.*noindex' \
+                || { echo "::error::$path sem noindex"; exit 1; }
+            done
+            curl -fsS "$SITE_URL/sitemap.xml" | grep -qF "<loc>$SITE_URL/</loc>" \
+              || { echo "::error::sitemap.xml sem a landing"; exit 1; }
           fi
           if [ "$API" = "true" ]; then
             live=$(curl -fsS "$SITE_URL/api/health" | jq -r '.version // empty')

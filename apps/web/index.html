@@ -6,7 +6,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#1d4ed8" />
-    <title>Cruzadinha</title>
+    <title>Cruzadinha: cruzadas grátis para jogar online</title>
+    <meta
+      name="description"
+      content="Cruzadas em português para jogar no celular ou no computador, sem criar conta: escolha a cruzada de hoje, jogue de graça e continue mesmo sem internet."
+    />
     <meta name="color-scheme" content="light dark" />
     <script>
       // Aplica a escolha de tema antes da primeira pintura, para não piscar branco. Lê as
@@ -24,6 +28,18 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // O HTML pré-gerado é a landing (feature 048). Fora de `/`, ou com "Ir direto ao jogo" ligado,
+      // ela não pode aparecer nem por um instante: esvazia o #root antes da primeira pintura.
+      try {
+        var drop = location.pathname !== '/'
+        if (!drop) {
+          var r = JSON.parse(localStorage.getItem('cruzadinha:settings'))
+          drop = !!(r && r.v === 1 && r.settings && r.settings.directToGame === true)
+        }
+        if (drop) document.getElementById('root').textContent = ''
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

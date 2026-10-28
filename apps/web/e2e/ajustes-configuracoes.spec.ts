@@ -30,7 +30,7 @@ test.describe('US1: balão da engrenagem dentro da janela', () => {
   for (const width of WIDTHS) {
     test(`com a janela em ${width} px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 })
-      await page.goto('/')
+      await page.goto('/calendario')
       const gear = page.getByRole('button', { name: 'Configurações' })
       await gear.focus()
       const tip = page.locator('[data-tooltip]', { hasText: 'Configurações' })
@@ -48,7 +48,7 @@ test.describe('US1: balão da engrenagem dentro da janela', () => {
         await route.continue()
       })
       await page.setViewportSize({ width, height: 800 })
-      await page.goto('/')
+      await page.goto('/calendario')
       const gear = page.getByRole('button', { name: 'Configurações' })
       await expect(gear).toBeVisible()
       await expect(page.getByText('Visitante')).toHaveCount(0)
@@ -63,7 +63,7 @@ test.describe('US1: balão da engrenagem dentro da janela', () => {
 
   test('o balão que já cabia continua centralizado sobre o botão', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const theme = dialog.getByRole('button', { name: /^Tema:/ })
     await theme.hover()
@@ -84,7 +84,7 @@ test.describe('US2: botão de tema com o mesmo tamanho nos três estados', () =>
         await page.emulateMedia({ colorScheme: scheme })
         // Alto o bastante para o diálogo caber inteiro: se ele rolar, o clique no tema o desloca.
         await page.setViewportSize({ width, height: 1400 })
-        await page.goto('/')
+        await page.goto('/calendario')
         const dialog = await openSettings(page)
         const theme = dialog.getByRole('button', { name: /^Tema:/ })
         const title = dialog.getByText('Tema', { exact: true })
@@ -108,7 +108,7 @@ test.describe('US2: botão de tema com o mesmo tamanho nos três estados', () =>
   }
 
   test('só o rótulo do tema atual aparece e o nome acessível diz o estado', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const theme = dialog.getByRole('button', { name: /^Tema:/ })
     await expect(theme).toHaveAccessibleName('Tema: automático. Mudar para claro')
@@ -128,7 +128,7 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
       test(`tema ${scheme}, janela em ${width} px`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme })
         await page.setViewportSize({ width, height: 900 })
-        await page.goto('/')
+        await page.goto('/calendario')
         const dialog = await openSettings(page)
         const content = await dialog.evaluate((element) => {
           const body = element.querySelector('[class*="body"]')!.getBoundingClientRect()
@@ -179,7 +179,7 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
   // rádios, e o caso de botões está nos testes de `SettingsDialog.test.tsx` (2 e 3 fontes).
   test.skip('nome de fonte longo não desalinha os botões do seletor', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 900 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const sources = await dialog
       .getByRole('group', { name: 'Cruzada padrão' })
@@ -201,7 +201,7 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 640, height: 900 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const overflow = await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)
     expect(overflow).toBeLessThanOrEqual(0)
@@ -223,7 +223,7 @@ test.describe('US4: "Sem limite" à direita em telas maiores', () => {
 
   test('em 1280 px fica na linha dos passos, encostada na borda direita', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const content = await dialog.evaluate(
       (element) => element.querySelector('[class*="body"]')!.getBoundingClientRect().right,
@@ -247,7 +247,7 @@ test.describe('US4: "Sem limite" à direita em telas maiores', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 360, height: 900 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const dialogBox = await box(dialog)
     for (const row of rows(dialog)) {
@@ -262,7 +262,7 @@ test.describe('US4: "Sem limite" à direita em telas maiores', () => {
 
   test('marcar e desmarcar "Sem limite" não muda a posição dos controles', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 })
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const row = rows(dialog)[0] as Locator
     const parts = () =>
@@ -316,7 +316,7 @@ test.describe.skip('US5: troca suave da cruzada padrão', () => {
   }
 
   test('o destaque desliza em 100 a 300 ms até a fonte escolhida', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const { thumb, globo, online } = await picker(page)
     await expectThumbOn(thumb, globo)
     const duration = parseFloat(await css(thumb, 'transition-duration')) * 1000
@@ -328,7 +328,7 @@ test.describe.skip('US5: troca suave da cruzada padrão', () => {
   })
 
   test('dois cliques rápidos terminam na última fonte escolhida', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const { thumb, globo, online } = await picker(page)
     await online.click()
     await globo.click()
@@ -342,7 +342,7 @@ test.describe.skip('US5: troca suave da cruzada padrão', () => {
 
   test('com movimento reduzido a troca é imediata', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto('/')
+    await page.goto('/calendario')
     const { thumb, online } = await picker(page)
     // A regra global de movimento reduzido usa 0.00001 s em vez de 0.
     expect(parseFloat(await css(thumb, 'transition-duration'))).toBeLessThan(0.001)
@@ -351,7 +351,7 @@ test.describe.skip('US5: troca suave da cruzada padrão', () => {
   })
 
   test('pelo teclado a troca é igual e o foco continua visível', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const { thumb, globo, online } = await picker(page)
     await online.focus()
     await page.keyboard.press('Enter')
@@ -366,7 +366,7 @@ test.describe.skip('US5: troca suave da cruzada padrão', () => {
     page,
   }) => {
     await page.emulateMedia({ forcedColors: 'active' })
-    await page.goto('/')
+    await page.goto('/calendario')
     const { thumb } = await picker(page)
     expect(await css(thumb, 'border-top-width')).toBe('1px')
     expect(await css(thumb, 'border-top-style')).toBe('solid')
@@ -378,7 +378,7 @@ test.describe.skip('US5: toque', () => {
   test.use({ hasTouch: true })
 
   test('um toque troca a fonte e o destaque a acompanha', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await page.getByRole('button', { name: 'Configurações' }).tap()
     const group = page
       .getByRole('dialog', { name: 'Configurações' })
@@ -418,7 +418,7 @@ test.describe('F025-US1: interruptor com o desenho certo', () => {
       test(`tema ${scheme}, janela em ${width} px`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme })
         await page.setViewportSize({ width, height: 900 })
-        await page.goto('/')
+        await page.goto('/calendario')
         const dialog = await openSettings(page)
         const switches = dialog.getByRole('switch')
         // Riscar a dica, copiar a dica (feature 033), verificar ao digitar (feature 047) e ir direto

@@ -20,7 +20,7 @@ async function delayHealth(page: Page, ms: number) {
 test('com a API demorando, explica a espera e depois abre a tela pedida', async ({ page }) => {
   await login(page)
   await delayHealth(page, 4_000)
-  await page.goto('/?origem=teste')
+  await page.goto('/calendario?origem=teste')
   await expect(page.getByRole('heading', { name: WAKE_TITLE })).toBeVisible()
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible({
     timeout: 15_000,
@@ -31,7 +31,7 @@ test('com a API demorando, explica a espera e depois abre a tela pedida', async 
 test('com a API acordada, a espera não aparece', async ({ page }) => {
   await login(page)
   let sawWake = false
-  await page.goto('/')
+  await page.goto('/calendario')
   const heading = page.getByRole('heading', { level: 1, name: 'Hoje' })
   // Confere durante a carga inteira que o título da espera nunca apareceu.
   while (!(await heading.isVisible())) {

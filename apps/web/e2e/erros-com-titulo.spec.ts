@@ -88,7 +88,7 @@ for (const theme of THEMES) {
 
     test('biblioteca: a falha do calendário é h2 sob o h1 "Hoje"', async ({ page }) => {
       await page.route('**/api/library?**', failWith(500, 'internal-error'))
-      await page.goto('/')
+      await page.goto('/calendario')
       await expectSingleH1(page, 'Hoje')
       await expect(
         page.getByRole('heading', { level: 2, name: 'Não foi possível carregar a biblioteca' }),
@@ -98,7 +98,7 @@ for (const theme of THEMES) {
 
     test('biblioteca: a API anterior (401 sem sessão) pede para entrar', async ({ page }) => {
       await page.route('**/api/library?**', failWith(401, 'unauthenticated'))
-      await page.goto('/')
+      await page.goto('/calendario')
       await expectSingleH1(page, 'Entre para ver a biblioteca')
       await expectNoAxeViolations(page)
     })
@@ -108,7 +108,7 @@ for (const theme of THEMES) {
         await new Promise((resolve) => setTimeout(resolve, 5_000))
         await route.continue()
       })
-      await page.goto('/')
+      await page.goto('/calendario')
       await expectSingleH1(page, 'Acordando o servidor')
       await expectNoAxeViolations(page)
     })

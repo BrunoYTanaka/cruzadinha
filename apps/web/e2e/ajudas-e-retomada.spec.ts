@@ -94,7 +94,7 @@ for (const theme of ['light', 'dark'] as const) {
 }
 
 test('visitante: só a dica da palavra certa fica riscada (feature 016)', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
   const { puzzle, solution } = await solveFirstAcrossWord(page)

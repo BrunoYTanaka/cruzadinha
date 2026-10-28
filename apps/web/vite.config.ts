@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { landingPrerenderPlugin } from './prerender-plugin.ts'
 import { siteVersionPlugin } from './version-plugin.ts'
 
 const apiProxy = {
@@ -15,6 +16,8 @@ export default defineConfig({
   plugins: [
     react(),
     siteVersionPlugin(),
+    // Antes do VitePWA: o index.html precisa estar completo quando o PWA calcula o hash dele.
+    landingPrerenderPlugin(),
     // Service worker só da casca (feature 041): nunca guarda /api, sem skipWaiting nem clientsClaim,
     // então a versão nova vale na próxima abertura, nunca no meio de uma partida.
     VitePWA({

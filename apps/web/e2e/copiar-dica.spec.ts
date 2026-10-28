@@ -32,7 +32,7 @@ async function turnOnCopy(page: Page) {
 // Abre a cruzada de hoje como visitante e preenche a primeira e a última letra da primeira palavra
 // horizontal. Devolve a clique da dica na lista e o texto esperado.
 async function openWithEnds(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
   const today = await todayPuzzle(page.request)
@@ -51,7 +51,7 @@ async function openWithEnds(page: Page) {
 
 test.describe('US1 e US2: copiar a dica', () => {
   test('ligada nos ajustes, dois cliques na dica copiam o texto e avisam', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     const { clue, expected } = await openWithEnds(page)
     await writeClipboard(page, SENTINEL)
@@ -64,7 +64,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   })
 
   test('dois cliques na dica da barra também copiam', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     const { expected } = await openWithEnds(page)
     await writeClipboard(page, SENTINEL)
@@ -87,7 +87,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   })
 
   test('dois cliques numa célula não copiam', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     await openWithEnds(page)
     await writeClipboard(page, SENTINEL)
@@ -97,7 +97,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   })
 
   test('com o jogo pausado não copia', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     const { clue } = await openWithEnds(page)
     await page.getByRole('button', { name: 'Pausar' }).click()
@@ -107,7 +107,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   })
 
   test('o aviso não move a barra de ferramentas nem o tabuleiro', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     const { clue } = await openWithEnds(page)
     const grid = page.getByRole('grid')
@@ -126,7 +126,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   for (const scheme of ['light', 'dark'] as const) {
     test(`o aviso passa no axe no tema ${scheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme })
-      await page.goto('/')
+      await page.goto('/calendario')
       await turnOnCopy(page)
       const { clue } = await openWithEnds(page)
       await clue.dblclick()
@@ -138,7 +138,7 @@ test.describe('US1 e US2: copiar a dica', () => {
   test('a opção continua ligada depois de recarregar e "Restaurar padrões" a desliga', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await turnOnCopy(page)
     await page.reload()
     let dialog = await openSettings(page)
@@ -157,7 +157,7 @@ test.describe('US1 e US2: copiar a dica', () => {
 
 test.describe('US3: fechar os ajustes ao clicar fora', () => {
   test('clicar fora fecha e o foco volta à engrenagem', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await openSettings(page)
     await page.mouse.click(4, 4)
     await expect(page.getByRole('dialog')).toHaveCount(0)
@@ -165,7 +165,7 @@ test.describe('US3: fechar os ajustes ao clicar fora', () => {
   })
 
   test('clicar dentro, ou arrastar de dentro para fora, não fecha', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     await dialog.getByRole('heading', { name: 'Configurações' }).click()
     await expect(dialog).toBeVisible()
@@ -178,7 +178,7 @@ test.describe('US3: fechar os ajustes ao clicar fora', () => {
   })
 
   test('Esc continua fechando', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await openSettings(page)
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog')).toHaveCount(0)

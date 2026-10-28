@@ -6,7 +6,7 @@ test.beforeEach(async () => {
 })
 
 async function openToday(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('link', { name: /^O Globo: / }).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
