@@ -1,20 +1,13 @@
 import { wordBoundaries, type Puzzle } from '@cruzadinha/shared'
 import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type MouseEvent } from 'react'
-import type { Arrow, PuzzleIndex } from '../../../../../domain/game/navigation'
+import type { PuzzleIndex } from '../../../../../domain/game/navigation'
 import { activeWord } from '../../../../../domain/game/navigation'
 import { cellKey, type GameState, type Position } from '../../../../../domain/game/state'
 import styles from './Board.module.css'
 import { Cell } from '../Cell/Cell'
+import { resolveBoardKey, type BoardKey } from '../../../helpers/shortcuts'
 
-export type BoardKey =
-  | { type: 'letter'; key: string }
-  | { type: 'backspace' }
-  | { type: 'delete' }
-  | { type: 'arrow'; arrow: Arrow }
-  | { type: 'wordStart' }
-  | { type: 'wordEnd' }
-  | { type: 'nextWord' }
-  | { type: 'previousWord' }
+export type { BoardKey } from '../../../helpers/shortcuts'
 
 type BoardProps = {
   id?: string
@@ -48,8 +41,6 @@ function describe(
   if (mark === 'wrong') return `${base}, errada na verificação`
   return base
 }
-
-const ARROWS: readonly string[] = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
 export function Board({
   puzzle,
@@ -90,36 +81,20 @@ export function Board({
     if (readOnly || event.ctrlKey || event.altKey || event.metaKey) return
     const { key } = event
     if (key !== 'Escape' && key !== 'Tab' && key !== 'Shift') releaseTab.current = false
-    if (ARROWS.includes(key)) {
-      event.preventDefault()
-      onKey({ type: 'arrow', arrow: key as Arrow })
-    } else if (key === 'Backspace') {
-      event.preventDefault()
-      onKey({ type: 'backspace' })
-    } else if (key === 'Delete') {
-      event.preventDefault()
-      onKey({ type: 'delete' })
-    } else if (key === 'Home' || key === 'End') {
-      // Sem isso o navegador rolaria a página até o topo ou o fim.
-      event.preventDefault()
-      onKey({ type: key === 'Home' ? 'wordStart' : 'wordEnd' })
-    } else if (key === 'Escape') {
+    const action = resolveBoardKey(key, event.shiftKey)
+    if (action === 'releaseTab') {
       releaseTab.current = true
       return
-    } else if (key === 'Tab') {
-      // Tab dá a volta nas palavras sem sair do tabuleiro. Para não prender o foco, Esc libera o
-      // Tab seguinte, que segue para fora (como explica a descrição da grade).
-      if (releaseTab.current) {
-        releaseTab.current = false
-        return
-      }
-      event.preventDefault()
-      onKey({ type: event.shiftKey ? 'previousWord' : 'nextWord' })
-      return
-    } else if (key.length === 1) {
-      event.preventDefault()
-      onKey({ type: 'letter', key })
     }
+    if (!action) return
+    // Tab dá a volta nas palavras sem sair do tabuleiro. Para não prender o foco, Esc libera o
+    // Tab seguinte, que segue para fora (como explica a descrição da grade).
+    if (key === 'Tab' && releaseTab.current) {
+      releaseTab.current = false
+      return
+    }
+    event.preventDefault()
+    onKey(action)
   }
 
   function onClick(event: MouseEvent<HTMLDivElement>) {
