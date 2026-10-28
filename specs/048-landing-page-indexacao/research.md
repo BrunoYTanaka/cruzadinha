@@ -1,0 +1,52 @@
+# Research: Landing page pública e indexação no Google
+
+Sem NEEDS CLARIFICATION no contexto técnico. As decisões saem da leitura do código atual e da Context7.
+
+## R1. Como o texto chega ao HTML entregue (FR-003, FR-014; pergunta aberta do issue)
+
+- **Decision**: pré-renderizar no build, dentro do próprio `index.html`. Um plugin (`apps/web/prerender-plugin.ts`, antes do `VitePWA`) faz, no `buildStart` do build do cliente, um segundo `build()` do Vite com `build.ssr` apontando para `src/landing-entry.tsx`, importa o resultado, chama `renderLanding()` (React `renderToString` dentro de `StaticRouter`, renderizando a `LandingShell`: link de pular, cabeçalho com a marca e o link "Calendário" e `<main id="conteudo">` com a landing) e injeta o HTML no `#root` por `transformIndexHtml` (`order: 'post'`). Assim o `index.html` já está final quando o plugin do PWA calcula o hash dele (um `closeBundle` depois do PWA deixaria a revisão do `sw.js` velha), e o `main` fica no mesmo lugar depois que o React monta o `AppLayout` (só as ações à direita do cabeçalho aparecem depois). `sitemap.xml` e `robots.txt` saem por `emitFile`. O `index.html` ganha `<title>` e `<meta name="description">` próprios da landing. Logo após o `#root`, um `<script>` síncrono esvazia o `#root` se `location.pathname !== '/'` ou se `cruzadinha:settings` tem `directToGame` ligado. O React monta com `createRoot` (não hidrata): o conteúdo igual é trocado sem salto, e o caso do redirecionamento não gera erro de hidratação.
+- **Rationale**: o Cloudflare Pages serve `index.html` para `/` e para todo caminho desconhecido; um único arquivo evita regras de reescrita (`_redirects` com 200 para `.html` sofre com as URLs sem extensão do Pages) e mantém o `navigateFallback` do PWA (`/index.html`) como está, então a landing abre offline (FR-014). Rotas que não são `/` têm o `noindex` por cabeçalho (R4), então o texto da landing presente no HTML delas é inofensivo para a busca, e o script impede o piscar.
+- **Alternatives considered**: (a) HTML estático à parte (`/landing.html`) com reescrita do `/`: depende do comportamento de URLs limpas do Pages e duplica o shell do PWA. (b) `ssrLoadModule` num servidor de desenvolvimento durante o build: os nomes de classe dos CSS Modules podem diferir dos do build real; o segundo `build()` usa o mesmo pipeline, e um teste confere que cada classe do HTML existe no CSS gerado. (c) Hidratar com `hydrateRoot`: o redirecionamento de "Ir direto ao jogo" trocaria a árvore e geraria divergência. (d) Texto escrito à mão no `index.html`: duplicado e sem a lista derivada de `puzzleSourceNames`.
+- **Impacto em `check:deps` e PWA**: o plugin e `landing-entry.tsx` não importam `pages/` nem `app/`; `landing-entry.tsx` importa só `features/landing`. `check:deps` não cobre arquivos fora de `src/`; para o entry dentro de `src/`, a regra de `landing` (R6) vale. O `globPatterns` do PWA já inclui `html`, então o `index.html` pré-renderizado vai para o cache da casca sem mudança.
+
+## R2. Indexação: `_headers`, `robots.txt` e mapa do site (FR-012, FR-013)
+
+- **Decision**: manter `/*` com `X-Robots-Tag: noindex, nofollow` e acrescentar, depois dele, regras para `/`, `/sitemap.xml` e `/robots.txt` com `! X-Robots-Tag`. A Context7 (Cloudflare Pages, `_headers`) confirma a sintaxe `! Header` para tirar um cabeçalho posto por regra mais ampla. O `robots.txt` passa a permitir o rastreio (`User-agent: *`, `Disallow: /api/`, e `Sitemap: <SITE_URL>/sitemap.xml` quando houver `SITE_URL`); o `noindex` só é obedecido se o buscador puder buscar a página, então um `Disallow: /` mantido deixaria as demais URLs aparecerem sem texto, e a landing nunca seria lida. O plugin gera `sitemap.xml` (só `<SITE_URL>/`) e `robots.txt` a partir de `SITE_URL`; sem a variável, avisa no log e gera o `robots.txt` sem a linha `Sitemap` e nenhum `sitemap.xml`.
+- **Rationale**: o padrão continua sendo "não indexar", então uma rota nova esquecida fica protegida; só a exceção é explícita. `SITE_URL` já existe como variável do repositório e do workflow de publicação (`deploy.yml`), então não há configuração nova.
+- **Alternatives considered**: listar cada rota com `noindex` e deixar o resto indexável: uma rota nova ficaria indexável por esquecimento. `<meta name="robots">` no HTML: o `index.html` é um só para todas as rotas, então a meta valeria para todas.
+- **Risco**: sem `SITE_URL` no build, não há mapa do site. Mitigação: o passo "Verificar" do `deploy.yml` passa a conferir `sitemap.xml` (só no deploy do site, onde `SITE_URL` é obrigatório hoje).
+
+## R3. Rotas e comportamento do endereço raiz (FR-001, FR-002)
+
+- **Decision**: `/` fica fora do grupo cujo loader espera a API acordar. Seu loader é o `directPlayLoader` atual, sem a trava de uma vez por carregamento e sem a checagem do caminho inicial, que já devolve `null` de imediato quando "Ir direto ao jogo" está desligado e espera a API só quando ligado. Se decide `go`, redireciona ao jogo, como hoje. Se decide `stay` (concluída, sem cruzada, fonte fora do ar), faz `replace('/calendario')` e guarda o motivo numa variável de módulo (como `source-choice.ts`), que a `LibraryPage` lê uma vez para mostrar o aviso de hoje. `LibraryPage` passa a `/calendario`. O `hydrateFallbackElement` de `/` é a landing quando "Ir direto ao jogo" está desligado (sem quadro em branco enquanto o loader roda) e mostra a tela de espera do servidor (`ServerWake`) quando está ligado: a pessoa não vê a landing nem uma tela em branco enquanto a API acorda (FR-002). Novo `/jogar`: loader que faz `replace('/dia/<hoje em Brasília>?fonte=<padrão>')`; é o destino de "Jogar a cruzada de hoje" e "Jogar agora", com `href` estável no HTML pré-renderizado (uma data fixa no HTML ficaria velha).
+- **Rationale**: muda a regra da feature 021 de agir uma vez por carregamento: o loader decide a cada chegada em `/` (clarificação de 2026-10-28), e o aviso de cada motivo continua; a landing não depende de rede. `/dia/:date?fonte=` já faz a busca sob demanda e leva ao jogo.
+- **Alternatives considered**: calendário continuar em `/` e a landing em outro caminho (`/inicio`): o buscador e quem compartilha o link veem a raiz, e é a raiz que precisa explicar o site. Resolver o link do dia no cliente com a biblioteca: precisa da API (FR-014).
+
+## R4. Quem aponta para `/` como calendário
+
+- **Decision**: trocar para `/calendario` o `Link`/`navigate` que quer dizer "biblioteca": `NotFoundPage`, `RequiresConnection`, `GamePage` (erro), `ReadModeBanner`, `CompletionDialog`. O "Jogar sem entrar" do `RegisterForm` e o logo do cabeçalho seguem em `/` (landing). O cabeçalho ganha o link "Calendário". O destino padrão depois do login (`redirect.ts`) passa de `/` a `/calendario`, pois quem entra quer a biblioteca. Os specs e2e e testes que usam `goto('/')` para o calendário passam a `/calendario`; os que testam o atalho "Ir direto ao jogo" mantêm `/`.
+- **Rationale**: o rótulo "Voltar à biblioteca" tem de levar à biblioteca.
+
+## R5. Mini cruzada (FR-009)
+
+- **Decision**: componente próprio em `features/landing`, com a amostra 5x5 em `helpers/sample.ts` (formato `puzzleSchema` + `solutionSchema` de `shared`, validado num teste), o estado e as regras do `reducer` de `domain/game` e uma grade leve (casas como elementos focáveis dentro de um `role="grid"` com tabindex móvel, como o tabuleiro). Entrada de teclado do celular por um `<input>` oculto focado ao tocar numa casa, tratado como o tabuleiro trata o teclado do sistema. Dicas da palavra atual numa linha abaixo da grade. Ao concluir, mostra mensagem e o botão "Jogar a cruzada de hoje".
+- **Rationale**: o `Board` vive em `features/game`, depende do relógio, da faixa de ferramentas e dos ajustes, e `features/game` só exporta `GameScreen`, `useGameData` e `formatDate`; reaproveitar o reducer dá a mesma digitação e navegação sem acoplar. `landing` não importa feature nenhuma.
+- **Alternatives considered**: exportar o `Board` de `features/game` e deixar `landing` depender do `game` (a última da ordem): quebra a regra "guest não importa feature" por analogia e carrega código do jogo na entrada. Reescrever a navegação à mão: duplica regra testada.
+- **Peso**: a mini cruzada é código da entrada (precisa existir no HTML pré-renderizado); o reducer é pequeno. Se o chunk de entrada passar de 500 kB, o plugin de agrupamento já separa `react` e `vendor`; medir no T de build.
+
+## R6. Feature `landing` e `check:deps`
+
+- **Decision**: `features/landing` entra na regra "account|status só importam `session`" estendida para não importar nada de feature (como `guest`). `pages/landing` compõe `features/landing`. Não entra na ordem `session < … < game`, pois ninguém a importa além da página e do entry SSR.
+- **Rationale**: o que a regra protege é a direção dos imports; `landing` só usa `shared` e `domain`.
+
+## R7. Fonte do título e animação (FR-006, FR-007, FR-016)
+
+- **Confirmado na Context7 (T001)**: a importação é `@fontsource-variable/fraunces/wght.css` (um arquivo por subconjunto, com `unicode-range`); `build.ssr`, `! Header` e `StaticRouter` conferem com o que está em R1 e R2.
+- **Decision**: `@fontsource-variable/fraunces` (subconjunto latino, peso 600–800), importado em `shared/themes/fonts.css`, `font-display: swap`. O título tem a altura reservada por CSS (em `em`), então a troca da fonte não desloca o resto. Letras "caem" com `transform` e `opacity` em `@media (prefers-reduced-motion: no-preference)`; fora dela, o título é texto parado. A rolagem suave é `scroll-behavior: smooth` dentro da mesma media query (sem movimento, rola direto). O `h1` contém o texto "Cruzadinha" como texto (as casas são decoração `aria-hidden`).
+- **Rationale**: o texto do título fica legível para o buscador e o leitor de tela; animar só `transform`/`opacity` evita reflow.
+- **Alternatives considered**: Google Fonts (como no protótipo): terceiros, fora da regra do site.
+
+## R8. Descrições das fontes e direitos (FR-010, FR-011)
+
+- **Decision**: `Record<PuzzleSourceId, string>` em `helpers/source-descriptions.ts`; a seção itera `puzzleSourceIdSchema.options` (ordem do jogo) e lê o nome em `puzzleSourceNames`. O texto de cada fonte diz quem publica e o tipo de cruzada, sem trecho de dica, grade ou marca. Os cartões usam a contagem de `puzzleSourceIdSchema.options.length` em vez de "quatro" escrito à mão.
+- **Rationale**: o TypeScript acusa fonte sem descrição (SC-007) e a lista acompanha o jogo.
