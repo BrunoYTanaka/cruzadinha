@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { brasiliaToday, fillSolution, pressLetter, progressRowCount, resetAndSeed } from './support'
+import {
+  brasiliaToday,
+  fillSolution,
+  helpsItem,
+  pressLetter,
+  progressRowCount,
+  resetAndSeed,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -34,7 +41,7 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await page.getByRole('gridcell', { name: /^Linha 3, coluna 3,/ }).click()
   await pressLetter(page, 'Ç')
   await expect(page.getByRole('gridcell', { name: /^Linha 3, coluna 3, letra Ç/ })).toBeVisible()
-  await page.getByRole('button', { name: 'Verificar' }).click()
+  await (await helpsItem(page, 'Verificar')).click()
   await expect(page.getByText('Verificado: nenhuma letra errada')).toBeAttached()
   await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 

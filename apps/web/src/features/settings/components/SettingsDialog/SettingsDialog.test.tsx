@@ -138,6 +138,18 @@ describe('modal de configurações', () => {
     expect(within(dialog).getByText(/certa ou errada/)).toBeInTheDocument()
   })
 
+  it('o switch de verificar ao digitar vem desligado e grava verifyOnType (feature 047)', async () => {
+    const { user, dialog } = await openSettings()
+    const verify = within(dialog).getByRole('switch', { name: 'Verificar ao digitar' })
+    expect(verify).toHaveAttribute('aria-checked', 'false')
+    await user.click(verify)
+    expect(verify).toHaveAttribute('aria-checked', 'true')
+    expect(getSettings().verifyOnType).toBe(true)
+    expect(
+      JSON.parse(window.localStorage.getItem('cruzadinha:settings') ?? '{}').settings,
+    ).toMatchObject({ verifyOnType: true })
+  })
+
   it('o switch de copiar a dica vem desligado e grava copyClue (feature 033)', async () => {
     const { user, dialog } = await openSettings()
     const copy = within(dialog).getByRole('switch', { name: 'Copiar a dica' })

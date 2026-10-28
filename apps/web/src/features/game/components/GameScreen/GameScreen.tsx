@@ -1,10 +1,16 @@
 import { puzzleSourceNames, type PuzzleResponse, type Word } from '@cruzadinha/shared'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { wordHasDraft } from '../../../../domain/game/draft'
 import { activeWord } from '../../../../domain/game/navigation'
+import { withAutoMarks } from '../../../../domain/game/wrong-cells'
+import {
+  updateSettings,
+  useSettings,
+} from '../../../../shared/services/settings-store/settings-store'
 import { todayInBrasilia } from '../../../../shared/helpers/dates/dates'
 import { buildLoginPath, SessionExpiredNotice } from '../../../session'
 import { guestStore } from '../../../guest'
+import { useSettingsOpen } from '../../../settings'
 import {
   isNoPuzzle,
   isSourceDown,
@@ -29,8 +35,8 @@ import { CopyToast } from '../clues/CopyToast/CopyToast'
 import { useCopyClue } from '../../hooks/useCopyClue'
 import { formatDate } from '../../helpers/format-date'
 import styles from './GameScreen.module.css'
-import { DraftControls } from '../controls/DraftControls/DraftControls'
 import { HelpButtons } from '../controls/HelpButtons/HelpButtons'
+import { HelpsMenu } from '../controls/HelpsMenu/HelpsMenu'
 import { Keyboard } from '../controls/Keyboard/Keyboard'
 import { LegendButton } from '../controls/LegendButton/LegendButton'
 import { PauseCover } from '../board/PauseCover/PauseCover'
@@ -117,6 +123,16 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
   })
   const word = activeWord(game.index, state.selected, state.direction)
   const readOnly = state.mode !== 'playing'
+  // Verificar ao digitar (feature 047): a marca é só desenhada; `state` segue sem ela.
+  const { verifyOnType } = useSettings()
+  const settingsOpen = useSettingsOpen()
+  const boardState = useMemo(
+    () =>
+      verifyOnType && state.mode === 'playing'
+        ? { ...state, marks: withAutoMarks(state, response.solution) }
+        : state,
+    [verifyOnType, state, response.solution],
+  )
 
   // Com o tabuleiro maior que a janela, a página rola o mínimo para mostrar a célula selecionada (o
   // foco fica na grade, então o navegador não rola sozinho).
@@ -241,12 +257,16 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
                 disabled={clock.paused}
                 onLetter={() => help('revealLetter')}
                 onWord={() => help('revealWord')}
-                onVerify={() => help('verify')}
               />
-              <DraftControls
+              <HelpsMenu
+                placement={onScreenKeyboard ? 'sheet' : 'popover'}
                 pencil={state.pencil}
                 hasDraft={wordHasDraft(game.index, state)}
                 disabled={clock.paused}
+                verifyOnType={verifyOnType}
+                blocked={shortcutsOpen || settingsOpen}
+                onVerify={() => help('verify')}
+                onVerifyOnType={(on) => updateSettings({ verifyOnType: on })}
                 onPencil={(on) => dispatch({ type: 'setPencil', on })}
                 onConfirm={() => dispatch({ type: 'confirmDraft' })}
                 onDiscard={() => dispatch({ type: 'discardDraft' })}
@@ -282,7 +302,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
                 id="board"
                 puzzle={puzzle}
                 index={game.index}
-                state={state}
+                state={boardState}
                 readOnly={readOnly}
                 focusOnMount={!readOnly}
                 cellSize={size?.cellSize}

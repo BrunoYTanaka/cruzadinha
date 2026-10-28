@@ -197,3 +197,13 @@ export function css(locator: Locator, property: string) {
     property,
   )
 }
+
+// Menu "Ajudas" (feature 047): abre se estiver fechado e devolve o item pelo nome.
+export async function helpsItem(page: Page, name: string): Promise<Locator> {
+  const button = page.getByRole('button', { name: /^Ajudas/ })
+  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click()
+  return page.getByRole(
+    name === 'Lápis' || name === 'Verificar ao digitar' ? 'menuitemcheckbox' : 'menuitem',
+    { name },
+  )
+}

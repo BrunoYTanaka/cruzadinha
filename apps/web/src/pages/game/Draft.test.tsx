@@ -9,13 +9,13 @@ import {
   openGame,
   openGuestGame,
   SAVE,
+  chooseHelp,
+  helpItem,
   setup,
 } from '../../test/game-harness'
 import { aUser } from '../../test/render'
 
 installGameTestLifecycle()
-
-const pencil = () => screen.getByRole('button', { name: 'Lápis (rascunho)' })
 
 async function reopen(open: () => unknown) {
   cleanup()
@@ -31,7 +31,7 @@ describe('rascunho no jogo (feature 043)', () => {
     const user = setup()
     openGuestGame()
     await screen.findByRole('grid')
-    await user.click(pencil())
+    await chooseHelp(user, 'Lápis')
     await user.click(screen.getByRole('grid'))
     await user.keyboard('CA')
     await waitFor(async () =>
@@ -40,7 +40,7 @@ describe('rascunho no jogo (feature 043)', () => {
     expect(loadDraft('guest', PUZZLE_ID)?.[0]).toEqual(['C', 'A', null])
 
     await reopen(() => openGuestGame())
-    expect(pencil()).toHaveAttribute('aria-pressed', 'true')
+    expect(await helpItem(user, 'Lápis')).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByRole('gridcell', { name: /Linha 1, coluna 1, rascunho C/ })).toBeVisible()
     expect(screen.getByRole('gridcell', { name: /Linha 1, coluna 2, rascunho A/ })).toBeVisible()
     await expectNoA11yViolations(screen.getByRole('toolbar').parentElement as HTMLElement)
@@ -50,11 +50,11 @@ describe('rascunho no jogo (feature 043)', () => {
     const user = setup()
     const { calls } = openGame()
     await screen.findByRole('grid')
-    await user.click(pencil())
+    await chooseHelp(user, 'Lápis')
     await user.click(screen.getByRole('grid'))
     await user.keyboard('CA')
     expect(loadDraft(aUser.id, PUZZLE_ID)?.[0]).toEqual(['C', 'A', null])
-    await user.click(pencil())
+    await chooseHelp(user, 'Lápis')
     await user.click(screen.getByRole('gridcell', { name: /Linha 1, coluna 3/ }))
     await user.keyboard('L')
     await act(async () => {
@@ -77,10 +77,10 @@ describe('rascunho no jogo (feature 043)', () => {
     const user = setup()
     openGuestGame()
     await screen.findByRole('grid')
-    await user.click(pencil())
+    await chooseHelp(user, 'Lápis')
     await user.click(screen.getByRole('grid'))
     await user.keyboard('CAL')
-    await user.click(screen.getByRole('button', { name: 'Confirmar rascunho' }))
+    await chooseHelp(user, 'Confirmar rascunho')
     expect(screen.getByRole('gridcell', { name: /Linha 1, coluna 1, letra C/ })).toBeVisible()
     expect(loadDraft('guest', PUZZLE_ID)).toBeNull()
   })
@@ -108,7 +108,7 @@ describe('rascunho no jogo (feature 043)', () => {
     openGuestGame()
     await screen.findByRole('grid')
     const before = screen.getByRole('timer', { hidden: true }).textContent
-    await user.click(pencil())
+    await chooseHelp(user, 'Lápis')
     await user.click(screen.getByRole('grid'))
     await user.keyboard('C')
     expect(screen.getByRole('timer', { hidden: true }).textContent).toBe(before)

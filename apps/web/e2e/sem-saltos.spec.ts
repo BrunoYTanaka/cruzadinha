@@ -5,6 +5,7 @@ import {
   css,
   expectNear,
   fillSolution,
+  helpsItem,
   login,
   pressLetter,
   probe,
@@ -611,5 +612,55 @@ test.describe('018 US3: dica completa ao parar o mouse', () => {
     const grid = await box(page.getByRole('grid'))
     expect(balloon.y).toBeGreaterThanOrEqual(bar.y + bar.height)
     expect(balloon.y).toBeGreaterThanOrEqual(grid.y + grid.height)
+  })
+})
+
+test.describe('feature 047: o menu Ajudas não move nada', () => {
+  test('abrir, fechar, ligar e desligar a verificação e digitar errado', async ({ page }) => {
+    await openToday(page)
+    const before = await toolbarAndBoardBoxes(page)
+    const button = page.getByRole('button', { name: /^Ajudas/ })
+    for (let count = 0; count < 10; count += 1) {
+      await button.click()
+      await expect(page.getByRole('menu')).toBeVisible()
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('menu')).toHaveCount(0)
+    }
+    expect(await toolbarAndBoardBoxes(page)).toEqual(before)
+    await (await helpsItem(page, 'Verificar ao digitar')).click()
+    await page.keyboard.press('Escape')
+    expect(await toolbarAndBoardBoxes(page)).toEqual(before)
+    await type20Letters(page)
+    expect(await toolbarAndBoardBoxes(page)).toEqual(before)
+    await (await helpsItem(page, 'Verificar ao digitar')).click()
+    await page.keyboard.press('Escape')
+    expect(await toolbarAndBoardBoxes(page)).toEqual(before)
+  })
+
+  test.describe('janela estreita com o teclado na tela', () => {
+    test.use({ viewport: { width: 390, height: 800 }, hasTouch: true })
+
+    test('três controles na mesma linha e o menu como painel de baixo', async ({ page }) => {
+      await openToday(page)
+      const tops = await Promise.all(
+        [/^Revelar letra/, /^Revelar palavra/, /^Ajudas/].map(async (name) =>
+          Math.round((await box(page.getByRole('button', { name })))?.y ?? -1),
+        ),
+      )
+      expect(new Set(tops).size).toBe(1)
+      await page.getByRole('button', { name: /^Ajudas/ }).click()
+      const menu = page.getByRole('menu')
+      await expect(menu).toBeVisible()
+      const panel = await box(menu)
+      const viewport = page.viewportSize()
+      expect(panel).not.toBeNull()
+      expect(Math.round((panel?.y ?? 0) + (panel?.height ?? 0))).toBeLessThanOrEqual(
+        viewport?.height ?? 0,
+      )
+      expect(Math.round(panel?.x ?? -1)).toBe(0)
+      for (const item of await menu.locator('[role^="menuitem"]').all()) {
+        expect((await box(item))?.height ?? 0).toBeGreaterThanOrEqual(48)
+      }
+    })
   })
 })

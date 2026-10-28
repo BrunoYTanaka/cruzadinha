@@ -257,6 +257,17 @@ export function SettingsDialog() {
           />
         </Row>
 
+        <Row
+          title="Verificar ao digitar"
+          hint="Marca a letra errada assim que você digita; não gasta Letra nem Palavra."
+        >
+          <Switch
+            label="Verificar ao digitar"
+            checked={settings.verifyOnType}
+            onChange={(next) => updateSettings({ verifyOnType: next })}
+          />
+        </Row>
+
         <hr className={styles.separator} />
 
         <section className={styles.group} aria-labelledby="cruzada-padrao">

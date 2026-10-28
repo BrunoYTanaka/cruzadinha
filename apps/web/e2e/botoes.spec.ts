@@ -81,11 +81,11 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
       await expectControlBorder(page, dialog.getByRole('button', { name: /^Tema:/ }))
       await dialog.getByRole('button', { name: 'Fechar' }).click()
 
-      // Jogo: as três ajudas.
+      // Jogo: Letra, Palavra e o botão Ajudas.
       await openToday(page)
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar letra/ }))
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar palavra/ }))
-      await expectControlBorder(page, page.getByRole('button', { name: 'Verificar' }))
+      await expectControlBorder(page, page.getByRole('button', { name: /^Ajudas/ }))
 
       // Cabeçalho com conta: "Sair".
       await login(page)

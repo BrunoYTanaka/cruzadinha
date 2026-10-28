@@ -1,4 +1,4 @@
-import { act, cleanup } from '@testing-library/react'
+import { act, cleanup, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { queryKeys } from '../shared/services/api/query-keys/query-keys'
@@ -67,4 +67,15 @@ export function installGameTestLifecycle() {
     clearExpired()
     resetSessionHandlers()
   })
+}
+
+// Menu "Ajudas" (feature 047): abre se estiver fechado e devolve o item pelo nome.
+export async function helpItem(user: ReturnType<typeof setup>, name: string) {
+  const button = screen.getByRole('button', { name: /^Ajudas/ })
+  if (button.getAttribute('aria-expanded') !== 'true') await user.click(button)
+  return screen.queryByRole('menuitem', { name }) ?? screen.getByRole('menuitemcheckbox', { name })
+}
+
+export async function chooseHelp(user: ReturnType<typeof setup>, name: string) {
+  await user.click(await helpItem(user, name))
 }

@@ -8,7 +8,7 @@ import { LegendButton } from '../LegendButton/LegendButton'
 const limits = { letters: 4, words: 2 }
 
 function setup(props: Partial<Parameters<typeof HelpButtons>[0]> = {}) {
-  const handlers = { onLetter: vi.fn(), onWord: vi.fn(), onVerify: vi.fn() }
+  const handlers = { onLetter: vi.fn(), onWord: vi.fn() }
   const view = render(
     <HelpButtons
       usage={{ letters: 1, words: 0 }}
@@ -22,22 +22,20 @@ function setup(props: Partial<Parameters<typeof HelpButtons>[0]> = {}) {
 }
 
 describe('HelpButtons', () => {
-  it('mostra os contadores "1/4 Letra" e "0/2 Palavra" e "Verificar" sem contador', () => {
+  it('mostra os contadores "1/4 Letra" e e "0/2 Palavra", sem o botão Verificar (está no menu Ajudas)', () => {
     setup()
     expect(screen.getByText('1/4 Letra')).toBeInTheDocument()
     expect(screen.getByText('0/2 Palavra')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Verificar' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Verificar' })).not.toBeInTheDocument()
   })
 
   it('chama cada ajuda', async () => {
     const user = userEvent.setup()
-    const { onLetter, onWord, onVerify } = setup()
+    const { onLetter, onWord } = setup()
     await user.click(screen.getByRole('button', { name: /Revelar letra/ }))
     await user.click(screen.getByRole('button', { name: /Revelar palavra/ }))
-    await user.click(screen.getByRole('button', { name: 'Verificar' }))
     expect(onLetter).toHaveBeenCalledOnce()
     expect(onWord).toHaveBeenCalledOnce()
-    expect(onVerify).toHaveBeenCalledOnce()
   })
 
   it('esgotada fica aria-disabled, diz o motivo e não age', async () => {
