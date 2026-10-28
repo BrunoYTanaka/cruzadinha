@@ -36,6 +36,7 @@ function routesFor(queryClient: ReturnType<typeof makeQueryClient>) {
   return [
     {
       element: <AppLayout />,
+      HydrateFallback: () => null,
       children: [
         {
           loader: viewerLoader(queryClient),
@@ -43,6 +44,7 @@ function routesFor(queryClient: ReturnType<typeof makeQueryClient>) {
           children: [
             { path: '/', element: <ViewerProbe /> },
             { path: '/jogo/:id', element: <p>Jogo</p> },
+            { path: '/login', element: <p>Entrar</p> },
           ],
         },
       ],
