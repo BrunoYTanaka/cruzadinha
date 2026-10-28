@@ -24,7 +24,7 @@ export function ReadModeBanner({ elapsedMs, onPlayAgain, busy = false }: ReadMod
       <Button onClick={onPlayAgain} disabled={busy}>
         Jogar de novo
       </Button>
-      <Link to="/" className={styles.link}>
+      <Link to="/calendario" className={styles.link}>
         Voltar à biblioteca
       </Link>
     </div>

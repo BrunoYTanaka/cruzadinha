@@ -79,7 +79,7 @@ for (const session of [false, true]) {
     page,
   }) => {
     const api = await sleepingApi(page, { session })
-    await page.goto('/')
+    await page.goto('/calendario')
     const rows = await sample(page)
 
     expect(rows.at(-1)?.calendar).toBe(true)

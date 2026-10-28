@@ -11,6 +11,8 @@
     "playwright.config.ts",
     "version-plugin.ts",
     "version-plugin.test.ts",
+    "prerender-plugin.ts",
+    "prerender-plugin.test.ts",
     "public-headers.test.ts",
     "e2e"
   ]

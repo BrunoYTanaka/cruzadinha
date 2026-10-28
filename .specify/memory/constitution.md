@@ -73,12 +73,13 @@ fluxo principal.
 
 ### VIII. Conteúdo de terceiros e uso privado
 Os puzzles pertencem às fontes. O site MAY ser acessado por qualquer pessoa que tenha o endereço,
-com ou sem conta, mas MUST NOT ser divulgado em buscadores: as instruções de não indexação MUST
-valer para todas as páginas. O conteúdo MUST NOT ser redistribuído fora do site (exportação,
+com ou sem conta. Só a landing (o endereço raiz) MAY ser divulgada em buscadores, e ela MUST conter
+apenas texto próprio, sem conteúdo de nenhuma fonte; as instruções de não indexação MUST valer para
+todas as outras páginas (calendário, dia, jogo, conta, links de e-mail e as demais). O conteúdo MUST NOT ser redistribuído fora do site (exportação,
 feeds ou API pública documentada). Cada puzzle MUST exibir a atribuição à sua fonte. O cache MUST
 guardar apenas o necessário para jogar.
 Rationale: o projeto é de portfólio e usa uma API não oficial; o risco de direitos fica restrito
-ao uso não divulgado e atribuído, já que a própria fonte publica os puzzles sem login. A leitura dos termos de uso das fontes não é condição de nenhuma
+ao uso atribuído, sem divulgar os puzzles nos buscadores (a landing só apresenta o site), já que a própria fonte publica os puzzles sem login. A leitura dos termos de uso das fontes não é condição de nenhuma
 feature (emenda 2.0.0).
 
 ### IX. Mudanças de schema por migração
@@ -149,4 +150,17 @@ migração: a feature 013 entrega as rotas de puzzle e biblioteca sem sessão, r
 ser implementada, o código continua exigindo sessão e convite, o que é mais restrito que esta
 versão e, portanto, conforme.
 
-**Version**: 4.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-16
+### Emenda 5.0.0 (2026-10-28)
+
+O princípio VIII deixou de exigir não indexação em todas as páginas: a landing pública (endereço
+raiz) passa a poder ser indexada, e todas as outras páginas seguem sem indexação. Justificativa: a
+feature 048 (`specs/048-landing-page-indexacao/spec.md`, issue #122) cria uma landing que apresenta
+o site a quem chega de fora, e ela só cumpre o papel se o Google puder encontrá-la; a landing tem
+texto próprio e nenhum conteúdo das fontes, então o risco de direitos que o princípio protege não
+muda. É MAJOR por redefinir um princípio de forma incompatível. Plano de migração, sem alteração
+de dados nem de schema: a feature 048 troca o `noindex` global de `public/_headers` por um
+`noindex` com exceção para `/`, passa a gerar `robots.txt` e `sitemap.xml` no build e muda o passo
+"Verificar" do `deploy.yml`. Até a 048 ser implementada, o site continua sem indexação em todas as
+páginas, o que é mais restrito que esta versão e, portanto, conforme.
+
+**Version**: 5.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-28

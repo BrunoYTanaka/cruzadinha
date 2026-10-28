@@ -37,7 +37,7 @@ async function expectHelpsReset(page: Page) {
 }
 
 test('visitante: jogar de novo zera as ajudas, também depois de recarregar', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await openGlobo(page)
   await useHelpsFinishAndPlayAgain(page)
   await expectHelpsReset(page)
@@ -67,7 +67,7 @@ for (const kind of ['visitante', 'conta'] as const) {
     context,
   }) => {
     if (kind === 'conta') await login(page)
-    else await page.goto('/')
+    else await page.goto('/calendario')
     await openGlobo(page)
     await page.getByRole('button', { name: /Revelar letra/ }).click()
     await expect(page.getByText(/^[1-9]\d*\/\d+ Letra$/)).toBeVisible()

@@ -16,7 +16,7 @@ async function openSettings(page: Page) {
 
 test.describe('US1: configurações no aparelho (feature 021)', () => {
   test('engrenagem com tooltip, modal que abre e fecha devolvendo o foco', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const gear = page.getByRole('button', { name: 'Configurações' })
     await expect(gear).toBeVisible()
     await gear.focus()
@@ -30,7 +30,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
   })
 
   test('tema: claro → escuro → automático, com animação e persistência', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     const html = page.locator('html')
     const theme = dialog.getByRole('button', { name: /^Tema:/ })
@@ -73,7 +73,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
 
   test('com redução de movimento a troca de tema não anima', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto('/')
+    await page.goto('/calendario')
     await openSettings(page)
     const durations = await page.evaluate(async () => {
       const button = document.querySelector<HTMLButtonElement>('[aria-label^="Tema:"]')
@@ -89,7 +89,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
   })
 
   test('ajudas e riscar valem no jogo; restaurar padrões volta tudo', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     let dialog = await openSettings(page)
     const letters = dialog.getByRole('group', { name: 'Letras' })
     await letters.getByRole('button', { name: 'Mais letras' }).click()
@@ -127,7 +127,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
   })
 
   test('as escolhas continuam depois de recarregar', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     await dialog.getByRole('switch', { name: 'Riscar a dica só quando acerta' }).click()
     await page.reload()
@@ -139,7 +139,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
 
   test('em 360 px a modal cabe sem rolagem lateral', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 740 })
-    await page.goto('/')
+    await page.goto('/calendario')
     await openSettings(page)
     const width = await page.evaluate(() => document.documentElement.scrollWidth)
     expect(width).toBeLessThanOrEqual(360)
@@ -151,7 +151,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
         (value) => window.localStorage.setItem('cruzadinha:theme', value),
         theme,
       )
-      await page.goto('/')
+      await page.goto('/calendario')
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
       await openSettings(page)
       expect((await axe(page).analyze()).violations).toEqual([])
@@ -163,7 +163,7 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
   test('a cruzada padrão abre a aba certa; trocar a aba e recarregar volta à padrão', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     await dialog
       .getByRole('group', { name: 'Cruzada padrão' })
@@ -181,7 +181,7 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
   test('com "Ir direto ao jogo", abrir / leva ao jogo de hoje sem mostrar o calendário', async ({
     page,
   }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     const dialog = await openSettings(page)
     await dialog.getByRole('switch', { name: 'Ir direto ao jogo' }).click()
     await dialog.getByRole('button', { name: 'Fechar' }).click()
@@ -191,7 +191,7 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
       const seen = { calendar: false }
       ;(window as unknown as { calendarSeen: typeof seen }).calendarSeen = seen
       new MutationObserver(() => {
-        if (location.pathname === '/' && document.querySelector('[role="tabpanel"]')) {
+        if (location.pathname === '/calendario' && document.querySelector('[role="tabpanel"]')) {
           seen.calendar = true
         }
       }).observe(document, { childList: true, subtree: true })
@@ -205,13 +205,16 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
       ),
     ).toBe(false)
 
-    // O Voltar não repete o atalho; a volta pelo cabeçalho fica no calendário.
-    await page.getByRole('link', { name: 'Cruzadinha' }).click()
+    // A cada chegada em / o atalho vale, também pelo logo (feature 048, FR-002); o calendário fica
+    // no link "Calendário" do cabeçalho.
+    await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+    await page.getByRole('banner').getByRole('link', { name: 'Cruzadinha' }).click()
+    await expect(page).toHaveURL(/\/jogo\//)
   })
 
   test('concluída hoje, abre o calendário com o aviso citando a cruzada', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/calendario')
     await page.getByRole('link', { name: /^O Globo: / }).click()
     await expect(page.getByRole('grid')).toBeVisible()
     await fillSolution(page, await todaySolution(page.request))
@@ -222,6 +225,7 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
     await dialog.getByRole('switch', { name: 'Ir direto ao jogo' }).click()
     await dialog.getByRole('button', { name: 'Fechar' }).click()
     await page.goto('/')
+    await expect(page).toHaveURL(/\/calendario$/)
     await expect(page.getByText('O Globo: a cruzada de hoje já foi concluída.')).toBeVisible()
     expect(page.url()).not.toContain('/jogo/')
   })

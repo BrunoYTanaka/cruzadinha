@@ -13,7 +13,7 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
   page,
 }) => {
   const start = Date.now()
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
   await expect(page.getByText('Visitante')).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)

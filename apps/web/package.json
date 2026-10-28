@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "check:build-output": "node scripts/check-build-output.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
   "dependencies": {
     "@cruzadinha/shared": "0.27.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource/roboto": "^5.3.0",
     "@fontsource/roboto-mono": "^5.3.0",
     "@tanstack/react-query": "^5.104.2",

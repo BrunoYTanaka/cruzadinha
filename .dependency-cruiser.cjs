@@ -103,6 +103,14 @@ module.exports = {
       to: { path: `${WEB}/features/`, pathNot: `${WEB}/features/guest/` },
     },
 
+    {
+      name: 'web-landing-no-feature',
+      comment: 'landing (feature 048) só usa domain e shared; fora da ordem das features.',
+      severity: SEVERITY,
+      from: { path: `${WEB}/features/landing/` },
+      to: { path: `${WEB}/features/`, pathNot: `${WEB}/features/landing/` },
+    },
+
     // --- API ---
     {
       name: 'api-platform-up',

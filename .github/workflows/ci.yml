@@ -41,6 +41,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+        env:
+          SITE_URL: https://exemplo.pages.dev
+      - run: npm run check:build-output -w @cruzadinha/web
+        env:
+          SITE_URL: https://exemplo.pages.dev
 
   integration:
     runs-on: ubuntu-latest

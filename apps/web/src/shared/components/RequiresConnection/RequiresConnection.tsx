@@ -10,7 +10,7 @@ export function RequiresConnection({ children }: { children: ReactNode }) {
     children
   ) : (
     <ErrorState level={1} title="Esta tela precisa de conexão.">
-      <Link to="/">Voltar à biblioteca</Link>
+      <Link to="/calendario">Voltar à biblioteca</Link>
     </ErrorState>
   )
 }

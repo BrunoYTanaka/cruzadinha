@@ -23,6 +23,7 @@ import {
   useOutboxDrain,
 } from '../features/offline'
 import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
+import { HeaderStart } from './HeaderStart'
 import styles from './AppLayout.module.css'
 
 // Telas de conta das features 035 e 042, além do login e do cadastro.
@@ -70,9 +71,7 @@ export function AppLayout() {
         Pular para o conteúdo
       </a>
       <header className={styles.header}>
-        <Link to="/" className={styles.brand}>
-          Cruzadinha
-        </Link>
+        <HeaderStart />
         <div className={styles.actions}>
           <InstallButton />
           <SettingsButton />

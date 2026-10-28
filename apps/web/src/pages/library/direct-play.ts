@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { replace, type LoaderFunctionArgs } from 'react-router'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
-import { whenServerReady } from '../../shared/services/api/server-wake/server-wake'
+import { waitForServer } from '../../shared/services/api/server-wake/server-wake'
 import { sessionQueryOptions, toViewer, viewerKey } from '../../features/session'
 import {
   isNoPuzzle,
@@ -14,8 +14,8 @@ import {
 import { getSettings } from '../../shared/services/settings-store/settings-store'
 import { todayInBrasilia } from '../../shared/helpers/dates/dates'
 
-// "Ir direto ao jogo" (feature 021, FR-013 e FR-014): ao abrir o endereço raiz, leva à cruzada de
-// hoje da cruzada padrão, ou fica no calendário com o motivo.
+// "Ir direto ao jogo" (feature 021, FR-013; feature 048, FR-002): ao chegar no endereço raiz, leva à
+// cruzada de hoje da cruzada padrão, ou vai ao calendário com o motivo.
 
 export type DirectPlayDecision =
   | { kind: 'go'; href: string }
@@ -23,11 +23,21 @@ export type DirectPlayDecision =
 
 export type DirectPlayStay = Extract<DirectPlayDecision, { kind: 'stay' }>
 
-// O que a rota `/` devolve quando fica no calendário; a `LibraryPage` mostra o aviso.
-export type DirectPlayData = { directPlay: DirectPlayStay }
+// O motivo de ter ido ao calendário atravessa o redirecionamento numa variável do módulo (como a
+// escolha de fonte): a `LibraryPage` o lê com `peekDirectPlayStay` ao montar e o apaga com
+// `clearDirectPlayStay`, então o aviso não volta numa visita posterior ao calendário.
+let pendingStay: DirectPlayStay | null = null
 
-export function isDirectPlayData(value: unknown): value is DirectPlayData {
-  return typeof value === 'object' && value !== null && 'directPlay' in value
+export function rememberDirectPlayStay(stay: DirectPlayStay): void {
+  pendingStay = stay
+}
+
+export function peekDirectPlayStay(): DirectPlayStay | null {
+  return pendingStay
+}
+
+export function clearDirectPlayStay(): void {
+  pendingStay = null
 }
 
 export function decideDirectPlay(card: TodayCard): DirectPlayDecision {
@@ -61,28 +71,22 @@ export function directPlayMessage({ reason, name }: DirectPlayStay): string {
   }
 }
 
-// Caminho com que a página abriu: o atalho só vale se foi o endereço raiz, nunca um link direto.
-const pageInitialPath = typeof window === 'undefined' ? '' : window.location.pathname
+type DirectPlayOptions = { today?: () => string }
 
-type DirectPlayOptions = { initialPath?: string; today?: () => string }
-
-// Loader da rota `/`. Age uma vez por carregamento da página (voltar ao calendário pelo cabeçalho
-// não leva de novo ao jogo) e usa `replace`, para o Voltar do navegador não repetir o atalho.
+// Loader da rota `/`. Decide a cada chegada em `/` (endereço ou logo do cabeçalho) e usa `replace`,
+// para o Voltar do navegador não repetir o atalho.
 export function directPlayLoader(
   queryClient: QueryClient,
-  { initialPath = pageInitialPath, today = todayInBrasilia }: DirectPlayOptions = {},
+  { today = todayInBrasilia }: DirectPlayOptions = {},
 ) {
-  let handled = false
-  return async (
-    args?: Pick<LoaderFunctionArgs, 'request'>,
-  ): Promise<Response | DirectPlayData | null> => {
-    if (handled) return null
-    handled = true
-    if (initialPath !== '/' || !getSettings().directToGame) return null
+  return async (args?: Pick<LoaderFunctionArgs, 'request'>): Promise<Response | null> => {
+    pendingStay = null
+    if (!getSettings().directToGame) return null
     const source = loadSourceChoice()
     try {
-      // Roda em paralelo com o loader pai que espera a API acordar (feature 032).
-      await whenServerReady(args?.request.signal)
+      // A landing fica fora do grupo cujo loader espera a API acordar, então este loader acorda e
+      // espera o servidor ele mesmo (features 032 e 048).
+      await waitForServer({ signal: args?.request.signal })
       const viewer = toViewer(await queryClient.ensureQueryData(sessionQueryOptions()))
       const library = await queryClient.ensureQueryData({
         queryKey: queryKeys.library(viewerKey(viewer), source),
@@ -96,10 +100,12 @@ export function directPlayLoader(
         { down: isSourceDown(source), noPuzzle: isNoPuzzle(source, day) },
       )
       const decision = decideDirectPlay(card)
-      return decision.kind === 'go' ? replace(decision.href) : { directPlay: decision }
+      if (decision.kind === 'go') return replace(decision.href)
+      rememberDirectPlayStay(decision)
+      return replace('/calendario')
     } catch {
       // Sem a biblioteca, o calendário abre normalmente e mostra os próprios erros.
-      return null
+      return replace('/calendario')
     }
   }
 }

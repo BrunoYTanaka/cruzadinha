@@ -1,11 +1,19 @@
-# Site sem divulgação em buscadores (constitution VIII): não indexar nem seguir links (feature 012,
-# FR-007; feature 013, FR-025).
+# Só a landing (/) pode ser indexada (constitution VIII, emenda 5.0.0; feature 048): todas as outras
+# páginas seguem sem indexação e sem seguir links (feature 012, FR-007; feature 013, FR-025). O
+# `! X-Robots-Tag` tira o cabeçalho que o `/*` poria no endereço raiz e nos arquivos para buscadores.
 /*
   X-Robots-Tag: noindex, nofollow
 
+/sitemap.xml
+  ! X-Robots-Tag
+
+/robots.txt
+  ! X-Robots-Tag
+
 # O HTML é sempre conferido, para uma aba nova não apontar para arquivos que deixaram de existir
-# depois de uma publicação (FR-024).
+# depois de uma publicação (FR-024). O endereço raiz também é a landing indexável (feature 048).
 /
+  ! X-Robots-Tag
   Cache-Control: no-cache
 
 /index.html

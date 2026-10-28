@@ -6,7 +6,7 @@ export function NotFoundPage() {
     <section className={styles.error}>
       <h1 className={styles.title}>Página não encontrada</h1>
       <p className={styles.message}>O endereço não existe ou foi removido.</p>
-      <Link to="/">Voltar à biblioteca</Link>
+      <Link to="/calendario">Voltar à biblioteca</Link>
     </section>
   )
 }

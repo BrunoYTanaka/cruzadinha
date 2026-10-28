@@ -7,7 +7,7 @@ import { formatDate, GameScreen, NeedsConnectionError, useGameData } from '../..
 import { viewerKey } from '../../features/session'
 
 function BackLink() {
-  return <Link to="/">Voltar à biblioteca</Link>
+  return <Link to="/calendario">Voltar à biblioteca</Link>
 }
 
 export function GamePage() {

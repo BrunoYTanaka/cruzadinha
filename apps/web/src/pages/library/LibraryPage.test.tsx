@@ -12,6 +12,7 @@ import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../../features/guest/services/guest-store'
 import { savePuzzle } from '../../features/offline'
 import { LibraryPage } from './LibraryPage'
+import { clearDirectPlayStay, peekDirectPlayStay, rememberDirectPlayStay } from './direct-play'
 import { rememberGameSource } from '../../features/library/services/source-choice'
 import { loadLibraryWidth } from '../../features/library/services/library-width'
 import { getSettings, updateSettings } from '../../shared/services/settings-store/settings-store'
@@ -55,6 +56,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  clearDirectPlayStay()
   vi.restoreAllMocks()
   vi.useRealTimers()
   window.localStorage.clear()
@@ -682,21 +684,17 @@ describe('aviso de "Ir direto ao jogo" (feature 021)', () => {
   it('mostra o motivo devolvido pelo loader, com o nome da cruzada, e fecha', async () => {
     library()
     const user = userEvent.setup()
+    // O loader de `/` deixa o motivo para a página do calendário (feature 048).
+    rememberDirectPlayStay({ kind: 'stay', reason: 'completed', name: 'Cruzada Online' })
     renderRoutes(
-      [
-        {
-          path: '/',
-          element: <LibraryPage />,
-          loader: () => ({
-            directPlay: { kind: 'stay', reason: 'completed', name: 'Cruzada Online' },
-          }),
-        },
-      ],
-      ['/'],
+      [{ path: '/calendario', element: <LibraryPage /> }],
+      ['/calendario'],
       withAccount(),
     )
     const notice = await screen.findByText('Cruzada Online: a cruzada de hoje já foi concluída.')
     expect(notice).toBeInTheDocument()
+    // Lido ao montar e apagado: uma visita posterior ao calendário não repete o aviso.
+    await waitFor(() => expect(peekDirectPlayStay()).toBeNull())
     await user.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(screen.queryByText('Cruzada Online: a cruzada de hoje já foi concluída.')).toBeNull()
   })

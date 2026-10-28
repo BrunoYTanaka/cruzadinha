@@ -41,7 +41,12 @@ export default defineConfig(
     },
   },
   {
-    files: ['apps/web/version-plugin*.ts', 'apps/web/public-headers.test.ts'],
+    files: [
+      'apps/web/version-plugin*.ts',
+      'apps/web/prerender-plugin*.ts',
+      'apps/web/public-headers.test.ts',
+      'apps/web/scripts/**/*.mjs',
+    ],
     languageOptions: {
       globals: globals.node,
     },

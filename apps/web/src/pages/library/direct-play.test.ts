@@ -1,7 +1,7 @@
 import type { LibraryItem } from '@cruzadinha/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
-import { resetServerWake, waitForServer } from '../../shared/services/api/server-wake/server-wake'
+import { resetServerWake } from '../../shared/services/api/server-wake/server-wake'
 import { updateSettings } from '../../shared/services/settings-store/settings-store'
 import {
   clearRememberedSource,
@@ -12,7 +12,14 @@ import type { TodayCard } from '../../features/library/helpers/today-cards'
 import { makeLibraryItem } from '../../test/fixtures'
 import { jsonResponse, mockApi } from '../../test/http'
 import { aUser, makeQueryClient, serverIsReady } from '../../test/render'
-import { decideDirectPlay, directPlayLoader, directPlayMessage } from './direct-play'
+import {
+  clearDirectPlayStay,
+  decideDirectPlay,
+  directPlayLoader,
+  directPlayMessage,
+  peekDirectPlayStay,
+  type DirectPlayStay,
+} from './direct-play'
 
 const card = (patch: Partial<TodayCard>): TodayCard => ({
   source: 'cruzadaonline',
@@ -77,15 +84,17 @@ describe('decideDirectPlay', () => {
 
 describe('directPlayLoader', () => {
   const today = '2026-10-21'
-  const run = (
-    items: LibraryItem[],
-    { initialPath = '/', source = 'cruzadaonline' }: { initialPath?: string; source?: string } = {},
-  ) => {
+  // Ficar no calendário é um redirecionamento a /calendario; o motivo fica para a LibraryPage.
+  const expectCalendar = (result: Response | null, stay: DirectPlayStay | null) => {
+    expect(result?.headers.get('Location')).toBe('/calendario')
+    expect(peekDirectPlayStay()).toEqual(stay)
+  }
+  const run = (items: LibraryItem[], { source = 'cruzadaonline' }: { source?: string } = {}) => {
     mockApi({ 'GET /api/library': () => jsonResponse(200, { items }) })
     const queryClient = makeQueryClient()
     queryClient.setQueryData(queryKeys.session, { user: aUser })
     updateSettings({ directToGame: true, defaultSource: source })
-    const loader = directPlayLoader(queryClient, { initialPath, today: () => today })
+    const loader = directPlayLoader(queryClient, { today: () => today })
     return loader
   }
 
@@ -95,31 +104,24 @@ describe('directPlayLoader', () => {
   })
 
   afterEach(() => {
+    clearDirectPlayStay()
     resetServerWake()
     vi.unstubAllGlobals()
     window.localStorage.clear()
   })
 
-  it('com a API dormindo espera acordar antes de consultar a sessão e ainda leva ao jogo (feature 032)', async () => {
+  it('acorda o servidor ele mesmo antes de consultar a sessão e ainda leva ao jogo (features 032 e 048)', async () => {
     resetServerWake()
     const item = makeLibraryItem(today, { source: 'cruzadaonline' })
-    let awake = false
     const { calls } = mockApi({
       'GET /api/health': () => jsonResponse(200, { status: 'ok', database: 'up' }),
-      'GET /api/auth/me': () =>
-        awake ? jsonResponse(200, { user: aUser }) : jsonResponse(503, { error: 'x' }),
+      'GET /api/auth/me': () => jsonResponse(200, { user: aUser }),
       'GET /api/library': () => jsonResponse(200, { items: [item] }),
     })
     const queryClient = makeQueryClient()
     updateSettings({ directToGame: true, defaultSource: 'cruzadaonline' })
-    const loader = directPlayLoader(queryClient, { initialPath: '/', today: () => today })
-    const request = new Request('http://localhost/')
-    const running = loader({ request })
-    await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(calls).toEqual([])
-    awake = true
-    await waitForServer()
-    const result = (await running) as Response
+    const loader = directPlayLoader(queryClient, { today: () => today })
+    const result = (await loader({ request: new Request('http://localhost/') })) as Response
     expect(result.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
     expect(calls.map((call) => call.key)[0]).toBe('GET /api/health')
   })
@@ -146,17 +148,13 @@ describe('directPlayLoader', () => {
     expect((result as Response).headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
   })
 
-  it('só age uma vez por carregamento da página (FR-014)', async () => {
-    const loader = run([makeLibraryItem(today, { source: 'cruzadaonline' })])
-    await loader()
-    expect(await loader()).toBeNull()
-  })
-
-  it('a página não abriu em / (link direto): não faz nada', async () => {
-    const loader = run([makeLibraryItem(today, { source: 'cruzadaonline' })], {
-      initialPath: '/jogo/abc',
-    })
-    expect(await loader()).toBeNull()
+  it('decide a cada chegada em /, também pelo logo do cabeçalho (feature 048, FR-002)', async () => {
+    const item = makeLibraryItem(today, { source: 'cruzadaonline' })
+    const loader = run([item])
+    const first = (await loader()) as Response
+    const second = (await loader()) as Response
+    expect(first.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
+    expect(second.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
   })
 
   it('ainda não guardada vai buscar o dia na fonte', async () => {
@@ -177,25 +175,23 @@ describe('directPlayLoader', () => {
         bestAt: `${today}T12:00:00.000Z`,
       }),
     ])
-    expect(await loader()).toEqual({
-      directPlay: { kind: 'stay', reason: 'completed', name: 'Cruzada Online' },
-    })
+    expectCalendar(await loader(), { kind: 'stay', reason: 'completed', name: 'Cruzada Online' })
   })
 
   it('fonte fora do ar fica no calendário com o motivo', async () => {
     markSourceDown('cruzadaonline')
     const loader = run([])
-    expect(await loader()).toEqual({
-      directPlay: { kind: 'stay', reason: 'source-down', name: 'Cruzada Online' },
-    })
+    expectCalendar(await loader(), { kind: 'stay', reason: 'source-down', name: 'Cruzada Online' })
   })
 
   it('a cruzada padrão clube só vai ao jogo se hoje já está salvo; sem edição, fica com o motivo', async () => {
     const item = makeLibraryItem(today, { source: 'clube' })
     const saved = (await run([item], { source: 'clube' })()) as Response
     expect(saved.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
-    expect(await run([], { source: 'clube' })()).toEqual({
-      directPlay: { kind: 'stay', reason: 'no-puzzle', name: 'Cruzadas Clube' },
+    expectCalendar(await run([], { source: 'clube' })(), {
+      kind: 'stay',
+      reason: 'no-puzzle',
+      name: 'Cruzadas Clube',
     })
   })
 
@@ -206,9 +202,19 @@ describe('directPlayLoader', () => {
     expect(result.headers.get('Location')).toBe(`/jogo/${item.puzzleId}`)
   })
 
-  it('erro ao ler a biblioteca fica no calendário sem aviso', async () => {
+  it('erro ao ler a biblioteca vai ao calendário sem aviso', async () => {
     const loader = run([])
     mockApi({ 'GET /api/library': () => jsonResponse(500, { error: 'internal-error' }) })
-    expect(await loader()).toBeNull()
+    expectCalendar(await loader(), null)
+  })
+
+  it('o aviso do motivo some na chegada seguinte', async () => {
+    const loader = run([])
+    markSourceDown('cruzadaonline')
+    await loader()
+    expect(peekDirectPlayStay()).not.toBeNull()
+    updateSettings({ directToGame: false })
+    await loader()
+    expect(peekDirectPlayStay()).toBeNull()
   })
 })

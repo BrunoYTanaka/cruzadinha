@@ -17,7 +17,7 @@ function Game() {
 const routes = [
   { path: '/dia/:date', element: <DayRoute /> },
   { path: '/jogo/:puzzleId', element: <Game /> },
-  { path: '/', element: <p>Biblioteca</p> },
+  { path: '/calendario', element: <p>Biblioteca</p> },
   { path: '*', element: <p>Não encontrada</p> },
 ]
 
@@ -150,7 +150,10 @@ describe('DayRoute', () => {
     renderRoutes(routes, ['/dia/2026-10-03'])
     expect(await screen.findByRole('alert')).toHaveTextContent('Não há cruzada neste dia.')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Não há cruzada neste dia.')
-    expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute('href', '/')
+    expect(screen.getByRole('link', { name: 'Voltar à biblioteca' })).toHaveAttribute(
+      'href',
+      '/calendario',
+    )
     expect(window.sessionStorage.getItem('cruzadinha:no-puzzle:oglobo:2026-10-03')).toBe('1')
   })
 

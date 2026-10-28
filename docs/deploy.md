@@ -227,6 +227,10 @@ O Deploy não acessa o banco: a API recebe o `DATABASE_URL` no Render (passo 5) 
 
 `SITE_URL` não é o endereço que o Wrangler mostra ao publicar (`https://<hash>.<projeto>.pages.dev`): esse aponta para um deploy específico e o hash muda a cada publicação. O Deploy lê `SITE_URL/api/health` e `SITE_URL/version.json` para saber o que está no ar, então precisa do domínio de produção. Se o subdomínio `<projeto>` já estava ocupado, a Cloudflare usa outro (por exemplo, `<projeto>-abc.pages.dev`): confira em **Workers & Pages → `<projeto>`**.
 
+### Indexação nos buscadores (feature 048)
+
+Só a landing (`/`) pode aparecer no Google; todas as outras páginas seguem com `X-Robots-Tag: noindex, nofollow` (`apps/web/public/_headers`, constitution VIII). O build usa `SITE_URL` (origem pública, sem barra final) para gerar `sitemap.xml`, com só a landing, e a linha `Sitemap` do `robots.txt`; sem `SITE_URL` o build avisa e sai sem os dois. O `robots.txt` não bloqueia o rastreio de propósito: o buscador precisa ler o `noindex` das outras páginas. O passo "Verificar" do Deploy confere que `/` não tem `X-Robots-Tag`, que `/calendario`, `/jogo/x` e `/conta` têm `noindex` e que o `sitemap.xml` lista a landing. Para pedir a indexação, abra a Search Console, adicione o site e envie `<SITE_URL>/sitemap.xml`. Localmente, `npm run build -w @cruzadinha/web` seguido de `SITE_URL=<origem> npm run check:build-output -w @cruzadinha/web` confere o `dist/`; os cabeçalhos só aparecem no Cloudflare Pages ou com `npx wrangler@4.151.1 pages dev apps/web/dist`.
+
 **Token da Cloudflare**: **My Profile → API Tokens → Create Token → Create Custom Token**:
 
 - dê um nome (por exemplo, `cruzadinha-deploy`); sem nome o botão de revisão fica bloqueado;

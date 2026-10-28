@@ -33,7 +33,7 @@ const cell = (page: Page, row: number, col: number) =>
   page.getByRole('gridcell', { name: new RegExp(`^Linha ${row + 1}, coluna ${col + 1},`) })
 
 async function openClube(page: Page) {
-  await page.goto('/')
+  await page.goto('/calendario')
   await card(page, 'Cruzadas Clube').click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
@@ -41,7 +41,7 @@ async function openClube(page: Page) {
 test('quatro cartões e quatro abas; abre a Cruzadas Clube pelo cartão de hoje', async ({
   page,
 }) => {
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
   await expect(page.getByRole('tab')).toHaveCount(4)
   await expect(page.getByRole('tab', { name: /^Cruzadas Clube/ })).toBeVisible()
@@ -148,7 +148,7 @@ test('o visitante completa a cruzada e o progresso não aparece nas outras fonte
   await expect(page.getByRole('dialog', { name: 'Cruzada concluída' })).toBeVisible()
   await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
 
-  await page.goto('/')
+  await page.goto('/calendario')
   await expect(page.getByRole('link', { name: /^Cruzadas Clube: concluída/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
   await expect(page.getByRole('link', { name: /^Cruzada Online: não iniciada/ })).toBeVisible()
@@ -162,7 +162,7 @@ test('um dia passado sem edição aparece sem cruzada e não vai à API de puzzl
     if (/\/api\/puzzles(\?|\/)/.test(request.url())) puzzleRequests.push(request.url())
   })
 
-  await page.goto('/')
+  await page.goto('/calendario')
   await page.getByRole('tab', { name: /^Cruzadas Clube/ }).click()
   const table = page.getByRole('table')
   // Só o dia salvo (hoje) é link; os demais dias passados são "sem cruzada", sem busca.

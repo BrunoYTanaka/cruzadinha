@@ -1,0 +1,129 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 32px;
+  scroll-margin-top: 16px;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.help {
+  max-width: 34em;
+  margin: 0;
+  color: var(--mute);
+  text-wrap: balance;
+}
+
+/* Cinco casas cabem em 360 px com folga. */
+.grid {
+  --size: min(60px, 15vw);
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--block);
+  background-color: var(--block);
+  outline-offset: 4px;
+}
+
+.grid:focus-visible {
+  outline: 3px solid var(--focus);
+}
+
+.row {
+  display: flex;
+}
+
+.cell,
+.block {
+  box-sizing: border-box;
+  width: var(--size);
+  height: var(--size);
+}
+
+.block {
+  background-color: var(--block);
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--cell-line);
+  background-color: var(--cell);
+  color: var(--ink);
+  font-size: calc(var(--size) * 0.5);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.word {
+  background-color: var(--word);
+}
+
+.selected {
+  background-color: var(--sel);
+  color: var(--sel-ink);
+}
+
+.number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* Campo que só recebe o teclado da tela do celular; não aparece nem muda o layout. */
+.sink {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 16px;
+  /* Reserva duas linhas para a dica mudar de tamanho sem mover o que vem depois. */
+  min-height: 3.2em;
+}
+
+.clue {
+  margin: 0;
+  color: var(--ink);
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: 3.2em;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.done p {
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
