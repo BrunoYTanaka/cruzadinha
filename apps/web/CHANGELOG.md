@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.13.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.12.1...web-v0.13.0) (2026-10-29)
+
+
+### Features
+
+* add turnstile captcha to sign-up and password recovery ([71515ed](https://github.com/BrunoYTanaka/cruzadinha/commit/71515ed12cf9a1cb8d4d3b206b32f87dd219ea1e))
+* optional automatic verification ([2262f14](https://github.com/BrunoYTanaka/cruzadinha/commit/2262f149825724a6dcaa8f498a53e66667bfda1c))
+* **web:** add keyboard shortcuts dialog to the game screen ([48941c4](https://github.com/BrunoYTanaka/cruzadinha/commit/48941c46321e344ca19f2cf34e9f11414064cbb2))
+* **web:** add the keyboard shortcuts dialog to the game screen ([32957c2](https://github.com/BrunoYTanaka/cruzadinha/commit/32957c22f3af617ad440a9453def4af8bc73639e))
+* **web:** add the public landing page and index it on search engines ([215d5f6](https://github.com/BrunoYTanaka/cruzadinha/commit/215d5f6a9af27ca833770071cc3b55e3f040cee0))
+* **web:** add the public landing page and index it on search engines ([7f13af9](https://github.com/BrunoYTanaka/cruzadinha/commit/7f13af91d32c51cc29edf37099caa960dd268b36)), closes [#122](https://github.com/BrunoYTanaka/cruzadinha/issues/122)
+* **web:** align the landing page to the mockup ([bdb2001](https://github.com/BrunoYTanaka/cruzadinha/commit/bdb20014b513df053950cb83a757488947e9fca7))
+* **web:** align the landing page to the mockup ([b4ef401](https://github.com/BrunoYTanaka/cruzadinha/commit/b4ef401225e601ce0a2f848aa1862bae0218303a))
+* **web:** mark wrong letters as typed and group helps in an Ajudas menu ([a956673](https://github.com/BrunoYTanaka/cruzadinha/commit/a9566737b6f434d489ff10dd0bb5a7a736e225c2))
+* **web:** show the Turnstile challenge on sign-up and recovery ([86c04a2](https://github.com/BrunoYTanaka/cruzadinha/commit/86c04a25651a61106abeec156f1434dc9d68b9fc))
+
+
+### Bug Fixes
+
+* **web:** fewer notices and buttons on the calendar and the game ([ccea7ab](https://github.com/BrunoYTanaka/cruzadinha/commit/ccea7ab5f4efae85546c1286ed160fed8112824d))
+* **web:** keep the helps button text centered ([17cb396](https://github.com/BrunoYTanaka/cruzadinha/commit/17cb3969ac6ba4ed10434bb901a6aad900e68b9f))
+* **web:** preload landing fonts and retry the header calendar click ([4727556](https://github.com/BrunoYTanaka/cruzadinha/commit/47275566bd4e175a9ec1b576accadc4ffad949c7))
+* **web:** remove the download-today button from the calendar ([648c3f4](https://github.com/BrunoYTanaka/cruzadinha/commit/648c3f4a2fce1e3a8dced3e2ffd4451a9ac37d07))
+* **web:** stop showing the waiting-progress notice to guests ([eb9a3f3](https://github.com/BrunoYTanaka/cruzadinha/commit/eb9a3f384d9601c8fa894eecd8d3d1ad535c3417))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.27.0 to 0.28.0
+
 ## [0.12.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.12.0...web-v0.12.1) (2026-10-28)
 
 
