@@ -5,7 +5,7 @@ description: "Task list for the landing page aligned to the mockup"
 
 # Tasks: Landing page alinhada ao mockup
 
-**Input**: Design documents from `/specs/049-landing-mockup/`
+**Input**: Design documents from `/specs/050-landing-mockup/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/ui-contract.md, quickstart.md
 
@@ -22,7 +22,7 @@ description: "Task list for the landing page aligned to the mockup"
 
 ## Phase 1: Setup
 
-- [X] T001 Record the baseline before touching code: run `npm test -w @cruzadinha/web -- landing` and `npm run build -w @cruzadinha/web` on the branch, and note the CSS size of `dist/assets/*.css` in `specs/049-landing-mockup/research.md` (R7) so the polish phase can compare. Confirm `grep -n "light-dark\|color-scheme" src/shared/themes/light.css src/shared/themes/dark.css` shows `color-scheme` in the same selectors that switch the theme (research R1). No code change.
+- [X] T001 Record the baseline before touching code: run `npm test -w @cruzadinha/web -- landing` and `npm run build -w @cruzadinha/web` on the branch, and note the CSS size of `dist/assets/*.css` in `specs/050-landing-mockup/research.md` (R7) so the polish phase can compare. Confirm `grep -n "light-dark\|color-scheme" src/shared/themes/light.css src/shared/themes/dark.css` shows `color-scheme` in the same selectors that switch the theme (research R1). No code change.
 
 ---
 
@@ -98,7 +98,7 @@ description: "Task list for the landing page aligned to the mockup"
 
 **Independent Test**: diff outside the landing is empty and other pages look the same (quickstart step 4).
 
-- [X] T015 [US5] Verify containment: run `git diff --stat main -- apps/web/src ':!apps/web/src/features/landing'` and record the result in `specs/049-landing-mockup/research.md` (R7); it must list no `shared/`, `app/`, `pages/` or other feature file. In `src/features/landing/components/LandingButton/LandingButton.test.tsx` add a case that no landing CSS module defines a selector on `:root`, `body`, `html` or a bare element (`readCss` for each landing `.css`), and that `Button.module.css` is untouched (compare the four variant names in `shared/components/Button`).
+- [X] T015 [US5] Verify containment: run `git diff --stat main -- apps/web/src ':!apps/web/src/features/landing'` and record the result in `specs/050-landing-mockup/research.md` (R7); it must list no `shared/`, `app/`, `pages/` or other feature file. In `src/features/landing/components/LandingButton/LandingButton.test.tsx` add a case that no landing CSS module defines a selector on `:root`, `body`, `html` or a bare element (`readCss` for each landing `.css`), and that `Button.module.css` is untouched (compare the four variant names in `shared/components/Button`).
 - [X] T016 [US5] Keyboard and focus pass: in `e2e/landing.spec.ts`, Tab through the whole landing and assert that every link, button and clue button shows a visible focus ring (`outline` or `box-shadow` differs from the unfocused state) and that Tab from the last grid word leaves the grid.
 
 ---
@@ -106,9 +106,9 @@ description: "Task list for the landing page aligned to the mockup"
 ## Phase 8: Polish & Cross-Cutting Concerns
 
 - [X] T017 Run the full local gate: `npm run lint` (includes `check:deps`), `npm run typecheck`, `npm test`, `npm run build -w @cruzadinha/web`, `SITE_URL=https://exemplo.pages.dev npm run check:build-output -w @cruzadinha/web`, then `npm run test:e2e -w @cruzadinha/web -- landing sem-saltos` (quickstart 1, 2 and 5; e2e needs the API and a local Postgres with seed). The `landing` spec also guards the 048 rules this feature keeps (FR-015): direct-to-game, calendar link, indexing. Compare the CSS size in `dist/assets/*.css` with the T001 baseline and note the increase in the PR description (report only, no limit; research R7). Fix what fails.
-- [X] T018 Walk through `specs/049-landing-mockup/quickstart.md` step 3 side by side with the mockup at 1440, 820 and 360 px, light and dark, with and without reduced motion; list any visible difference as a fix in this feature (not a new feature) and note in `research.md` the ones accepted on purpose (the site header kept, `--word` and `--sel` dark values from the site's tokens).
-- [X] T019 [P] Edit `CLAUDE.md`: add a "Feature 049 (landing aligned to the mockup, web only)" line after 048: the mockup is the visual contract; the style is local to `features/landing` (`LandingButton`, tokens `--grid-line`, `--band`, `--band-ink` with `light-dark()`, no new dependency, no third-party fonts); the mini crossword keeps the `domain/game` reducer with `START_STATE` and `solvedWords` in `helpers/mini-state.ts`; Tab leaves the grid at the ends; `FinalBand` is the only full-width block and `LandingContent` has no `max-width`; specs in `specs/049-landing-mockup/`. Do not edit `CHANGELOG.md` or versions (release-please).
-- [ ] T020 Commit in logical steps (English Conventional Commits, scope `web`, no AI trailer), e.g. `feat(web): align landing hero to the mockup`, `feat(web): align landing sections to the mockup`, `test(web): cover the landing mockup in e2e`, `docs: add feature 049 spec and notes`, then push `feat/049-landing-mockup` and open the PR to `main` with a summary and test plan (the "Verificar" step of the PR checks needs `SITE_URL`). Never use the `open-mr` skill.
+- [X] T018 Walk through `specs/050-landing-mockup/quickstart.md` step 3 side by side with the mockup at 1440, 820 and 360 px, light and dark, with and without reduced motion; list any visible difference as a fix in this feature (not a new feature) and note in `research.md` the ones accepted on purpose (the site header kept, `--word` and `--sel` dark values from the site's tokens).
+- [X] T019 [P] Edit `CLAUDE.md`: add a "Feature 050 (landing aligned to the mockup, web only)" line after 048: the mockup is the visual contract; the style is local to `features/landing` (`LandingButton`, tokens `--grid-line`, `--band`, `--band-ink` with `light-dark()`, no new dependency, no third-party fonts); the mini crossword keeps the `domain/game` reducer with `START_STATE` and `solvedWords` in `helpers/mini-state.ts`; Tab leaves the grid at the ends; `FinalBand` is the only full-width block and `LandingContent` has no `max-width`; specs in `specs/050-landing-mockup/`. Do not edit `CHANGELOG.md` or versions (release-please).
+- [ ] T020 Commit in logical steps (English Conventional Commits, scope `web`, no AI trailer), e.g. `feat(web): align landing hero to the mockup`, `feat(web): align landing sections to the mockup`, `test(web): cover the landing mockup in e2e`, `docs: add feature 050 spec and notes`, then push `feat/050-landing-mockup` and open the PR to `main` with a summary and test plan (the "Verificar" step of the PR checks needs `SITE_URL`). Never use the `open-mr` skill.
 
 ---
 

@@ -1,6 +1,6 @@
 import type { Puzzle, Solution } from '@cruzadinha/shared'
 
-// Mini cruzada 5x5 da landing (features 048 e 049: a amostra do mockup). Palavras e dicas inventadas para a página: nada vem de
+// Mini cruzada 5x5 da landing (features 048 e 050: a amostra do mockup). Palavras e dicas inventadas para a página: nada vem de
 // nenhuma fonte. `source`, `level` e `date` só existem porque o formato interno de puzzle os exige.
 //
 //   C O S T A

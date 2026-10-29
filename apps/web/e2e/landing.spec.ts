@@ -212,7 +212,7 @@ test('a landing abre sem rede depois de o site ser instalado (FR-014)', async ({
   await expect(page.getByRole('link', { name: 'Jogar a cruzada de hoje' })).toBeVisible()
 })
 
-test.describe('US4/US5: sem terceiros, letras e teclado (feature 049)', () => {
+test.describe('US4/US5: sem terceiros, letras e teclado (feature 050)', () => {
   test('nenhuma requisição sai do site ao abrir a landing e usar a mini cruzada', async ({
     page,
     baseURL,

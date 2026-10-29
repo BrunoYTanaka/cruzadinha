@@ -1,6 +1,6 @@
 # Feature Specification: Landing page alinhada ao mockup
 
-**Feature Branch**: `feat/049-landing-mockup`
+**Feature Branch**: `feat/050-landing-mockup`
 
 **Created**: 2026-10-29
 

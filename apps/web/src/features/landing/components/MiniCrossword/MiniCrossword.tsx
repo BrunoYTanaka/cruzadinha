@@ -47,7 +47,7 @@ function keyAction(event: KeyboardEvent): GameAction | null {
   }
 }
 
-// Mini cruzada jogável da landing (features 048 e 049): o estado e as regras são os do jogo
+// Mini cruzada jogável da landing (features 048 e 050): o estado e as regras são os do jogo
 // (`domain/game`), mas nada é salvo nem enviado, e não há relógio.
 export function MiniCrossword() {
   const [state, dispatch] = useReducer(miniReducer, START_STATE)

@@ -21,7 +21,7 @@ function scrollToMini(event: MouseEvent<HTMLAnchorElement>) {
   target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
 }
 
-// O topo da página (feature 049, mockup): o título cai letra a letra em dez casas numeradas e, abaixo
+// O topo da página (feature 050, mockup): o título cai letra a letra em dez casas numeradas e, abaixo
 // dele, vêm a frase de destaque (o único `h1`), o texto de apoio e os dois botões. As casas, a grade
 // do fundo e as letras soltas são decoração; o texto "Cruzadinha" do `h1` fica escondido na tela
 // para leitor de tela e buscador.

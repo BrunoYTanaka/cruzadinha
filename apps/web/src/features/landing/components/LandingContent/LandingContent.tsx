@@ -5,7 +5,7 @@ import { MiniCrossword } from '../MiniCrossword/MiniCrossword'
 import { SourcesSection } from '../SourcesSection/SourcesSection'
 import styles from './LandingContent.module.css'
 
-// O texto da landing (features 048 e 049). Vai no HTML pré-gerado pelo build, então não pode depender da
+// O texto da landing (features 048 e 050). Vai no HTML pré-gerado pelo build, então não pode depender da
 // API nem de dados do navegador.
 export function LandingContent() {
   return (

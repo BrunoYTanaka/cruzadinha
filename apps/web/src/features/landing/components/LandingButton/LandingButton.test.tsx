@@ -58,7 +58,7 @@ describe('LandingButton.module.css', () => {
   })
 })
 
-// O estilo novo é só da landing (feature 049, FR-014): nenhum módulo dela mexe em `:root`, `html`,
+// O estilo novo é só da landing (feature 050, FR-014): nenhum módulo dela mexe em `:root`, `html`,
 // `body` nem em elemento solto, e as quatro variantes do botão do site não mudam.
 describe('o estilo da landing não vaza para o resto do site', () => {
   const landing = join(import.meta.dirname, '..', '..')

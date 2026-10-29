@@ -59,7 +59,7 @@ describe('LandingContent: rolagem, foco e movimento (feature 048)', () => {
   })
 })
 
-describe('LandingContent.module.css (feature 049)', () => {
+describe('LandingContent.module.css (feature 050)', () => {
   const css = readCss('LandingContent.module.css')
 
   it('não leva cor fixa: tokens e derivados deles', () => {

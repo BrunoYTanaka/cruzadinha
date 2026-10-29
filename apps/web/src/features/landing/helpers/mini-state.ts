@@ -3,7 +3,7 @@ import { plainLetter } from '../../../domain/game/letters'
 import type { Direction } from '../../../domain/game/state'
 import { SAMPLE_PUZZLE, SAMPLE_SOLUTION } from './sample'
 
-// Estado da mini cruzada da landing (feature 049). Só regras puras: nada é salvo nem enviado.
+// Estado da mini cruzada da landing (feature 050). Só regras puras: nada é salvo nem enviado.
 
 // Sem limite de ajuda: a mini cruzada não tem ajudas, relógio nem progresso.
 export const miniGame = createGame({

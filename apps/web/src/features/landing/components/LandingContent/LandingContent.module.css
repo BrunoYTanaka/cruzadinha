@@ -1,4 +1,4 @@
-/* Raiz da landing (feature 049): os tokens só dela, derivados dos do site (nenhuma cor fixa), e a
+/* Raiz da landing (feature 050): os tokens só dela, derivados dos do site (nenhuma cor fixa), e a
    tipografia do mockup. Nada aqui vale fora da landing. */
 .landing {
   --grid-line: color-mix(in srgb, var(--ink) 7%, transparent);

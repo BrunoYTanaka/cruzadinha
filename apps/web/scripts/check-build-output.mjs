@@ -21,7 +21,7 @@ check((html.match(/<h1[ >]/g) ?? []).length === 1, 'index.html deve ter um únic
 check((html.match(/<main[ >]/g) ?? []).length === 1, 'index.html deve ter um único <main>')
 check(html.includes('id="conteudo"'), 'index.html sem o main#conteudo')
 check(rootHtml.includes('Jogar a cruzada de hoje'), 'index.html sem a chamada principal')
-// O texto da landing alinhada ao mockup (feature 049): rótulos, títulos e a frase de destaque.
+// O texto da landing alinhada ao mockup (feature 050): rótulos, títulos e a frase de destaque.
 for (const text of [
   'Como funciona',
   'Abriu, jogou. O resto é opcional.',

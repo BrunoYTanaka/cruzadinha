@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { landingButtonClass } from '../LandingButton/LandingButton'
 import styles from './FinalBand.module.css'
 
-// Faixa final (feature 049, mockup): escura e de largura total, o único bloco da landing que sai do
+// Faixa final (feature 050, mockup): escura e de largura total, o único bloco da landing que sai do
 // miolo centralizado.
 export function FinalBand() {
   return (

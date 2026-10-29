@@ -7,7 +7,7 @@ type SourcesSectionProps = {
   sources?: readonly PuzzleSourceId[]
 }
 
-// "Fontes" (feature 049, mockup): uma linha por fonte do jogo e o título com a quantidade, tudo
+// "Fontes" (feature 050, mockup): uma linha por fonte do jogo e o título com a quantidade, tudo
 // derivado da lista do jogo.
 export function SourcesSection({ sources = puzzleSourceIdSchema.options }: SourcesSectionProps) {
   return (

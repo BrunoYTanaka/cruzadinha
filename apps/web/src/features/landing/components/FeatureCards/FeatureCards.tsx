@@ -12,7 +12,7 @@ const PILLS = [
   'Cronômetro que pausa sozinho',
 ]
 
-// "Como funciona" (feature 049, mockup): três cartões com ícone de cruzada e as pílulas dos recursos
+// "Como funciona" (feature 050, mockup): três cartões com ícone de cruzada e as pílulas dos recursos
 // menores. A quantidade de fontes vem da lista do jogo, então o título acompanha uma fonte nova ou
 // removida.
 export function FeatureCards() {

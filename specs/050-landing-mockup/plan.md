@@ -1,8 +1,8 @@
 # Implementation Plan: Landing page alinhada ao mockup
 
-**Branch**: `feat/049-landing-mockup` | **Date**: 2026-10-29 | **Spec**: [spec.md](./spec.md)
+**Branch**: `feat/050-landing-mockup` | **Date**: 2026-10-29 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `specs/049-landing-mockup/spec.md`
+**Input**: Feature specification from `specs/050-landing-mockup/spec.md`
 
 ## Summary
 
@@ -60,7 +60,7 @@ Fronteiras de `check:deps`: `features/landing` continua importando só `shared` 
 ### Documentation (this feature)
 
 ```text
-specs/049-landing-mockup/
+specs/050-landing-mockup/
 ├── plan.md
 ├── research.md
 ├── data-model.md
@@ -91,7 +91,7 @@ apps/web/src/features/landing/
 
 apps/web/e2e/landing.spec.ts                  # textos novos; sem-saltos cobre o topo animado
 apps/web/scripts/check-build-output.mjs       # confere os novos rótulos/títulos no HTML pré-gerado
-CLAUDE.md                                     # nota da feature 049
+CLAUDE.md                                     # nota da feature 050
 ```
 
 `app/LandingShell.tsx`, `pages/landing/`, `prerender-plugin.ts`, rotas, `_headers`, `shared/components/Button` e `shared/themes/*` **não mudam**.
