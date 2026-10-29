@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/BrunoYTanaka/cruzadinha)](https://github.com/BrunoYTanaka/cruzadinha/releases)
 [![Licença: MIT](https://img.shields.io/github/license/BrunoYTanaka/cruzadinha)](LICENSE)
 
-**Site:** <https://cruzadinha.app.brv>
+**Site:** <https://cruzadinha.app.br>
 
 Site de palavras cruzadas que reúne puzzles de sites existentes numa interface limpa e fácil de usar. Cada site de origem tem uma UI/UX própria; o Cruzadinha entrega uma experiência única de jogo: tabuleiro, teclado, dicas e navegação, em tema claro ou escuro, com o progresso salvo no aparelho ou, com conta, entre dispositivos.
 
