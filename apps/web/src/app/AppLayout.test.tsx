@@ -77,10 +77,11 @@ describe('AppLayout e as pendências offline (feature 041)', () => {
     expect(readOutboxItems(OTHER, PUZZLE_ID)).toEqual([])
   })
 
-  it('o visitante vê que há progresso esperando uma conta, sem enviar nada', async () => {
+  it('o visitante não vê aviso de progresso esperando uma conta e nada é enviado', async () => {
     applyOutboxEvent(OTHER, PUZZLE_ID, { type: 'save', body })
     const { calls } = render(null)
-    expect(await screen.findByText('Há progresso esperando você entrar.')).toBeInTheDocument()
+    await screen.findByRole('link', { name: 'Cruzadinha' })
+    expect(screen.queryByText('Há progresso esperando você entrar.')).not.toBeInTheDocument()
     expect(calls.some((call) => call.key.startsWith('PUT'))).toBe(false)
     expect(readOutboxItems(OTHER, PUZZLE_ID)).toHaveLength(1)
   })

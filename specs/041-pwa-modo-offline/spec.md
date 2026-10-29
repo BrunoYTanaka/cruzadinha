@@ -84,6 +84,8 @@ Quem tem conta joga sem rede e o progresso fica numa fila no aparelho. Quando a 
 
 ### User Story 4 - Baixar cruzadas para a viagem (Priority: P3)
 
+> **Substituída pela feature 051**: o botão "Baixar as cruzadas de hoje" e o resumo saíram do calendário; cruzadas abertas continuam abrindo sem rede.
+
 A pessoa pede para deixar no aparelho as cruzadas de hoje (uma por fonte) antes de ficar sem rede, sem precisar abrir uma por uma.
 
 **Why this priority**: Melhora o uso planejado (viagem), mas as histórias 1 a 3 já entregam o modo offline com o que a pessoa abriu.
@@ -123,10 +125,10 @@ A pessoa pede para deixar no aparelho as cruzadas de hoje (uma por fonte) antes 
 - **FR-008**: Para contas, todo salvamento de progresso (letras, tempo, ajudas, conclusão, reinício) feito sem rede MUST entrar numa fila local, em ordem, e MUST ser enviado automaticamente quando a rede voltar, inclusive na próxima abertura do site.
 - **FR-009**: A fila MUST enviar no máximo a gravação mais recente por cruzada e MUST obedecer às mesmas regras de salvamento do servidor de hoje (nunca regride nem apaga conclusão); respostas de recusa por excesso de pedidos MUST ser repetidas com espera.
 - **FR-010**: O jogo MUST mostrar se há progresso aguardando envio e MUST nunca bloquear a pessoa por causa da fila.
-- **FR-011**: O progresso pendente MUST pertencer à conta que o gerou: só é enviado com a sessão dessa conta; ao sair da conta com pendências, a pessoa MUST ser avisada de que elas serão descartadas; se a sessão expirar sem rede, as pendências MUST ficar guardadas e ser enviadas quando a mesma conta entrar de novo neste aparelho (a pessoa joga como visitante e vê aviso de que há progresso esperando ela entrar), e MUST ser descartadas com aviso se outra conta entrar; dados de visitante e de conta MUST NOT se misturar.
+- **FR-011**: O progresso pendente MUST pertencer à conta que o gerou: só é enviado com a sessão dessa conta; ao sair da conta com pendências, a pessoa MUST ser avisada de que elas serão descartadas; se a sessão expirar sem rede, as pendências MUST ficar guardadas e ser enviadas quando a mesma conta entrar de novo neste aparelho (a pessoa joga como visitante; o aviso "há progresso esperando você entrar" saiu na feature 051), e MUST ser descartadas com aviso se outra conta entrar; dados de visitante e de conta MUST NOT se misturar.
 - **FR-012**: O progresso de visitante MUST continuar só no aparelho e MUST NOT ser enviado ao servidor em nenhuma situação.
 - **FR-013**: O aparelho MUST guardar só o necessário para jogar, MUST manter um limite de cruzadas guardadas descartando as mais antigas não abertas por último, e MUST nunca descartar a cruzada em andamento ou com progresso pendente.
-- **FR-014**: A pessoa MUST poder baixar de uma vez as cruzadas de hoje de todas as fontes, com resumo do que foi guardado e do que falhou, sem que a falha de uma fonte impeça as outras.
+- **FR-014** *(substituída pela feature 051: sem botão de baixar)*: A pessoa MUST poder baixar de uma vez as cruzadas de hoje de todas as fontes, com resumo do que foi guardado e do que falhou, sem que a falha de uma fonte impeça as outras.
 - **FR-015**: O calendário e a lista MUST indicar quais cruzadas estão disponíveis sem rede.
 - **FR-016**: As regras já existentes MUST continuar valendo: o site não é indexado, cada cruzada exibe a atribuição à fonte, e nada do modo offline cria forma de exportar ou redistribuir o conteúdo.
 - **FR-017**: Respostas que dependem de sessão ou de dados de uma pessoa (conta, progresso, configurações da conta) MUST NOT ser guardadas de forma que outra pessoa no mesmo aparelho as veja depois de sair da conta; ao sair, MUST ser apagados as pendências, o último progresso conhecido e qualquer resposta com dados da conta, enquanto as cruzadas guardadas (conteúdo público) permanecem. As configurações do aparelho (`cruzadinha:settings`) não são dado pessoal: permanecem, como hoje.
@@ -150,7 +152,7 @@ A pessoa pede para deixar no aparelho as cruzadas de hoje (uma por fonte) antes 
 - **SC-003**: Depois de a rede voltar, 100% do progresso de conta feito offline aparece no servidor em até 2 minutos (cobre os até 90 s para o servidor gratuito acordar), sem ação da pessoa, e sem nunca apagar uma conclusão nem reduzir um progresso mais avançado.
 - **SC-004**: Nenhuma letra digitada é perdida por causa da falta de rede, em nenhum ponto da partida.
 - **SC-005**: Uma pessoa instala o site e o abre pelo ícone em até 3 toques a partir do navegador, nos navegadores que permitem instalar.
-- **SC-006**: Baixar as cruzadas de hoje de todas as fontes termina com um resumo claro em até 30 segundos em rede comum.
+- **SC-006** *(substituído pela feature 051)*: Baixar as cruzadas de hoje de todas as fontes termina com um resumo claro em até 30 segundos em rede comum.
 - **SC-007**: A tela de erro padrão do navegador por falta de rede nunca aparece em páginas do site já visitadas.
 
 ## Assumptions

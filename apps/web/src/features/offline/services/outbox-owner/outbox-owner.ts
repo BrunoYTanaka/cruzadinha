@@ -15,7 +15,7 @@ export function hasOutbox(userId: string): boolean {
   return listOutboxes().some((owner) => owner.userId === userId)
 }
 
-// Há progresso de alguma conta esperando no aparelho (visitante vê o aviso "esperando você entrar").
+// Há progresso de alguma conta esperando no aparelho.
 export function hasAnyOutbox(): boolean {
   return listOutboxes().length > 0
 }

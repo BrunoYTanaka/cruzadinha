@@ -111,7 +111,7 @@ export function AppLayout() {
         </div>
       </header>
       <OfflineNotice />
-      <PendingOwnerNotice guest={session.data === null} loginPath={loginPath} />
+      <PendingOwnerNotice guest={session.data === null} />
       {sessionEnded && session.data === null && !onAuthPage ? (
         // Sessão terminada fora do tabuleiro (FR-013): segue como visitante, sem tirar o foco.
         <div className={styles.notice}>

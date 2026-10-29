@@ -1,12 +1,13 @@
-/* Ponto de "verificação automática ligada" no botão Ajudas. O espaço fica sempre reservado, para
-   a largura do botão (e a faixa) não mudar ao ligar a opção. */
+/* Ponto de "verificação automática ligada" no botão Ajudas. Fica no canto, fora do fluxo, para a
+   largura do botão (e a faixa) não mudar ao ligar a opção. */
 .dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
   width: 8px;
   height: 8px;
-  margin-left: 6px;
   border-radius: 50%;
   background-color: var(--accent);
-  flex: none;
   visibility: hidden;
 }
 

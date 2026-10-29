@@ -1,10 +1,7 @@
-import { useState, type CSSProperties } from 'react'
-import { puzzleSourceNames } from '@cruzadinha/shared'
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { Button } from '../../../../shared/components/Button/Button'
-import { Notice } from '../../../../shared/components/Notice/Notice'
-import { useOnline } from '../../../../shared/hooks/useOnline/useOnline'
-import { downloadToday, useOfflinePuzzleIds, type DownloadSummary } from '../../../offline'
+import { useOfflinePuzzleIds } from '../../../offline'
 import { isNoPuzzle, isSourceDown, isSourceUnsupported } from '../../helpers/source-down'
 import { todayCard, type TodayCard } from '../../helpers/today-cards'
 import styles from './TodayCards.module.css'
@@ -42,7 +39,6 @@ export function TodayCards({ libraries, today }: TodayCardsProps) {
           Hoje
         </h1>
         <p className={styles.date}>{longDate(today)}</p>
-        <DownloadToday />
       </div>
       <ul className={styles.cards} style={{ '--source-count': libraries.length } as CSSProperties}>
         {libraries.map((library) => (
@@ -123,34 +119,4 @@ function statusClass({ kind }: TodayCard): string {
   if (kind === 'completed') return styles.done ?? ''
   if (kind === 'in_progress') return styles.playing ?? ''
   return ''
-}
-
-// Baixa as cruzadas de hoje de todas as fontes para jogar na estrada (feature 041, FR-014).
-function DownloadToday() {
-  const online = useOnline()
-  const [state, setState] = useState<'idle' | 'busy' | DownloadSummary>('idle')
-  async function run() {
-    setState('busy')
-    setState(await downloadToday())
-  }
-  return (
-    <div className={styles.download}>
-      <Button variant="secondary" onClick={() => void run()} disabled={!online || state === 'busy'}>
-        {state === 'busy' ? 'Baixando…' : 'Baixar as cruzadas de hoje'}
-      </Button>
-      {typeof state === 'object' ? <DownloadResult summary={state} /> : null}
-    </div>
-  )
-}
-
-function DownloadResult({ summary }: { summary: DownloadSummary }) {
-  if (summary.storageFailed) {
-    return <Notice variant="warning">Não foi possível guardar para jogar sem rede.</Notice>
-  }
-  const names = summary.failed.map((source) => puzzleSourceNames[source]).join(', ')
-  return (
-    <Notice variant={summary.failed.length > 0 ? 'warning' : 'info'}>
-      Guardadas: {summary.saved}.{names ? ` Falharam: ${names}.` : ''}
-    </Notice>
-  )
 }
