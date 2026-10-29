@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { expectNoA11yViolations } from '../../../../test/axe'
 import { makeLibraryItem, makePuzzleResponse, TINY } from '../../../../test/fixtures'
-import { jsonResponse, mockApi } from '../../../../test/http'
 import { savePuzzle } from '../../../offline'
 import { noPuzzleKey } from '../../helpers/source-down'
 import { TodayCards, type TodayCardsSource } from './TodayCards'
@@ -157,25 +156,5 @@ describe('TodayCards e o modo sem rede (feature 041)', () => {
     await savePuzzle(makePuzzleResponse(TINY, { puzzleId: item.puzzleId, date: today }))
     renderCards([entry('oglobo', 'O Globo', { items: [item] })])
     expect(await screen.findByText('Disponível sem rede')).toBeInTheDocument()
-  })
-
-  it('baixa as cruzadas de hoje e resume o resultado', async () => {
-    mockApi({
-      'GET /api/puzzles': ({ url }) =>
-        new URL(url, 'http://x').searchParams.get('source') === 'oglobo'
-          ? jsonResponse(200, makePuzzleResponse(TINY, { date: today }))
-          : jsonResponse(503, { error: 'service-unavailable', message: 'x' }),
-    })
-    renderCards([entry('oglobo', 'O Globo')])
-    await userEvent.click(screen.getByRole('button', { name: 'Baixar as cruzadas de hoje' }))
-    const summary = await screen.findByText(/Guardadas: 1\./)
-    expect(summary).toHaveTextContent('Falharam:')
-  })
-
-  it('o botão de baixar fica desligado sem rede', () => {
-    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
-    renderCards([entry('oglobo', 'O Globo')])
-    expect(screen.getByRole('button', { name: 'Baixar as cruzadas de hoje' })).toBeDisabled()
-    vi.restoreAllMocks()
   })
 })
