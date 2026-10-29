@@ -14,7 +14,7 @@ Decisões tomadas ao ler o mockup (artefato `5SdYtHc7FbzT2JibcmHLc4`) e o códig
 - **Decisão**: nenhuma dependência nova.
 - **Achado**: `shared/themes/fonts.css` já importa Roboto 400/500/700, Roboto Mono 500 e Fraunces variável (600 a 800, latim). O mockup usa exatamente esses pesos (Fraunces 600 e 800, Roboto 400/500/700, Roboto Mono 500). O link do Google Fonts do mockup **não** entra (FR-013, SC-008).
 - **Licenças**: as três são SIL OFL 1.1 (distribuição pelo próprio site permitida); já estavam no projeto desde a 048 e a 010.
-- **Sem salto**: `font-display: swap` já está nas declarações; o tamanho do título é reservado em unidades de container (R4), então a troca de fonte não move nada.
+- **Sem salto**: `font-display: swap` já está nas declarações e o tamanho do título é reservado em unidades de container (R4). Mesmo assim, num CPU lento a troca de fonte deslocou o título e o cabeçalho (CI: 0,108), então `prerender-plugin.ts` pré-carrega Fraunces e Roboto 400, 500 e 700 no `index.html`.
 
 ## R3 — Botões da landing
 
