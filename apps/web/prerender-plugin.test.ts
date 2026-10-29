@@ -1,6 +1,12 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { buildRobots, buildSitemap, injectLanding, readSiteUrl } from './prerender-plugin.ts'
+import {
+  buildRobots,
+  buildSitemap,
+  injectLanding,
+  preloadFonts,
+  readSiteUrl,
+} from './prerender-plugin.ts'
 
 describe('readSiteUrl', () => {
   it('aceita a origem sem barra final e ignora o vazio', () => {
@@ -44,5 +50,26 @@ describe('injectLanding', () => {
 
   it('recusa um index.html sem o #root vazio', () => {
     expect(() => injectLanding('<div id="root">já tem</div>', '<h1>x</h1>')).toThrow('#root')
+  })
+})
+
+describe('preloadFonts', () => {
+  it('pré-carrega só as fontes do topo que estão no bundle', () => {
+    const html = preloadFonts('<head>\n  </head>', [
+      'assets/fraunces-latin-wght-normal-abc.woff2',
+      'assets/roboto-latin-500-normal-def.woff2',
+      'assets/roboto-mono-latin-500-normal-ghi.woff2',
+      'assets/index-xyz.js',
+    ])
+    expect(html).toContain(
+      '<link rel="preload" as="font" type="font/woff2" href="/assets/fraunces-latin-wght-normal-abc.woff2" crossorigin />',
+    )
+    expect(html).toContain('roboto-latin-500-normal-def.woff2')
+    expect(html).not.toContain('mono')
+    expect(html).not.toContain('index-xyz')
+  })
+
+  it('deixa o HTML como está sem nenhuma fonte no bundle', () => {
+    expect(preloadFonts('<head></head>', ['assets/index-xyz.js'])).toBe('<head></head>')
   })
 })

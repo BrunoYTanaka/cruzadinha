@@ -1,7 +1,53 @@
+/* Raiz da landing (feature 050): os tokens só dela, derivados dos do site (nenhuma cor fixa), e a
+   tipografia do mockup. Nada aqui vale fora da landing. */
+.landing {
+  --grid-line: color-mix(in srgb, var(--ink) 7%, transparent);
+  --band: light-dark(var(--ink), var(--surface));
+  --band-ink: light-dark(var(--surface), var(--ink));
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+
+  overflow-x: clip;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.landing h1,
+.landing h2,
+.landing h3 {
+  font-family: var(--font-display);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+/* O miolo das seções comuns; o topo e a faixa final são de largura total e têm o próprio miolo. */
 .wrap {
   box-sizing: border-box;
   max-width: 1080px;
   margin: 0 auto;
   padding: 0 max(var(--gutter), env(safe-area-inset-right, 0px)) 0
     max(var(--gutter), env(safe-area-inset-left, 0px));
+}
+
+/* Entrada ao rolar: só melhoria. Sem suporte ou com movimento reduzido o conteúdo já nasce pronto.
+   Só desloca (transform), sem opacidade: o texto de uma seção ainda fora da tela precisa ter o
+   contraste inteiro, que é medido com a página parada. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .wrap > section {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(18px);
+  }
+
+  to {
+    transform: none;
+  }
 }

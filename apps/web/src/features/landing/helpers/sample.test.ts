@@ -31,4 +31,15 @@ describe('amostra da mini cruzada', () => {
       expect(letters.every((letter) => typeof letter === 'string')).toBe(true)
     }
   })
+
+  it('as seis respostas são as do mockup', () => {
+    const answers = SAMPLE_PUZZLE.words.map((word) =>
+      Array.from({ length: word.length }, (_, i) =>
+        word.direction === 'across'
+          ? SAMPLE_SOLUTION.cells[word.row]?.[word.col + i]
+          : SAMPLE_SOLUTION.cells[word.row + i]?.[word.col],
+      ).join(''),
+    )
+    expect(answers).toEqual(['COSTA', 'MUNDO', 'OCASO', 'CAMPO', 'SONDA', 'ATOMO'])
+  })
 })
