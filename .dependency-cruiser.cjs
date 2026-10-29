@@ -132,6 +132,12 @@ module.exports = {
       to: { path: `${API}/platform/email/${NOT_INDEX}` },
     },
     {
+      name: 'api-captcha-entry',
+      severity: SEVERITY,
+      from: { pathNot: `${API}/platform/captcha/` },
+      to: { path: `${API}/platform/captcha/${NOT_INDEX}` },
+    },
+    {
       name: 'api-modules-isolated',
       comment: 'Módulo só importa de outro pelo index.ts.',
       severity: SEVERITY,

@@ -4,7 +4,13 @@ import {
   type EmailRequestAccepted,
 } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
-import { sendEmailUnavailable, sendError, sendTooManyAttempts } from '../../../platform/http/errors'
+import type { CaptchaGuard } from '../../../platform/captcha'
+import {
+  sendCaptchaFailed,
+  sendEmailUnavailable,
+  sendError,
+  sendTooManyAttempts,
+} from '../../../platform/http/errors'
 import type { EmailService } from '../../../platform/email'
 import { clearSessionCookie } from '../sessions/session-cookie'
 import { invalidFields, TOO_MANY_WITH_BODY } from '../route-helpers'
@@ -13,18 +19,22 @@ import type { RecoveryService } from './recovery.service'
 
 export type RecoveryRoutesOptions = {
   email: EmailService
+  captcha: CaptchaGuard
   recovery: RecoveryService
 }
 
 export const recoveryRoutes: FastifyPluginAsync<RecoveryRoutesOptions> = async (
   app,
-  { email, recovery },
+  { email, captcha, recovery },
 ) => {
   // A recuperação atende contas que já existem, então não depende da chave do cadastro.
   app.post(
     '/api/auth/forgot-password',
     { schema: forgotPasswordSchema },
     async (request, reply) => {
+      // Antes de qualquer limite ou consulta: sem prova válida nada é gasto (feature 049).
+      if (!(await captcha.check(request, 'forgot'))) return sendCaptchaFailed(reply)
+
       const admission = await recovery.admitForgot(request.clientAddress)
       if (!admission.ok)
         return sendTooManyAttempts(reply, admission.retryAfterSeconds, TOO_MANY_WITH_BODY)

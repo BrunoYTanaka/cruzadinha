@@ -34,6 +34,13 @@ services:
       # Sem `value` aqui: um valor no Blueprint voltaria a cada sincronização e desfaria o painel.
       - key: REGISTRATION_ENABLED
         sync: false
+      # Captcha do Turnstile nos pedidos que mandam e-mail (feature 049). Só no painel do Render;
+      # ausente vale `true` em produção, e com `true` a API só sobe com a chave secreta. Mudar no
+      # painel e reiniciar liga ou desliga sem nova versão. Ver docs/deploy.md.
+      - key: CAPTCHA_ENABLED
+        sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
       # E-mail de confirmação e de recuperação de senha (feature 035). Só no painel do Render; sem
       # elas as rotas que enviam e-mail respondem `email-unavailable`. Ver docs/deploy.md.
       - key: RESEND_API_KEY

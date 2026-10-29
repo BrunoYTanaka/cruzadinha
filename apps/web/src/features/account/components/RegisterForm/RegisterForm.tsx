@@ -14,8 +14,10 @@ import {
   safeNext,
   useSessionQuery,
 } from '../../../session'
+import { CaptchaField } from '../CaptchaField/CaptchaField'
 import { ResendLink } from '../ResendLink/ResendLink'
 import { useCountdown } from '../../hooks/useCountdown'
+import { useCaptcha } from '../../hooks/useCaptcha'
 import { useRegistration } from '../../hooks/useRegistration'
 
 export function RegisterForm() {
@@ -27,6 +29,9 @@ export function RegisterForm() {
   const registerMutation = useMutation({ mutationFn: register })
   const resendMutation = useMutation({ mutationFn: resendVerification })
   const countdown = useCountdown()
+  // Uma prova por ação (feature 049): `signup` no formulário, `resend` na tela do link enviado.
+  const signupCaptcha = useCaptcha()
+  const resendCaptcha = useCaptcha()
   // Uma aba antiga pode enviar com o cadastro já fechado: a recusa vira o mesmo aviso de fechado.
   const [closedByServer, setClosedByServer] = useState(false)
   const [email, setEmail] = useState('')
@@ -56,6 +61,7 @@ export function RegisterForm() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
+    if (!signupCaptcha.ready) return
     if (!email.trim()) {
       setError(authMessages.fillAll)
       setFields(['email'])
@@ -64,7 +70,9 @@ export function RegisterForm() {
     setError(null)
     setFields([])
     try {
-      const accepted = await registerMutation.mutateAsync({ email: email.trim() })
+      const captchaToken = signupCaptcha.consume()
+      if (signupCaptcha.required && !captchaToken) return
+      const accepted = await registerMutation.mutateAsync({ email: email.trim(), captchaToken })
       countdown.start(accepted.retryAfter)
       setSentTo(email.trim().toLowerCase())
       // O foco vai ao título novo para o leitor de tela anunciar a troca de tela.
@@ -77,7 +85,12 @@ export function RegisterForm() {
   async function onResend() {
     setError(null)
     try {
-      const accepted = await resendMutation.mutateAsync({ email: sentTo ?? email.trim() })
+      const captchaToken = resendCaptcha.consume()
+      if (resendCaptcha.required && !captchaToken) return
+      const accepted = await resendMutation.mutateAsync({
+        email: sentTo ?? email.trim(),
+        captchaToken,
+      })
       countdown.start(accepted.retryAfter)
     } catch (failure) {
       failed(failure)
@@ -108,7 +121,9 @@ export function RegisterForm() {
             countdown={countdown}
             onResend={() => void onResend()}
             pending={resendMutation.isPending}
+            blocked={!resendCaptcha.ready}
           />
+          <CaptchaField captcha={resendCaptcha} action="resend" />
           <p className={styles.alt}>
             Já confirmou? <Link to="/login">Entrar</Link>
           </p>
@@ -142,7 +157,13 @@ export function RegisterForm() {
             onChange={(event) => setEmail(event.target.value)}
             error={fields.includes('email') ? 'Confira este campo.' : undefined}
           />
-          <Button type="submit" variant="primary" block disabled={registerMutation.isPending}>
+          <CaptchaField captcha={signupCaptcha} action="signup" />
+          <Button
+            type="submit"
+            variant="primary"
+            block
+            disabled={registerMutation.isPending || !signupCaptcha.ready}
+          >
             {registerMutation.isPending ? 'Enviando…' : 'Criar conta'}
           </Button>
         </form>

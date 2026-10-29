@@ -37,15 +37,18 @@ GitHub Actions ──▶ coleta diária (direto no Neon), lançamento de versõe
 
 Onde fica cada valor:
 
-| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                                                                                  |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
-| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                                                                                     |
-| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse; obrigatório em produção (sem ele a API não sobe)                                      |
-| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha                                                          |
-| Render                        | `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL`                                                                   | secret   | e-mail do cadastro e da recuperação, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha) |
-| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                                                                          |
-| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                                                                                |
-| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                                                                           |
+| Lugar                         | Nome                                                                                                            | Tipo     | Conteúdo                                                                                                         |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| Render                        | `DATABASE_URL`                                                                                                  | secret   | string direta do Neon                                                                                            |
+| Render                        | `PROXY_SECRET`                                                                                                  | secret   | segredo do repasse; obrigatório em produção (sem ele a API não sobe)                                             |
+| Render                        | `REGISTRATION_ENABLED`                                                                                          | variável | `true` abre o cadastro; ausente ou `false` fecha                                                                 |
+| Render                        | `CAPTCHA_ENABLED`                                                                                               | variável | `true` exige o captcha nos pedidos de e-mail; ausente vale `true` em produção, ver [Captcha](#captcha-turnstile) |
+| Render                        | `TURNSTILE_SECRET_KEY`                                                                                          | secret   | chave secreta do widget do Turnstile; obrigatória com o captcha ligado                                           |
+| GitHub (Actions variable)     | `VITE_TURNSTILE_SITE_KEY`                                                                                       | variável | chave pública do widget, lida no build do site (não é segredo)                                                   |
+| Render                        | `RESEND_API_KEY`, `MAIL_FROM`, `APP_BASE_URL`                                                                   | secret   | e-mail do cadastro e da recuperação, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha)        |
+| Cloudflare Pages (Production) | `API_ORIGIN`                                                                                                    | variável | `https://<serviço>.onrender.com`                                                                                 |
+| Cloudflare Pages (Production) | `PROXY_SECRET`                                                                                                  | secret   | o mesmo segredo do repasse                                                                                       |
+| GitHub (Actions)              | ver [Lançamento e publicação automática](#lançamento-e-publicação-automática) e [Coleta diária](#coleta-diária) |          |                                                                                                                  |
 
 ## 2. Contas
 
@@ -179,6 +182,31 @@ SELECT count(*) FROM rate_limit_attempts WHERE action = 'EMAIL_SENT' AND key_typ
 Falhas de envio que não são cota aparecem só no log da API (`e-mail não enviado`, com o motivo, sem endereço nem token); a pessoa usa o reenvio. Para liberar a trava antes da hora (por exemplo, depois de subir de plano), apague a linha: `DELETE FROM email_send_block;`.
 
 **Limpeza.** O passo `auth cleanup` do workflow `collect.yml` (duas vezes por dia, com o segredo `DATABASE_URL`) apaga pendências e tokens vencidos há mais de 7 dias e as contagens de tentativas dos limites (login, cadastro, buscas, envios) com mais de 2 dias. Manualmente: `node apps/api/dist/cli.mjs auth cleanup`.
+
+### Captcha (Turnstile)
+
+Desde a feature 049, `POST /api/auth/register`, `resend-verification` e `forgot-password` exigem uma prova do [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) (plano grátis: até 20 widgets, verificações ilimitadas, 10 hostnames por widget). `verify-email` e `reset-password` ficam de fora: já exigem o token de uso único do e-mail. Um pedido sem prova válida responde `400 captcha-failed` antes de gastar qualquer limite ou o teto de e-mails.
+
+| Variável                  | Onde             | Conteúdo                                                                                                                                                               |
+| ------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CAPTCHA_ENABLED`         | Render           | `true` ou `false`. Ausente: `true` em produção, `false` fora. Com `true` a API só sobe com `TURNSTILE_SECRET_KEY` e `APP_BASE_URL`. Outro valor impede a API de subir. |
+| `TURNSTILE_SECRET_KEY`    | Render           | Chave secreta do widget. Nunca no repositório, no site ou em log.                                                                                                      |
+| `VITE_TURNSTILE_SITE_KEY` | GitHub variables | Chave pública do widget, usada no build do site. O site descobre se o captcha está ligado perguntando à API (`captchaRequired` em `GET /api/auth/registration`).       |
+
+O `hostname` que a Cloudflare devolve precisa ser o de `APP_BASE_URL`: no painel do widget (**Cloudflare → Turnstile**, modo gerenciado ou invisível), liste o domínio do site entre os hostnames.
+
+**Ordem do lançamento.**
+
+1. No Render, defina `CAPTCHA_ENABLED=false` **antes** de publicar a versão que traz a feature. Em produção o padrão é `true`, e a API nova recusa subir sem a chave secreta (o Render manteria a versão anterior).
+2. Publique API, `shared` e site; podem sair juntos, porque o site só mostra o desafio quando a API diz `captchaRequired: true`, e o site anterior segue funcionando contra a API nova com o captcha desligado.
+3. Crie o widget no Turnstile, ponha `TURNSTILE_SECRET_KEY` no Render e `VITE_TURNSTILE_SITE_KEY` nas variáveis do GitHub, e republique o site (`gh workflow run deploy.yml -f web=ultima`).
+4. Defina `CAPTCHA_ENABLED=true` no Render e reinicie. Uma aba aberta antes disso envia sem prova e vê o aviso para recarregar a página.
+
+**Se a API não sobe.** A mensagem `TURNSTILE_SECRET_KEY: obrigatória com CAPTCHA_ENABLED=true` no log do Render quer dizer que a variável `CAPTCHA_ENABLED` não existe e o padrão de produção (`true`) valeu. Defina `CAPTCHA_ENABLED=false` (ou a chave secreta) e reinicie; o Render mantém a versão anterior no ar enquanto a nova falha.
+
+**Proteção contra excesso de verificações.** A prova é conferida antes dos limites por endereço, então a API limita as verificações em andamento: no máximo 2 por endereço e 20 no total. Acima disso o pedido é recusado com o mesmo `captcha-failed` e a Cloudflare nem é chamada. Assim, um script com provas inventadas não faz a API segurar dezenas de chamadas de até 10 s nem esgota a cota da chave. As recusas por prova ausente ou por excesso aparecem no log só em nível `debug`; as recusas pela Cloudflare, em `warn` (só o motivo, nunca a prova).
+
+**Saída de emergência.** Se o Turnstile falhar ou bloquear pessoas de verdade, defina `CAPTCHA_ENABLED=false` no Render e reinicie: a API deixa de exigir e de consultar a prova e o site não mostra mais o desafio, sem nova versão. A verificação é fail-closed: com o captcha ligado, uma queda do serviço da Cloudflare (ou mais de 10 s sem resposta) recusa os pedidos.
 
 ## 9. Verificação
 

@@ -19,6 +19,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'invalid-token': 'Link inválido ou vencido.',
   'email-unavailable': 'Não foi possível enviar o e-mail agora.',
   'wrong-password': 'A senha atual não confere.',
+  'captcha-failed': 'Não foi possível confirmar que você é uma pessoa. Tente de novo.',
 }
 
 export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {
@@ -65,4 +66,9 @@ export function sendEmailUnavailable(reply: FastifyReply, retryAfterSeconds: num
     undefined,
     retryAfterSeconds,
   )
+}
+
+// Captcha recusado (feature 049): sempre o mesmo erro, com ou sem conta, e nunca 401 nem 403.
+export function sendCaptchaFailed(reply: FastifyReply): FastifyReply {
+  return sendError(reply, 400, 'captcha-failed')
 }

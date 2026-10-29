@@ -1,6 +1,8 @@
 export { apiErrorCodeSchema, apiErrorSchema, type ApiError, type ApiErrorCode } from './api-error'
 export {
   authResponseSchema,
+  CAPTCHA_ACTIONS,
+  captchaTokenSchema,
   changeEmailRequestSchema,
   changePasswordRequestSchema,
   confirmEmailChangeRequestSchema,
@@ -19,6 +21,7 @@ export {
   userSchema,
   verifyEmailRequestSchema,
   type AuthResponse,
+  type CaptchaAction,
   type ChangeEmailRequest,
   type ChangePasswordRequest,
   type ConfirmEmailChangeRequest,

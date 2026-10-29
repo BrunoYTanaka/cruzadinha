@@ -24,6 +24,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # A imagem roda em produção, que exige PROXY_SECRET; aqui não há repasse do site.
       ALLOW_MISSING_PROXY_SECRET: 'true'
+      # A imagem local roda em produção sem chave do Turnstile (feature 049); no Render é o painel.
+      CAPTCHA_ENABLED: 'false'
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:

@@ -7,7 +7,13 @@ import {
 } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import type { ServerConfig } from '../../../config'
-import { sendEmailUnavailable, sendError, sendTooManyAttempts } from '../../../platform/http/errors'
+import type { CaptchaGuard } from '../../../platform/captcha'
+import {
+  sendCaptchaFailed,
+  sendEmailUnavailable,
+  sendError,
+  sendTooManyAttempts,
+} from '../../../platform/http/errors'
 import type { EmailService } from '../../../platform/email'
 import { invalidFields, TOO_MANY_WITH_BODY } from '../route-helpers'
 import type { RegistrationService } from './registration.service'
@@ -21,18 +27,21 @@ import {
 export type RegistrationRoutesOptions = {
   config: ServerConfig
   email: EmailService
+  captcha: CaptchaGuard
   registration: RegistrationService
 }
 
 export const registrationRoutes: FastifyPluginAsync<RegistrationRoutesOptions> = async (
   app,
-  { config, email, registration },
+  { config, email, captcha, registration },
 ) => {
   // Com a chave desligada, a recusa vem antes de tudo: não conta tentativa nem lê o corpo, e não
   // revela nada sobre contas (feature 013, FR-016). Aberto, o cadastro só grava uma pendência e
-  // manda o link; a conta nasce em verify-email (feature 035).
+  // manda o link; a conta nasce em verify-email (feature 035). O captcha vem logo depois, antes de
+  // qualquer limite: um pedido sem prova não gasta nada de ninguém (feature 049).
   app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
     if (!config.registrationEnabled) return sendError(reply, 403, 'registration-closed')
+    if (!(await captcha.check(request, 'signup'))) return sendCaptchaFailed(reply)
 
     const admission = await registration.admitRegister(request.clientAddress)
     if (!admission.ok)
@@ -59,6 +68,7 @@ export const registrationRoutes: FastifyPluginAsync<RegistrationRoutesOptions> =
     async (request, reply) => {
       // Fechado o cadastro, não há pendência nova a refazer; quem já tinha o link ainda o confirma.
       if (!config.registrationEnabled) return sendError(reply, 403, 'registration-closed')
+      if (!(await captcha.check(request, 'resend'))) return sendCaptchaFailed(reply)
 
       const admission = await registration.admitResend(request.clientAddress)
       if (!admission.ok)
@@ -98,9 +108,13 @@ export const registrationRoutes: FastifyPluginAsync<RegistrationRoutesOptions> =
     return reply.status(200).send({})
   })
 
-  // Se o cadastro está aberto, para o site mostrar ou esconder "Criar conta" (FR-017).
+  // Se o cadastro está aberto, para o site mostrar ou esconder "Criar conta" (FR-017), e se os
+  // pedidos de e-mail exigem captcha (feature 049).
   app.get('/api/auth/registration', { schema: registrationSchema }, async (_request, reply) => {
-    const body: RegistrationStatus = { open: config.registrationEnabled }
+    const body: RegistrationStatus = {
+      open: config.registrationEnabled,
+      captchaRequired: config.captcha.enabled,
+    }
     return reply.header('cache-control', 'no-store').send(body)
   })
 }

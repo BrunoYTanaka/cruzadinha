@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apiError, jsonResponse, mockApi } from '../../../../test/http'
-import { getMe, getRegistration } from './auth'
+import { forgotPassword, getMe, getRegistration, register, resendVerification } from './auth'
 import { ApiRequestError, setUnauthenticatedHandler } from '../client/client'
 
 const user = { id: '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a', email: 'ana@exemplo.com' }
@@ -33,6 +33,26 @@ describe('getMe', () => {
 describe('getRegistration', () => {
   it('lê se o cadastro está aberto', async () => {
     mockApi({ 'GET /api/auth/registration': () => jsonResponse(200, { open: true }) })
-    await expect(getRegistration()).resolves.toEqual({ open: true })
+    await expect(getRegistration()).resolves.toEqual({ open: true, captchaRequired: false })
+  })
+})
+
+describe('captchaToken nos pedidos de e-mail (feature 049)', () => {
+  const cases = [
+    ['POST /api/auth/register', register],
+    ['POST /api/auth/resend-verification', resendVerification],
+    ['POST /api/auth/forgot-password', forgotPassword],
+  ] as const
+
+  it.each(cases)('%s leva a prova no corpo quando existe', async (key, call) => {
+    const { calls } = mockApi({ [key]: () => jsonResponse(202, { retryAfter: 60 }) })
+    await call({ email: 'ana@exemplo.com', captchaToken: 'prova' })
+    expect(calls[0]?.body).toEqual({ email: 'ana@exemplo.com', captchaToken: 'prova' })
+  })
+
+  it.each(cases)('%s omite a chave quando não há prova', async (key, call) => {
+    const { calls } = mockApi({ [key]: () => jsonResponse(202, { retryAfter: 60 }) })
+    await call({ email: 'ana@exemplo.com' })
+    expect(calls[0]?.body).toEqual({ email: 'ana@exemplo.com' })
   })
 })

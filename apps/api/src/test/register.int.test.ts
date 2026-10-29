@@ -83,7 +83,7 @@ describe('POST /api/auth/register com o cadastro fechado', () => {
   it('GET /api/auth/registration diz que está fechado', async () => {
     await closeRegistration()
     const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
-    expect(response.json()).toEqual({ open: false })
+    expect(response.json()).toEqual({ open: false, captchaRequired: false })
     expect(response.headers['cache-control']).toBe('no-store')
   })
 
@@ -165,7 +165,7 @@ describe('POST /api/auth/register com o cadastro aberto', () => {
 
   it('GET /api/auth/registration diz que está aberto', async () => {
     const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
-    expect(response.json()).toEqual({ open: true })
+    expect(response.json()).toEqual({ open: true, captchaRequired: false })
   })
 })
 

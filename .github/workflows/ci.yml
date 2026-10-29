@@ -95,6 +95,8 @@ jobs:
       # Cadastro aberto para as telas do site; a conta do E2E real vem da CLI, porque o cadastro agora
       # exige confirmar o e-mail (feature 035).
       REGISTRATION_ENABLED: 'true'
+      # O E2E nunca fala com o Turnstile real (feature 049).
+      CAPTCHA_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
