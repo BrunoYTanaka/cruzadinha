@@ -21,6 +21,19 @@ check((html.match(/<h1[ >]/g) ?? []).length === 1, 'index.html deve ter um únic
 check((html.match(/<main[ >]/g) ?? []).length === 1, 'index.html deve ter um único <main>')
 check(html.includes('id="conteudo"'), 'index.html sem o main#conteudo')
 check(rootHtml.includes('Jogar a cruzada de hoje'), 'index.html sem a chamada principal')
+// O texto da landing alinhada ao mockup (feature 049): rótulos, títulos e a frase de destaque.
+for (const text of [
+  'Como funciona',
+  'Abriu, jogou. O resto é opcional.',
+  'Experimente',
+  'Uma mini cruzada, bem aqui.',
+  'Fontes',
+  'A cruzada de hoje já está esperando.',
+]) {
+  check(rootHtml.includes(text), `index.html sem "${text}"`)
+}
+const h1 = rootHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? ''
+check(h1.includes('Palavras cruzadas'), 'o <h1> deve trazer a frase de destaque')
 
 // Toda classe de CSS Module do HTML pré-gerado precisa existir no CSS gerado.
 const css = readdirSync(join(dist, 'assets'))
@@ -39,7 +52,11 @@ check(missing.length === 0, `classes do HTML sem CSS: ${missing.join(', ')}`)
 const revision = createHash('md5')
   .update(readFileSync(join(dist, 'index.html')))
   .digest('hex')
-check(read('sw.js').includes(`revision:"${revision}"`), 'sw.js com a revisão errada do index.html')
+// O service worker pode estar minificado (`revision:"…"`) ou não (`"revision": "…"`).
+check(
+  new RegExp(`"?revision"?:\\s*"${revision}"`).test(read('sw.js')),
+  'sw.js com a revisão errada do index.html',
+)
 
 const robots = read('robots.txt').split('\n')
 check(robots.includes('User-agent: *'), 'robots.txt sem User-agent')
