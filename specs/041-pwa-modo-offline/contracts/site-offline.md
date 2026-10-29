@@ -34,11 +34,11 @@ Manifesto: `name: "Cruzadinha"`, `short_name: "Cruzadinha"`, `lang: "pt-BR"`, `s
 | Calendário sem rede | só os dias guardados + "Sem conexão: mostrando só as cruzadas guardadas." | `LibraryPage` |
 | Dia/card guardado | ícone + texto acessível "Disponível sem rede" | `DayCell`, `TodayCards` |
 | Conta com pendência | estado `offline` do `SaveStatus` (existente) | jogo |
-| Pendência de conta, pessoa visitante | "Há progresso esperando você entrar." + link Entrar | `AppLayout` |
+| Pendência de conta, pessoa visitante | ~~"Há progresso esperando você entrar." + link Entrar~~ (removido na feature 051) | `AppLayout` |
 | Sair com pendência | `Dialog`: "Há progresso ainda não enviado. Sair agora descarta esse progresso." [Sair mesmo assim] [Cancelar] | cabeçalho |
 | Outra conta entrou | "O progresso não enviado da conta anterior foi descartado." | `AppLayout` (uma vez) |
 | Instalação possível | botão "Instalar" (`Button` `quiet`) | cabeçalho; ausente se instalado ou sem `beforeinstallprompt` |
-| Download de hoje | botão "Baixar as cruzadas de hoje" (desabilitado sem rede) → "Guardadas: N. Falharam: <fontes>." | seção "Hoje" |
+| Download de hoje | ~~botão "Baixar as cruzadas de hoje" (desabilitado sem rede) → "Guardadas: N. Falharam: <fontes>."~~ (removido na feature 051) | seção "Hoje" |
 | Falha ao guardar | "Não foi possível guardar para jogar sem rede." (só no resumo do download; ao abrir, silencioso) | seção "Hoje" |
 
 ## Rotas
