@@ -43,6 +43,22 @@ export function injectLanding(html: string, landing: string): string {
   return html.replace(ROOT_DIV, `<div id="root">${landing}</div>`)
 }
 
+// Fontes do topo da landing. Sem pré-carga elas chegam depois do primeiro desenho e a troca da fonte
+// desloca o título e o cabeçalho (visto num CPU lento, ~0,07 de deslocamento).
+const PRELOAD_FONTS = [
+  /fraunces-latin-wght-normal-.*\.woff2$/,
+  /roboto-latin-400-normal-.*\.woff2$/,
+  /roboto-latin-500-normal-.*\.woff2$/,
+  /roboto-latin-700-normal-.*\.woff2$/,
+]
+
+export function preloadFonts(html: string, fileNames: string[]): string {
+  const links = PRELOAD_FONTS.flatMap((pattern) => fileNames.filter((name) => pattern.test(name)))
+    .map((name) => `<link rel="preload" as="font" type="font/woff2" href="/${name}" crossorigin />`)
+    .join('\n    ')
+  return links ? html.replace('</head>', `    ${links}\n  </head>`) : html
+}
+
 export function landingPrerenderPlugin(): Plugin {
   let config: ResolvedConfig
   let landing = ''
@@ -79,8 +95,9 @@ export function landingPrerenderPlugin(): Plugin {
     },
     transformIndexHtml: {
       order: 'post',
-      handler(html) {
-        return landing ? injectLanding(html, landing) : html
+      handler(html, ctx) {
+        if (!landing) return html
+        return preloadFonts(injectLanding(html, landing), Object.keys(ctx.bundle ?? {}))
       },
     },
     generateBundle() {

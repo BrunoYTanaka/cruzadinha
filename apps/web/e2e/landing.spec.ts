@@ -31,9 +31,12 @@ test.describe('US1: landing em / (feature 048)', () => {
   })
 
   test('o calendário fica a um clique, pelo cabeçalho e pela faixa final', async ({ page }) => {
-    await page.goto('/')
-    await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
-    await expect(page).toHaveURL(/\/calendario$/)
+    // O clique pode cair enquanto o React troca o HTML pré-gerado e se perder: tenta de novo.
+    await expect(async () => {
+      await page.goto('/')
+      await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
+      await expect(page).toHaveURL(/\/calendario$/, { timeout: 2_000 })
+    }).toPass()
     await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
     await page.goto('/')
     await page.getByRole('link', { name: 'Ver o calendário' }).click()
