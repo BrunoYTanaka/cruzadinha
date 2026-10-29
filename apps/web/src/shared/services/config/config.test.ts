@@ -20,4 +20,16 @@ describe('parseConfig', () => {
       /Configuração do site inválida: VITE_HELP_LETTER_LIMIT/,
     )
   })
+
+  it('lê a chave pública do Turnstile; vazia vale como ausente', () => {
+    expect(parseConfig({}).turnstileSiteKey).toBeUndefined()
+    expect(parseConfig({ VITE_TURNSTILE_SITE_KEY: '' }).turnstileSiteKey).toBeUndefined()
+    expect(parseConfig({ VITE_TURNSTILE_SITE_KEY: ' 0x4AAA ' }).turnstileSiteKey).toBe('0x4AAA')
+  })
+
+  it('aborta com mensagem clara para uma chave grande demais', () => {
+    expect(() => parseConfig({ VITE_TURNSTILE_SITE_KEY: 'k'.repeat(129) })).toThrow(
+      /Configuração do site inválida: VITE_TURNSTILE_SITE_KEY/,
+    )
+  })
 })

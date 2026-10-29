@@ -60,13 +60,50 @@ describe('registerRequestSchema', () => {
 
 describe('registrationStatusSchema', () => {
   it('accepts the open flag and drops unknown keys', () => {
-    expect(registrationStatusSchema.parse({ open: true, extra: 1 })).toEqual({ open: true })
+    expect(registrationStatusSchema.parse({ open: true, captchaRequired: true, extra: 1 })).toEqual(
+      { open: true, captchaRequired: true },
+    )
+  })
+
+  it('reads a missing captchaRequired (previous API) as false', () => {
+    expect(registrationStatusSchema.parse({ open: true })).toEqual({
+      open: true,
+      captchaRequired: false,
+    })
   })
 
   it('rejects a non-boolean flag', () => {
     expect(registrationStatusSchema.safeParse({ open: 'true' }).success).toBe(false)
     expect(registrationStatusSchema.safeParse({}).success).toBe(false)
   })
+})
+
+describe('captchaToken in the e-mail requests', () => {
+  const schemas = [
+    ['register', registerRequestSchema],
+    ['resend-verification', resendVerificationRequestSchema],
+    ['forgot-password', forgotPasswordRequestSchema],
+  ] as const
+
+  it.each(schemas)(
+    '%s accepts an absent token and one of 1 to 2048 characters',
+    (_name, schema) => {
+      const email = 'ana@x.com'
+      expect(schema.safeParse({ email }).success).toBe(true)
+      expect(schema.safeParse({ email, captchaToken: 'a' }).success).toBe(true)
+      expect(schema.safeParse({ email, captchaToken: 'a'.repeat(2048) }).success).toBe(true)
+    },
+  )
+
+  it.each(schemas)(
+    '%s rejects an empty or 2049-character token and stays strict',
+    (_name, schema) => {
+      const email = 'ana@x.com'
+      expect(schema.safeParse({ email, captchaToken: '' }).success).toBe(false)
+      expect(schema.safeParse({ email, captchaToken: 'a'.repeat(2049) }).success).toBe(false)
+      expect(schema.safeParse({ email, extra: 1 }).success).toBe(false)
+    },
+  )
 })
 
 describe('loginRequestSchema', () => {

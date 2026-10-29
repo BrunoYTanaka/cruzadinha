@@ -4,16 +4,29 @@ export const emailSchema = z.string().trim().toLowerCase().pipe(z.email().max(25
 
 export const passwordSchema = z.string().min(8).max(128)
 
+// Prova do captcha (feature 049): uso único, no máximo 2048 caracteres (limite da Cloudflare).
+export const captchaTokenSchema = z.string().min(1).max(2048)
+
+// Uma ação por fluxo; a API confere que a prova foi emitida para a ação da rota.
+export const CAPTCHA_ACTIONS = ['signup', 'resend', 'forgot'] as const
+
+export type CaptchaAction = (typeof CAPTCHA_ACTIONS)[number]
+
 // O cadastro só pede o link (feature 035): a senha é escolhida por quem abre o link, para ninguém
 // poder cadastrar o e-mail de outra pessoa com uma senha que só essa pessoa conhece.
 export const registerRequestSchema = z.strictObject({
   email: emailSchema,
+  captchaToken: captchaTokenSchema.optional(),
 })
 
 export type RegisterRequest = z.infer<typeof registerRequestSchema>
 
-// Resposta de GET /api/auth/registration: se o cadastro está aberto (feature 013).
-export const registrationStatusSchema = z.object({ open: z.boolean() })
+// Resposta de GET /api/auth/registration: se o cadastro está aberto (feature 013) e se os pedidos
+// que mandam e-mail exigem captcha (feature 049; uma API anterior não manda o campo).
+export const registrationStatusSchema = z.object({
+  open: z.boolean(),
+  captchaRequired: z.boolean().default(false),
+})
 
 export type RegistrationStatus = z.infer<typeof registrationStatusSchema>
 
@@ -42,11 +55,17 @@ export type AuthResponse = z.infer<typeof authResponseSchema>
 // Confirmação de e-mail e recuperação de senha (feature 035).
 export const tokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/)
 
-export const resendVerificationRequestSchema = z.strictObject({ email: emailSchema })
+export const resendVerificationRequestSchema = z.strictObject({
+  email: emailSchema,
+  captchaToken: captchaTokenSchema.optional(),
+})
 
 export type ResendVerificationRequest = z.infer<typeof resendVerificationRequestSchema>
 
-export const forgotPasswordRequestSchema = z.strictObject({ email: emailSchema })
+export const forgotPasswordRequestSchema = z.strictObject({
+  email: emailSchema,
+  captchaToken: captchaTokenSchema.optional(),
+})
 
 export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>
 

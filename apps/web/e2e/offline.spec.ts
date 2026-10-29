@@ -96,14 +96,12 @@ test('conta: letras digitadas sem rede chegam ao servidor quando a rede volta', 
     .toBe(true)
 })
 
-test('baixar as cruzadas de hoje e abri-las sem rede', async ({ page, context }) => {
+test('uma cruzada já aberta abre de novo sem rede', async ({ page, context }) => {
   await installShell(page)
-  await page.getByRole('button', { name: 'Baixar as cruzadas de hoje' }).click()
-  await expect(page.getByText(/^Guardadas: [1-9]/)).toBeVisible({ timeout: 30_000 })
-  await expect(page.getByText('Disponível sem rede').first()).toBeVisible()
+  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await expect(page.getByRole('grid')).toBeVisible()
 
   await context.setOffline(true)
   await page.reload()
-  await page.getByRole('link', { name: /^O Globo: .*disponível sem rede/ }).click()
   await expect(page.getByRole('grid')).toBeVisible({ timeout: 10_000 })
 })

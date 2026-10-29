@@ -183,10 +183,13 @@ jobs:
           GITHUB_SHA: ${{ steps.plan.outputs.web_ref }}
           VITE_HELP_LETTER_LIMIT: ${{ vars.VITE_HELP_LETTER_LIMIT }}
           VITE_HELP_WORD_LIMIT: ${{ vars.VITE_HELP_WORD_LIMIT }}
+          # Chave pública do Turnstile (feature 049); não é segredo.
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
         run: |
           # Variáveis vazias valem como ausentes (o build usa os padrões).
           [ -n "$VITE_HELP_LETTER_LIMIT" ] || unset VITE_HELP_LETTER_LIMIT
           [ -n "$VITE_HELP_WORD_LIMIT" ] || unset VITE_HELP_WORD_LIMIT
+          [ -n "$VITE_TURNSTILE_SITE_KEY" ] || unset VITE_TURNSTILE_SITE_KEY
           npm ci
           npm run build -w @cruzadinha/web
 

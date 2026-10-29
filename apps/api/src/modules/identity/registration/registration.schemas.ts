@@ -32,11 +32,13 @@ export const registerSchema = {
     'só para o site anterior.',
   body: {
     ...withFieldDescription(toDocSchema(registerRequestSchema), 'email', emailDescription),
-    examples: [{ email: 'ana@example.com' }],
+    examples: [{ email: 'ana@example.com', captchaToken: '0.AbCdEf…' }],
   },
   response: {
     202: accepted('Pedido aceito; `retryAfter` é o tempo até o próximo envio permitido'),
-    400: errorResponse('`invalid-input` (com `fields`): corpo inválido.'),
+    400: errorResponse(
+      '`invalid-input` (com `fields`): corpo inválido. `captcha-failed`: prova do captcha ausente, inválida, expirada, repetida, de outra ação ou de outro site, ou serviço de verificação fora do ar; a resposta é a mesma com ou sem conta.',
+    ),
     403: errorResponse('`registration-closed`: o cadastro está fechado.'),
     429: tooManyAttempts,
     503: emailUnavailable,
@@ -57,11 +59,13 @@ export const resendVerificationSchema = {
       'email',
       emailDescription,
     ),
-    examples: [{ email: 'ana@example.com' }],
+    examples: [{ email: 'ana@example.com', captchaToken: '0.AbCdEf…' }],
   },
   response: {
     202: accepted('Pedido aceito; `retryAfter` é o tempo até o próximo envio permitido'),
-    400: errorResponse('`invalid-input` (com `fields`): corpo inválido.'),
+    400: errorResponse(
+      '`invalid-input` (com `fields`): corpo inválido. `captcha-failed`: prova do captcha ausente, inválida, expirada, repetida, de outra ação ou de outro site, ou serviço de verificação fora do ar; a resposta é a mesma com ou sem conta.',
+    ),
     403: errorResponse('`registration-closed`: o cadastro está fechado.'),
     429: tooManyAttempts,
     503: emailUnavailable,
@@ -93,7 +97,9 @@ export const verifyEmailSchema = {
 export const registrationSchema = {
   tags: ['auth'],
   summary: 'Diz se o cadastro está aberto',
-  description: 'Sem sessão. O site mostra "Criar conta" só quando `open` é verdadeiro.',
+  description:
+    'Sem sessão. O site mostra "Criar conta" só quando `open` é verdadeiro e mostra o desafio ' +
+    'do captcha nos pedidos de e-mail só quando `captchaRequired` é verdadeiro.',
   response: {
     200: { description: 'Situação do cadastro', ...toDocSchema(registrationStatusSchema) },
     ...commonErrors,

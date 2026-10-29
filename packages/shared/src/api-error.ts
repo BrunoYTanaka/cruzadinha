@@ -22,6 +22,8 @@ export const apiErrorCodeSchema = z.enum([
   'email-unavailable',
   // Gestão da conta (feature 042): nunca 401, que o site trata como sessão encerrada.
   'wrong-password',
+  // Captcha dos pedidos que mandam e-mail (feature 049): nunca 401 nem 403.
+  'captcha-failed',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>

@@ -25,11 +25,13 @@ export const forgotPasswordSchema = {
     `fechado e usa as vagas reservadas à recuperação. ${sendOrder}`,
   body: {
     ...withFieldDescription(toDocSchema(forgotPasswordRequestSchema), 'email', emailDescription),
-    examples: [{ email: 'ana@example.com' }],
+    examples: [{ email: 'ana@example.com', captchaToken: '0.AbCdEf…' }],
   },
   response: {
     202: accepted('Pedido aceito; `retryAfter` é o tempo até o próximo envio permitido'),
-    400: errorResponse('`invalid-input` (com `fields`): corpo inválido.'),
+    400: errorResponse(
+      '`invalid-input` (com `fields`): corpo inválido. `captcha-failed`: prova do captcha ausente, inválida, expirada, repetida, de outra ação ou de outro site, ou serviço de verificação fora do ar; a resposta é a mesma com ou sem conta.',
+    ),
     429: tooManyAttempts,
     503: emailUnavailable,
     500: errorResponse('`internal-error`: falha inesperada.'),

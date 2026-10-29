@@ -16,6 +16,8 @@ export default defineConfig({
   webServer: {
     command: `npm run build && npx vite preview --port ${port} --strictPort`,
     url: `http://localhost:${port}`,
+    // Chave pública fictícia: o script do desafio é interceptado nos testes (feature 049).
+    env: { VITE_TURNSTILE_SITE_KEY: 'e2e-chave-publica' },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

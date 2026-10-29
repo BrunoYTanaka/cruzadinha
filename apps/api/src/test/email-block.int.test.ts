@@ -125,7 +125,11 @@ describe('trava de envio por cota do provedor', () => {
     app = buildTestApp({
       database: db,
       clock: clock.now,
-      env: { NODE_ENV: 'production', APP_BASE_URL: 'https://cruzadinha.example.com' },
+      env: {
+        NODE_ENV: 'production',
+        APP_BASE_URL: 'https://cruzadinha.example.com',
+        CAPTCHA_ENABLED: 'false',
+      },
     })
     const response = await register('ana@exemplo.com')
     expect(response.statusCode).toBe(503)

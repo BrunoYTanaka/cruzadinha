@@ -8,19 +8,23 @@ import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from '../../../session'
+import { CaptchaField } from '../CaptchaField/CaptchaField'
 import { ResendLink } from '../ResendLink/ResendLink'
+import { useCaptcha } from '../../hooks/useCaptcha'
 import { useCountdown } from '../../hooks/useCountdown'
 
 export function ForgotPasswordForm() {
   useDocumentTitle('Esqueci a senha')
   const mutation = useMutation({ mutationFn: forgotPassword })
   const countdown = useCountdown()
+  const captcha = useCaptcha()
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [fields, setFields] = useState<string[]>([])
   const [sent, setSent] = useState(false)
 
   async function request() {
+    if (!captcha.ready) return
     if (!email.trim()) {
       setError(authMessages.fillAll)
       setFields(['email'])
@@ -29,7 +33,9 @@ export function ForgotPasswordForm() {
     setError(null)
     setFields([])
     try {
-      const accepted = await mutation.mutateAsync({ email: email.trim() })
+      const captchaToken = captcha.consume()
+      if (captcha.required && !captchaToken) return
+      const accepted = await mutation.mutateAsync({ email: email.trim(), captchaToken })
       countdown.start(accepted.retryAfter)
       setSent(true)
     } catch (failure) {
@@ -70,12 +76,16 @@ export function ForgotPasswordForm() {
           </div>
         ) : null}
         {sent ? (
-          <ResendLink
-            label="Reenviar link"
-            countdown={countdown}
-            onResend={() => void request()}
-            pending={mutation.isPending}
-          />
+          <>
+            <ResendLink
+              label="Reenviar link"
+              countdown={countdown}
+              onResend={() => void request()}
+              pending={mutation.isPending}
+              blocked={!captcha.ready}
+            />
+            <CaptchaField captcha={captcha} action="forgot" />
+          </>
         ) : (
           <form onSubmit={onSubmit} noValidate className={styles.form}>
             <Field
@@ -89,7 +99,13 @@ export function ForgotPasswordForm() {
               onChange={(event) => setEmail(event.target.value)}
               error={fields.includes('email') ? 'Confira este campo.' : undefined}
             />
-            <Button type="submit" variant="primary" block disabled={mutation.isPending}>
+            <CaptchaField captcha={captcha} action="forgot" />
+            <Button
+              type="submit"
+              variant="primary"
+              block
+              disabled={mutation.isPending || !captcha.ready}
+            >
               {mutation.isPending ? 'Enviando…' : 'Enviar link'}
             </Button>
           </form>

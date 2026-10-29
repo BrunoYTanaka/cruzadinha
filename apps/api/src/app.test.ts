@@ -123,7 +123,7 @@ describe('GET /api/auth/registration', () => {
     app = buildApp({ config: withFlag, probe: probe(true), database: testDatabase.db })
     const response = await app.inject({ method: 'GET', url: '/api/auth/registration' })
     expect(response.statusCode).toBe(200)
-    expect(response.json()).toEqual({ open })
+    expect(response.json()).toEqual({ open, captchaRequired: false })
     expect(response.headers['cache-control']).toBe('no-store')
   })
 

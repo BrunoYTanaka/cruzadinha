@@ -83,6 +83,16 @@ const envSchema = z.object({
     (value) => (value === '' ? undefined : value),
     z.enum(['true', 'false'], { error: 'deve ser true ou false' }).default('false'),
   ),
+  // Captcha do Turnstile nos pedidos que mandam e-mail (feature 049). Vazio vale como ausente e
+  // ausente vale `true` em produção e `false` fora dela. Só aceita "true" ou "false".
+  CAPTCHA_ENABLED: z.preprocess(
+    emptyAsUndefined,
+    z.enum(['true', 'false'], { error: 'deve ser true ou false' }).optional(),
+  ),
+  TURNSTILE_SECRET_KEY: z.preprocess(
+    emptyAsUndefined,
+    z.string({ error: 'deve ser um texto' }).min(1).max(512).optional(),
+  ),
   // E-mail de confirmação e de recuperação de senha pelo Resend (feature 035). Tudo opcional: sem
   // a chave, a produção responde `email-unavailable` e o desenvolvimento escreve o link no log.
   RESEND_API_KEY: z.preprocess(
@@ -126,6 +136,13 @@ const envSchema = z.object({
     }),
 })
 
+export type CaptchaConfig = Readonly<{
+  enabled: boolean
+  secretKey: string | undefined
+  /** Host de `APP_BASE_URL`: a prova tem de ter sido emitida para ele. */
+  hostname: string | undefined
+}>
+
 export type EmailConfig = Readonly<{
   apiKey: string | undefined
   from: string | undefined
@@ -148,11 +165,15 @@ export type ServerConfig = Readonly<{
   releaseCommit: string | undefined
   // Cadastro aberto (feature 013); desligado por padrão.
   registrationEnabled: boolean
+  captcha: CaptchaConfig
   email: EmailConfig
 }>
 
 export type LoadConfigOptions = {
-  /** O servidor exige `PROXY_SECRET` em produção; a linha de comando do autor não. */
+  /**
+   * O servidor exige `PROXY_SECRET` em produção e a chave do Turnstile com o captcha ligado; a
+   * linha de comando do autor, que não atende pedidos, não exige nenhum dos dois.
+   */
   requireProxySecret?: boolean
 }
 
@@ -165,9 +186,14 @@ export function loadConfig(
     const lines = result.error.issues.map((issue) => `${String(issue.path[0])}: ${issue.message}`)
     throw new Error(`Configuração inválida:\n${lines.join('\n')}`)
   }
-  const mailProblems = checkMail(result.data)
-  if (mailProblems.length > 0) {
-    throw new Error(`Configuração inválida:\n${mailProblems.join('\n')}`)
+  const captchaEnabled =
+    (result.data.CAPTCHA_ENABLED ?? String(result.data.NODE_ENV === 'production')) === 'true'
+  const problems = [
+    ...checkMail(result.data),
+    ...(options.requireProxySecret ? checkCaptcha(result.data, captchaEnabled) : []),
+  ]
+  if (problems.length > 0) {
+    throw new Error(`Configuração inválida:\n${problems.join('\n')}`)
   }
   const {
     NODE_ENV,
@@ -181,6 +207,7 @@ export function loadConfig(
     RELEASE_COMMIT,
     RENDER_GIT_COMMIT,
     REGISTRATION_ENABLED,
+    TURNSTILE_SECRET_KEY,
     RESEND_API_KEY,
     MAIL_FROM,
     APP_BASE_URL,
@@ -190,6 +217,8 @@ export function loadConfig(
     EMAIL_RECOVERY_RESERVE,
     ALLOW_MISSING_PROXY_SECRET,
   } = result.data
+  // Só o desenvolvimento e os testes têm um endereço padrão, para o link do log funcionar.
+  const baseUrl = APP_BASE_URL ?? (NODE_ENV === 'production' ? undefined : 'http://localhost:5173')
   // Sem o segredo, em produção, todos dividiriam o endereço do balanceador nos limites e a API
   // aceitaria pedidos que não passaram pelo repasse: melhor não subir.
   if (
@@ -211,11 +240,15 @@ export function loadConfig(
     proxySecret: PROXY_SECRET,
     releaseCommit: RELEASE_COMMIT ?? RENDER_GIT_COMMIT,
     registrationEnabled: REGISTRATION_ENABLED === 'true',
+    captcha: Object.freeze({
+      enabled: captchaEnabled,
+      secretKey: TURNSTILE_SECRET_KEY,
+      hostname: URL.parse(baseUrl ?? '')?.hostname,
+    }),
     email: Object.freeze({
       apiKey: RESEND_API_KEY,
       from: MAIL_FROM,
-      // Só o desenvolvimento e os testes têm um endereço padrão, para o link do log funcionar.
-      baseUrl: APP_BASE_URL ?? (NODE_ENV === 'production' ? undefined : 'http://localhost:5173'),
+      baseUrl,
       resendIntervalSeconds: EMAIL_RESEND_INTERVAL_SECONDS,
       perAddressDailyMax: EMAIL_PER_ADDRESS_DAILY_MAX,
       dailyCeiling: EMAIL_DAILY_CEILING,
@@ -239,6 +272,22 @@ function checkMail(env: z.infer<typeof envSchema>): string[] {
     const protocolOk =
       url.protocol === 'https:' || (url.protocol === 'http:' && env.NODE_ENV !== 'production')
     if (!protocolOk) problems.push('APP_BASE_URL: deve usar https (http só fora de produção)')
+  }
+  return problems
+}
+
+// Com o captcha ligado a API precisa da chave secreta e do host esperado da prova.
+function checkCaptcha(env: z.infer<typeof envSchema>, enabled: boolean): string[] {
+  if (!enabled) return []
+  const problems: string[] = []
+  if (!env.TURNSTILE_SECRET_KEY) {
+    problems.push(
+      'TURNSTILE_SECRET_KEY: obrigatória com CAPTCHA_ENABLED=true (em produção, sem a variável, ' +
+        'o padrão é true; defina CAPTCHA_ENABLED=false para desligar)',
+    )
+  }
+  if (!env.APP_BASE_URL && env.NODE_ENV === 'production') {
+    problems.push('APP_BASE_URL: obrigatória com CAPTCHA_ENABLED=true')
   }
   return problems
 }

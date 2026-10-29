@@ -7,6 +7,7 @@ import { hashPassword } from '../platform/lib/password'
 import { insertIfEmailFree } from '../modules/identity/users.repository'
 import type { RateLimits } from '../platform/rate-limit/limits'
 import type { EmailSender } from '../platform/email/types'
+import type { CaptchaVerifier } from '../platform/captcha'
 import type { PuzzleSource } from '../sources/types'
 
 export function buildTestApp(options: {
@@ -16,6 +17,8 @@ export function buildTestApp(options: {
   puzzleSources?: readonly PuzzleSource[]
   /** Envio de e-mail falso; sem ele os testes usam o log e nunca a rede. */
   emailSender?: EmailSender
+  /** Verificador de captcha falso (feature 049); só vale com `CAPTCHA_ENABLED: 'true'` em `env`. */
+  captchaVerifier?: CaptchaVerifier
   /** Com um destino de log, o nível sobe para `error` para o teste ler o que foi registrado. */
   logStream?: NodeJS.WritableStream
   /** Variáveis extras para a configuração (por exemplo, `PROXY_SECRET`). */
@@ -35,6 +38,20 @@ export function buildTestApp(options: {
     probe: { check: async () => true, close: async () => {} },
     ...deps,
   })
+}
+
+// Verificador falso: a prova `ok-<ação>` passa e qualquer outra é recusada. `calls` guarda o que
+// chegou, para o teste conferir que a recusa veio antes do resto.
+export function fakeCaptcha(result?: Awaited<ReturnType<CaptchaVerifier['verify']>>) {
+  const calls: Parameters<CaptchaVerifier['verify']>[0][] = []
+  const verifier: CaptchaVerifier = {
+    async verify(input) {
+      calls.push(input)
+      if (result) return result
+      return input.token === `ok-${input.action}` ? { ok: true } : { ok: false, reason: 'rejected' }
+    },
+  }
+  return { verifier, calls }
 }
 
 export function sessionCookieFrom(setCookie: string | string[] | undefined): string | undefined {

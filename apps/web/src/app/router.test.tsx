@@ -125,8 +125,12 @@ describe('entrada do site com a espera do servidor', () => {
       await waitFor(() => expect(calls.length).toBeGreaterThan(3))
       await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
       expect(screen.queryByText('Algo deu errado')).not.toBeInTheDocument()
-      const firstOther = calls.findIndex((call) => call.key !== 'GET /api/health')
-      const lastHealth = calls.map((call) => call.key).lastIndexOf('GET /api/health')
+      // O pedido do jogo do caso anterior (`/jogo/abc`) pode terminar já neste caso: não é desta rota.
+      const own = path.startsWith('/jogo')
+        ? calls
+        : calls.filter((c) => !c.key.startsWith('GET /api/puzzles/'))
+      const firstOther = own.findIndex((call) => call.key !== 'GET /api/health')
+      const lastHealth = own.map((call) => call.key).lastIndexOf('GET /api/health')
       expect(firstOther).toBeGreaterThan(lastHealth)
     },
     10000,

@@ -16,6 +16,11 @@ import {
   createOptionalSession,
   createRequireSession,
 } from './modules/identity'
+import {
+  createCaptchaGuard,
+  createTurnstileVerifier,
+  type CaptchaVerifier,
+} from './platform/captcha'
 import { createEmailService, createLogSender, createResendSender } from './platform/email'
 import type { EmailSender } from './platform/email'
 import { healthRoutes } from './modules/health/health.routes'
@@ -56,6 +61,8 @@ export type AppDeps = {
   puzzleSources?: readonly PuzzleSource[]
   /** Envio de e-mail; os testes passam um falso, e sem ele vale o Resend, o log ou nenhum. */
   emailSender?: EmailSender
+  /** Verificador do captcha (feature 049); os testes passam um falso, sem ele vale o Turnstile. */
+  captchaVerifier?: CaptchaVerifier
   /** Destino do log; só os testes trocam (para conferir o que é registrado). */
   logStream?: NodeJS.WritableStream
 }
@@ -73,6 +80,7 @@ export function buildApp({
     createClubeSource(),
   ],
   emailSender,
+  captchaVerifier,
   logStream,
 }: AppDeps): FastifyInstance {
   const app = Fastify({
@@ -132,6 +140,10 @@ export function buildApp({
     limits: rateLimits,
     baseUrl: config.email.baseUrl ?? '',
   }
+  const captcha = createCaptchaGuard({
+    enabled: config.captcha.enabled,
+    verifier: captchaVerifier ?? defaultCaptchaVerifier(config),
+  })
   const registration = createRegistrationService(emailParts)
   const recovery = createRecoveryService(emailParts)
   const account = createAccountService(emailParts)
@@ -152,6 +164,7 @@ export function buildApp({
     clock,
     requireSession,
     email,
+    captcha,
     registration,
     recovery,
     account,
@@ -192,4 +205,12 @@ export function defaultEmailSender(
   const { apiKey, from } = config.email
   if (apiKey && from) return createResendSender({ apiKey, from })
   return config.nodeEnv === 'production' ? undefined : createLogSender(log)
+}
+
+// Turnstile com a chave configurada. Sem ela o captcha está desligado (a configuração do servidor
+// recusa ligá-lo sem chave) e o verificador nunca é chamado; este recusa por segurança.
+export function defaultCaptchaVerifier(config: ServerConfig): CaptchaVerifier {
+  const { secretKey, hostname } = config.captcha
+  if (secretKey && hostname) return createTurnstileVerifier({ secret: secretKey, hostname })
+  return { verify: async () => ({ ok: false, reason: 'unavailable' }) }
 }

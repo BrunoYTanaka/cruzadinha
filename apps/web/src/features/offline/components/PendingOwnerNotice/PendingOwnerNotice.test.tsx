@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { expectNoA11yViolations } from '../../../../test/axe'
 import { applyOutboxEvent } from '../../services/outbox/outbox'
 import { PendingOwnerNotice } from './PendingOwnerNotice'
 
@@ -15,7 +14,7 @@ const body = {
 const view = (guest: boolean) =>
   render(
     <MemoryRouter>
-      <PendingOwnerNotice guest={guest} loginPath="/login" />
+      <PendingOwnerNotice guest={guest} />
     </MemoryRouter>,
   )
 
@@ -27,12 +26,10 @@ describe('PendingOwnerNotice', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
-  it('visitante com pendência de uma conta vê "esperando você entrar" com o botão Entrar', async () => {
+  it('visitante com pendência não vê aviso', () => {
     applyOutboxEvent('u1', 'p1', { type: 'save', body })
-    const { container } = view(true)
-    expect(screen.getByRole('status')).toHaveTextContent('Há progresso esperando você entrar.')
-    expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument()
-    await expectNoA11yViolations(container)
+    view(true)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('a conta vê o aviso de descarte uma vez e pode dispensá-lo', async () => {
