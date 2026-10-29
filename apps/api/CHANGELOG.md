@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.8.1...api-v0.9.0) (2026-10-29)
+
+
+### Features
+
+* add turnstile captcha to sign-up and password recovery ([71515ed](https://github.com/BrunoYTanaka/cruzadinha/commit/71515ed12cf9a1cb8d4d3b206b32f87dd219ea1e))
+* **api:** verify a Turnstile proof on the e-mail routes ([6c7564d](https://github.com/BrunoYTanaka/cruzadinha/commit/6c7564d6d9bd938f3bff7dbc81959d87c9f5afd4))
+* optional automatic verification ([2262f14](https://github.com/BrunoYTanaka/cruzadinha/commit/2262f149825724a6dcaa8f498a53e66667bfda1c))
+* **shared:** add verifyOnType setting ([760f83e](https://github.com/BrunoYTanaka/cruzadinha/commit/760f83ec62c4e02044b65e88c69370d0d717c2a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.27.0 to 0.28.0
+
 ## [0.8.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.8.0...api-v0.8.1) (2026-10-28)
 
 
