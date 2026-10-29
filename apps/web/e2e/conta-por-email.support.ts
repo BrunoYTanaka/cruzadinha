@@ -23,7 +23,7 @@ export const json = (status: number, body: unknown, headers: Record<string, stri
 export async function fakeApi(
   page: Page,
   handlers: Record<string, Handler>,
-  options: { registrationOpen?: boolean } = {},
+  options: { registrationOpen?: boolean; captchaRequired?: boolean } = {},
 ): Promise<FakeApi> {
   const api: FakeApi = { calls: [] }
   await page.route('**/api/**', async (route) => {
@@ -44,7 +44,12 @@ export async function fakeApi(
       return route.fulfill(json(401, { error: 'unauthenticated', message: 'x' }))
     }
     if (key === 'GET /api/auth/registration') {
-      return route.fulfill(json(200, { open: options.registrationOpen ?? true }))
+      return route.fulfill(
+        json(200, {
+          open: options.registrationOpen ?? true,
+          captchaRequired: options.captchaRequired ?? false,
+        }),
+      )
     }
     if (key === 'GET /api/library') return route.fulfill(json(200, { items: [] }))
     return route.fulfill(json(404, { error: 'puzzle-unavailable', message: 'x' }))

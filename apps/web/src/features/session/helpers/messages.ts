@@ -16,6 +16,10 @@ export const authMessages = {
   passwordsDiffer: 'As senhas não são iguais.',
   // Sem citar cota nem provedor (feature 035, FR-018).
   emailUnavailable: 'Não foi possível enviar o e-mail agora. Tente novamente mais tarde.',
+  // Feature 049: sem dizer o motivo; recarregar resolve a aba antiga e a prova vencida.
+  captchaFailed:
+    'Não foi possível confirmar que você é uma pessoa. Recarregue a página e tente de novo.',
+  captchaUnavailable: 'Não foi possível carregar a verificação de segurança.',
 } as const
 
 export function tooManyAttempts(retryAfterSeconds: number | undefined): string {
@@ -29,6 +33,7 @@ function commonMessage(error: unknown): string | null {
   if (error.isOffline) return authMessages.offline
   if (error.status === 429) return tooManyAttempts(error.retryAfterSeconds)
   if (error.code === 'email-unavailable') return authMessages.emailUnavailable
+  if (error.code === 'captcha-failed') return authMessages.captchaFailed
   if (error.code === 'invalid-input') return authMessages.checkFields
   return null
 }

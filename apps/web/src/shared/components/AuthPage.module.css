@@ -36,6 +36,10 @@
   font-size: 14px;
 }
 
+.alertText {
+  margin: 0 0 8px;
+}
+
 .form {
   display: grid;
   gap: 16px;

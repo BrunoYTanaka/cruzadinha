@@ -2,14 +2,23 @@ import { useQuery } from '@tanstack/react-query'
 import { getRegistration } from '../../../shared/services/api/auth/auth'
 import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 
-// Se o cadastro está aberto (chave da API, feature 013). Carregando, com erro ou com uma API
-// anterior que não tem a rota, vale como fechado (FR-017).
-export function useRegistration(): { isOpen: boolean; isPending: boolean } {
+// Se o cadastro está aberto (chave da API, feature 013) e se os pedidos de e-mail exigem captcha
+// (feature 049). Carregando, com erro ou com uma API anterior que não tem a rota, vale como
+// fechado e sem captcha (FR-017).
+export function useRegistration(): {
+  isOpen: boolean
+  isPending: boolean
+  captchaRequired: boolean
+} {
   const query = useQuery({
     queryKey: queryKeys.registration,
     queryFn: getRegistration,
     staleTime: 60_000,
     retry: false,
   })
-  return { isOpen: query.data?.open === true, isPending: query.isPending }
+  return {
+    isOpen: query.data?.open === true,
+    isPending: query.isPending,
+    captchaRequired: query.data?.captchaRequired === true,
+  }
 }
