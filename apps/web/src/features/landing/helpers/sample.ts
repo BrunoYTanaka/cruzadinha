@@ -1,13 +1,13 @@
 import type { Puzzle, Solution } from '@cruzadinha/shared'
 
-// Mini cruzada 5x5 da landing (feature 048). Palavras e dicas inventadas para a página: nada vem de
+// Mini cruzada 5x5 da landing (features 048 e 049: a amostra do mockup). Palavras e dicas inventadas para a página: nada vem de
 // nenhuma fonte. `source`, `level` e `date` só existem porque o formato interno de puzzle os exige.
 //
-//   A I N D A
-//   L # O # R
-//   B A I L E
-//   U # T # I
-//   M O E D A
+//   C O S T A
+//   A # O # T
+//   M U N D O
+//   P # D # M
+//   O C A S O
 const open = (number: number | null = null) => ({ kind: 'open' as const, number })
 const block = { kind: 'block' as const }
 
@@ -28,28 +28,49 @@ export const SAMPLE_PUZZLE: Puzzle = {
     ],
   },
   words: [
-    { number: 1, direction: 'across', row: 0, col: 0, length: 5, clue: 'Até este momento' },
-    { number: 4, direction: 'across', row: 2, col: 0, length: 5, clue: 'Festa com música e dança' },
     {
-      number: 5,
+      number: 1,
       direction: 'across',
-      row: 4,
+      row: 0,
       col: 0,
       length: 5,
-      clue: 'Peça de metal que vale dinheiro',
+      clue: 'Faixa de terra junto ao mar',
     },
-    { number: 1, direction: 'down', row: 0, col: 0, length: 5, clue: 'Livro para guardar fotos' },
-    { number: 2, direction: 'down', row: 0, col: 2, length: 5, clue: 'Quando o céu escurece' },
-    { number: 3, direction: 'down', row: 0, col: 4, length: 5, clue: 'Grãos finos da praia' },
+    { number: 4, direction: 'across', row: 2, col: 0, length: 5, clue: 'O planeta Terra' },
+    { number: 5, direction: 'across', row: 4, col: 0, length: 5, clue: 'Pôr do sol' },
+    {
+      number: 1,
+      direction: 'down',
+      row: 0,
+      col: 0,
+      length: 5,
+      clue: 'Terreno de futebol ou de plantação',
+    },
+    {
+      number: 2,
+      direction: 'down',
+      row: 0,
+      col: 2,
+      length: 5,
+      clue: 'Aparelho que mede a profundidade',
+    },
+    {
+      number: 3,
+      direction: 'down',
+      row: 0,
+      col: 4,
+      length: 5,
+      clue: 'Partícula de matéria (sem acento)',
+    },
   ],
 }
 
 export const SAMPLE_SOLUTION: Solution = {
   cells: [
-    ['A', 'I', 'N', 'D', 'A'],
-    ['L', null, 'O', null, 'R'],
-    ['B', 'A', 'I', 'L', 'E'],
-    ['U', null, 'T', null, 'I'],
-    ['M', 'O', 'E', 'D', 'A'],
+    ['C', 'O', 'S', 'T', 'A'],
+    ['A', null, 'O', null, 'T'],
+    ['M', 'U', 'N', 'D', 'O'],
+    ['P', null, 'D', null, 'M'],
+    ['O', 'C', 'A', 'S', 'O'],
   ],
 }

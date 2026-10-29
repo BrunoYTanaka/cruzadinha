@@ -1,32 +1,45 @@
 .section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 8px 0 32px;
+  padding: 64px 0;
+  scroll-margin-top: 16px;
 }
 
-.heading {
+.kicker {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 20ch;
   margin: 0;
-  font-size: 24px;
-  line-height: 1.25;
-  text-wrap: balance;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  font-weight: 800;
 }
 
 .list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: 16px;
-  margin: 0;
+  margin: 32px 0 0;
   padding: 0;
+  border-top: 2px solid var(--ink);
   list-style: none;
 }
 
 .item {
-  padding: 16px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface);
-  color: var(--ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px 32px;
+  padding: 22px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 821px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
 }
 
 .item p {
@@ -35,12 +48,29 @@
 }
 
 .name {
-  margin: 0 0 6px;
-  font-size: 18px;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* O realce só com ponteiro; o recuo anima só com movimento permitido. */
+@media (hover: hover) {
+  .item:hover {
+    padding-left: 24px;
+    background-color: var(--word);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .item {
+    transition:
+      background-color 200ms,
+      padding-left 250ms;
+  }
 }
 
 .note {
-  margin: 0;
+  margin: 20px 0 0;
   color: var(--mute);
-  font-size: 14px;
+  font-size: 0.88rem;
 }

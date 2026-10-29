@@ -5,15 +5,17 @@ import { MiniCrossword } from '../MiniCrossword/MiniCrossword'
 import { SourcesSection } from '../SourcesSection/SourcesSection'
 import styles from './LandingContent.module.css'
 
-// O texto da landing (feature 048). Vai no HTML pré-gerado pelo build, então não pode depender da
+// O texto da landing (features 048 e 049). Vai no HTML pré-gerado pelo build, então não pode depender da
 // API nem de dados do navegador.
 export function LandingContent() {
   return (
-    <div className={styles.wrap}>
+    <div className={styles.landing}>
       <Hero />
-      <FeatureCards />
-      <MiniCrossword />
-      <SourcesSection />
+      <div className={styles.wrap}>
+        <FeatureCards />
+        <MiniCrossword />
+        <SourcesSection />
+      </div>
       <FinalBand />
     </div>
   )

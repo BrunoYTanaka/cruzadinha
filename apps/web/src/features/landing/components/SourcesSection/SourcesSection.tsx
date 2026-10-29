@@ -7,10 +7,15 @@ type SourcesSectionProps = {
   sources?: readonly PuzzleSourceId[]
 }
 
+// "Fontes" (feature 049, mockup): uma linha por fonte do jogo e o título com a quantidade, tudo
+// derivado da lista do jogo.
 export function SourcesSection({ sources = puzzleSourceIdSchema.options }: SourcesSectionProps) {
   return (
-    <section className={styles.section}>
-      <h2 className={styles.heading}>De onde vêm as cruzadas</h2>
+    <section id="fontes" className={styles.section} aria-labelledby="fontes-titulo">
+      <p className={styles.kicker}>Fontes</p>
+      <h2 id="fontes-titulo" className={styles.title}>
+        {sources.length} {sources.length === 1 ? 'fonte' : 'fontes'}, um só lugar.
+      </h2>
       <ul className={styles.list}>
         {sources.map((id) => (
           <li key={id} className={styles.item}>

@@ -18,6 +18,12 @@ describe('LandingContent', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
 
+  it('não leva nada do mockup que só servia de prévia (FR-019)', () => {
+    const { container } = renderLanding()
+    expect(container.textContent).not.toContain('Prévia de design')
+    expect(container.querySelectorAll('a[href="#"]')).toHaveLength(0)
+  })
+
   it.each(['light', 'dark'])('passa no axe no tema %s', async (theme) => {
     document.documentElement.dataset.theme = theme
     const { container } = renderLanding()
@@ -50,5 +56,19 @@ describe('LandingContent: rolagem, foco e movimento (feature 048)', () => {
       /\.grid:focus-visible\s*\{[^}]*outline:[^;]*var\(--focus\)/,
     )
     expect(readCss('global.css')).toContain(':focus-visible')
+  })
+})
+
+describe('LandingContent.module.css (feature 049)', () => {
+  const css = readCss('LandingContent.module.css')
+
+  it('não leva cor fixa: tokens e derivados deles', () => {
+    expect(css).not.toMatch(/#[0-9a-f]{3,8}\b/i)
+  })
+
+  it('a entrada ao rolar só roda com animação permitida e com suporte', () => {
+    const before = css.slice(0, css.indexOf('@media (prefers-reduced-motion: no-preference)'))
+    expect(before).not.toContain('animation')
+    expect(css).toContain('@supports (animation-timeline: view())')
   })
 })

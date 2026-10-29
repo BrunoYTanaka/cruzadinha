@@ -1,31 +1,52 @@
 .section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 0 32px;
+  padding: 64px 0;
   scroll-margin-top: 16px;
-  text-align: center;
 }
 
-.heading {
+.kicker {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 20ch;
   margin: 0;
-  font-size: 24px;
-  line-height: 1.25;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  font-weight: 800;
 }
 
-.help {
-  max-width: 34em;
-  margin: 0;
-  color: var(--mute);
-  text-wrap: balance;
+.play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+  margin-top: 36px;
 }
 
-/* Cinco casas cabem em 360 px com folga. */
+@media (min-width: 821px) {
+  .play {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.box {
+  padding: 20px;
+  border: 2px solid var(--ink);
+  background-color: var(--surface);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
 .grid {
-  --size: min(60px, 15vw);
   display: flex;
   flex-direction: column;
+  max-width: 400px;
+  margin: 0 auto;
   border: 2px solid var(--block);
   background-color: var(--block);
   outline-offset: 4px;
@@ -36,14 +57,14 @@
 }
 
 .row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .cell,
 .block {
   box-sizing: border-box;
-  width: var(--size);
-  height: var(--size);
+  aspect-ratio: 1;
 }
 
 .block {
@@ -57,8 +78,8 @@
   border: 1px solid var(--cell-line);
   background-color: var(--cell);
   color: var(--ink);
-  font-size: calc(var(--size) * 0.5);
-  font-weight: 500;
+  font-size: clamp(1.3rem, 7vw, 2rem);
+  font-weight: 700;
   cursor: pointer;
   user-select: none;
 }
@@ -72,12 +93,34 @@
   color: var(--sel-ink);
 }
 
+/* O acerto vence o destaque da palavra, mas não o da casa selecionada. */
+.ok:not(.selected) {
+  background-color: var(--ok-tint);
+  color: var(--ok);
+}
+
 .number {
   position: absolute;
   top: 2px;
-  left: 3px;
-  font-size: 11px;
+  left: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
   line-height: 1;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ok {
+    animation: pop 450ms ease;
+  }
+}
+
+@keyframes pop {
+  40% {
+    z-index: 2;
+    transform: scale(1.14);
+  }
 }
 
 /* Campo que só recebe o teclado da tela do celular; não aparece nem muda o layout. */
@@ -92,38 +135,117 @@
   font-size: 16px;
 }
 
-.footer {
+/* Reserva a altura da conclusão (botão a mais) para o que vem depois não se mover. */
+.foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 8px 16px;
-  /* Reserva duas linhas para a dica mudar de tamanho sem mover o que vem depois. */
-  min-height: 3.2em;
-}
-
-.clue {
-  margin: 0;
-  color: var(--ink);
-}
-
-.done {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  min-height: 3.2em;
-  color: var(--ink);
+  min-height: 40px;
+  margin-top: 16px;
+}
+
+@media (max-width: 520px) {
+  .foot {
+    min-height: 100px;
+  }
+}
+
+.status {
+  margin: 0;
+  color: var(--mute);
   font-weight: 500;
 }
 
-.done p {
-  margin: 0;
+.win {
+  color: var(--ok);
+  font-weight: 700;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  gap: 10px;
+}
+
+.clues {
+  display: grid;
+  gap: 22px;
+}
+
+.cluesTitle {
+  margin: 0 0 10px;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  border-left: 4px solid transparent;
+}
+
+.list li.on {
+  border-left-color: var(--accent);
+  background-color: var(--word);
+}
+
+.clue {
+  display: flex;
   gap: 12px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.clue b {
+  min-width: 1.4em;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+.solved span:not(.sr) {
+  color: var(--mute);
+  text-decoration: line-through;
+}
+
+.solved b::after {
+  content: ' ✓';
+  color: var(--ok);
+}
+
+.hint {
+  margin: 0;
+  color: var(--mute);
+  font-size: 0.92rem;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

@@ -164,7 +164,9 @@ describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
     renderApp('/')
     // A rota substitui o fallback logo depois do primeiro desenho.
     await waitFor(() =>
-      expect(screen.getByRole('heading', { level: 1, name: 'Cruzadinha' })).toBeInTheDocument(),
+      expect(
+        screen.getByRole('heading', { level: 1, name: /Palavras cruzadas todo dia/ }),
+      ).toBeInTheDocument(),
     )
     expect(screen.getByRole('link', { name: 'Calendário' })).toHaveAttribute('href', '/calendario')
     expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
@@ -175,7 +177,9 @@ describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
     mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
     renderApp('/')
     expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
-    expect(screen.queryByRole('heading', { level: 1, name: 'Cruzadinha' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { level: 1, name: /Palavras cruzadas todo dia/ }),
+    ).not.toBeInTheDocument()
   })
 
   it('com o ajuste ligado leva ao jogo, também ao voltar a / pelo logo', async () => {

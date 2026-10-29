@@ -11,14 +11,23 @@ describe('renderLanding', () => {
     expect(html).toContain('id="conteudo"')
     expect(html).toContain('Pular para o conteúdo')
     expect(html).toContain('Jogar a cruzada de hoje')
-    expect(html).toContain('Jogue sem conta')
-    expect(html).toContain('Funciona sem internet')
+    expect(html).toContain('Abriu, jogou. O resto é opcional.')
+    expect(html).toContain('Funciona até sem internet')
+    expect(html).toContain('A cruzada de hoje já está esperando.')
+  })
+
+  it('traz a frase de destaque dentro do único h1', () => {
+    const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? ''
+    expect(h1).toContain('Cruzadinha: ')
+    expect(h1).toContain('Palavras cruzadas')
+    expect(h1).toContain('todo dia')
   })
 
   it('traz a mini cruzada pronta, com a primeira dica', () => {
     expect(html).toContain('id="mini-cruzada"')
     expect(html).toContain('role="grid"')
-    expect(html).toContain('1 horizontal: Até este momento')
+    expect(html).toContain('Faixa de terra junto ao mar')
+    expect(html).toContain('0 de 6 palavras certas.')
   })
 
   it('aponta os botões para endereços estáveis, sem data escrita', () => {

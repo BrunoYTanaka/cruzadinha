@@ -1,0 +1,63 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 13px 22px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary {
+  background-color: var(--sel);
+  color: var(--sel-ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.quiet {
+  background-color: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.small {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.small.primary {
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* O movimento só com ponteiro e só com animação permitida: no toque o botão não fica preso deslocado. */
+@media (prefers-reduced-motion: no-preference) {
+  .button {
+    transition:
+      transform 150ms,
+      box-shadow 150ms,
+      border-color 150ms;
+  }
+}
+
+@media (hover: hover) {
+  .primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .quiet:hover {
+    border-color: var(--ink);
+  }
+}
+
+.primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
