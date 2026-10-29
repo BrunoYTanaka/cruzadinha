@@ -104,6 +104,7 @@ describe('loadConfig', () => {
       proxySecret: undefined,
       releaseCommit: undefined,
       registrationEnabled: false,
+      captcha: { enabled: false, secretKey: undefined, hostname: 'localhost' },
       email: {
         apiKey: undefined,
         from: undefined,
@@ -137,6 +138,7 @@ describe('loadConfig', () => {
       proxySecret: undefined,
       releaseCommit: undefined,
       registrationEnabled: false,
+      captcha: { enabled: true, secretKey: undefined, hostname: undefined },
       email: {
         apiKey: undefined,
         from: undefined,
@@ -311,7 +313,7 @@ describe('loadSeedConfig', () => {
 })
 
 describe('loadConfig com PROXY_SECRET obrigatório em produção', () => {
-  const production = { DATABASE_URL: databaseUrl, NODE_ENV: 'production' }
+  const production = { DATABASE_URL: databaseUrl, NODE_ENV: 'production', CAPTCHA_ENABLED: 'false' }
   const require = { requireProxySecret: true }
 
   function failure(env: Record<string, string | undefined>): string {
@@ -367,5 +369,78 @@ describe('loadConfig com PROXY_SECRET obrigatório em produção', () => {
 
   it('never echoes the secret in the message', () => {
     expect(failure({ ...production, PROXY_SECRET: 'SEGREDO' })).not.toContain('SEGREDO')
+  })
+})
+
+describe('loadConfig CAPTCHA_ENABLED e TURNSTILE_SECRET_KEY', () => {
+  const server = { requireProxySecret: true }
+  const base = { DATABASE_URL: databaseUrl }
+  const production = {
+    ...base,
+    NODE_ENV: 'production',
+    PROXY_SECRET: 'S'.repeat(32),
+    APP_BASE_URL: 'https://cruzadinha.example.com',
+  }
+
+  function failure(env: Record<string, string | undefined>): string {
+    try {
+      loadConfig(env, server)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+    throw new Error('loadConfig did not fail')
+  }
+
+  it.each([undefined, ''])('defaults to off outside production when the value is %j', (value) => {
+    expect(loadConfig({ ...base, CAPTCHA_ENABLED: value }, server).captcha.enabled).toBe(false)
+  })
+
+  it.each([undefined, ''])('defaults to on in production when the value is %j', (value) => {
+    const env = { ...production, TURNSTILE_SECRET_KEY: 'segredo-ficticio', CAPTCHA_ENABLED: value }
+    expect(loadConfig(env, server).captcha.enabled).toBe(true)
+  })
+
+  it('reads the secret and takes the host from APP_BASE_URL', () => {
+    const { captcha } = loadConfig(
+      { ...production, CAPTCHA_ENABLED: 'true', TURNSTILE_SECRET_KEY: 'segredo-ficticio' },
+      server,
+    )
+    expect(captcha).toEqual({
+      enabled: true,
+      secretKey: 'segredo-ficticio',
+      hostname: 'cruzadinha.example.com',
+    })
+  })
+
+  it('refuses to start with the captcha on and no secret', () => {
+    expect(failure({ ...production, CAPTCHA_ENABLED: 'true' })).toContain(
+      'TURNSTILE_SECRET_KEY: obrigatória com CAPTCHA_ENABLED=true',
+    )
+    expect(failure({ ...production })).toContain('TURNSTILE_SECRET_KEY: obrigatória')
+  })
+
+  it('refuses the captcha on in production without APP_BASE_URL', () => {
+    const env = { ...production, APP_BASE_URL: undefined, TURNSTILE_SECRET_KEY: 'segredo-ficticio' }
+    expect(failure(env)).toContain('APP_BASE_URL: obrigatória com CAPTCHA_ENABLED=true')
+  })
+
+  it('starts with the captcha off and no secret, and does not check it for the author CLI', () => {
+    expect(() => loadConfig({ ...production, CAPTCHA_ENABLED: 'false' }, server)).not.toThrow()
+    expect(() => loadConfig({ ...production })).not.toThrow()
+  })
+
+  it('never puts the secret in an error message', () => {
+    const message = failure({
+      ...production,
+      CAPTCHA_ENABLED: 'true',
+      TURNSTILE_SECRET_KEY: 'x'.repeat(600),
+    })
+    expect(message).not.toContain('xxxxxxxxxx')
+  })
+
+  it.each(['1', 'yes', 'TRUE'])('fails on CAPTCHA_ENABLED=%s', (value) => {
+    expect(errorMessage({ ...base, CAPTCHA_ENABLED: value })).toContain(
+      'CAPTCHA_ENABLED: deve ser true ou false',
+    )
   })
 })

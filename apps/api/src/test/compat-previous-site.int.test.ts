@@ -26,7 +26,10 @@ afterAll(() => handle.close())
 describe('contrato que o site anterior usa, com o cadastro fechado', () => {
   it('registration, login, me e logout respondem como antes', async () => {
     const registration = await app.inject({ method: 'GET', url: '/api/auth/registration' })
-    expect(registrationStatusSchema.parse(registration.json())).toEqual({ open: false })
+    expect(registrationStatusSchema.parse(registration.json())).toEqual({
+      open: false,
+      captchaRequired: false,
+    })
 
     await signUpForTest(app, db, 'ana@exemplo.com', PASSWORD)
     const login = await app.inject({

@@ -43,5 +43,6 @@ export const emptyOk = (description: string) => ({
 })
 
 export const sendOrder =
-  'Ordem das checagens: cadastro aberto (só nas rotas de cadastro), limite por endereço, corpo, ' +
+  'Ordem das checagens: cadastro aberto (só nas rotas de cadastro), captcha (com `CAPTCHA_ENABLED=true`, ' +
+  'campo `captchaToken`), limite por endereço, corpo, ' +
   'envio disponível. O e-mail sai depois da resposta, e a resposta é igual com ou sem conta ou pendência.'
