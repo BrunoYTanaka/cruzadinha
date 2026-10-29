@@ -17,9 +17,13 @@ const htmlDown = () =>
   new Response('<html>acordando</html>', { status: 503, headers: { 'content-type': 'text/html' } })
 const withSession = () => jsonResponse(200, { user: aUser })
 
+const rendered: Array<{ dispose: () => void }> = []
+
 function renderApp(path: string) {
   const queryClient = makeQueryClient()
-  return renderRoutes(createAppRoutes(queryClient), [path], queryClient)
+  const result = renderRoutes(createAppRoutes(queryClient), [path], queryClient)
+  rendered.push(result.router)
+  return result
 }
 
 beforeEach(() => {
@@ -27,6 +31,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  // Um loader ainda em andamento (como o do jogo) não pode pedir à API do teste seguinte.
+  for (const router of rendered.splice(0)) router.dispose()
   vi.restoreAllMocks()
   resetSessionHandlers()
   resetServerWake()
@@ -114,6 +120,9 @@ describe('entrada do site com a espera do servidor', () => {
       const { router } = renderApp(path)
       await waitFor(() => expect(awake()).toBe(true), { timeout: 5000 })
       await waitFor(() => expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(true))
+      // Cada tela faz um pedido seu logo depois da sessão (a do jogo, só quando o código carrega).
+      // Esperar por ele evita que o pedido caia no mock do teste seguinte.
+      await waitFor(() => expect(calls.length).toBeGreaterThan(3))
       await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
       expect(screen.queryByText('Algo deu errado')).not.toBeInTheDocument()
       const firstOther = calls.findIndex((call) => call.key !== 'GET /api/health')
