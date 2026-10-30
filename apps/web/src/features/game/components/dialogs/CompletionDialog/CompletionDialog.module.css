@@ -57,3 +57,57 @@
   color: var(--mute);
   font-size: 14px;
 }
+
+.shared {
+  margin: 0;
+  color: var(--ok);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.manual {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.manual p {
+  margin: 0;
+  color: var(--warn);
+}
+
+.manualText {
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+}
+
+.failed {
+  margin: 0;
+  color: var(--warn);
+  font-size: 14px;
+}
+
+.icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* O conjunto ícone + texto tem a mesma largura nos dois botões e fica no centro: os ícones e os
+   textos começam no mesmo ponto. */
+.optionContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 11.5rem;
+}
