@@ -91,7 +91,8 @@
 
 /* No celular o e-mail não cabe ao lado do tema e de "Sair"; "Visitante" é curto e fica sempre. */
 @media (max-width: 560px) {
-  .email {
+  .email,
+  .statsLink {
     display: none;
   }
 }

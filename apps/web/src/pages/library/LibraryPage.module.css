@@ -32,3 +32,10 @@
   bottom: calc(-1 * var(--gutter));
   z-index: 1;
 }
+
+/* Atalho para as estatísticas: no celular o cabeçalho não tem espaço para o link (feature 056). */
+.stats {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
