@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.14.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.13.2...web-v0.14.0) (2026-10-30)
+
+
+### Features
+
+* **web:** add print sheet for the crossword ([f597b9c](https://github.com/BrunoYTanaka/cruzadinha/commit/f597b9c4eecebb6a58a7429181c05d31f81d2af7))
+* **web:** filter calendar days by status ([2772845](https://github.com/BrunoYTanaka/cruzadinha/commit/277284547f77cbde99d90f843140b067f9475411))
+* **web:** filter calendar days by status ([75b21ec](https://github.com/BrunoYTanaka/cruzadinha/commit/75b21eca873e0dcaa1e0d4a56a4dfd8dbfedba73))
+* **web:** jump to a month or date in the calendar ([64c207c](https://github.com/BrunoYTanaka/cruzadinha/commit/64c207c6f5c9d8e21ce12ebbc039d5baf7614b1e))
+* **web:** jump to a month or date in the calendar ([91fe992](https://github.com/BrunoYTanaka/cruzadinha/commit/91fe992f096f97a1bc150ac46fd12a01a9c13a13))
+* **web:** print the crossword without the solution ([721c9ab](https://github.com/BrunoYTanaka/cruzadinha/commit/721c9ab29a49b6988c4691db86e626558d31f0f0))
+* **web:** share the result as text or image from the completion dialog ([9d0b4ed](https://github.com/BrunoYTanaka/cruzadinha/commit/9d0b4edd3c811ff08a8956ada6dacaf60f7f7356))
+* **web:** share the result as text or image from the completion dialog ([0f622b7](https://github.com/BrunoYTanaka/cruzadinha/commit/0f622b7a760e9a80d1fb5a4029d2a837e9864a27)), closes [#109](https://github.com/BrunoYTanaka/cruzadinha/issues/109)
+
+
+### Bug Fixes
+
+* **web:** reserve calendar height for the jump to date row ([52e84bc](https://github.com/BrunoYTanaka/cruzadinha/commit/52e84bcc868b41333c5cbec7fd22b9d3832de08d))
+* **web:** reserve calendar height for the status filter bar ([8535a5e](https://github.com/BrunoYTanaka/cruzadinha/commit/8535a5e3bbd4da3e65fb0d77658647037f86b593))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.30.0 to 0.31.0
+
 ## [0.13.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.13.1...web-v0.13.2) (2026-10-29)
 
 
