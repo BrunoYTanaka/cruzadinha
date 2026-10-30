@@ -19,6 +19,7 @@ import {
   rememberGameSource,
 } from '../../../library'
 import { boardKeyToAction } from '../../helpers/board-keys'
+import { buildShareText } from '../../helpers/share-result'
 import { Board } from '../board/Board/Board'
 import { ClueBar } from '../clues/ClueBar/ClueBar'
 import { Notice } from '../../../../shared/components/Notice/Notice'
@@ -379,6 +380,12 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         confirmed={confirmed}
         helpsUsed={state.usage.letters + state.usage.words}
         isRecord={isRecord}
+        shareText={buildShareText({
+          source: puzzle.source,
+          date: puzzle.date,
+          elapsedMs: finishedMs,
+        })}
+        shareCard={{ source: puzzle.source, date: puzzle.date }}
         localOnly={guest}
         otherSource={otherSource}
       />

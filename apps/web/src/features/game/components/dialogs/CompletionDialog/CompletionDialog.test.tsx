@@ -1,9 +1,12 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../../../../test/axe'
 import { CompletionDialog } from './CompletionDialog'
+
+const renderShareCard = vi.hoisted(() => vi.fn())
+vi.mock('../../../helpers/share-card', () => ({ renderShareCard }))
 
 function renderDialog(props: Partial<Parameters<typeof CompletionDialog>[0]> = {}) {
   const onViewBoard = vi.fn()
@@ -20,6 +23,8 @@ function renderDialog(props: Partial<Parameters<typeof CompletionDialog>[0]> = {
             confirmed
             helpsUsed={2}
             isRecord={false}
+            shareCard={{ source: 'oglobo', date: '2026-10-30' }}
+            shareText={'Cruzadinha · O Globo · 30/10/2026\nConcluí em 07:48'}
             {...props}
           />
         ),
@@ -95,6 +100,91 @@ describe('CompletionDialog', () => {
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Voltar à biblioteca' })).toHaveFocus()
       await expectNoA11yViolations(document.body)
+    })
+  })
+
+  describe('compartilhar o resultado (feature 052)', () => {
+    afterEach(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+      Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })
+    })
+
+    it('copia o texto, avisa "Resultado copiado" e deixa foco e ordem como estavam', async () => {
+      const user = userEvent.setup() // instala a própria área de transferência: vem antes do stub
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      renderDialog({ localOnly: true, confirmed: false, bestMs: null })
+      const names = screen.getAllByRole('button').map((button) => button.textContent)
+      expect(names.slice(-3)).toEqual(['Voltar à biblioteca', 'Ver o tabuleiro', 'Compartilhar'])
+      expect(screen.getByRole('button', { name: 'Voltar à biblioteca' })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      await user.click(screen.getByRole('button', { name: 'Compartilhar texto' }))
+      expect(writeText).toHaveBeenCalledWith('Cruzadinha · O Globo · 30/10/2026\nConcluí em 07:48')
+      expect(await screen.findByText('Resultado copiado')).toBeInTheDocument()
+      await expectNoA11yViolations(document.body)
+    })
+
+    it('sem cópia nem compartilhamento, mostra o texto selecionado e avisa', async () => {
+      const user = userEvent.setup()
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+      renderDialog()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      await user.click(screen.getByRole('button', { name: 'Compartilhar texto' }))
+      expect(
+        await screen.findByText('Não foi possível copiar sozinho. Copie o texto abaixo.'),
+      ).toBeInTheDocument()
+      const field = screen.getByRole('textbox', { name: 'Texto do resultado' })
+      expect(field).toHaveValue('Cruzadinha · O Globo · 30/10/2026\nConcluí em 07:48')
+      expect(field).toHaveFocus()
+      expect(field).toHaveAttribute('readonly')
+      expect((field as HTMLTextAreaElement).selectionEnd).toBeGreaterThan(0)
+      await expectNoA11yViolations(document.body)
+    })
+
+    it('"Compartilhar imagem" desenha o cartão e baixa o PNG quando nada mais existe', async () => {
+      const user = userEvent.setup()
+      const blob = new Blob(['png'], { type: 'image/png' })
+      renderShareCard.mockResolvedValue(blob)
+      Object.defineProperty(navigator, 'canShare', { value: undefined, configurable: true })
+      Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+      URL.createObjectURL = vi.fn(() => 'blob:x')
+      URL.revokeObjectURL = vi.fn()
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+      renderDialog()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      await user.click(screen.getByRole('button', { name: 'Compartilhar imagem' }))
+      expect(renderShareCard).toHaveBeenCalledWith({
+        source: 'oglobo',
+        date: '2026-10-30',
+        elapsedMs: 468_000,
+      })
+      expect(await screen.findByText('Imagem baixada')).toBeInTheDocument()
+      await expectNoA11yViolations(document.body)
+    })
+
+    it('avisa quando não consegue gerar a imagem', async () => {
+      const user = userEvent.setup()
+      renderShareCard.mockResolvedValue(null)
+      renderDialog()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      await user.click(screen.getByRole('button', { name: 'Compartilhar imagem' }))
+      expect(await screen.findByText('Não foi possível gerar a imagem.')).toBeInTheDocument()
+    })
+
+    it('"Voltar" e Esc voltam ao resultado, sem fechar a janela', async () => {
+      const user = userEvent.setup()
+      const { onViewBoard } = renderDialog()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      expect(screen.getByRole('dialog', { name: 'Compartilhar resultado' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Compartilhar texto' })).toHaveFocus()
+      await expectNoA11yViolations(document.body)
+      await user.click(screen.getByRole('button', { name: 'Voltar' }))
+      expect(screen.getByRole('dialog', { name: 'Cruzada concluída' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Compartilhar' })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Compartilhar' }))
+      await user.keyboard('{Escape}')
+      expect(screen.getByRole('dialog', { name: 'Cruzada concluída' })).toBeInTheDocument()
+      expect(onViewBoard).not.toHaveBeenCalled()
     })
   })
 })
