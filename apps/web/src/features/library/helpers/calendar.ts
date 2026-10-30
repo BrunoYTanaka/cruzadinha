@@ -8,6 +8,21 @@ import {
   type YearMonth,
 } from '../../../shared/helpers/dates/dates'
 
+export const MONTH_NAMES = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+]
+
 // Situação de um dia no calendário (data-model.md, seção 3).
 export type DayState =
   | { kind: 'completed'; finishedMs: number | null; puzzleId: string }

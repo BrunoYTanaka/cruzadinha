@@ -1,11 +1,13 @@
 import type { PuzzleSourceId } from '@cruzadinha/shared'
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, type ReactNode } from 'react'
+import type { YearMonth } from '../../../../shared/helpers/dates/dates'
 import { Button } from '../../../../shared/components/Button/Button'
-import type { MonthView } from '../../helpers/calendar'
+import { MONTH_NAMES, type MonthView } from '../../helpers/calendar'
 import { countByFilter, type StatusFilter as Filter } from '../../helpers/status-filter'
 import styles from './Calendar.module.css'
 import { useOfflinePuzzleIds } from '../../../offline'
-import { DayCell, MONTH_NAMES } from '../DayCell/DayCell'
+import { DayCell } from '../DayCell/DayCell'
+import { JumpToDate } from '../JumpToDate/JumpToDate'
 import { StatusFilter } from '../StatusFilter/StatusFilter'
 
 const WEEKDAYS = [
@@ -41,6 +43,12 @@ type CalendarProps = {
   // Filtro de status (feature 053): estado da página, vale por mês e por fonte.
   filter: Filter
   onFilterChange: (filter: Filter) => void
+  // Pular para um mês ou dia (feature 054): `focusDate` é um pedido de foco de uma vez só.
+  today: string
+  onJumpMonth: (month: YearMonth) => void
+  onJumpDate: (date: string, month: YearMonth) => void
+  focusDate: string | null
+  onFocused: () => void
   // Computador: alça de redimensionar presa à borda direita do mês.
   resizeHandle?: ReactNode
 }
@@ -54,8 +62,21 @@ export function Calendar({
   onNext,
   filter,
   onFilterChange,
+  today,
+  onJumpMonth,
+  onJumpDate,
+  focusDate,
+  onFocused,
   resizeHandle,
 }: CalendarProps) {
+  const sectionRef = useRef<HTMLElement>(null)
+  // Só o dia que é link recebe foco; um dia apagado só mostra o mês. O pedido sempre é limpo.
+  useEffect(() => {
+    if (focusDate === null) return
+    const link = sectionRef.current?.querySelector<HTMLAnchorElement>(`a[data-date="${focusDate}"]`)
+    link?.focus()
+    onFocused()
+  }, [focusDate, view.year, view.month, onFocused])
   const stored = useOfflinePuzzleIds()
   const title = `${MONTH_NAMES[view.month - 1] ?? ''} de ${view.year}`
   const cells: (number | null)[] = [
@@ -72,6 +93,7 @@ export function Calendar({
   return (
     // Painel da aba de fonte escolhida: o nome é o da aba e o mês entra como descrição (feature 015).
     <section
+      ref={sectionRef}
       id="source-panel"
       role="tabpanel"
       className={styles.month}
@@ -99,6 +121,12 @@ export function Calendar({
           ›
         </Button>
       </div>
+      <JumpToDate
+        today={today}
+        month={{ year: view.year, month: view.month }}
+        onJumpMonth={onJumpMonth}
+        onJumpDate={onJumpDate}
+      />
       <StatusFilter value={filter} onChange={onFilterChange} counts={counts} />
       <p role="status" className={styles.statusInfo}>
         {filterInfo}

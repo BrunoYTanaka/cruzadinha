@@ -771,3 +771,55 @@ describe('LibraryPage filtros de status (feature 053)', () => {
     expect(screen.queryByRole('group', { name: 'Filtrar por status' })).toBeNull()
   })
 })
+
+describe('LibraryPage pular para uma data (feature 054)', () => {
+  const open = async () => {
+    library()
+    const user = userEvent.setup()
+    const view = renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    return { user, view }
+  }
+
+  it('o seletor leva direto a outro mês e "Anterior" segue dele; filtro e fonte ficam', async () => {
+    const { user } = await open()
+    await user.click(screen.getByRole('button', { name: 'Em andamento (1)' }))
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-04')
+    expect(await screen.findByRole('heading', { name: 'abril de 2026' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Em andamento/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    expect(await screen.findByRole('heading', { name: 'março de 2026' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
+    expect(await screen.findByRole('heading', { name: 'março de 2026' })).toBeInTheDocument()
+  })
+
+  it('uma data válida mostra o mês e põe o foco no dia, sem abrir o jogo', async () => {
+    const { user } = await open()
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-09')
+    await screen.findByRole('heading', { name: 'setembro de 2026' })
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-12' } })
+    expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '12 de outubro, em andamento' })).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+  })
+
+  it('uma data fora do período avisa e deixa o mês como está', async () => {
+    await open()
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2024-01-01' } })
+    expect(screen.getByRole('alert')).toHaveTextContent('Só há datas de outubro de 2025 até hoje.')
+    expect(screen.getByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+  })
+
+  it('um dia fora do filtro só mostra o mês, sem foco', async () => {
+    const { user } = await open()
+    await user.click(screen.getByRole('button', { name: 'Concluídas (1)' }))
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-09')
+    await screen.findByRole('heading', { name: 'setembro de 2026' })
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-12' } })
+    expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
+    expect(document.activeElement?.tagName).not.toBe('A')
+  })
+})

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
@@ -56,6 +56,8 @@ export function LibraryPage() {
   const library = active.query
   const [month, setMonth] = useState(() => currentMonth(today))
   const [filter, setFilter] = useState<StatusFilter>('all')
+  const [focusDate, setFocusDate] = useState<string | null>(null)
+  const onFocused = useCallback(() => setFocusDate(null), [])
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
 
@@ -136,6 +138,16 @@ export function LibraryPage() {
           onNext={() => setMonth((current) => addMonths(current, 1))}
           filter={filter}
           onFilterChange={setFilter}
+          today={today}
+          onJumpMonth={(next) =>
+            setMonth((current) => (compareMonths(next, current) === 0 ? current : next))
+          }
+          onJumpDate={(date, next) => {
+            setMonth(next)
+            setFocusDate(date)
+          }}
+          focusDate={focusDate}
+          onFocused={onFocused}
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
         />
         <LibraryLegend />

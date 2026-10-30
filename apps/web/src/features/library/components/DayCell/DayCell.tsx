@@ -1,24 +1,9 @@
 import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Link } from 'react-router'
 import { formatElapsed, spokenElapsed } from '../../../../shared/helpers/time/time'
-import type { CalendarDay } from '../../helpers/calendar'
+import { MONTH_NAMES, type CalendarDay } from '../../helpers/calendar'
 import { matchesFilter, type StatusFilter } from '../../helpers/status-filter'
 import styles from '../Calendar/Calendar.module.css'
-
-const MONTH_NAMES = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
-]
 
 // O estado de cada dia aparece sempre por texto, nunca só por cor.
 function visibleStatus(day: CalendarDay): string | null {
@@ -109,30 +94,38 @@ export function DayCell({
 
   if (dimmed) {
     return (
-      <span className={classes} role="img" aria-label={label}>
+      <span className={classes} role="img" aria-label={label} data-date={day.date}>
         {content}
       </span>
     )
   }
   if (state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started') {
     return (
-      <Link to={`/jogo/${state.puzzleId}`} className={classes} aria-label={label}>
+      <Link
+        to={`/jogo/${state.puzzleId}`}
+        className={classes}
+        aria-label={label}
+        data-date={day.date}
+      >
         {content}
       </Link>
     )
   }
   if (state.kind === 'fetchable') {
     return (
-      <Link to={`/dia/${day.date}?fonte=${source}`} className={classes} aria-label={label}>
+      <Link
+        to={`/dia/${day.date}?fonte=${source}`}
+        className={classes}
+        aria-label={label}
+        data-date={day.date}
+      >
         {content}
       </Link>
     )
   }
   return (
-    <span className={classes} role="img" aria-label={label}>
+    <span className={classes} role="img" aria-label={label} data-date={day.date}>
       {content}
     </span>
   )
 }
-
-export { MONTH_NAMES }
