@@ -188,8 +188,9 @@ a.day:active {
   }
 
   .day {
-    /* 524 px: a página sem o mês (440) mais a barra de filtros e a linha de status (feature 053). */
-    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 524px) / 6)), 112px);
+    /* 640 px: a página sem o mês (440) mais a barra de filtros e a linha de status (feature 053) e o
+       pular para uma data (feature 054, 116 px). */
+    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 640px) / 6)), 112px);
     padding: 10px 12px;
     font-size: clamp(14px, 1.25cqi, 20px);
   }
