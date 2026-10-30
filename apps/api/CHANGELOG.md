@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.10.1...api-v0.11.0) (2026-10-30)
+
+
+### Features
+
+* add stats and day streak screen ([69f2c28](https://github.com/BrunoYTanaka/cruzadinha/commit/69f2c28cc1ec2d15c7d5b7a2888ff865b34ff3a3))
+* add stats and day streak screen ([1f57559](https://github.com/BrunoYTanaka/cruzadinha/commit/1f57559bf964967e15324946ea8066edfa81c104))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.32.0 to 0.33.0
+
 ## [0.10.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.10.0...api-v0.10.1) (2026-10-30)
 
 
