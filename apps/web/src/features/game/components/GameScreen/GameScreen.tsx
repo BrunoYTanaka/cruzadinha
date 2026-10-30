@@ -28,6 +28,8 @@ import { cellFromDrag, KEYBOARD_STEP, MIN_CELL } from '../../services/board-size
 import { BoardSizeReset } from '../board/BoardSizeReset/BoardSizeReset'
 import { ShortcutsDialog } from '../dialogs/ShortcutsDialog/ShortcutsDialog'
 import { ShortcutsButton } from '../controls/ShortcutsButton/ShortcutsButton'
+import { PrintButton } from '../controls/PrintButton/PrintButton'
+import { PrintSheet } from '../print/PrintSheet/PrintSheet'
 import { CompletionDialog } from '../dialogs/CompletionDialog/CompletionDialog'
 import { ReadModeBanner } from '../board/ReadModeBanner/ReadModeBanner'
 import { ClueList } from '../clues/ClueList/ClueList'
@@ -247,6 +249,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         shortcuts={
           onScreenKeyboard ? null : <ShortcutsButton onOpen={() => setShortcutsOpen(true)} />
         }
+        print={<PrintButton onPrint={() => window.print?.()} />}
         sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
           readOnly ? null : (
@@ -276,6 +279,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
           )
         }
       />
+      <PrintSheet puzzle={puzzle} />
       <div className={styles.notices}>
         {guest ? null : <SessionExpiredNotice onSuccess={() => void queue.retry()} />}
         {guest && !storageAvailable ? (

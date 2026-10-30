@@ -26,7 +26,7 @@ test('conta criada pela CLI, biblioteca, jogo, conclusão, modo leitura e jogar 
 
   const board = page.getByRole('grid')
   await expect(board).toBeVisible()
-  await expect(page.getByText(/Fonte: /)).toBeVisible()
+  await expect(page.getByText(/Fonte: /).first()).toBeVisible()
 
   // Primeira palavra só com o teclado: o foco já está no tabuleiro.
   const solution = await todaySolution(page.request)
