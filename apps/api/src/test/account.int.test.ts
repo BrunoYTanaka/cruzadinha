@@ -209,7 +209,7 @@ describe('troca de e-mail', () => {
     const sid = await signUpForTest(app, db, 'ana@exemplo.com', PASSWORD)
     await changeEmail(sid, 'nova@exemplo.com')
     await app.flushEmail()
-    const link = tokenFrom(mail.sent[0])
+    const link = tokenFrom(mail.sent.find((message) => message.to === 'nova@exemplo.com'))
 
     clock.advance(20_000)
     const early = await changeEmail(sid, 'outra@exemplo.com')
@@ -240,7 +240,7 @@ describe('troca de e-mail', () => {
     const sid = await signUpForTest(app, db, 'ana@exemplo.com', PASSWORD)
     await changeEmail(sid, 'nova@exemplo.com')
     await app.flushEmail()
-    const link = tokenFrom(mail.sent[0])
+    const link = tokenFrom(mail.sent.find((message) => message.to === 'nova@exemplo.com'))
 
     clock.advance(61 * MINUTE)
     // o vencimento é decidido pelo relógio injetado
@@ -285,9 +285,8 @@ describe('troca de e-mail', () => {
     const sid = await signUpForTest(app, db, 'ana@exemplo.com', PASSWORD)
     await changeEmail(sid, 'nova@exemplo.com')
     await app.flushEmail()
-    expect(
-      (await post('/api/auth/confirm-email-change', { token: tokenFrom(mail.sent[0]) })).statusCode,
-    ).toBe(200)
+    const link = tokenFrom(mail.sent.find((message) => message.to === 'nova@exemplo.com'))
+    expect((await post('/api/auth/confirm-email-change', { token: link })).statusCode).toBe(200)
   })
 
   it('exige sessão para pedir a troca', async () => {
