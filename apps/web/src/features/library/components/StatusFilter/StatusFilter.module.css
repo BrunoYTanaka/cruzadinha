@@ -1,0 +1,11 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: var(--tap);
+}
+
+/* Escolhido: contorno interno de destaque, sem mexer na cor do texto nem no tamanho. */
+.bar button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}

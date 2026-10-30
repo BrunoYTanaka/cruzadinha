@@ -2,6 +2,7 @@ import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Link } from 'react-router'
 import { formatElapsed, spokenElapsed } from '../../../../shared/helpers/time/time'
 import type { CalendarDay } from '../../helpers/calendar'
+import { matchesFilter, type StatusFilter } from '../../helpers/status-filter'
 import styles from '../Calendar/Calendar.module.css'
 
 const MONTH_NAMES = [
@@ -63,20 +64,29 @@ export function DayCell({
   month,
   source,
   stored,
+  filter = 'all',
 }: {
   day: CalendarDay
   month: number
   source: PuzzleSourceId
   // Ids das cruzadas guardadas no aparelho (feature 041).
   stored?: ReadonlySet<string>
+  // Filtro de status (feature 053): o dia fora dele vira texto sem ação.
+  filter?: StatusFilter
 }) {
   const { state } = day
   const playable =
     state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started'
   const offline = playable && stored?.has(state.puzzleId) === true
-  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}${offline ? ', disponível sem rede' : ''}`
+  const dimmed = !matchesFilter(state, filter)
+  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}${offline ? ', disponível sem rede' : ''}${dimmed ? ', fora do filtro' : ''}`
   const status = visibleStatus(day)
-  const classes = [styles.day, styles[state.kind], day.isToday ? styles.today : '']
+  const classes = [
+    styles.day,
+    styles[state.kind],
+    day.isToday ? styles.today : '',
+    dimmed ? styles.dimmed : '',
+  ]
     .filter(Boolean)
     .join(' ')
   const content = (
@@ -97,6 +107,13 @@ export function DayCell({
     </>
   )
 
+  if (dimmed) {
+    return (
+      <span className={classes} role="img" aria-label={label}>
+        {content}
+      </span>
+    )
+  }
   if (state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started') {
     return (
       <Link to={`/jogo/${state.puzzleId}`} className={classes} aria-label={label}>

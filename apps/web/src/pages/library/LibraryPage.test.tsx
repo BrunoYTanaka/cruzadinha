@@ -559,7 +559,8 @@ describe('biblioteca do visitante (feature 013)', () => {
     const { container } = renderRoutes(guestRoutes, ['/'], asGuest())
     expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    // Só a região vazia do filtro de status (feature 053); nenhum aviso por cima.
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
     expect(screen.getByText('Visitante')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/login')
     await expectNoA11yViolations(container)
@@ -697,5 +698,76 @@ describe('aviso de "Ir direto ao jogo" (feature 021)', () => {
     await waitFor(() => expect(peekDirectPlayStay()).toBeNull())
     await user.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(screen.queryByText('Cruzada Online: a cruzada de hoje já foi concluída.')).toBeNull()
+  })
+})
+
+describe('LibraryPage filtros de status (feature 053)', () => {
+  const open = async () => {
+    library()
+    const user = userEvent.setup()
+    const view = renderRoutes(routes, ['/'], withAccount())
+    await screen.findByRole('heading', { name: 'outubro de 2026' })
+    return { user, view }
+  }
+
+  it('abre em "Todas", com contagens, e "Concluídas" deixa só o dia concluído como link', async () => {
+    const { user } = await open()
+    expect(screen.getByRole('button', { name: 'Todas (4)' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Em andamento (1)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Não iniciadas (2)' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Concluídas (1)' }))
+    const table = screen.getByRole('table')
+    expect(
+      within(table)
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('aria-label')),
+    ).toEqual(['13 de outubro, concluído em 6 minutos e 52 segundos'])
+    expect(
+      screen.getByRole('img', { name: '12 de outubro, em andamento, fora do filtro' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('1 dia concluído')
+
+    await user.click(screen.getByRole('button', { name: 'Todas (4)' }))
+    expect(screen.getByRole('link', { name: '12 de outubro, em andamento' })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+
+  it('filtro sem dias no mês avisa e mantém a grade; "Todas" nunca mostra o aviso', async () => {
+    const { user } = await open()
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    await screen.findByRole('heading', { name: 'setembro de 2026' })
+    await user.click(screen.getByRole('button', { name: 'Concluídas (0)' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Nenhum dia neste mês com esse status.')
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Todas (0)' }))
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+  })
+
+  it('o filtro continua ao trocar de mês e de fonte e volta a "Todas" ao abrir de novo', async () => {
+    const { user, view } = await open()
+    await user.click(screen.getByRole('button', { name: 'Em andamento (1)' }))
+    await user.click(screen.getByRole('button', { name: 'Mês anterior' }))
+    await user.click(screen.getByRole('tab', { name: /^Cruzada Online/ }))
+    expect(await screen.findByRole('heading', { name: 'setembro de 2026' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Em andamento/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    view.unmount()
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('button', { name: /^Todas/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('a barra não aparece enquanto a biblioteca não carregou', () => {
+    mockApi({ 'GET /api/library': () => new Promise<Response>(() => {}) })
+    renderRoutes(routes, ['/'], withAccount())
+    expect(screen.queryByRole('group', { name: 'Filtrar por status' })).toBeNull()
   })
 })

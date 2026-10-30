@@ -154,6 +154,22 @@ a.day:active {
   color: var(--mute);
 }
 
+.dimmed,
+.dimmed .status {
+  border-color: transparent;
+  border-style: solid;
+  background: transparent;
+  color: var(--mute);
+  font-weight: 400;
+}
+
+.statusInfo {
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--mute);
+  font-size: 13px;
+}
+
 .today {
   outline: 3px solid var(--focus);
   outline-offset: 1px;
