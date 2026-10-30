@@ -664,3 +664,17 @@ test.describe('feature 047: o menu Ajudas não move nada', () => {
     })
   })
 })
+
+// Feature 055: o botão "Imprimir" tem lugar fixo na faixa; usá-lo não move a faixa nem o tabuleiro.
+test('Imprimir: a faixa e o tabuleiro não se movem', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.print = () => {}
+  })
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await openToday(page)
+  const strip = page.getByRole('toolbar', { name: 'Ferramentas do jogo' })
+  const before = { strip: await box(strip), grid: await box(page.getByRole('grid')) }
+  await page.getByRole('button', { name: 'Imprimir' }).click()
+  expect(await box(strip)).toEqual(before.strip)
+  expect(await box(page.getByRole('grid'))).toEqual(before.grid)
+})

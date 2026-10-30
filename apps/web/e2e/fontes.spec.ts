@@ -171,7 +171,7 @@ test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jo
   await card(page, 'Cruzadas Brasil').click()
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzadas Brasil')
-  await expect(page.getByText('Fonte: Exemplo de desenvolvimento (seed)')).toBeVisible()
+  await expect(page.getByText('Fonte: Exemplo de desenvolvimento (seed)').first()).toBeVisible()
 
   // A fixture do exemplo tem Ç na linha 1, coluna 2: a letra simples ou a acentuada contam.
   await page.getByRole('gridcell', { name: /^Linha 1, coluna 2,/ }).click()

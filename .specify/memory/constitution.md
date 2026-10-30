@@ -76,7 +76,9 @@ Os puzzles pertencem às fontes. O site MAY ser acessado por qualquer pessoa que
 com ou sem conta. Só a landing (o endereço raiz) MAY ser divulgada em buscadores, e ela MUST conter
 apenas texto próprio, sem conteúdo de nenhuma fonte; as instruções de não indexação MUST valer para
 todas as outras páginas (calendário, dia, jogo, conta, links de e-mail e as demais). O conteúdo MUST NOT ser redistribuído fora do site (exportação,
-feeds ou API pública documentada). Cada puzzle MUST exibir a atribuição à sua fonte. O cache MUST
+feeds ou API pública documentada), com uma exceção: a pessoa MAY imprimir, pela impressão do
+navegador, a cruzada que está aberta, para uso próprio, com a atribuição da fonte na folha e sem
+solução; o site MUST NOT gerar, guardar ou enviar arquivo, link ou endpoint com esse conteúdo. Cada puzzle MUST exibir a atribuição à sua fonte. O cache MUST
 guardar apenas o necessário para jogar.
 Rationale: o projeto é de portfólio e usa uma API não oficial; o risco de direitos fica restrito
 ao uso atribuído, sem divulgar os puzzles nos buscadores (a landing só apresenta o site), já que a própria fonte publica os puzzles sem login. A leitura dos termos de uso das fontes não é condição de nenhuma
@@ -163,4 +165,17 @@ de dados nem de schema: a feature 048 troca o `noindex` global de `public/_heade
 "Verificar" do `deploy.yml`. Até a 048 ser implementada, o site continua sem indexação em todas as
 páginas, o que é mais restrito que esta versão e, portanto, conforme.
 
-**Version**: 5.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-28
+### Emenda 6.0.0 (2026-10-30)
+
+O princípio VIII passou a permitir a impressão de uma cruzada para uso próprio. Justificativa: a
+Feature 055 (`specs/055-imprimir-cruzada/spec.md`, issue #104) cria uma folha de impressão com a
+grade e as dicas, sem a solução; imprimir leva o conteúdo para fora do site, o que a proibição de
+"exportação" barrava. A exceção é estreita: só pela impressão do navegador (que também serve para
+"Salvar como PDF"), só da cruzada aberta pela pessoa, com a atribuição da fonte na folha, sem a
+solução e sem que o site gere, guarde ou envie arquivo, link ou endpoint. Feeds, API pública e
+qualquer outra exportação continuam proibidos. É MAJOR por redefinir um princípio de forma
+incompatível. Plano de migração, sem alteração de dados nem de schema: a Feature 055 só adiciona
+a folha e o botão no site. Até a 055 ser implementada, o site continua sem imprimir, o que é mais
+restrito que esta versão e, portanto, conforme.
+
+**Version**: 6.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-30

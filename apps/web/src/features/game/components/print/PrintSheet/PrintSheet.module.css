@@ -1,0 +1,90 @@
+/* Folha de impressão (feature 055): fora da tela; ao imprimir é a única coisa visível. Cores fixas,
+   sem tokens de tema, para sair igual nos temas claro e escuro. */
+.sheet {
+  display: none;
+}
+
+.title {
+  margin: 0 0 4mm;
+  font-size: 14pt;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  width: min(100%, calc(var(--cols) * 10mm));
+  margin-bottom: 5mm;
+  break-after: avoid;
+  break-inside: avoid;
+}
+
+.cell,
+.block {
+  display: block;
+  box-sizing: border-box;
+  aspect-ratio: 1;
+  border: 1px solid #000;
+}
+
+.cell {
+  padding: 0.5mm 1mm;
+  font-size: 7pt;
+  line-height: 1;
+}
+
+.block {
+  width: 100%;
+  height: 100%;
+}
+
+.clues {
+  column-count: 2;
+  column-gap: 8mm;
+}
+
+.list h3 {
+  margin: 0 0 2mm;
+  font-size: 11pt;
+}
+
+.list ul {
+  margin: 0 0 4mm;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  margin-bottom: 1mm;
+  font-size: 9.5pt;
+  break-inside: avoid;
+}
+
+.attribution {
+  margin: 4mm 0 0;
+  font-size: 8pt;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 12mm;
+  }
+
+  :global(html),
+  :global(body) {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  :global(body) > :not(.sheet) {
+    display: none !important;
+  }
+
+  .sheet {
+    display: block;
+    background: #fff;
+    color: #000;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

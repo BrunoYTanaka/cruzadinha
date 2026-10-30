@@ -86,7 +86,8 @@ describe('GamePage', () => {
   it('mostra a atribuição à fonte', async () => {
     openGame()
     await screen.findByRole('grid')
-    expect(screen.getByText(/Fonte: O Globo/)).toBeInTheDocument()
+    // Uma na tela e outra na folha de impressão (feature 055), que só aparece ao imprimir.
+    expect(screen.getAllByText(/Fonte: O Globo/)).toHaveLength(2)
   })
 
   it('mostra o nome da fonte junto da data no topo e no título da aba (feature 015)', async () => {

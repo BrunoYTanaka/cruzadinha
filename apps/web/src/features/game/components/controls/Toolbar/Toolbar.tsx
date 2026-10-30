@@ -17,6 +17,8 @@ type ToolbarProps = {
   sizeReset?: ReactNode
   // Teclado físico: botão que abre a lista de atalhos (feature 046).
   shortcuts?: ReactNode
+  // Imprimir a cruzada em branco (feature 055).
+  print?: ReactNode
   // Título da cruzada (fonte e data), no começo da faixa (feature 015).
   title?: ReactNode
 }
@@ -36,6 +38,7 @@ export function Toolbar({
   helps,
   sizeReset,
   shortcuts,
+  print,
   title,
 }: ToolbarProps) {
   return (
@@ -83,6 +86,12 @@ export function Toolbar({
           <>
             <span className={styles.separator} aria-hidden="true" />
             {shortcuts}
+          </>
+        ) : null}
+        {print ? (
+          <>
+            <span className={styles.separator} aria-hidden="true" />
+            {print}
           </>
         ) : null}
         {saveStatus}
