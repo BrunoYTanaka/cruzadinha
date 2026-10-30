@@ -101,6 +101,7 @@ const catalog = [
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
   'GET /api/settings',
+  'GET /api/stats',
   'POST /api/auth/change-email',
   'POST /api/auth/change-password',
   'POST /api/auth/confirm-email-change',
@@ -186,7 +187,7 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'puzzles', 'progress', 'library', 'settings']).toContain(
+      expect(['health', 'auth', 'puzzles', 'progress', 'library', 'settings', 'stats']).toContain(
         op.tags?.[0],
       )
       expect(op.summary).toBeTruthy()
@@ -287,6 +288,7 @@ describe('sessão', () => {
     'PUT /api/progress/{puzzleId}',
     'POST /api/progress/{puzzleId}/reset',
     'GET /api/settings',
+    'GET /api/stats',
     'PUT /api/settings',
   ]
   // Abertas a visitantes (feature 013): a sessão é opcional.

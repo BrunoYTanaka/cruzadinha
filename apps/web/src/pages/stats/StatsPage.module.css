@@ -1,0 +1,15 @@
+.page {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}

@@ -73,6 +73,9 @@ export function AppLayout() {
       <header className={styles.header}>
         <HeaderStart />
         <div className={styles.actions}>
+          <Link to="/estatisticas" className={buttonClass({ variant: 'quiet' })}>
+            Estatísticas
+          </Link>
           <InstallButton />
           <SettingsButton />
           {session.data ? (

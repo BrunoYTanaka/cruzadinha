@@ -35,6 +35,8 @@ import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
 import { createProgressService } from './modules/progress/progress.service'
 import { puzzlesRoutes, createPuzzlesService } from './modules/puzzles'
+import { statsRoutes } from './modules/stats/stats.routes'
+import { createStatsService } from './modules/stats/stats.service'
 import { settingsRoutes } from './modules/settings/settings.routes'
 import { createSettingsService } from './modules/settings/settings.service'
 import { createClubeSource } from './sources/clube/clube'
@@ -186,6 +188,7 @@ export function buildApp({
   app.register(progressRoutes, { progress, requireSession })
   const library = createLibraryService({ db: database })
   app.register(libraryRoutes, { library, optionalSession })
+  app.register(statsRoutes, { stats: createStatsService({ db: database, clock }), requireSession })
   const settings = createSettingsService({
     db: database,
     clock,
