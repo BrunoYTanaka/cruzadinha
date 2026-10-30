@@ -1,8 +1,8 @@
 # Implementation Plan: Imprimir a cruzada
 
-**Branch**: `feat/054-imprimir-cruzada` | **Date**: 2026-10-30 | **Spec**: [spec.md](spec.md)
+**Branch**: `feat/055-imprimir-cruzada` | **Date**: 2026-10-30 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/054-imprimir-cruzada/spec.md`
+**Input**: Feature specification from `/specs/055-imprimir-cruzada/spec.md`
 
 ## Summary
 
@@ -39,14 +39,14 @@ _GATE: passa antes e depois do desenho._
 - VI. Privacidade: nada sai do aparelho, sem requisição nem registro novo. Passa.
 - VII. Testes determinísticos: `window.print` simulado; e2e usa mídia `print` emulada, sem impressora. Passa.
 - VIII. Conteúdo de terceiros: **passa com a emenda 6.0.0 (feita, T000)**. Antes dela não passava. O princípio diz que o conteúdo "MUST NOT ser redistribuído fora do site (exportação, ...)" e imprimir leva a cruzada para fora do site. Não se reinterpreta o princípio: a tarefa T000 emendou a constituição (6.0.0, feita com `/speckit-constitution`, como a 5.0.0 fez para a landing) para permitir a impressão para uso pessoal, com atribuição da fonte na folha e sem arquivo, link ou endpoint gerado pelo site (FR-011, FR-012). A exceção da emenda cobre exatamente o que o plano faz: impressão do navegador, cruzada aberta, atribuição, sem solução, sem arquivo nem endpoint.
-- Fluxo: comportamento novo, ciclo completo em `feat/054-imprimir-cruzada`.
+- Fluxo: comportamento novo, ciclo completo em `feat/055-imprimir-cruzada`.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/054-imprimir-cruzada/
+specs/055-imprimir-cruzada/
 ├── plan.md
 ├── research.md
 ├── data-model.md

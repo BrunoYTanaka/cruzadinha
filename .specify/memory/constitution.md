@@ -168,14 +168,14 @@ páginas, o que é mais restrito que esta versão e, portanto, conforme.
 ### Emenda 6.0.0 (2026-10-30)
 
 O princípio VIII passou a permitir a impressão de uma cruzada para uso próprio. Justificativa: a
-feature 054 (`specs/054-imprimir-cruzada/spec.md`, issue #104) cria uma folha de impressão com a
+Feature 055 (`specs/055-imprimir-cruzada/spec.md`, issue #104) cria uma folha de impressão com a
 grade e as dicas, sem a solução; imprimir leva o conteúdo para fora do site, o que a proibição de
 "exportação" barrava. A exceção é estreita: só pela impressão do navegador (que também serve para
 "Salvar como PDF"), só da cruzada aberta pela pessoa, com a atribuição da fonte na folha, sem a
 solução e sem que o site gere, guarde ou envie arquivo, link ou endpoint. Feeds, API pública e
 qualquer outra exportação continuam proibidos. É MAJOR por redefinir um princípio de forma
-incompatível. Plano de migração, sem alteração de dados nem de schema: a feature 054 só adiciona
-a folha e o botão no site. Até a 054 ser implementada, o site continua sem imprimir, o que é mais
+incompatível. Plano de migração, sem alteração de dados nem de schema: a Feature 055 só adiciona
+a folha e o botão no site. Até a 055 ser implementada, o site continua sem imprimir, o que é mais
 restrito que esta versão e, portanto, conforme.
 
 **Version**: 6.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-30

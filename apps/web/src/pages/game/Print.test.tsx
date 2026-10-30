@@ -17,7 +17,7 @@ const printButton = () => screen.getByRole('button', { name: 'Imprimir' })
 const sheet = () => document.body.querySelector('[class*="sheet"]') as HTMLElement
 const timer = () => screen.getByRole('timer', { hidden: true }).textContent
 
-describe('imprimir a cruzada (feature 054)', () => {
+describe('imprimir a cruzada (feature 055)', () => {
   it('imprime sem mexer no jogo, sem rede e sem arquivo; a folha continua sem letras', async () => {
     const print = vi.fn()
     vi.stubGlobal('print', print)

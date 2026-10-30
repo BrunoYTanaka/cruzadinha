@@ -1,6 +1,6 @@
 import type { Word } from '@cruzadinha/shared'
 
-// Dicas da folha de impressão (feature 054): só a parte pública do puzzle, por direção e em ordem
+// Dicas da folha de impressão (feature 055): só a parte pública do puzzle, por direção e em ordem
 // de número.
 export function printClues(words: readonly Word[]): { across: Word[]; down: Word[] } {
   const byNumber = (a: Word, b: Word) => a.number - b.number

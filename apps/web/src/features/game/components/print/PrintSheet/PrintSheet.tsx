@@ -5,7 +5,7 @@ import { attributionLine } from '../../../helpers/attribution'
 import { printClues, printDate } from '../../../helpers/print-clues'
 import styles from './PrintSheet.module.css'
 
-// Folha de impressão (feature 054). Só recebe a parte pública do puzzle: não há propriedade para a
+// Folha de impressão (feature 055). Só recebe a parte pública do puzzle: não há propriedade para a
 // solução nem para o estado do jogo, então nenhuma letra pode chegar ao papel. Fica fora da tela e
 // é a única coisa visível ao imprimir.
 export function PrintSheet({ puzzle }: { puzzle: Puzzle }) {

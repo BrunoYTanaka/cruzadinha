@@ -1,4 +1,4 @@
-/* Folha de impressão (feature 054): fora da tela; ao imprimir é a única coisa visível. Cores fixas,
+/* Folha de impressão (feature 055): fora da tela; ao imprimir é a única coisa visível. Cores fixas,
    sem tokens de tema, para sair igual nos temas claro e escuro. */
 .sheet {
   display: none;

@@ -1,6 +1,6 @@
 # Feature Specification: Imprimir a cruzada
 
-**Feature Branch**: `feat/054-imprimir-cruzada`
+**Feature Branch**: `feat/055-imprimir-cruzada`
 
 **Created**: 2026-10-30
 

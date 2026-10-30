@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { box, css, fillSolution, resetAndSeed, todayPuzzle } from './support'
 
-// Feature 054: a folha de impressão é a única coisa visível em mídia `print`, sem letras.
+// Feature 055: a folha de impressão é a única coisa visível em mídia `print`, sem letras.
 
 test.beforeEach(async () => {
   await resetAndSeed()

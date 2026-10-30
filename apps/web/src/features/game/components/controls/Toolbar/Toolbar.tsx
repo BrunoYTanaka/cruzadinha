@@ -17,7 +17,7 @@ type ToolbarProps = {
   sizeReset?: ReactNode
   // Teclado físico: botão que abre a lista de atalhos (feature 046).
   shortcuts?: ReactNode
-  // Imprimir a cruzada em branco (feature 054).
+  // Imprimir a cruzada em branco (feature 055).
   print?: ReactNode
   // Título da cruzada (fonte e data), no começo da faixa (feature 015).
   title?: ReactNode

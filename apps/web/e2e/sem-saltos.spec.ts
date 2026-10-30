@@ -665,7 +665,7 @@ test.describe('feature 047: o menu Ajudas não move nada', () => {
   })
 })
 
-// Feature 054: o botão "Imprimir" tem lugar fixo na faixa; usá-lo não move a faixa nem o tabuleiro.
+// Feature 055: o botão "Imprimir" tem lugar fixo na faixa; usá-lo não move a faixa nem o tabuleiro.
 test('Imprimir: a faixa e o tabuleiro não se movem', async ({ page }) => {
   await page.addInitScript(() => {
     window.print = () => {}
