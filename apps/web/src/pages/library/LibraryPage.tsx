@@ -151,6 +151,9 @@ export function LibraryPage() {
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
         />
         <LibraryLegend />
+        <p className={styles.stats}>
+          <Link to="/estatisticas">Ver estatísticas</Link>
+        </p>
       </>
     )
   }

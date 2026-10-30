@@ -5,7 +5,7 @@ const SEVERITY = 'error'
 const WEB = '^apps/web/src'
 const API = '^apps/api/src'
 // Uma feature só importa de feature anterior (D2); conta e status só de session.
-const FEATURE_ORDER = ['session', 'guest', 'offline', 'library', 'settings', 'game']
+const FEATURE_ORDER = ['session', 'guest', 'offline', 'library', 'stats', 'settings', 'game']
 const NOT_INDEX = '(?!index\\.tsx?$)'
 
 const featureOrderRules = FEATURE_ORDER.flatMap((name, rank) => {

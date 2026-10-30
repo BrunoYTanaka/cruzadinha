@@ -10,6 +10,7 @@ import { ResetPasswordPage } from '../pages/reset-password/ResetPasswordPage'
 import { VerifyEmailPage } from '../pages/verify-email/VerifyEmailPage'
 import { DayRoute } from '../pages/day/DayRoute'
 import { LandingFallback, LandingPage } from '../pages/landing/LandingPage'
+import { StatsPage } from '../pages/stats/StatsPage'
 import { LibraryPage } from '../pages/library/LibraryPage'
 import { playTodayLoader } from '../pages/play-today/play-today'
 import { ServerWake } from '../features/status'
@@ -85,6 +86,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
                 { path: '/jogar', loader: playTodayLoader() },
                 { path: '/dia/:date', element: <DayRoute /> },
                 { path: '/conta', element: <AccountPage /> },
+                { path: '/estatisticas', element: <StatsPage /> },
               ],
             },
             { path: '*', element: <NotFoundPage /> },

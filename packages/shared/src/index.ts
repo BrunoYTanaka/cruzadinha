@@ -105,3 +105,5 @@ export {
   type ProgressStatus,
   type SaveProgressRequest,
 } from './progress/schema'
+export { statsSchema, type Stats } from './stats/schema'
+export { computeStats, type StatsRow } from './stats/compute-stats'
