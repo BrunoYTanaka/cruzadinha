@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.9.2...api-v0.10.0) (2026-10-30)
+
+
+### Features
+
+* **web:** print the crossword without the solution ([721c9ab](https://github.com/BrunoYTanaka/cruzadinha/commit/721c9ab29a49b6988c4691db86e626558d31f0f0))
+
+
+### Bug Fixes
+
+* **api:** pick the email-change message by recipient in account tests ([ca95ae3](https://github.com/BrunoYTanaka/cruzadinha/commit/ca95ae3d8c3a0029dc9d81504d9a2252eb942c7e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.30.0 to 0.31.0
+
 ## [0.9.2](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.9.1...api-v0.9.2) (2026-10-29)
 
 
