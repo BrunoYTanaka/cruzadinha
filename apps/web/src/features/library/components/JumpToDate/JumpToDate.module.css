@@ -1,0 +1,40 @@
+.jump {
+  display: grid;
+  gap: 4px;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  flex: 1 1 140px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.control {
+  min-height: var(--tap);
+  padding: 0 10px;
+  border: 1px solid var(--mute);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
+/* Altura fixa: mostrar ou apagar a mensagem não desloca a grade. */
+.error {
+  min-height: 2.8em;
+  margin: 0;
+  color: var(--bad);
+  font-size: 13px;
+}
