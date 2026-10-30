@@ -28,6 +28,7 @@ import {
   isSourceDown,
   readNoPuzzleDates,
   SourceTabs,
+  type StatusFilter,
   completedInMonth,
   TodayCards,
   useLibraryWidth,
@@ -54,6 +55,7 @@ export function LibraryPage() {
   const active = libraryOf(libraries, source)
   const library = active.query
   const [month, setMonth] = useState(() => currentMonth(today))
+  const [filter, setFilter] = useState<StatusFilter>('all')
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
 
@@ -132,6 +134,8 @@ export function LibraryPage() {
           canGoNext={compareMonths(month, last) < 0}
           onPrevious={() => setMonth((current) => addMonths(current, -1))}
           onNext={() => setMonth((current) => addMonths(current, 1))}
+          filter={filter}
+          onFilterChange={setFilter}
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
         />
         <LibraryLegend />

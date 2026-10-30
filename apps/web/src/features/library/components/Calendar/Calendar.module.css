@@ -154,6 +154,22 @@ a.day:active {
   color: var(--mute);
 }
 
+.dimmed,
+.dimmed .status {
+  border-color: transparent;
+  border-style: solid;
+  background: transparent;
+  color: var(--mute);
+  font-weight: 400;
+}
+
+.statusInfo {
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--mute);
+  font-size: 13px;
+}
+
 .today {
   outline: 3px solid var(--focus);
   outline-offset: 1px;
@@ -172,7 +188,8 @@ a.day:active {
   }
 
   .day {
-    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 440px) / 6)), 112px);
+    /* 524 px: a página sem o mês (440) mais a barra de filtros e a linha de status (feature 053). */
+    min-height: clamp(56px, min(calc(100cqi / 14), calc((100dvh - 524px) / 6)), 112px);
     padding: 10px 12px;
     font-size: clamp(14px, 1.25cqi, 20px);
   }

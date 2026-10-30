@@ -2,9 +2,11 @@ import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Fragment, type ReactNode } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
 import type { MonthView } from '../../helpers/calendar'
+import { countByFilter, type StatusFilter as Filter } from '../../helpers/status-filter'
 import styles from './Calendar.module.css'
 import { useOfflinePuzzleIds } from '../../../offline'
 import { DayCell, MONTH_NAMES } from '../DayCell/DayCell'
+import { StatusFilter } from '../StatusFilter/StatusFilter'
 
 const WEEKDAYS = [
   { short: 'dom', full: 'domingo' },
@@ -16,6 +18,18 @@ const WEEKDAYS = [
   { short: 'sáb', full: 'sábado' },
 ]
 
+const FILTER_NOUNS: Record<Exclude<Filter, 'all'>, [string, string]> = {
+  not_started: ['dia não iniciado', 'dias não iniciados'],
+  in_progress: ['dia em andamento', 'dias em andamento'],
+  completed: ['dia concluído', 'dias concluídos'],
+}
+
+// Anuncia a troca de filtro (região de status) e o filtro sem dias no mês.
+function filterMessage(filter: Exclude<Filter, 'all'>, count: number): string {
+  if (count === 0) return 'Nenhum dia neste mês com esse status.'
+  return `${count} ${FILTER_NOUNS[filter][count === 1 ? 0 : 1]}`
+}
+
 type CalendarProps = {
   view: MonthView
   // Fonte escolhida: o dia buscável abre a busca nela (feature 014).
@@ -24,6 +38,9 @@ type CalendarProps = {
   canGoNext: boolean
   onPrevious: () => void
   onNext: () => void
+  // Filtro de status (feature 053): estado da página, vale por mês e por fonte.
+  filter: Filter
+  onFilterChange: (filter: Filter) => void
   // Computador: alça de redimensionar presa à borda direita do mês.
   resizeHandle?: ReactNode
 }
@@ -35,6 +52,8 @@ export function Calendar({
   canGoNext,
   onPrevious,
   onNext,
+  filter,
+  onFilterChange,
   resizeHandle,
 }: CalendarProps) {
   const stored = useOfflinePuzzleIds()
@@ -46,6 +65,9 @@ export function Calendar({
   while (cells.length % 7 !== 0) cells.push(null)
   const weeks: (number | null)[][] = []
   for (let start = 0; start < cells.length; start += 7) weeks.push(cells.slice(start, start + 7))
+
+  const counts = countByFilter(view.days)
+  const filterInfo = filter === 'all' ? '' : filterMessage(filter, counts[filter])
 
   return (
     // Painel da aba de fonte escolhida: o nome é o da aba e o mês entra como descrição (feature 015).
@@ -77,6 +99,10 @@ export function Calendar({
           ›
         </Button>
       </div>
+      <StatusFilter value={filter} onChange={onFilterChange} counts={counts} />
+      <p role="status" className={styles.statusInfo}>
+        {filterInfo}
+      </p>
       <table className={styles.table}>
         <caption className={styles.caption}>Cruzadas de {title}</caption>
         <thead>
@@ -102,6 +128,7 @@ export function Calendar({
                         month={view.month}
                         source={source}
                         stored={stored}
+                        filter={filter}
                       />
                     </td>
                   )}
