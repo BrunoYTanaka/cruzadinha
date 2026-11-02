@@ -6,7 +6,8 @@ import { ApiRequestError } from '../../shared/services/api/client/client'
 import { listStoredPuzzles, readPuzzle, savePuzzle } from '../../features/offline'
 import { getPuzzleByDate } from '../../shared/services/api/puzzles/puzzles'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { NotFoundPage } from '../../shared/components/NotFoundPage/NotFoundPage'
 import { parseIsoDate, todayInBrasilia } from '../../shared/helpers/dates/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
@@ -171,5 +172,5 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
       </ErrorState>
     )
   }
-  return <LoadingState label="Buscando a cruzada…" />
+  return <LoadingState screen="day" level={1} />
 }

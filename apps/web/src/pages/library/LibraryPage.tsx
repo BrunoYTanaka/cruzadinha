@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { clearDirectPlayStay, directPlayMessage, peekDirectPlayStay } from './direct-play'
 import { Notice } from '../../shared/components/Notice/Notice'
 import {
@@ -95,7 +96,7 @@ export function LibraryPage() {
   // aparecem sempre (FR-014).
   let calendarArea: ReactNode
   if (library.isPending) {
-    calendarArea = <LoadingState label="Carregando a biblioteca…" />
+    calendarArea = <LoadingState screen="library" level={2} />
   } else if (
     library.isError &&
     library.error instanceof ApiRequestError &&

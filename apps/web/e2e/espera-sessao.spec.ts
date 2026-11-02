@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 // A API inteira é simulada no navegador (sem banco): a saúde responde 503 nas primeiras tentativas
 // e a sessão falha enquanto a saúde não deu 200.
 
-const WAKE_TITLE = 'Acordando o servidor'
+const WAKE_TEXT = 'O servidor tirou uma soneca.'
 const ERROR_TITLE = 'Algo deu errado'
 
 type Sleeping = { calls: string[]; awake: () => boolean }
@@ -63,7 +63,7 @@ async function sample(page: Page) {
           .innerText()
           .catch(() => '')) ?? ''
       ).replace(/\s+/g, ' '),
-      wake: await page.getByRole('heading', { name: WAKE_TITLE }).isVisible(),
+      wake: await page.getByText(WAKE_TEXT).isVisible(),
       error: await page.getByText(ERROR_TITLE).isVisible(),
       calendar: await calendar.isVisible(),
     }

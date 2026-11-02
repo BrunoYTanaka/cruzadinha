@@ -6,6 +6,7 @@ import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import {
   authMessages,
@@ -162,10 +163,12 @@ export function RegisterForm() {
             type="submit"
             variant="primary"
             block
-            disabled={registerMutation.isPending || !signupCaptcha.ready}
+            pending={registerMutation.isPending}
+            disabled={!signupCaptcha.ready}
           >
             {registerMutation.isPending ? 'Enviando…' : 'Criar conta'}
           </Button>
+          <SlowSubmitNotice pending={registerMutation.isPending} />
         </form>
         <p className={styles.alt}>
           Já tem conta? <Link to="/login">Entrar</Link>

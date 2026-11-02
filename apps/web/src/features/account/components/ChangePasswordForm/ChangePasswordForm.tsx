@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import { Field } from '../../../../shared/components/Field/Field'
 import { Notice } from '../../../../shared/components/Notice/Notice'
 import { changePassword } from '../../../../shared/services/api/account/account'
@@ -68,9 +69,10 @@ export function ChangePasswordForm() {
           hint={authMessages.passwordHint}
           error={fields.includes('newPassword') ? 'Confira este campo.' : undefined}
         />
-        <Button type="submit" variant="primary" disabled={mutation.isPending}>
+        <Button type="submit" variant="primary" pending={mutation.isPending}>
           {mutation.isPending ? 'Salvando…' : 'Trocar senha'}
         </Button>
+        <SlowSubmitNotice pending={mutation.isPending} />
       </form>
     </AccountSection>
   )

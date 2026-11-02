@@ -1,14 +1,14 @@
 import { expect, test, type Page } from '@playwright/test'
 import { login, resetAndSeed } from './support'
 
-// Feature 012: a tela "Acordando o servidor" enquanto a API gratuita acorda (FR-008, FR-009).
+// Feature 012: a tela de espera com a explicação da soneca enquanto a API gratuita acorda (FR-008, FR-009).
 // A API "dormindo" é simulada atrasando ou recusando o /api/health no navegador.
 
 test.beforeEach(async () => {
   await resetAndSeed()
 })
 
-const WAKE_TITLE = 'Acordando o servidor'
+const WAKE_TEXT = 'O servidor tirou uma soneca.'
 
 async function delayHealth(page: Page, ms: number) {
   await page.route('**/api/health', async (route) => {
@@ -21,7 +21,7 @@ test('com a API demorando, explica a espera e depois abre a tela pedida', async 
   await login(page)
   await delayHealth(page, 4_000)
   await page.goto('/calendario?origem=teste')
-  await expect(page.getByRole('heading', { name: WAKE_TITLE })).toBeVisible()
+  await expect(page.getByText(WAKE_TEXT)).toBeVisible()
   await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible({
     timeout: 15_000,
   })
@@ -35,7 +35,7 @@ test('com a API acordada, a espera não aparece', async ({ page }) => {
   const heading = page.getByRole('heading', { level: 1, name: 'Hoje' })
   // Confere durante a carga inteira que o título da espera nunca apareceu.
   while (!(await heading.isVisible())) {
-    if (await page.getByRole('heading', { name: WAKE_TITLE }).isVisible()) sawWake = true
+    if (await page.getByText(WAKE_TEXT).isVisible()) sawWake = true
     await page.waitForTimeout(100)
   }
   expect(sawWake).toBe(false)
@@ -60,5 +60,5 @@ test('sem resposta em 90 s, mostra o erro e "Tentar de novo" volta a esperar', a
     page.getByRole('heading', { name: 'Não foi possível falar com o servidor.' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Tentar de novo' }).click()
-  await expect(page.getByRole('heading', { name: WAKE_TITLE })).toBeVisible()
+  await expect(page.getByText(WAKE_TEXT)).toBeVisible()
 })

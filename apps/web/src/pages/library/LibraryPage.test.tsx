@@ -429,7 +429,7 @@ describe('abas de fonte (features 014 e 015)', () => {
     mockApi({ 'GET /api/library': () => new Promise<Response>(() => {}) })
     renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('tablist', { name: 'Fonte do calendário' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Carregando a biblioteca…')
+    expect(screen.getByText('Folheando o calendário…')).toBeInTheDocument()
   })
 
   it('o calendário é o painel da aba escolhida', async () => {

@@ -6,6 +6,7 @@ import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from '../../../session'
 import { CaptchaField } from '../CaptchaField/CaptchaField'
@@ -104,10 +105,12 @@ export function ForgotPasswordForm() {
               type="submit"
               variant="primary"
               block
-              disabled={mutation.isPending || !captcha.ready}
+              pending={mutation.isPending}
+              disabled={!captcha.ready}
             >
               {mutation.isPending ? 'Enviando…' : 'Enviar link'}
             </Button>
+            <SlowSubmitNotice pending={mutation.isPending} />
           </form>
         )}
         <p className={styles.alt}>

@@ -44,7 +44,9 @@ describe('entrada do site com a espera do servidor', () => {
     mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
     renderApp('/login')
     expect(await screen.findByRole('link', { name: 'Cruzadinha' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Carregando…')
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Preparando as palavras…' }),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Entrar' })).not.toBeInTheDocument()
   })
 
@@ -71,7 +73,7 @@ describe('entrada do site com a espera do servidor', () => {
     await waitFor(() => expect(router.state.navigation.state).toBe('idle'))
     expect(router.state.location.pathname).toBe('/calendario')
     await waitFor(() =>
-      expect(screen.queryByText('Carregando a biblioteca…')).not.toBeInTheDocument(),
+      expect(screen.queryByText('Folheando o calendário…')).not.toBeInTheDocument(),
     )
     expect(screen.queryByRole('heading', { name: 'Entrar' })).not.toBeInTheDocument()
   })
@@ -164,7 +166,9 @@ describe('entrada do site com a espera do servidor', () => {
   it('sem cópia guardada, /jogo espera o servidor como as outras telas', async () => {
     mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
     renderApp(`/jogo/${PUZZLE_ID}`)
-    expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Preparando as palavras…' }),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('grid')).not.toBeInTheDocument()
   })
 })
@@ -189,7 +193,9 @@ describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
     updateSettings({ directToGame: true })
     mockApi({ 'GET /api/health': () => new Promise<Response>(() => {}) })
     renderApp('/')
-    expect(await screen.findByRole('status')).toHaveTextContent('Carregando…')
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Preparando as palavras…' }),
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { level: 1, name: /Palavras cruzadas todo dia/ }),
     ).not.toBeInTheDocument()

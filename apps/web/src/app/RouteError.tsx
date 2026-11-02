@@ -1,7 +1,7 @@
 import { useRevalidator, useRouteError } from 'react-router'
 import { ApiRequestError } from '../shared/services/api/client/client'
 import { ServerWakeTimeoutError } from '../shared/services/api/server-wake/server-wake'
-import { ServerWake } from '../features/status'
+import { LoadingState } from '../shared/components/LoadingState/LoadingState'
 import { ErrorState } from '../shared/components/ErrorState/ErrorState'
 
 // Tela de erro das rotas: falha de rede ou do servidor ao carregar a guarda, por exemplo.
@@ -10,7 +10,7 @@ export function RouteError() {
   const revalidator = useRevalidator()
   if (error instanceof ServerWakeTimeoutError) {
     // A revalidação não mostra o fallback do roteador: a própria tela volta a explicar a espera.
-    if (revalidator.state === 'loading') return <ServerWake immediate focusOnMount />
+    if (revalidator.state === 'loading') return <LoadingState level={1} immediate focusOnMount />
     return (
       <ErrorState
         level={1}
