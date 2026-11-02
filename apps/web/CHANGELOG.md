@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.16.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.15.0...web-v0.16.0) (2026-11-02)
+
+
+### Features
+
+* import guest progress into the account ([2a51bb6](https://github.com/BrunoYTanaka/cruzadinha/commit/2a51bb66edea211246395cb6ce6117ff056cd096))
+* import guest progress into the account ([91ec58d](https://github.com/BrunoYTanaka/cruzadinha/commit/91ec58d0f916adad959904dc03e527a8a3d83dd1))
+* **web:** add x1 duel screens ([c12e35a](https://github.com/BrunoYTanaka/cruzadinha/commit/c12e35aa5d13bb9b3b563565da4acdea56eb9e39))
+* **web:** unify the loading screen and explain slow servers ([e54bb0d](https://github.com/BrunoYTanaka/cruzadinha/commit/e54bb0d624fc273ad05eb3f6b7f08e27d5738c25))
+* **web:** unify the loading screen and explain slow servers ([f92dcd3](https://github.com/BrunoYTanaka/cruzadinha/commit/f92dcd37994331b91f979ae2f96aa504b0218cbc))
+* x1 duels (1x1 by link or code) ([3fc3ac3](https://github.com/BrunoYTanaka/cruzadinha/commit/3fc3ac3fa647de7d897a7f86ade2d93b6ca6c0ee))
+
+
+### Bug Fixes
+
+* **web:** keep sending the duel conclusion after the queue is disposed ([be864af](https://github.com/BrunoYTanaka/cruzadinha/commit/be864af4ff83de27bdf0b0d3d7c72ae85db4e782))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.33.0 to 0.34.0
+
 ## [0.15.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.14.1...web-v0.15.0) (2026-10-30)
 
 
