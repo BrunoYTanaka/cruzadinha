@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decideReset, decideSave, type ProgressState } from './progress.service'
+import { decideImport, decideReset, decideSave, type ProgressState } from './progress.service'
 
 const now = new Date('2026-10-13T14:00:00.000Z')
 const empty = [
@@ -164,5 +164,71 @@ describe('decideReset', () => {
   it('não recua o savedAt quando ele está à frente do servidor', () => {
     const ahead = new Date('2026-10-13T14:03:00.000Z')
     expect(decideReset({ ...completed, savedAt: ahead }, empty, now).savedAt).toEqual(ahead)
+  })
+})
+
+describe('decideImport', () => {
+  const item = {
+    puzzleId: '0b9a3a4e-6d0e-4b6c-9a52-1f2e3d4c5b6a',
+    cells: letters,
+    elapsedMs: 50_000,
+    status: 'in_progress' as const,
+    savedAt: '2026-10-13T13:00:00.000Z',
+    completedAt: null,
+    finishedMs: null,
+    bestMs: null,
+    bestAt: null,
+  }
+  const done = {
+    ...item,
+    status: 'completed' as const,
+    completedAt: '2026-10-13T13:00:00.000Z',
+    finishedMs: 50_000,
+    bestMs: 50_000,
+    bestAt: '2026-10-13T13:00:00.000Z',
+  }
+
+  it('entra numa linha nova (savedAt na época)', () => {
+    const d = decideImport(fresh, item, now)
+    expect(d).toMatchObject({ kind: 'imported', next: { cells: letters, elapsedMs: 50_000 } })
+  })
+
+  it('o mais novo vence; o mais antigo e o empate ficam com a conta', () => {
+    const account = { ...fresh, cells: other, savedAt: new Date('2026-10-13T12:00:00.000Z') }
+    expect(decideImport(account, item, now).kind).toBe('imported')
+    expect(decideImport({ ...account, savedAt: new Date(item.savedAt) }, item, now).kind).toBe(
+      'kept',
+    )
+    expect(
+      decideImport({ ...account, savedAt: new Date('2026-10-13T13:30:00.000Z') }, item, now).kind,
+    ).toBe('kept')
+  })
+
+  it('conta concluída nunca muda, mesmo com item mais novo', () => {
+    expect(decideImport(completed, { ...item, savedAt: '2026-10-13T13:59:00.000Z' }, now)).toEqual({
+      kind: 'kept',
+    })
+  })
+
+  it('concluída do aparelho sobre andamento mais antigo mantém o menor recorde', () => {
+    const account = {
+      ...fresh,
+      savedAt: new Date('2026-10-13T12:00:00.000Z'),
+      bestMs: 40_000,
+      bestAt: new Date('2026-10-01T00:00:00.000Z'),
+    }
+    const d = decideImport(account, done, now)
+    expect(d).toMatchObject({
+      kind: 'imported',
+      next: { status: 'completed', finishedMs: 50_000, bestMs: 40_000 },
+    })
+    const better = decideImport(account, { ...done, bestMs: 30_000 }, now)
+    expect(better).toMatchObject({ next: { bestMs: 30_000 } })
+  })
+
+  it('recusa savedAt no futuro', () => {
+    expect(decideImport(fresh, { ...item, savedAt: '2026-10-13T15:00:00.000Z' }, now)).toEqual({
+      kind: 'invalid-saved-at',
+    })
   })
 })

@@ -159,3 +159,35 @@ describe('guest-store', () => {
     }
   })
 })
+
+describe('guest-store removeIfUnchanged', () => {
+  it('apaga só quando o savedAt ainda é o lido', async () => {
+    const guest = store()
+    await guest.save(save({ savedAt: at(0) }))
+
+    expect(await guest.removeIfUnchanged(PUZZLE_ID, at(5))).toBe(false)
+    expect(await guest.get(PUZZLE_ID)).not.toBeNull()
+    expect(await guest.removeIfUnchanged(PUZZLE_ID, at(0))).toBe(true)
+    expect(await guest.get(PUZZLE_ID)).toBeNull()
+    expect(await guest.getAll()).toEqual([])
+  })
+
+  it('mantém uma gravação mais nova feita depois da leitura', async () => {
+    const guest = store()
+    await guest.save(save({ savedAt: at(0) }))
+    await guest.save(save({ savedAt: at(10), elapsedMs: 9_000 }))
+
+    expect(await guest.removeIfUnchanged(PUZZLE_ID, at(0))).toBe(false)
+    expect(await guest.get(PUZZLE_ID)).toMatchObject({ elapsedMs: 9_000 })
+  })
+
+  it('devolve falso para cruzada sem registro e avisa os assinantes ao apagar', async () => {
+    const guest = store()
+    expect(await guest.removeIfUnchanged(OTHER_ID, at(0))).toBe(false)
+    await guest.save(save())
+    let calls = 0
+    guest.subscribe(() => calls++)
+    await guest.removeIfUnchanged(PUZZLE_ID, at(0))
+    expect(calls).toBe(1)
+  })
+})

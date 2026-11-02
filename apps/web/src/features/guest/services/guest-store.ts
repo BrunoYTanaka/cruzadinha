@@ -25,6 +25,8 @@ export type GuestStore = {
   save(incoming: GuestSave): Promise<GuestProgress | null>
   // "Jogar de novo": zera e mantém o recorde.
   reset(puzzleId: string): Promise<GuestProgress | null>
+  // Apaga o registro só se ele ainda tem este `savedAt`: uma gravação nova (outra aba) é mantida.
+  removeIfUnchanged(puzzleId: string, savedAt: string): Promise<boolean>
   // Falso quando o navegador não deixou guardar: o progresso vale só nesta aba (FR-009).
   isAvailable(): boolean
   subscribe(listener: () => void): () => void
@@ -207,6 +209,31 @@ export function createGuestStore(
     async reset(puzzleId) {
       await enqueue(puzzleId, { kind: 'reset' })
       return memory.get(puzzleId) ?? null
+    },
+
+    async removeIfUnchanged(puzzleId, savedAt) {
+      // Espera as gravações da fila terminarem para não apagar um registro que está para mudar.
+      await slots.get(puzzleId)?.running
+      const db = await database()
+      if (!db) {
+        if (memory.get(puzzleId)?.savedAt !== savedAt) return false
+        memory.delete(puzzleId)
+        listeners.forEach((listener) => listener())
+        return true
+      }
+      try {
+        const tx = db.transaction(STORE, 'readwrite')
+        const current = parse(await tx.store.get(puzzleId))
+        const same = current?.savedAt === savedAt
+        if (same) await tx.store.delete(puzzleId)
+        await tx.done
+        if (same) memory.delete(puzzleId)
+        if (same) listeners.forEach((listener) => listener())
+        return same
+      } catch {
+        fail()
+        return false
+      }
     },
 
     isAvailable: () => available,

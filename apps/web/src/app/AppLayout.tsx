@@ -22,6 +22,7 @@ import {
   PendingOwnerNotice,
   useOutboxDrain,
 } from '../features/offline'
+import { ImportOffer } from '../features/import'
 import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import { HeaderStart } from './HeaderStart'
 import styles from './AppLayout.module.css'
@@ -118,6 +119,11 @@ export function AppLayout() {
       </header>
       <OfflineNotice />
       <PendingOwnerNotice guest={session.data === null} />
+      <ImportOffer
+        key={session.data?.user.id ?? 'guest'}
+        userId={session.data?.user.id ?? null}
+        suspended={onAuthPage || location.pathname.startsWith('/jogo/')}
+      />
       {sessionEnded && session.data === null && !onAuthPage ? (
         // Sessão terminada fora do tabuleiro (FR-013): segue como visitante, sem tirar o foco.
         <div className={styles.notice}>

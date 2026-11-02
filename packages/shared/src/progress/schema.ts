@@ -36,6 +36,62 @@ export const progressSchema = z.object({
 
 export const progressEnvelopeSchema = z.object({ progress: progressSchema.nullable() })
 
+export const MAX_IMPORT_ITEMS = 100
+
+// Um progresso de visitante a importar. Estrito: nada de ajudas, rascunho nem identificador de usuário.
+export const importItemSchema = z
+  .strictObject({
+    puzzleId: z.uuid(),
+    cells: progressCellsSchema,
+    elapsedMs: elapsedMsSchema,
+    status: progressStatusSchema,
+    savedAt: instantSchema,
+    completedAt: instantSchema.nullable(),
+    finishedMs: elapsedMsSchema.nullable(),
+    bestMs: elapsedMsSchema.nullable(),
+    bestAt: instantSchema.nullable(),
+  })
+  .superRefine((item, ctx) => {
+    const done = item.status === 'completed'
+    if (done !== (item.completedAt !== null)) {
+      ctx.addIssue({ code: 'custom', path: ['completedAt'], message: 'incoerente com status' })
+    }
+    if (done !== (item.finishedMs !== null)) {
+      ctx.addIssue({ code: 'custom', path: ['finishedMs'], message: 'incoerente com status' })
+    }
+    if ((item.bestMs === null) !== (item.bestAt === null)) {
+      ctx.addIssue({ code: 'custom', path: ['bestMs'], message: 'bestMs e bestAt andam juntos' })
+    }
+  })
+
+export const importProgressRequestSchema = z.strictObject({
+  items: z
+    .array(importItemSchema)
+    .min(1)
+    .max(MAX_IMPORT_ITEMS)
+    .refine((items) => new Set(items.map((i) => i.puzzleId)).size === items.length, {
+      message: 'puzzleId repetido',
+    }),
+})
+
+export const importOutcomeSchema = z.object({
+  puzzleId: z.uuid(),
+  result: z.enum(['imported', 'kept', 'rejected']),
+  reason: z.enum(['puzzle-unavailable', 'invalid-input']).optional(),
+})
+
+export const importProgressResponseSchema = z.object({
+  results: z.array(importOutcomeSchema),
+  imported: z.number().int().min(0),
+  kept: z.number().int().min(0),
+  rejected: z.number().int().min(0),
+})
+
+export type ImportItem = z.infer<typeof importItemSchema>
+export type ImportProgressRequest = z.infer<typeof importProgressRequestSchema>
+export type ImportOutcome = z.infer<typeof importOutcomeSchema>
+export type ImportProgressResponse = z.infer<typeof importProgressResponseSchema>
+
 export type ProgressStatus = z.infer<typeof progressStatusSchema>
 export type ProgressCells = z.infer<typeof progressCellsSchema>
 export type SaveProgressRequest = z.infer<typeof saveProgressRequestSchema>

@@ -1,5 +1,8 @@
 import {
+  importProgressResponseSchema,
   progressEnvelopeSchema,
+  type ImportItem,
+  type ImportProgressResponse,
   type ProgressEnvelope,
   type SaveProgressRequest,
 } from '@cruzadinha/shared'
@@ -28,4 +31,12 @@ export function saveProgress(
 
 export function resetProgress(puzzleId: string): Promise<ProgressEnvelope> {
   return apiRequest(`${path(puzzleId)}/reset`, progressEnvelopeSchema, { method: 'POST' })
+}
+
+// Importa progresso de visitante para a conta (feature 057); no máximo `MAX_IMPORT_ITEMS` por pedido.
+export function importProgress(items: ImportItem[]): Promise<ImportProgressResponse> {
+  return apiRequest('/api/progress/import', importProgressResponseSchema, {
+    method: 'POST',
+    body: { items },
+  })
 }
