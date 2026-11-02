@@ -114,6 +114,15 @@ const catalog = [
   'POST /api/auth/resend-verification',
   'POST /api/auth/reset-password',
   'POST /api/auth/verify-email',
+  'POST /api/duels',
+  'POST /api/duels/cancel',
+  'POST /api/duels/decline',
+  'POST /api/duels/finish',
+  'POST /api/duels/forfeit',
+  'POST /api/duels/lookup',
+  'POST /api/duels/mine',
+  'POST /api/duels/start',
+  'POST /api/duels/state',
   'POST /api/progress/import',
   'POST /api/progress/{puzzleId}/reset',
   'PUT /api/progress/{puzzleId}',
@@ -188,9 +197,16 @@ describe('documento OpenAPI', () => {
       const [method = '', path = ''] = key.split(' ')
       const op = operation(doc, method.toLowerCase(), path)
       expect(op.tags).toHaveLength(1)
-      expect(['health', 'auth', 'puzzles', 'progress', 'library', 'settings', 'stats']).toContain(
-        op.tags?.[0],
-      )
+      expect([
+        'health',
+        'auth',
+        'puzzles',
+        'progress',
+        'library',
+        'settings',
+        'stats',
+        'duels',
+      ]).toContain(op.tags?.[0])
       expect(op.summary).toBeTruthy()
     }
   })
@@ -298,6 +314,15 @@ describe('sessão', () => {
     'GET /api/puzzles',
     'GET /api/puzzles/{id}',
     'GET /api/library',
+    'POST /api/duels',
+    'POST /api/duels/cancel',
+    'POST /api/duels/decline',
+    'POST /api/duels/finish',
+    'POST /api/duels/forfeit',
+    'POST /api/duels/lookup',
+    'POST /api/duels/mine',
+    'POST /api/duels/start',
+    'POST /api/duels/state',
   ]
 
   it('declara o cookie de sessão como esquema de segurança', async () => {

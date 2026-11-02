@@ -30,6 +30,7 @@ import {
   createRateLimitRepository,
   createRateLimiter,
 } from './platform/rate-limit'
+import { createDuelsService, duelsRoutes } from './modules/duels'
 import { libraryRoutes } from './modules/library/library.routes'
 import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
@@ -189,6 +190,13 @@ export function buildApp({
   const library = createLibraryService({ db: database })
   app.register(libraryRoutes, { library, optionalSession })
   app.register(statsRoutes, { stats: createStatsService({ db: database, clock }), requireSession })
+  const duels = createDuelsService({
+    db: database,
+    clock,
+    rateLimiter,
+    limits: rateLimits,
+  })
+  app.register(duelsRoutes, { duels, optionalSession })
   const settings = createSettingsService({
     db: database,
     clock,

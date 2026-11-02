@@ -75,7 +75,7 @@ describe('auth cleanup', () => {
 
     expect(await cli('auth', 'cleanup')).toBe(0)
     expect(out).toBe(
-      'Limpeza: 1 pendências, 2 tokens de recuperação, 0 trocas de e-mail, 2 contagens de tentativas.\n',
+      'Limpeza: 1 pendências, 2 tokens de recuperação, 0 trocas de e-mail, 2 contagens de tentativas.\nDuelos apagados: 0.\n',
     )
     expect(err).toBe('')
 
@@ -96,5 +96,58 @@ describe('auth cleanup', () => {
 
   it('recusa argumentos soltos', async () => {
     expect(await cli('auth', 'cleanup', '--tudo')).toBe(2)
+  })
+})
+
+describe('auth cleanup de duelos', () => {
+  it('apaga os expirados e guarda os finalizados', async () => {
+    const { insertPuzzleIfAbsent } = await import('../modules/puzzles/puzzles.repository')
+    const { okResult } = await import('./fake-source')
+    const { duels, duelParticipants } = await import('../platform/db/schema')
+    const ok = okResult('2026-10-01')
+    const { puzzleId } = await insertPuzzleIfAbsent(db, {
+      puzzle: ok.puzzle,
+      solution: ok.solution,
+    })
+    const base = {
+      puzzleId,
+      helpMode: 'free' as const,
+      state: 'open' as const,
+    }
+    const make = async (
+      key: string,
+      patch: Partial<typeof duels.$inferInsert>,
+      withParticipant = false,
+    ) => {
+      const [row] = await db
+        .insert(duels)
+        .values({
+          ...base,
+          linkToken: `link-${key}`,
+          code: key.padEnd(8, 'A'),
+          startDeadlineAt: ago(8),
+          ...patch,
+        })
+        .returning({ duelId: duels.duelId })
+      if (withParticipant && row) {
+        await db.insert(duelParticipants).values({
+          duelId: row.duelId,
+          role: 'creator',
+          nickname: 'Ana',
+          tokenHash: `hash-${key}`,
+        })
+      }
+    }
+    await make('OLDOPEN', {}, true)
+    await make('NEWOPEN', { startDeadlineAt: ago(-1) })
+    await make('OLDFIN', { state: 'finished', outcome: 'creator', outcomeReason: 'forfeit' })
+    await make('OLDCAN', { state: 'cancelled', finishedAt: ago(31) })
+    await make('NEWCAN', { state: 'cancelled', finishedAt: ago(1) })
+
+    expect(await cli('auth', 'cleanup')).toBe(0)
+    expect(out).toContain('Duelos apagados: 2.')
+    const left = await db.select({ token: duels.linkToken }).from(duels)
+    expect(left.map((r) => r.token).sort()).toEqual(['link-NEWCAN', 'link-NEWOPEN', 'link-OLDFIN'])
+    expect(await db.select().from(duelParticipants)).toHaveLength(0)
   })
 })

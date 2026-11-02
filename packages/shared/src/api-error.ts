@@ -24,6 +24,13 @@ export const apiErrorCodeSchema = z.enum([
   'wrong-password',
   // Captcha dos pedidos que mandam e-mail (feature 049): nunca 401 nem 403.
   'captcha-failed',
+  // Duelo x1 (feature 058).
+  'not-found',
+  'duel-taken',
+  'own-duel',
+  'open-limit',
+  'not-running',
+  'not-open',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>

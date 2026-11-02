@@ -237,6 +237,9 @@ describe('timing and speed', () => {
     resetPassword: { max: 1000, windowMinutes: 60 },
     passwordConfirm: { max: 1000, windowMinutes: 15 },
     changeEmail: { max: 1000, windowMinutes: 60 },
+    duelCreate: { max: 1000, windowMinutes: 60 },
+    duelLookup: { max: 1000, windowMinutes: 60 },
+    duelMine: { max: 1000, windowMinutes: 60 },
   }
 
   function mean(values: number[]): number {
