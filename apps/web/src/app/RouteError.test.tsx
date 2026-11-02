@@ -40,7 +40,7 @@ describe('RouteError', () => {
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
 
-    const waking = await screen.findByRole('heading', { level: 1, name: 'Acordando o servidor' })
+    const waking = await screen.findByRole('heading', { level: 1, name: 'Preparando as palavras…' })
     expect(waking).toHaveFocus()
     expect(loader).toHaveBeenCalledTimes(2)
 

@@ -1,0 +1,62 @@
+.cells {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 52px;
+  border: 2px solid var(--cell-line);
+  border-radius: 6px;
+  background-color: var(--surface);
+  box-shadow: 0 3px 0 var(--cell-line);
+  color: var(--ink);
+  font:
+    700 26px/1 'Fraunces Variable',
+    Georgia,
+    'Times New Roman',
+    serif;
+  animation: wave 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.12s);
+}
+
+.cell small {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  color: var(--mute);
+  font: 600 9px var(--font);
+}
+
+@keyframes wave {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-8px);
+    background-color: var(--sel);
+    border-color: var(--sel-ink);
+    color: var(--sel-ink);
+  }
+}
+
+@media (max-width: 480px) {
+  .cell {
+    width: 32px;
+    height: 40px;
+    font-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    animation: none;
+  }
+}

@@ -1,8 +1,8 @@
 import { puzzleSourceIdSchema } from '@cruzadinha/shared'
 import type { CSSProperties, MouseEvent } from 'react'
-import { Link } from 'react-router'
 import { feminineCount } from '../../helpers/count-words'
 import { landingButtonClass } from '../LandingButton/LandingButton'
+import { PlayLink } from '../PlayLink/PlayLink'
 import styles from './Hero.module.css'
 
 const TITLE = 'CRUZADINHA'
@@ -59,9 +59,9 @@ export function Hero() {
               jogue no seu ritmo e continue de onde parou.
             </p>
             <div className={styles.actions}>
-              <Link to="/jogar" className={landingButtonClass({ variant: 'primary' })}>
+              <PlayLink to="/jogar" variant="primary">
                 Jogar a cruzada de hoje
-              </Link>
+              </PlayLink>
               <a
                 href="#mini-cruzada"
                 className={landingButtonClass({ variant: 'quiet' })}

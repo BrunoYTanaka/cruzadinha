@@ -1,7 +1,8 @@
 import { puzzleSourceNames } from '@cruzadinha/shared'
 import { Link, useParams } from 'react-router'
 import { ApiRequestError } from '../../shared/services/api/client/client'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { formatDate, GameScreen, NeedsConnectionError, useGameData } from '../../features/game'
 import { viewerKey } from '../../features/session'
@@ -46,7 +47,7 @@ export function GamePage() {
       </ErrorState>
     )
   }
-  if (!response || !viewer || !owner) return <LoadingState label="Carregando a cruzada…" />
+  if (!response || !viewer || !owner) return <LoadingState screen="game" level={1} />
   // Trocar de visitante para conta (ou o inverso) monta um jogo novo, sem misturar estados.
   return <GameScreen key={`${puzzleId}:${viewerKey(viewer)}`} response={response} owner={owner} />
 }

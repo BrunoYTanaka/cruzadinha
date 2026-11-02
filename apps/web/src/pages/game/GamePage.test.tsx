@@ -94,8 +94,10 @@ describe('GamePage', () => {
     openGame({
       [PUZZLE]: () => jsonResponse(200, makePuzzleResponse(TINY, { source: 'cruzadaonline' })),
     })
-    const title = await screen.findByRole('heading', { level: 1 })
-    expect(title).toHaveTextContent(/^Cruzada Online\s*Cruzada de 14 de outubro$/)
+    await screen.findByRole('grid')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      /^Cruzada Online\s*Cruzada de 14 de outubro$/,
+    )
     await waitFor(() => expect(document.title).toMatch(/Cruzada de 14 de outubro · Cruzada Online/))
   })
 
@@ -103,7 +105,8 @@ describe('GamePage', () => {
     openGame({
       [PUZZLE]: () => jsonResponse(200, makePuzzleResponse(TINY, { source: 'cruzadasbrasil' })),
     })
-    const title = await screen.findByRole('heading', { level: 1 })
+    await screen.findByRole('grid')
+    const title = screen.getByRole('heading', { level: 1 })
     expect(title).toHaveTextContent(/^Cruzadas Brasil\s*Cruzada de 14 de outubro$/)
     await waitFor(() =>
       expect(document.title).toMatch(/Cruzada de 14 de outubro · Cruzadas Brasil/),

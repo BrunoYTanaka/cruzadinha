@@ -12,6 +12,7 @@ import {
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { useRegistration } from '../../hooks/useRegistration'
 
@@ -81,9 +82,10 @@ export function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
             error={fields.includes('password') ? 'Confira este campo.' : undefined}
           />
-          <Button type="submit" variant="primary" block disabled={login.isPending}>
+          <Button type="submit" variant="primary" block pending={login.isPending}>
             {login.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
+          <SlowSubmitNotice pending={login.isPending} />
         </form>
         <p className={styles.alt}>
           <Link to="/esqueci-a-senha">Esqueci a senha</Link>

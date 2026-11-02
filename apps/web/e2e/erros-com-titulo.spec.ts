@@ -103,13 +103,13 @@ for (const theme of THEMES) {
       await expectNoAxeViolations(page)
     })
 
-    test('"Acordando o servidor" tem o h1', async ({ page }) => {
+    test('a tela de espera tem o h1', async ({ page }) => {
       await page.route('**/api/health', async (route) => {
         await new Promise((resolve) => setTimeout(resolve, 5_000))
         await route.continue()
       })
       await page.goto('/calendario')
-      await expectSingleH1(page, 'Acordando o servidor')
+      await expectSingleH1(page, 'Preparando as palavras…')
       await expectNoAxeViolations(page)
     })
 
@@ -125,7 +125,7 @@ for (const theme of THEMES) {
       await expectNoAxeViolations(page)
 
       await page.getByRole('button', { name: 'Tentar de novo' }).click()
-      await expectSingleH1(page, 'Acordando o servidor')
+      await expectSingleH1(page, 'Preparando as palavras…')
     })
 
     // SC-004: trocar a tag não muda a aparência. Compara o h1 com um h2 de mesma classe no mesmo
@@ -133,7 +133,8 @@ for (const theme of THEMES) {
     test('o título do erro tem a mesma aparência que tinha como h2', async ({ page }) => {
       await page.route('**/api/puzzles?**', failWith(502, 'puzzle-source-failed'))
       await page.goto(DAY())
-      const title = page.getByRole('heading', { level: 1 })
+      // A tela de espera também tem um h1; o do erro é o que está dentro do alerta.
+      const title = page.getByRole('alert').getByRole('heading', { level: 1 })
       await expect(title).toHaveCount(1)
       const look = async (heading: Locator) => ({
         fontSize: await css(heading, 'font-size'),
@@ -149,7 +150,7 @@ for (const theme of THEMES) {
         clone.textContent = element.textContent
         element.replaceWith(clone)
       })
-      const asH2 = await look(page.getByRole('heading', { level: 2 }))
+      const asH2 = await look(page.getByRole('alert').getByRole('heading', { level: 2 }))
       expect(asH1.fontSize).toBe('20px')
       expect({ ...asH1, box: undefined }).toEqual({ ...asH2, box: undefined })
       expectNear(asH1.box.x, asH2.box.x)

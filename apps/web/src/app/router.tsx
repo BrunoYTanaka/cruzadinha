@@ -16,7 +16,7 @@ import { DuelPage } from '../pages/duel/DuelPage'
 import { DuelsPage } from '../pages/duels/DuelsPage'
 import { LibraryPage } from '../pages/library/LibraryPage'
 import { playTodayLoader } from '../pages/play-today/play-today'
-import { ServerWake } from '../features/status'
+import { LoadingState } from '../shared/components/LoadingState/LoadingState'
 import { StatusPage } from '../pages/status/StatusPage'
 import { directPlayLoader } from '../pages/library/direct-play'
 import { AppLayout } from './AppLayout'
@@ -62,7 +62,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
         {
           path: '/jogo/:puzzleId',
           loader: gameLoader(queryClient),
-          hydrateFallbackElement: <ServerWake />,
+          hydrateFallbackElement: <LoadingState level={1} />,
           errorElement: <RouteError />,
           // O código do jogo (tabuleiro, relógio, fila de salvamento) só carrega ao jogar.
           lazy: async () => ({ Component: (await import('../pages/game/GamePage')).GamePage }),
@@ -72,7 +72,7 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
           // fallback aparece dentro do layout; depois de pronto, o loader não roda de novo.
           loader: serverReadyLoader,
           shouldRevalidate: () => !isServerReady(),
-          hydrateFallbackElement: <ServerWake />,
+          hydrateFallbackElement: <LoadingState level={1} />,
           errorElement: <RouteError />,
           children: [
             { path: '/login', element: <LoginPage /> },

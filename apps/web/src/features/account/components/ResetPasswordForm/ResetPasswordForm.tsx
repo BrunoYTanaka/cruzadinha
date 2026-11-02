@@ -7,6 +7,7 @@ import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button, buttonClass } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from '../../../session'
 import { useFragmentToken } from '../../helpers/token-fragment'
@@ -116,9 +117,10 @@ export function ResetPasswordForm() {
                 onChange={(event) => setConfirmation(event.target.value)}
                 error={fields.includes('confirmation') ? 'Confira este campo.' : undefined}
               />
-              <Button type="submit" variant="primary" block disabled={mutation.isPending}>
+              <Button type="submit" variant="primary" block pending={mutation.isPending}>
                 {mutation.isPending ? 'Salvando…' : 'Salvar senha'}
               </Button>
+              <SlowSubmitNotice pending={mutation.isPending} />
             </form>
           </>
         )}

@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef } from 'react'
+import { useLayoutEffect, useRef, useState, type ComponentPropsWithRef } from 'react'
 import styles from './Button.module.css'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'icon'
@@ -27,9 +27,55 @@ export function buttonClass({
     .join(' ')
 }
 
-type ButtonProps = ComponentPropsWithRef<'button'> & ButtonClassOptions
+type ButtonProps = ComponentPropsWithRef<'button'> &
+  ButtonClassOptions & {
+    // Pedido em andamento (feature 059): desabilita, marca `aria-busy`, mostra um indicador e segura a
+    // largura que o botão tinha, para o texto de "em andamento" não encolhê-lo.
+    pending?: boolean
+  }
 
-export function Button({ variant, size, block, type = 'button', className, ...rest }: ButtonProps) {
+export function Button({
+  variant,
+  size,
+  block,
+  pending = false,
+  type = 'button',
+  className,
+  ref,
+  style,
+  disabled,
+  children,
+  ...rest
+}: ButtonProps) {
+  const element = useRef<HTMLButtonElement | null>(null)
+  const [idleWidth, setIdleWidth] = useState<number>()
   const classes = [buttonClass({ variant, size, block }), className ?? ''].filter(Boolean).join(' ')
-  return <button type={type} className={classes} {...rest} />
+
+  // Guarda a largura do botão em repouso; ao entrar em `pending` ela vira a largura mínima.
+  useLayoutEffect(() => {
+    if (!pending && element.current) setIdleWidth(element.current.offsetWidth)
+    // Roda a cada renderização em repouso: o texto pode mudar a largura. Um valor igual não renderiza
+    // de novo.
+  }, [pending, children, variant, size, block])
+
+  function setRef(node: HTMLButtonElement | null) {
+    element.current = node
+    if (typeof ref === 'function') ref(node)
+    else if (ref) ref.current = node
+  }
+
+  return (
+    <button
+      type={type}
+      className={classes}
+      ref={setRef}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
+      style={pending && idleWidth ? { minWidth: idleWidth, ...style } : style}
+      {...rest}
+    >
+      {pending ? <span className={styles.spinner} aria-hidden="true" /> : null}
+      {children}
+    </button>
+  )
 }

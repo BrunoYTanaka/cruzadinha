@@ -1,6 +1,7 @@
-import { screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { SLOW_MESSAGE } from '../../shared/components/LoadingState/loading-screens'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
@@ -26,6 +27,27 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, password 
 }
 
 describe('LoginPage', () => {
+  it('com o servidor lento, o botão fica em espera e a soneca é explicada depois de 2 s', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      mockApi({
+        'GET /api/auth/me': noSession,
+        'POST /api/auth/login': () => new Promise<Response>(() => {}),
+      })
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      renderRoutes(routes, ['/login'])
+      await fillAndSubmit(user)
+      const button = await screen.findByRole('button', { name: 'Entrando…' })
+      expect(button).toBeDisabled()
+      expect(button).toHaveAttribute('aria-busy', 'true')
+      expect(screen.queryByText(SLOW_MESSAGE)).toBeNull()
+      act(() => vi.advanceTimersByTime(2_500))
+      expect(screen.getByText(SLOW_MESSAGE)).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('oferece o caminho para recuperar a senha', async () => {
     mockApi({ 'GET /api/auth/me': noSession })
     renderRoutes(routes, ['/login'])

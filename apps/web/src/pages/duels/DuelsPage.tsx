@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { buttonClass } from '../../shared/components/Button/Button'
-import { ErrorState, LoadingState } from '../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { RequiresConnection } from '../../shared/components/RequiresConnection/RequiresConnection'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { DuelList, isDuelUnavailable, JoinByCode, useMyDuels } from '../../features/duel'
@@ -12,7 +13,7 @@ export function DuelsPage() {
   const guest = viewer?.kind === 'guest'
   let list
   if (!viewer || (query.isPending && !guestWithoutTokens && query.fetchStatus !== 'idle')) {
-    list = <LoadingState label="Carregando os seus x1…" />
+    list = <LoadingState screen="entry" level={2} />
   } else if (query.isError) {
     list = isDuelUnavailable(query.error) ? (
       <ErrorState level={2} title="O x1 não está disponível agora" message="Tente mais tarde." />

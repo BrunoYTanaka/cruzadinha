@@ -1,5 +1,4 @@
-import { Link } from 'react-router'
-import { landingButtonClass } from '../LandingButton/LandingButton'
+import { PlayLink } from '../PlayLink/PlayLink'
 import styles from './FinalBand.module.css'
 
 // Faixa final (feature 050, mockup): escura e de largura total, o único bloco da landing que sai do
@@ -12,15 +11,12 @@ export function FinalBand() {
           A cruzada de hoje já está esperando.
         </h2>
         <div className={styles.actions}>
-          <Link
-            to="/jogar"
-            className={`${landingButtonClass({ variant: 'primary' })} ${styles.play}`}
-          >
+          <PlayLink to="/jogar" variant="primary" className={styles.play}>
             Jogar agora
-          </Link>
-          <Link to="/calendario" className={styles.calendar}>
+          </PlayLink>
+          <PlayLink to="/calendario" className={styles.calendar}>
             Ver o calendário
-          </Link>
+          </PlayLink>
         </div>
       </div>
     </section>

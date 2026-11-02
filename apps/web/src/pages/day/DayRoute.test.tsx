@@ -136,7 +136,7 @@ describe('DayRoute', () => {
       'GET /api/puzzles': () => jsonResponse(200, makePuzzleResponse(TINY, { date: '2026-10-03' })),
     })
     const { router } = renderRoutes(routes, ['/dia/2026-10-03'])
-    expect(screen.getByRole('status')).toHaveTextContent('Buscando a cruzada…')
+    expect(screen.getByText('Procurando a cruzada de hoje…')).toBeInTheDocument()
     await waitFor(() => expect(router.state.location.pathname).toBe(`/jogo/${PUZZLE_ID}`))
     expect(await screen.findByText('Jogo aberto')).toBeInTheDocument()
     expect(calls[0]?.url).toBe('/api/puzzles?level=daily&date=2026-10-03&source=oglobo')

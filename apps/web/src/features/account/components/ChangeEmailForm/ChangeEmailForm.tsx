@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
+import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
 import { Field } from '../../../../shared/components/Field/Field'
 import { Notice } from '../../../../shared/components/Notice/Notice'
 import { changeEmail } from '../../../../shared/services/api/account/account'
@@ -90,9 +91,10 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
           onChange={(event) => setCurrentPassword(event.target.value)}
           error={fields.includes('currentPassword') ? accountMessages.wrongPassword : undefined}
         />
-        <Button type="submit" variant="secondary" disabled={mutation.isPending || waiting}>
+        <Button type="submit" variant="secondary" pending={mutation.isPending} disabled={waiting}>
           {waiting ? `Enviar link em ${formatWait(countdown.secondsLeft)}` : 'Enviar link'}
         </Button>
+        <SlowSubmitNotice pending={mutation.isPending} />
       </form>
     </AccountSection>
   )

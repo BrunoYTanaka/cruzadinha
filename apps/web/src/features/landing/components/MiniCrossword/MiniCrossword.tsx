@@ -6,13 +6,14 @@ import {
   type MouseEvent,
   type PointerEvent,
 } from 'react'
-import { Link } from 'react-router'
+
 import { activeWord } from '../../../../domain/game/navigation'
 import { cellKey, type Direction } from '../../../../domain/game/state'
 import type { GameAction } from '../../../../domain/game/reducer'
 import { miniGame, miniReducer, solvedWords, START_STATE } from '../../helpers/mini-state'
 import { SAMPLE_PUZZLE } from '../../helpers/sample'
 import { landingButtonClass } from '../LandingButton/LandingButton'
+import { PlayLink } from '../PlayLink/PlayLink'
 import styles from './MiniCrossword.module.css'
 
 // O campo escondido guarda este caractere para o Backspace do teclado do celular gerar um evento
@@ -205,12 +206,9 @@ export function MiniCrossword() {
             </p>
             <div className={styles.actions}>
               {done ? (
-                <Link
-                  to="/jogar"
-                  className={landingButtonClass({ variant: 'primary', size: 'small' })}
-                >
+                <PlayLink to="/jogar" variant="primary" size="small">
                   Jogar a cruzada de hoje
-                </Link>
+                </PlayLink>
               ) : null}
               <button
                 type="button"

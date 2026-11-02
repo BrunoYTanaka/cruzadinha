@@ -1,25 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button } from '../Button/Button'
-import { useSlowServer } from '../../hooks/useSlowServer/useSlowServer'
 import { formatWait } from '../../helpers/time/time'
 import styles from './ErrorState.module.css'
-
-// Com um pedido esperando há 2 s ou mais, explica que o servidor gratuito pode estar acordando
-// (feature 012, FR-011). A tela de jogo só usa isto antes de a cruzada carregar.
-export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
-  const { slow } = useSlowServer()
-  return (
-    <p role="status" className={styles.loading}>
-      {slow ? (
-        <>
-          Acordando o servidor… <span className={styles.hint}>Pode levar até um minuto.</span>
-        </>
-      ) : (
-        label
-      )}
-    </p>
-  )
-}
 
 type ErrorStateProps = {
   // 1 quando o erro é a página inteira (o título é o h1); 2 dentro de uma página que já tem h1.
