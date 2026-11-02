@@ -82,7 +82,7 @@
     cursor: not-allowed;
   }
 
-  /* Indicador de pedido em andamento (feature 058): usa a cor do texto do botão. */
+  /* Indicador de pedido em andamento (feature 059): usa a cor do texto do botão. */
   .spinner {
     width: 14px;
     height: 14px;

@@ -1,0 +1,24 @@
+/* Duas linhas reservadas: a mensagem cabe em duas linhas em 320 px e o bloco não muda de altura. */
+.slot {
+  min-height: calc(2 * 1.4em);
+}
+
+.text {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+  line-height: 1.4;
+  animation: appear 300ms ease-out;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text {
+    animation: none;
+  }
+}

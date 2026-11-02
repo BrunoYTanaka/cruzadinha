@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../../../../shared/components/Button/Button'
-import { ErrorState, LoadingState } from '../../../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { formatWait } from '../../../../shared/helpers/time/time'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
@@ -67,7 +68,7 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
   const [declined, setDeclined] = useState(false)
   useDocumentTitle('Convite de x1')
 
-  if (lookup.isPending) return <LoadingState label="Procurando o x1…" />
+  if (lookup.isPending) return <LoadingState screen="entry" level={1} />
   if (lookup.isError) {
     if (isDuelUnavailable(lookup.error)) return <Unavailable />
     if (lookup.error instanceof ApiRequestError && lookup.error.status === 429) {
@@ -313,7 +314,7 @@ export function DuelScreen({ linkToken }: { linkToken: string }) {
   }, [queryClient, linkToken])
 
   if (token === undefined || state.isPending) {
-    return <LoadingState label="Abrindo o x1…" />
+    return <LoadingState screen="entry" level={1} />
   }
   if (state.isError) {
     const error = state.error

@@ -2,7 +2,8 @@ import type { DuelView } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
-import { ErrorState, LoadingState } from '../../../../shared/components/ErrorState/ErrorState'
+import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
+import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
 import { getPuzzleById } from '../../../../shared/services/api/puzzles/puzzles'
 import { queryKeys } from '../../../../shared/services/api/query-keys/query-keys'
 import type { GuestProgress } from '../../../../domain/guest/guest-progress'
@@ -127,7 +128,7 @@ export function DuelBoard({ credential, view, puzzleId, serverNow, receivedAt, o
       />
     )
   }
-  if (!puzzle.data || record === undefined) return <LoadingState label="Carregando a cruzada…" />
+  if (!puzzle.data || record === undefined) return <LoadingState screen="game" level={2} />
 
   if (completedLocally) {
     return (

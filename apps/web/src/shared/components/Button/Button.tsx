@@ -29,7 +29,7 @@ export function buttonClass({
 
 type ButtonProps = ComponentPropsWithRef<'button'> &
   ButtonClassOptions & {
-    // Pedido em andamento (feature 058): desabilita, marca `aria-busy`, mostra um indicador e segura a
+    // Pedido em andamento (feature 059): desabilita, marca `aria-busy`, mostra um indicador e segura a
     // largura que o botão tinha, para o texto de "em andamento" não encolhê-lo.
     pending?: boolean
   }
