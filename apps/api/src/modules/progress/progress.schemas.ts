@@ -1,4 +1,9 @@
-import { progressEnvelopeSchema, saveProgressRequestSchema } from '@cruzadinha/shared'
+import {
+  importProgressRequestSchema,
+  importProgressResponseSchema,
+  progressEnvelopeSchema,
+  saveProgressRequestSchema,
+} from '@cruzadinha/shared'
 import type { FastifySchema } from 'fastify'
 import {
   commonErrors,
@@ -95,6 +100,21 @@ export const resetProgressSchema = {
       ),
       headers: retryAfterHeader,
     },
+    ...commonErrors,
+  },
+} satisfies FastifySchema
+
+export const importProgressSchema = {
+  tags: ['progress'],
+  security: [{ session: [] }],
+  summary: 'Importa o progresso de visitante para a conta',
+  description:
+    'Aplica até 100 progressos por pedido, cada um com a regra: vale o `savedAt` mais novo (empate fica com a conta) e uma cruzada concluída na conta nunca é sobrescrita. ' +
+    'Cada item volta como `imported`, `kept` ou `rejected`; reenviar o mesmo corpo não altera nada. O usuário vem só da sessão.',
+  body: toDocSchema(importProgressRequestSchema),
+  response: {
+    200: { description: 'Resultado por item', ...toDocSchema(importProgressResponseSchema) },
+    401: unauthenticated,
     ...commonErrors,
   },
 } satisfies FastifySchema

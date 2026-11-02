@@ -1,0 +1,16 @@
+.summary {
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+
+.message {
+  margin: 12px 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

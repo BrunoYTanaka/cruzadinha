@@ -92,6 +92,11 @@ export {
 } from './settings/schema'
 export {
   cellsMatchGrid,
+  importItemSchema,
+  importOutcomeSchema,
+  importProgressRequestSchema,
+  importProgressResponseSchema,
+  MAX_IMPORT_ITEMS,
   progressCellsSchema,
   progressEnvelopeSchema,
   progressSchema,
@@ -99,6 +104,10 @@ export {
   saveProgressRequestSchema,
   MAX_ELAPSED_MS,
   type CellsValidation,
+  type ImportItem,
+  type ImportOutcome,
+  type ImportProgressRequest,
+  type ImportProgressResponse,
   type Progress,
   type ProgressCells,
   type ProgressEnvelope,

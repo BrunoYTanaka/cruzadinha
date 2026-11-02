@@ -1,9 +1,18 @@
-import { saveProgressRequestSchema, type ProgressEnvelope } from '@cruzadinha/shared'
+import {
+  importProgressRequestSchema,
+  saveProgressRequestSchema,
+  type ProgressEnvelope,
+} from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { sendError, sendTooManyAttempts } from '../../platform/http/errors'
 import type { RequireSession } from '../identity'
-import { getProgressSchema, resetProgressSchema, saveProgressSchema } from './progress.schemas'
+import {
+  getProgressSchema,
+  importProgressSchema,
+  resetProgressSchema,
+  saveProgressSchema,
+} from './progress.schemas'
 import type { ProgressService } from './progress.service'
 
 export type ProgressRoutesOptions = {
@@ -29,6 +38,24 @@ export const progressRoutes: FastifyPluginAsync<ProgressRoutesOptions> = async (
       if (!result.ok) return sendError(reply, 404, 'puzzle-unavailable')
       const body: ProgressEnvelope = { progress: result.progress }
       return body
+    },
+  )
+
+  app.post(
+    '/api/progress/import',
+    { schema: importProgressSchema, preHandler: requireSession },
+    async (request, reply) => {
+      if (!request.user) return sendError(reply, 401, 'unauthenticated')
+      const parsed = importProgressRequestSchema.safeParse(request.body)
+      if (!parsed.success) {
+        const fields = [
+          ...new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? 'body'))),
+        ]
+        return sendError(reply, 400, 'invalid-input', fields)
+      }
+      const result = await progress.import(request.user.id, parsed.data.items)
+      if (!result.ok) return sendTooManyAttempts(reply, result.retryAfterSeconds)
+      return result.response
     },
   )
 

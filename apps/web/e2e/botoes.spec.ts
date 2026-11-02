@@ -110,6 +110,16 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
     // Modal de nova entrada, como em ajudas-e-retomada.spec.ts: a sessão some no meio do jogo.
     await resetAndSeed()
     await page.context().clearCookies()
+    // O progresso de visitante da conclusão acima faria a oferta de importação cobrir o calendário.
+    await page.goto('about:blank')
+    await page.goto('/login')
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const request = indexedDB.deleteDatabase('cruzadinha-visitante')
+          request.onsuccess = request.onerror = request.onblocked = () => resolve()
+        }),
+    )
     await login(page)
     await openToday(page)
     await page.context().clearCookies()

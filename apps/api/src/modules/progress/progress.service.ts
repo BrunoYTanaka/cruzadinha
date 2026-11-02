@@ -1,5 +1,7 @@
 import {
   cellsMatchGrid,
+  type ImportItem,
+  type ImportProgressResponse,
   type Progress,
   type ProgressCells,
   type SaveProgressRequest,
@@ -72,6 +74,42 @@ export function decideSave(
   }
 }
 
+export type ImportDecision =
+  { kind: 'imported'; next: ProgressState } | { kind: 'kept' } | { kind: 'invalid-saved-at' }
+
+// Importação de progresso de visitante (feature 057): vale o `savedAt` mais novo (empate fica com
+// a conta, o que torna o reenvio idempotente) e uma cruzada concluída na conta nunca muda. O
+// recorde é o menor tempo entre os dois.
+export function decideImport(
+  current: ProgressState,
+  incoming: ImportItem,
+  now: Date,
+): ImportDecision {
+  if (savedAtTooFar(incoming.savedAt, now)) return { kind: 'invalid-saved-at' }
+  const savedAt = new Date(incoming.savedAt)
+  if (current.status === 'completed' || savedAt.getTime() <= current.savedAt.getTime()) {
+    return { kind: 'kept' }
+  }
+  const incomingBest =
+    incoming.bestMs !== null && incoming.bestAt !== null
+      ? { bestMs: incoming.bestMs, bestAt: new Date(incoming.bestAt) }
+      : null
+  const wins = incomingBest && (current.bestMs === null || incomingBest.bestMs < current.bestMs)
+  return {
+    kind: 'imported',
+    next: {
+      cells: incoming.cells,
+      elapsedMs: incoming.elapsedMs,
+      status: incoming.status,
+      savedAt,
+      completedAt: incoming.completedAt ? new Date(incoming.completedAt) : null,
+      finishedMs: incoming.finishedMs,
+      bestMs: wins ? incomingBest.bestMs : current.bestMs,
+      bestAt: wins ? incomingBest.bestAt : current.bestAt,
+    },
+  }
+}
+
 // O reinício zera a partida atual e mantém o recorde. O `savedAt` avança para que salvamentos
 // atrasados, anteriores ao reinício, sejam ignorados.
 export function decideReset(
@@ -105,10 +143,15 @@ export type ResetProgressResult =
   | { ok: false; reason: 'puzzle-unavailable' }
   | { ok: false; reason: 'too-many-attempts'; retryAfterSeconds: number }
 
+export type ImportProgressResult =
+  | { ok: true; response: ImportProgressResponse }
+  | Extract<SaveProgressResult, { reason: 'too-many-attempts' }>
+
 export type ProgressService = {
   get(userId: string, puzzleId: string): Promise<GetProgressResult>
   save(userId: string, puzzleId: string, request: SaveProgressRequest): Promise<SaveProgressResult>
   reset(userId: string, puzzleId: string): Promise<ResetProgressResult>
+  import(userId: string, items: ImportItem[]): Promise<ImportProgressResult>
 }
 
 export type ProgressDeps = {
@@ -190,6 +233,53 @@ export function createProgressService(deps: ProgressDeps): ProgressService {
         const saved = await updateProgress(tx, userId, puzzleId, decideReset(current, empty, now))
         return { ok: true, progress: toProgress(saved) }
       })
+    },
+
+    // Um `reserve` por pedido; uma transação por item, então um item ruim não derruba os outros.
+    async import(userId, items) {
+      const refused = await admit(userId, clock())
+      if (refused) return refused
+      const results: ImportProgressResponse['results'] = []
+      for (const item of items) {
+        const grid = await findPuzzleGridById(db, item.puzzleId)
+        if (!grid) {
+          results.push({
+            puzzleId: item.puzzleId,
+            result: 'rejected',
+            reason: 'puzzle-unavailable',
+          })
+          continue
+        }
+        if (!cellsMatchGrid(grid, item.cells).success) {
+          results.push({ puzzleId: item.puzzleId, result: 'rejected', reason: 'invalid-input' })
+          continue
+        }
+        const now = clock()
+        const result = await db.transaction(async (tx) => {
+          await ensureRow(tx, userId, item.puzzleId, emptyCellsFor(grid.height, grid.width))
+          const current = await lockRow(tx, userId, item.puzzleId)
+          const decision = decideImport(current, item, now)
+          if (decision.kind === 'invalid-saved-at') return 'invalid' as const
+          if (decision.kind === 'kept') return 'kept' as const
+          await updateProgress(tx, userId, item.puzzleId, decision.next)
+          return 'imported' as const
+        })
+        results.push(
+          result === 'invalid'
+            ? { puzzleId: item.puzzleId, result: 'rejected', reason: 'invalid-input' }
+            : { puzzleId: item.puzzleId, result },
+        )
+      }
+      const count = (r: string) => results.filter((x) => x.result === r).length
+      return {
+        ok: true,
+        response: {
+          results,
+          imported: count('imported'),
+          kept: count('kept'),
+          rejected: count('rejected'),
+        },
+      }
     },
   }
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Puzzle } from '../puzzle/schema'
 import {
   cellsMatchGrid,
+  importProgressRequestSchema,
   progressEnvelopeSchema,
   progressSchema,
   saveProgressRequestSchema,
@@ -202,5 +203,52 @@ describe('cellsMatchGrid', () => {
       [null, 'D'],
     ])
     expect(JSON.stringify(result)).not.toContain('xyz')
+  })
+})
+
+describe('importProgressRequestSchema', () => {
+  const item = {
+    puzzleId,
+    cells: request.cells,
+    elapsedMs: 1000,
+    status: 'in_progress',
+    savedAt: request.savedAt,
+    completedAt: null,
+    finishedMs: null,
+    bestMs: null,
+    bestAt: null,
+  }
+  const done = {
+    ...item,
+    status: 'completed',
+    completedAt: '2026-10-13T14:05:00.000Z',
+    finishedMs: 1000,
+  }
+  const ok = (items: unknown[]) => importProgressRequestSchema.safeParse({ items }).success
+
+  it('aceita itens em andamento e concluídos', () => {
+    expect(ok([item])).toBe(true)
+    expect(ok([done])).toBe(true)
+  })
+
+  it.each([
+    ['campo help', { ...item, help: {} }],
+    ['campo userId', { ...item, userId: puzzleId }],
+    ['concluído sem completedAt', { ...done, completedAt: null }],
+    ['em andamento com finishedMs', { ...item, finishedMs: 5 }],
+    ['bestMs sem bestAt', { ...item, bestMs: 5 }],
+  ])('recusa %s', (_name, value) => {
+    expect(ok([value])).toBe(false)
+  })
+
+  it('recusa lista vazia, mais de 100 itens e puzzleId repetido', () => {
+    expect(ok([])).toBe(false)
+    const many = Array.from({ length: 101 }, (_, i) => ({
+      ...item,
+      puzzleId: `0b9a3a4e-6d0e-4b6c-9a52-${String(i).padStart(12, '0')}`,
+    }))
+    expect(ok(many)).toBe(false)
+    expect(ok(many.slice(0, 100))).toBe(true)
+    expect(ok([item, item])).toBe(false)
   })
 })
