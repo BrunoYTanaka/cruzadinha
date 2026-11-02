@@ -1,6 +1,6 @@
 import { puzzleSourceNames, type DuelStateResponse, type DuelView } from '@cruzadinha/shared'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button, buttonClass } from '../../../../shared/components/Button/Button'
 import { ErrorState, LoadingState } from '../../../../shared/components/ErrorState/ErrorState'
@@ -307,6 +307,11 @@ export function DuelScreen({ linkToken }: { linkToken: string }) {
     [linkToken, token],
   )
 
+  const onChanged = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: duelStateKey(linkToken) })
+    void queryClient.invalidateQueries({ queryKey: ['my-duels'] })
+  }, [queryClient, linkToken])
+
   if (token === undefined || state.isPending) {
     return <LoadingState label="Abrindo o x1…" />
   }
@@ -338,10 +343,7 @@ export function DuelScreen({ linkToken }: { linkToken: string }) {
       participantToken={token}
       state={state.data}
       receivedAt={state.dataUpdatedAt}
-      onChanged={() => {
-        void queryClient.invalidateQueries({ queryKey: duelStateKey(linkToken) })
-        void queryClient.invalidateQueries({ queryKey: ['my-duels'] })
-      }}
+      onChanged={onChanged}
     />
   )
 }

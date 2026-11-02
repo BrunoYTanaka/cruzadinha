@@ -68,7 +68,6 @@ export function duelQueueFactory(deps: { duelId: string } & FinishDeps) {
     const inner = createGuestSaveQueue({ ...options, puzzleId: deps.duelId })
     const listeners = new Set<() => void>()
     let waiting = false
-    let stopped = false
 
     const setWaiting = (value: boolean) => {
       if (waiting === value) return
@@ -95,16 +94,13 @@ export function duelQueueFactory(deps: { duelId: string } & FinishDeps) {
           void finishWithRetry(helpsOf(help), {
             ...deps,
             onWaiting: setWaiting,
-            isStopped: () => stopped,
           })
         }
       },
       retry: async () => {},
       readOutbox: () => null,
-      dispose: () => {
-        stopped = true
-        inner.dispose()
-      },
+      // Sair da tela não cancela o envio da conclusão: o duelo precisa terminar no servidor.
+      dispose: () => inner.dispose(),
     }
   }
 }

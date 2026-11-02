@@ -70,6 +70,17 @@ describe('duelQueueFactory', () => {
   })
 })
 
+describe('duelQueueFactory: sair da tela', () => {
+  it('descartar a fila não cancela o envio da conclusão', async () => {
+    const { make, finish, onFinished } = setup()
+    const queue = make(A)
+    await queue.sendNow(done())
+    queue.dispose()
+    await vi.waitFor(() => expect(onFinished).toHaveBeenCalled())
+    expect(finish).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('finishWithRetry', () => {
   it('erro 4xx encerra sem repetir e avisa com null', async () => {
     const finish = vi.fn().mockRejectedValue(new ApiRequestError(409, { code: 'not-running' }))
