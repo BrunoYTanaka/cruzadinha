@@ -11,6 +11,9 @@ import { VerifyEmailPage } from '../pages/verify-email/VerifyEmailPage'
 import { DayRoute } from '../pages/day/DayRoute'
 import { LandingFallback, LandingPage } from '../pages/landing/LandingPage'
 import { StatsPage } from '../pages/stats/StatsPage'
+import { DuelNewPage } from '../pages/duel-new/DuelNewPage'
+import { DuelPage } from '../pages/duel/DuelPage'
+import { DuelsPage } from '../pages/duels/DuelsPage'
 import { LibraryPage } from '../pages/library/LibraryPage'
 import { playTodayLoader } from '../pages/play-today/play-today'
 import { ServerWake } from '../features/status'
@@ -87,6 +90,10 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
                 { path: '/dia/:date', element: <DayRoute /> },
                 { path: '/conta', element: <AccountPage /> },
                 { path: '/estatisticas', element: <StatsPage /> },
+                // Duelo x1 (feature 058).
+                { path: '/x1', element: <DuelsPage /> },
+                { path: '/x1/novo', element: <DuelNewPage /> },
+                { path: '/x1/:linkToken', element: <DuelPage /> },
               ],
             },
             { path: '*', element: <NotFoundPage /> },

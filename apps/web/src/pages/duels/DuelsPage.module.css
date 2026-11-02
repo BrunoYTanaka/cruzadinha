@@ -1,0 +1,29 @@
+.page {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}

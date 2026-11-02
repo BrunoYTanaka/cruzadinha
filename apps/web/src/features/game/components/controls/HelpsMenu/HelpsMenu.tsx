@@ -16,6 +16,8 @@ type HelpsMenuProps = {
   // Relógio pausado: verificar e o rascunho ficam parados; o interruptor automático nunca.
   disabled?: boolean
   verifyOnType: boolean
+  // Duelo x1 (feature 058): fora do modo livre, verificar é ajuda e some do menu.
+  verifyEnabled?: boolean
   // Outro diálogo aberto: o menu fecha e não abre.
   blocked?: boolean
   onVerify: () => void
@@ -33,6 +35,7 @@ export function HelpsMenu({
   hasDraft,
   disabled = false,
   verifyOnType,
+  verifyEnabled = true,
   blocked = false,
   onVerify,
   onVerifyOnType,
@@ -55,14 +58,18 @@ export function HelpsMenu({
           </>
         }
       >
-        <MenuItem disabled={disabled} onSelect={onVerify}>
-          Verificar
-        </MenuItem>
-        <MenuGroup label="Automática">
-          <MenuCheckItem checked={verifyOnType} onChange={onVerifyOnType}>
-            Verificar ao digitar
-          </MenuCheckItem>
-        </MenuGroup>
+        {verifyEnabled ? (
+          <MenuItem disabled={disabled} onSelect={onVerify}>
+            Verificar
+          </MenuItem>
+        ) : null}
+        {verifyEnabled ? (
+          <MenuGroup label="Automática">
+            <MenuCheckItem checked={verifyOnType} onChange={onVerifyOnType}>
+              Verificar ao digitar
+            </MenuCheckItem>
+          </MenuGroup>
+        ) : null}
         <MenuGroup label="Rascunho">
           <MenuCheckItem checked={pencil} disabled={disabled} onChange={onPencil}>
             Lápis

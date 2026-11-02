@@ -1,4 +1,6 @@
 export { Calendar } from './components/Calendar/Calendar'
+export { DayPicker } from './components/DayPicker/DayPicker'
+export type { DayPick } from './components/DayPicker/DayPicker'
 export { LibraryLegend } from './components/LibraryLegend/LibraryLegend'
 export { SourceTabs } from './components/SourceTabs/SourceTabs'
 export { TodayCards } from './components/TodayCards/TodayCards'

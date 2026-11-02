@@ -1,0 +1,50 @@
+.form {
+  display: grid;
+  gap: 20px;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.option input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.picked {
+  margin: 0;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.error {
+  margin: 0;
+  color: var(--bad, #b3261e);
+  font-size: 14px;
+}

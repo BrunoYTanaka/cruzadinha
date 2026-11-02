@@ -41,3 +41,9 @@
 # O link de troca de e-mail também traz o token no fragmento (feature 042).
 /confirmar-email
   Referrer-Policy: no-referrer
+
+# O endereço do convite do x1 traz o token do link no caminho e o link de retorno traz o token do
+# participante no fragmento: sem origem enviada a outros sites. A não indexação vem do `/*` (feature
+# 058).
+/x1/*
+  Referrer-Policy: no-referrer

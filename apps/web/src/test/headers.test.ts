@@ -39,6 +39,13 @@ describe('public/_headers e o desafio do captcha', () => {
       '/confirmar-email',
       '/redefinir-senha',
       '/verificar-email',
+      '/x1/*',
     ])
+  })
+
+  it('as rotas do duelo x1 não enviam origem e herdam o noindex do /* (feature 058)', () => {
+    const duel = blocks().get('/x1/*')?.join('\n') ?? ''
+    expect(duel).toMatch(/referrer-policy:\s*no-referrer/i)
+    expect(blocks().get('/*')?.join('\n') ?? '').toMatch(/x-robots-tag:\s*noindex, nofollow/i)
   })
 })

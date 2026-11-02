@@ -41,8 +41,9 @@ function parse(value: unknown): GuestProgress | null {
 }
 
 export function createGuestStore(
-  options: { factory?: () => IDBFactory | undefined; now?: () => Date } = {},
+  options: { factory?: () => IDBFactory | undefined; now?: () => Date; dbName?: string } = {},
 ): GuestStore {
+  const dbName = options.dbName ?? GUEST_DB_NAME
   const factory = options.factory ?? (() => globalThis.indexedDB)
   const now = options.now ?? (() => new Date())
 
@@ -87,7 +88,7 @@ export function createGuestStore(
       // O `idb` usa o `indexedDB` global; a fábrica só decide se ele existe e quando reabrir.
       // Dentro de uma função assíncrona, para um `open` que lança na hora também virar falha tratada.
       opened = (async () =>
-        openDB<GuestDB>(GUEST_DB_NAME, 1, {
+        openDB<GuestDB>(dbName, 1, {
           upgrade(db) {
             db.createObjectStore(STORE, { keyPath: 'puzzleId' })
           },

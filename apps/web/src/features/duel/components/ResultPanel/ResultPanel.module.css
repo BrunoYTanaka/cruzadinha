@@ -1,0 +1,39 @@
+.panel {
+  display: grid;
+  gap: 16px;
+}
+
+.headline {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.reason {
+  margin: 0;
+  color: var(--mute);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: 15px;
+}
+
+.table th {
+  font-weight: 700;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
