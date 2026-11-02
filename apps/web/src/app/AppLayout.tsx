@@ -22,6 +22,7 @@ import {
   PendingOwnerNotice,
   useOutboxDrain,
 } from '../features/offline'
+import { useMyDuels } from '../features/duel'
 import { ImportOffer } from '../features/import'
 import { SettingsButton, SettingsDialog, useSettingsSync } from '../features/settings'
 import { HeaderStart } from './HeaderStart'
@@ -49,6 +50,8 @@ export function AppLayout() {
   useEffect(() => {
     if (onAccountPage) clearRememberedSource()
   }, [onAccountPage])
+  // Contador do menu (feature 058): x1 que pedem atenção. O número ocupa sempre o mesmo espaço.
+  const { attention } = useMyDuels()
   const sessionEnded = useSessionEnded()
   const accountDeleted = useAccountDeleted()
   const loginPath = buildLoginPath(location.pathname + location.search)
@@ -79,6 +82,16 @@ export function AppLayout() {
             className={`${buttonClass({ variant: 'quiet' })} ${styles.statsLink}`}
           >
             Estatísticas
+          </Link>
+          <Link
+            to="/x1"
+            className={`${buttonClass({ variant: 'quiet' })} ${styles.duelLink}`}
+            aria-label={attention > 0 ? `x1, ${attention} aguardando` : 'x1'}
+          >
+            x1
+            <span className={styles.count} data-empty={attention === 0} aria-hidden="true">
+              {attention > 0 ? attention : ''}
+            </span>
           </Link>
           <InstallButton />
           <SettingsButton />

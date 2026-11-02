@@ -78,6 +78,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
     limits,
   } = useGame({ response, owner, dialogOpen: shortcutsOpen && !onScreenKeyboard })
   const guest = owner.kind === 'guest'
+  // Duelo x1 (feature 058): sem pausa, sem impressão, sem janela de conclusão e sem verificar nos
+  // modos que cobram ou proíbem ajuda.
+  const duel = owner.kind === 'duel' ? owner.duel : null
   const { onCopy, notice: copyNotice } = useCopyClue({
     index: game.index,
     cells: state.cells,
@@ -87,7 +90,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
   const [dialogClosed, setDialogClosed] = useState(false)
   // A biblioteca das fontes só é pedida ao concluir, para o atalho da janela; em geral já está em
   // cache. Ela nunca mostra carregamento nem erro aqui (feature 015, FR-011).
-  const libraries = useSourceLibraries({ enabled: completedHere })
+  const libraries = useSourceLibraries({ enabled: completedHere && !duel })
   const otherSource = completedHere
     ? otherSourceShortcut(
         puzzle.source,
@@ -127,7 +130,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
   const word = activeWord(game.index, state.selected, state.direction)
   const readOnly = state.mode !== 'playing'
   // Verificar ao digitar (feature 047): a marca é só desenhada; `state` segue sem ela.
-  const { verifyOnType } = useSettings()
+  const settingsVerifyOnType = useSettings().verifyOnType
+  const verifyAllowed = !duel || duel.helpMode === 'free'
+  const verifyOnType = settingsVerifyOnType && verifyAllowed
   const settingsOpen = useSettingsOpen()
   const boardState = useMemo(
     () =>
@@ -149,7 +154,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
   }, [desktop, selectedRow, selectedCol])
 
   const gameSource = puzzle.source
-  useEffect(() => rememberGameSource(gameSource), [gameSource])
+  useEffect(() => {
+    if (!duel) return rememberGameSource(gameSource)
+  }, [gameSource, duel])
 
   const confirmed = state.completion === 'confirmed'
   const finishedMs =
@@ -237,7 +244,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         }
         elapsedMs={clock.elapsedMs}
         paused={clock.paused}
-        canPause={!readOnly}
+        canPause={!readOnly && !duel}
         onPause={clock.pause}
         onResume={clock.resume}
         saveStatus={
@@ -249,7 +256,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         shortcuts={
           onScreenKeyboard ? null : <ShortcutsButton onOpen={() => setShortcutsOpen(true)} />
         }
-        print={<PrintButton onPrint={() => window.print?.()} />}
+        print={duel ? duel.toolbarAction : <PrintButton onPrint={() => window.print?.()} />}
         sizeReset={size ? <BoardSizeReset isDefault={size.isDefault} onReset={size.reset} /> : null}
         helps={
           readOnly ? null : (
@@ -268,6 +275,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
                 hasDraft={wordHasDraft(game.index, state)}
                 disabled={clock.paused}
                 verifyOnType={verifyOnType}
+                verifyEnabled={verifyAllowed}
                 blocked={shortcutsOpen || settingsOpen}
                 onVerify={() => help('verify')}
                 onVerifyOnType={(on) => updateSettings({ verifyOnType: on })}
@@ -279,9 +287,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
           )
         }
       />
-      <PrintSheet puzzle={puzzle} />
+      {duel ? null : <PrintSheet puzzle={puzzle} />}
       <div className={styles.notices}>
-        {guest ? null : <SessionExpiredNotice onSuccess={() => void queue.retry()} />}
+        {guest || duel ? null : <SessionExpiredNotice onSuccess={() => void queue.retry()} />}
         {guest && !storageAvailable ? (
           <Notice variant="warning">
             Seu navegador não deixou guardar o progresso. Ele vale só enquanto esta aba estiver
@@ -377,7 +385,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         />
       ) : null}
       <CompletionDialog
-        open={completedHere && !dialogClosed}
+        open={completedHere && !dialogClosed && !duel}
         onViewBoard={() => setDialogClosed(true)}
         elapsedMs={finishedMs}
         bestMs={bestMs}

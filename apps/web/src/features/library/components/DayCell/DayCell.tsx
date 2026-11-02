@@ -5,6 +5,19 @@ import { MONTH_NAMES, type CalendarDay } from '../../helpers/calendar'
 import { matchesFilter, type StatusFilter } from '../../helpers/status-filter'
 import styles from '../Calendar/Calendar.module.css'
 
+// Modo de seleção (feature 058): só dias com cruzada guardada podem ser escolhidos, como botões.
+export type DayPick = {
+  puzzleId: string
+  date: string
+  source: PuzzleSourceId
+  finishedMs: number | null
+}
+
+export type DaySelection = {
+  selectedId: string | null
+  onSelect: (pick: DayPick) => void
+}
+
 // O estado de cada dia aparece sempre por texto, nunca só por cor.
 function visibleStatus(day: CalendarDay): string | null {
   const { state } = day
@@ -50,6 +63,7 @@ export function DayCell({
   source,
   stored,
   filter = 'all',
+  selection,
 }: {
   day: CalendarDay
   month: number
@@ -58,14 +72,20 @@ export function DayCell({
   stored?: ReadonlySet<string>
   // Filtro de status (feature 053): o dia fora dele vira texto sem ação.
   filter?: StatusFilter
+  selection?: DaySelection
 }) {
   const { state } = day
   const playable =
     state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started'
   const offline = playable && stored?.has(state.puzzleId) === true
   const dimmed = !matchesFilter(state, filter)
-  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spokenStatus(day)}${offline ? ', disponível sem rede' : ''}${dimmed ? ', fora do filtro' : ''}`
-  const status = visibleStatus(day)
+  const done = selection && state.kind === 'completed'
+  const notSavedInPicker = selection && state.kind === 'fetchable'
+  const spoken = notSavedInPicker
+    ? 'não guardado, não pode ser escolhido'
+    : `${spokenStatus(day)}${done ? ', você já fez esta' : ''}`
+  const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spoken}${offline ? ', disponível sem rede' : ''}${dimmed ? ', fora do filtro' : ''}`
+  const status = done ? `${visibleStatus(day)} · já fez` : visibleStatus(day)
   const classes = [
     styles.day,
     styles[state.kind],
@@ -99,6 +119,28 @@ export function DayCell({
       </span>
     )
   }
+  if (selection && playable) {
+    const selected = selection.selectedId === state.puzzleId
+    return (
+      <button
+        type="button"
+        className={`${classes} ${selected ? styles.selected : ''}`}
+        aria-label={label}
+        aria-pressed={selected}
+        data-date={day.date}
+        onClick={() =>
+          selection.onSelect({
+            puzzleId: state.puzzleId,
+            date: day.date,
+            source,
+            finishedMs: state.kind === 'completed' ? state.finishedMs : null,
+          })
+        }
+      >
+        {content}
+      </button>
+    )
+  }
   if (state.kind === 'completed' || state.kind === 'in_progress' || state.kind === 'not_started') {
     return (
       <Link
@@ -111,7 +153,7 @@ export function DayCell({
       </Link>
     )
   }
-  if (state.kind === 'fetchable') {
+  if (state.kind === 'fetchable' && !selection) {
     return (
       <Link
         to={`/dia/${day.date}?fonte=${source}`}

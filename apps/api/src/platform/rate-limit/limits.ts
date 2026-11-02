@@ -13,6 +13,9 @@ export type RateLimits = {
   progressSave: RateWindow
   passwordConfirm: RateWindow
   changeEmail: RateWindow
+  duelCreate: RateWindow
+  duelLookup: RateWindow
+  duelMine: RateWindow
 }
 
 // Valores de FR-027 e FR-028; os testes injetam outros quando precisam.
@@ -36,4 +39,8 @@ export const defaultRateLimits: RateLimits = {
   // balde para as três, com os números do login. `changeEmail` conta por endereço antes do corpo.
   passwordConfirm: { max: 5, windowMinutes: 15 },
   changeEmail: { max: 10, windowMinutes: 60 },
+  // Duelo x1 (feature 058), por endereço (a criação também por usuário).
+  duelCreate: { max: 10, windowMinutes: 60 },
+  duelLookup: { max: 30, windowMinutes: 60 },
+  duelMine: { max: 60, windowMinutes: 60 },
 }

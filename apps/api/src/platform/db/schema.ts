@@ -61,6 +61,9 @@ export const rateLimitActions = [
   'PROGRESS_SAVE',
   'PASSWORD_CONFIRM',
   'CHANGE_EMAIL',
+  'DUEL_CREATE',
+  'DUEL_LOOKUP',
+  'DUEL_MINE',
 ] as const
 export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER'] as const
 
@@ -83,7 +86,7 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE', 'PASSWORD_CONFIRM', 'CHANGE_EMAIL')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE', 'PASSWORD_CONFIRM', 'CHANGE_EMAIL', 'DUEL_CREATE', 'DUEL_LOOKUP', 'DUEL_MINE')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
@@ -237,5 +240,103 @@ export const emailSendBlock = pgTable(
       'email_send_block_reason_check',
       sql`${table.reason} IN ('daily_quota_exceeded', 'monthly_quota_exceeded')`,
     ),
+  ],
+)
+
+export const duelStates = ['open', 'running', 'finished', 'cancelled'] as const
+export const duelHelpModes = ['free', 'forbidden', 'penalty'] as const
+export const duelOutcomes = ['creator', 'opponent', 'tie'] as const
+export const duelOutcomeReasons = ['time', 'forfeit', 'timeout', 'walkover', 'declined'] as const
+export const duelRoles = ['creator', 'opponent'] as const
+export const duelEndReasons = ['completed', 'forfeit', 'timeout'] as const
+
+// Duelo x1 (feature 058). Os instantes de regra vêm do Clock da aplicação, nunca do now() do banco.
+export const duels = pgTable(
+  'duels',
+  {
+    duelId: uuid('duel_id').primaryKey().defaultRandom(),
+    puzzleId: uuid('puzzle_id')
+      .notNull()
+      .references(() => puzzles.puzzleId, { onDelete: 'restrict' }),
+    linkToken: text('link_token').notNull().unique(),
+    code: text('code').notNull(),
+    state: text('state', { enum: duelStates }).notNull(),
+    helpMode: text('help_mode', { enum: duelHelpModes }).notNull(),
+    helpPenaltyMs: integer('help_penalty_ms'),
+    maxMs: integer('max_ms'),
+    startDeadlineAt: instant('start_deadline_at').notNull(),
+    outcome: text('outcome', { enum: duelOutcomes }),
+    outcomeReason: text('outcome_reason', { enum: duelOutcomeReasons }),
+    finishedAt: instant('finished_at'),
+    ...timestamps,
+  },
+  (table) => [
+    // O código só precisa ser único entre duelos abertos: só eles são encontrados por ele.
+    uniqueIndex('duels_open_code_unique')
+      .on(table.code)
+      .where(sql`${table.state} = 'open'`),
+    index('duels_state_deadline_idx').on(table.state, table.startDeadlineAt),
+    index('duels_puzzle_id_idx').on(table.puzzleId),
+    check('duels_state_check', sql`${table.state} IN ('open', 'running', 'finished', 'cancelled')`),
+    check('duels_help_mode_check', sql`${table.helpMode} IN ('free', 'forbidden', 'penalty')`),
+    check(
+      'duels_help_penalty_check',
+      sql`(${table.helpMode} = 'penalty') = (${table.helpPenaltyMs} IS NOT NULL AND ${table.helpPenaltyMs} > 0)`,
+    ),
+    check(
+      'duels_max_ms_check',
+      sql`${table.maxMs} IS NULL OR ${table.maxMs} BETWEEN 60000 AND 7200000`,
+    ),
+    check(
+      'duels_outcome_check',
+      sql`${table.outcome} IS NULL OR ${table.outcome} IN ('creator', 'opponent', 'tie')`,
+    ),
+    check(
+      'duels_outcome_reason_check',
+      sql`${table.outcomeReason} IS NULL OR ${table.outcomeReason} IN ('time', 'forfeit', 'timeout', 'walkover', 'declined')`,
+    ),
+  ],
+)
+
+export const duelParticipants = pgTable(
+  'duel_participants',
+  {
+    duelParticipantId: uuid('duel_participant_id').primaryKey().defaultRandom(),
+    duelId: uuid('duel_id')
+      .notNull()
+      .references(() => duels.duelId, { onDelete: 'cascade' }),
+    role: text('role', { enum: duelRoles }).notNull(),
+    // Anulável: visitante, ou conta apagada (o apelido fica na linha).
+    userId: uuid('user_id').references(() => users.userId, { onDelete: 'set null' }),
+    nickname: text('nickname').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    startedAt: instant('started_at'),
+    finishedAt: instant('finished_at'),
+    elapsedMs: integer('elapsed_ms'),
+    helpsUsed: integer('helps_used').notNull().default(0),
+    penaltyMs: integer('penalty_ms').notNull().default(0),
+    endReason: text('end_reason', { enum: duelEndReasons }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('duel_participants_duel_role_unique').on(table.duelId, table.role),
+    index('duel_participants_user_id_idx')
+      .on(table.userId)
+      .where(sql`${table.userId} IS NOT NULL`),
+    check('duel_participants_role_check', sql`${table.role} IN ('creator', 'opponent')`),
+    check('duel_participants_nickname_check', sql`char_length(${table.nickname}) BETWEEN 1 AND 24`),
+    check(
+      'duel_participants_end_pair',
+      sql`(${table.finishedAt} IS NULL) = (${table.endReason} IS NULL)`,
+    ),
+    check(
+      'duel_participants_end_reason_check',
+      sql`${table.endReason} IS NULL OR ${table.endReason} IN ('completed', 'forfeit', 'timeout')`,
+    ),
+    check(
+      'duel_participants_completed_elapsed',
+      sql`${table.endReason} IS DISTINCT FROM 'completed' OR ${table.elapsedMs} IS NOT NULL`,
+    ),
+    check('duel_participants_helps_check', sql`${table.helpsUsed} BETWEEN 0 AND 1000`),
   ],
 )

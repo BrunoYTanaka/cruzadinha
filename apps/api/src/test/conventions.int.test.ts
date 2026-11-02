@@ -13,6 +13,8 @@ afterAll(() => handle.close())
 describe('schema', () => {
   it('has exactly the tables of this feature', async () => {
     expect(await tableNames(db)).toEqual([
+      'duel_participants',
+      'duels',
       'email_change_requests',
       'email_send_block',
       'password_reset_tokens',
@@ -100,6 +102,6 @@ describe('migrations', () => {
     const before = await count()
     await runMigrations(inject('databaseUrl'))
     expect(await count()).toBe(before)
-    expect(before).toBe(12)
+    expect(before).toBe(13)
   })
 })

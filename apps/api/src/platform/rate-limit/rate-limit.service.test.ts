@@ -73,6 +73,9 @@ describe('rate limiter', () => {
       progressSave: { max: 1800, windowMinutes: 60 },
       passwordConfirm: { max: 5, windowMinutes: 15 },
       changeEmail: { max: 10, windowMinutes: 60 },
+      duelCreate: { max: 10, windowMinutes: 60 },
+      duelLookup: { max: 30, windowMinutes: 60 },
+      duelMine: { max: 60, windowMinutes: 60 },
     })
   })
 })

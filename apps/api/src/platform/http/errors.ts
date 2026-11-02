@@ -20,6 +20,12 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'email-unavailable': 'Não foi possível enviar o e-mail agora.',
   'wrong-password': 'A senha atual não confere.',
   'captcha-failed': 'Não foi possível confirmar que você é uma pessoa. Tente de novo.',
+  'not-found': 'Não encontramos um x1 com esses dados.',
+  'duel-taken': 'Este x1 já foi aceito por outra pessoa.',
+  'own-duel': 'Você não pode aceitar o próprio x1.',
+  'open-limit': 'Você já tem x1 abertos demais. Termine ou cancele algum antes.',
+  'not-running': 'Este x1 não está em andamento.',
+  'not-open': 'Este x1 não está mais aberto.',
 }
 
 export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {

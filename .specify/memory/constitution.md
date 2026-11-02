@@ -45,7 +45,9 @@ visitantes sem sessão, mas nunca em respostas de erro, logs ou mensagens; assim
 as formas de dica sem depender do servidor. O servidor MUST validar a coerência entre puzzle e
 solução antes de entregá-la. Verificação autoritativa de respostas, se um dia for necessária,
 MUST acontecer no servidor. O progresso de visitantes MUST ficar só no navegador do aparelho e
-MUST NOT ser enviado ao servidor. Senhas MUST usar hash argon2; sessões MUST ser guardadas apenas
+MUST NOT ser enviado ao servidor, com uma exceção (emenda 7.0.0): os dados de um duelo x1
+(apelido, hash do token do participante, tempos e ajudas declaradas) MAY ficar no servidor, e as
+respostas do duelo MAY ir a quem apresenta o link, o código ou o token do duelo. Senhas MUST usar hash argon2; sessões MUST ser guardadas apenas
 como hash. Cookies de sessão MUST ser `HttpOnly` e `SameSite=Lax`. Login e cadastro MUST ter
 limite de tentativas. O cadastro aberto MUST ficar atrás de uma chave de configuração desligada
 por padrão, e com ela desligada o servidor MUST recusar todo cadastro, venha ou não do site.
@@ -178,4 +180,19 @@ incompatível. Plano de migração, sem alteração de dados nem de schema: a Fe
 a folha e o botão no site. Até a 055 ser implementada, o site continua sem imprimir, o que é mais
 restrito que esta versão e, portanto, conforme.
 
-**Version**: 6.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-10-30
+### Emenda 7.0.0 (2026-11-02)
+
+O princípio VI passou a permitir que o servidor guarde os dados de um duelo x1 e os entregue a quem
+apresenta o link, o código ou o token do duelo. Justificativa: a feature 058
+(`specs/058-x1-duelo-1x1/spec.md`, issue #117) mede o tempo no servidor e compara duas pessoas, e
+isso exige gravar, também para visitantes, o apelido, o hash do token do participante, os tempos e
+as ajudas declaradas; sem isso não há relógio confiável nem resultado para o oponente. A exceção é
+estreita: só os dados do duelo; cruzadas em andamento, letras, rascunhos e o progresso do jogo
+normal do visitante continuam só no aparelho; o token do participante só existe no servidor como
+hash; respostas sem sessão nem credencial do duelo continuam sem dados de usuário. É MAJOR por
+redefinir um princípio de forma incompatível. Plano de migração: a feature 058 adiciona as tabelas
+`duels` e `duel_participants` (usuário anulável, `ON DELETE SET NULL`) e rotas novas, sem alterar
+dados existentes. Até a 058 ser implementada, nada é gravado, o que é mais restrito que esta
+versão e, portanto, conforme.
+
+**Version**: 7.0.0 | **Ratified**: 2026-10-12 | **Last Amended**: 2026-11-02

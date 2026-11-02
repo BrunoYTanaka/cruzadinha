@@ -89,10 +89,38 @@
   padding: 8px var(--gutter) 0;
 }
 
+/* Contador do x1 (feature 058): um selo no canto do link, fora do fluxo, então aparecer ou sumir
+   nunca muda a largura do cabeçalho. */
+.duelLink {
+  position: relative;
+}
+
+.count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink, #fff);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.count[data-empty='true'] {
+  display: none;
+}
+
 /* No celular o e-mail não cabe ao lado do tema e de "Sair"; "Visitante" é curto e fica sempre. */
 @media (max-width: 560px) {
   .email,
-  .statsLink {
+  .statsLink,
+  .duelLink {
     display: none;
   }
 }

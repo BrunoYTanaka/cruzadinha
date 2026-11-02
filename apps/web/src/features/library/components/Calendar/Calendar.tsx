@@ -6,7 +6,7 @@ import { MONTH_NAMES, type MonthView } from '../../helpers/calendar'
 import { countByFilter, type StatusFilter as Filter } from '../../helpers/status-filter'
 import styles from './Calendar.module.css'
 import { useOfflinePuzzleIds } from '../../../offline'
-import { DayCell } from '../DayCell/DayCell'
+import { DayCell, type DaySelection } from '../DayCell/DayCell'
 import { JumpToDate } from '../JumpToDate/JumpToDate'
 import { StatusFilter } from '../StatusFilter/StatusFilter'
 
@@ -51,6 +51,8 @@ type CalendarProps = {
   onFocused: () => void
   // Computador: alça de redimensionar presa à borda direita do mês.
   resizeHandle?: ReactNode
+  // Modo de seleção (feature 058): os dias guardados viram botões de escolha.
+  selection?: DaySelection
 }
 
 export function Calendar({
@@ -68,6 +70,7 @@ export function Calendar({
   focusDate,
   onFocused,
   resizeHandle,
+  selection,
 }: CalendarProps) {
   const sectionRef = useRef<HTMLElement>(null)
   // Só o dia que é link recebe foco; um dia apagado só mostra o mês. O pedido sempre é limpo.
@@ -157,6 +160,7 @@ export function Calendar({
                         source={source}
                         stored={stored}
                         filter={filter}
+                        selection={selection}
                       />
                     </td>
                   )}

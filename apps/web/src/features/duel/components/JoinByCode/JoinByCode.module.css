@@ -1,0 +1,17 @@
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.field {
+  flex: 1 1 220px;
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--bad, #b3261e);
+  font-size: 14px;
+}

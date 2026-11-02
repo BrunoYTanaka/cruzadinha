@@ -96,7 +96,26 @@
   }
 }
 
-a.day:active {
+button.day {
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  button.day:hover {
+    border-color: var(--accent);
+  }
+}
+
+.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: -1px;
+}
+
+a.day:active,
+button.day:active {
   background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 

@@ -1,5 +1,6 @@
 import type { Progress, PuzzleResponse, User } from '@cruzadinha/shared'
 import {
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -36,18 +37,32 @@ import {
   saveDraft,
 } from '../../offline'
 import { useClock } from './useClock'
+import { useWallClock } from './useWallClock'
 
 // Dono da partida (feature 013): a conta salva no servidor; o visitante, só no navegador. Os dois
 // nunca leem nem gravam o lugar do outro (FR-011).
+type LocalOwner = {
+  record: GuestProgress | null
+  store: GuestStore
+  // A página entrega a fila do visitante, para o jogo não depender da feature guest.
+  createQueue: (options: GuestSaveQueueOptions) => SaveQueue
+}
+
+// Partida de um duelo x1 (feature 058): guarda como o visitante, mas num lugar só do duelo, com o
+// relógio do servidor e as ajudas pelas regras do duelo.
+export type DuelPlay = {
+  duelId: string
+  // Início da partida já convertido para o relógio deste aparelho.
+  startedAtMs: number
+  helpMode: 'free' | 'forbidden' | 'penalty'
+  // Botão extra da barra (desistir); o jogo não conhece a feature do duelo.
+  toolbarAction: ReactNode
+}
+
 export type GameOwner =
   | { kind: 'user'; user: User; progress: Progress | null }
-  | {
-      kind: 'guest'
-      record: GuestProgress | null
-      store: GuestStore
-      // A página entrega a fila do visitante, para o jogo não depender da feature guest.
-      createQueue: (options: GuestSaveQueueOptions) => SaveQueue
-    }
+  | ({ kind: 'guest' } & LocalOwner)
+  | ({ kind: 'duel'; duel: DuelPlay } & LocalOwner)
 
 // O que a tela mostra de tempo final e recorde, venha do servidor ou do navegador.
 export type ProgressSummary = Pick<Progress, 'status' | 'finishedMs' | 'bestMs'>
@@ -66,7 +81,7 @@ type Source = {
 // Escolhe de onde vêm as letras ao abrir: o servidor, ou a fila local se ela for mais nova (letras
 // que não chegaram a ser enviadas antes da página fechar). O visitante só tem o registro local.
 function initialSource(owner: GameOwner, puzzleId: string): Source {
-  if (owner.kind === 'guest') {
+  if (owner.kind !== 'user') {
     return owner.record
       ? { cells: owner.record.cells, elapsedMs: owner.record.elapsedMs, fromOutbox: false }
       : { cells: null, elapsedMs: 0, fromOutbox: false }
@@ -87,7 +102,7 @@ function initialSource(owner: GameOwner, puzzleId: string): Source {
 }
 
 function summaryOf(owner: GameOwner): ProgressSummary | null {
-  return owner.kind === 'guest' ? owner.record : owner.progress
+  return owner.kind !== 'user' ? owner.record : owner.progress
 }
 
 function helpOf(state: Pick<GameState, 'usage' | 'marks' | 'locked'>): HelpSnapshot {
@@ -110,15 +125,21 @@ export function useGame({ response, owner, dialogOpen = false }: UseGameArgs) {
     () => createGame({ puzzle, solution, limits: config.helpLimits }),
     [puzzle, solution],
   )
-  const guest = owner.kind === 'guest'
-  const draftOwner = owner.kind === 'user' ? owner.user.id : 'guest'
+  const guest = owner.kind !== 'user'
+  const duel = owner.kind === 'duel' ? owner.duel : null
+  const draftOwner =
+    owner.kind === 'user'
+      ? owner.user.id
+      : owner.kind === 'duel'
+        ? `duel-${owner.duel.duelId}`
+        : 'guest'
   const userId = owner.kind === 'user' ? owner.user.id : null
-  const store = owner.kind === 'guest' ? owner.store : null
-  const createGuestQueue = owner.kind === 'guest' ? owner.createQueue : null
+  const store = owner.kind !== 'user' ? owner.store : null
+  const createGuestQueue = owner.kind !== 'user' ? owner.createQueue : null
 
   // Geração do jogo do visitante: sobe em "Jogar de novo" e ancora os salvamentos desta aba.
   const [generation, setGeneration] = useState(() =>
-    owner.kind === 'guest' ? (owner.record?.game ?? 0) : 0,
+    owner.kind !== 'user' ? (owner.record?.game ?? 0) : 0,
   )
 
   // O estado inicial junta o progresso guardado e a fila local, uma única vez.
@@ -132,15 +153,15 @@ export function useGame({ response, owner, dialogOpen = false }: UseGameArgs) {
   })
 
   const [state, dispatch] = useReducer(game.reducer, game.initialState, (start): GameState => {
-    const opened = owner.kind === 'guest' ? owner.record : owner.progress
+    const opened = owner.kind !== 'user' ? owner.record : owner.progress
     if (opened?.status === 'completed' && !source.freshStart) {
       return game.reducer(start, { type: 'viewServerProgress', cells: opened.cells })
     }
     // Ajudas ficam só neste aparelho: no registro do visitante, ou por conta e cruzada.
     const help =
-      owner.kind === 'guest' ? (owner.record?.help ?? null) : loadHelp(owner.user.id, puzzleId)
+      owner.kind !== 'user' ? (owner.record?.help ?? null) : loadHelp(owner.user.id, puzzleId)
     // O rascunho fica só neste aparelho; visitante sem registro não tem rascunho que valha (FR-018).
-    const draft = owner.kind === 'guest' && !owner.record ? null : loadDraft(draftOwner, puzzleId)
+    const draft = owner.kind !== 'user' && !owner.record ? null : loadDraft(draftOwner, puzzleId)
     const loaded =
       source.cells || help || draft
         ? game.reducer(start, { type: 'hydrate', cells: source.cells ?? start.cells, help, draft })
@@ -172,12 +193,22 @@ export function useGame({ response, owner, dialogOpen = false }: UseGameArgs) {
   // suspende o relógio.
   const settings = useSettings()
   const settingsOpen = useSettingsOpen()
+  const forbidden = duel?.helpMode === 'forbidden'
   const limits: GameLimits = useMemo(
-    () => ({ letters: settings.helpLetters, words: settings.helpWords }),
-    [settings.helpLetters, settings.helpWords],
+    () =>
+      forbidden
+        ? { letters: 0, words: 0 }
+        : { letters: settings.helpLetters, words: settings.helpWords },
+    [forbidden, settings.helpLetters, settings.helpWords],
   )
   const strikeMode: StrikeMode = settings.strikeMode
-  const clock = useClock(source.elapsedMs, state.mode === 'playing', settingsOpen || dialogOpen)
+  const regularClock = useClock(
+    source.elapsedMs,
+    state.mode === 'playing' && !duel,
+    settingsOpen || dialogOpen,
+  )
+  const wallClock = useWallClock(duel?.startedAtMs ?? 0, !!duel && state.mode === 'playing')
+  const clock = duel ? wallClock : regularClock
   const { readElapsedMs, stop: stopClock } = clock
 
   const queue: SaveQueue = useMemo(() => {

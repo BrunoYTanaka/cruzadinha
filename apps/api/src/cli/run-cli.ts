@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import { describeError } from '../platform/db/errors'
 import type { Database } from '../platform/db/client'
 import type { Clock } from '../platform/lib/clock'
+import { deleteExpiredDuels } from '../modules/duels'
 import { createAccount, createAuthService, deleteExpiredAuthRows } from '../modules/identity'
 import {
   defaultRateLimits,
@@ -86,6 +87,13 @@ async function cleanupAuth(args: string[], deps: CliDeps): Promise<number> {
     `Limpeza: ${counts.pending} pendências, ${counts.resetTokens} tokens de recuperação, ${counts.emailChanges} trocas de e-mail, ` +
       `${counts.attempts} contagens de tentativas.\n`,
   )
+  // Duelos expirados (feature 058): nunca os finalizados, que a entrega 2 vai listar.
+  try {
+    deps.stdout(`Duelos apagados: ${await deleteExpiredDuels(deps.db, deps.clock())}.\n`)
+  } catch (error) {
+    deps.stderr(`Falha ao apagar duelos antigos: ${JSON.stringify(describeError(error))}\n`)
+    return 1
+  }
   return 0
 }
 
