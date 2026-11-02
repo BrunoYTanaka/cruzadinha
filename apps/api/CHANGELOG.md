@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.12.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.11.0...api-v0.12.0) (2026-11-02)
+
+
+### Features
+
+* **api:** add x1 duels module ([9eb3345](https://github.com/BrunoYTanaka/cruzadinha/commit/9eb3345b06ac11708f5c58e899c10736c09c782c))
+* import guest progress into the account ([2a51bb6](https://github.com/BrunoYTanaka/cruzadinha/commit/2a51bb66edea211246395cb6ce6117ff056cd096))
+* import guest progress into the account ([91ec58d](https://github.com/BrunoYTanaka/cruzadinha/commit/91ec58d0f916adad959904dc03e527a8a3d83dd1))
+* x1 duels (1x1 by link or code) ([3fc3ac3](https://github.com/BrunoYTanaka/cruzadinha/commit/3fc3ac3fa647de7d897a7f86ade2d93b6ca6c0ee))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.33.0 to 0.34.0
+
 ## [0.11.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.10.1...api-v0.11.0) (2026-10-30)
 
 
