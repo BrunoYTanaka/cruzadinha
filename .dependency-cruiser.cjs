@@ -14,6 +14,7 @@ const FEATURE_ORDER = [
   'stats',
   'settings',
   'game',
+  'duel',
 ]
 const NOT_INDEX = '(?!index\\.tsx?$)'
 
@@ -100,7 +101,7 @@ module.exports = {
       severity: SEVERITY,
       from: { path: `${WEB}/features/(account|status)/` },
       to: {
-        path: `${WEB}/features/(guest|library|settings|game|account|status)/`,
+        path: `${WEB}/features/(guest|library|settings|game|duel|account|status)/`,
         pathNot: `${WEB}/features/$1/`,
       },
     },

@@ -183,6 +183,8 @@ Falhas de envio que não são cota aparecem só no log da API (`e-mail não envi
 
 **Limpeza.** O passo `auth cleanup` do workflow `collect.yml` (duas vezes por dia, com o segredo `DATABASE_URL`) apaga pendências e tokens vencidos há mais de 7 dias e as contagens de tentativas dos limites (login, cadastro, buscas, envios) com mais de 2 dias. Manualmente: `node apps/api/dist/cli.mjs auth cleanup`.
 
+**x1 (feature 058).** O mesmo `auth cleanup` apaga os duelos expirados (abertos ou em andamento sem ninguém ter terminado, com o prazo vencido há mais de 7 dias) e os cancelados há mais de 30 dias; nunca os finalizados. Limites novos por endereço, em `defaultRateLimits`: criar duelo 10 por hora (e por conta), consultar código ou link 30 por hora, "Meus x1" 60 por hora. Teto de 5 duelos abertos por conta. Nenhuma variável de ambiente nova.
+
 ### Captcha (Turnstile)
 
 Desde a feature 049, `POST /api/auth/register`, `resend-verification` e `forgot-password` exigem uma prova do [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) (plano grátis: até 20 widgets, verificações ilimitadas, 10 hostnames por widget). `verify-email` e `reset-password` ficam de fora: já exigem o token de uso único do e-mail. Um pedido sem prova válida responde `400 captcha-failed` antes de gastar qualquer limite ou o teto de e-mails.
