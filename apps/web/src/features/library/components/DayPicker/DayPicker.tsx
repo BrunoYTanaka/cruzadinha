@@ -1,4 +1,4 @@
-import { puzzleSourceIdSchema, type PuzzleSourceId } from '@cruzadinha/shared'
+import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { useMemo, useState } from 'react'
 import { addMonths, todayInBrasilia, type YearMonth } from '../../../../shared/helpers/dates/dates'
 import {
@@ -9,7 +9,9 @@ import {
 } from '../../helpers/calendar'
 import type { StatusFilter } from '../../helpers/status-filter'
 import { completedInMonth } from '../../helpers/today-cards'
+import { useVisibleSources } from '../../../../shared/hooks/useVisibleSources/useVisibleSources'
 import { libraryOf, useSourceLibraries } from '../../hooks/useSourceLibraries'
+import { resolveSource } from '../../services/source-choice'
 import { Calendar } from '../Calendar/Calendar'
 import { type DayPick } from '../DayCell/DayCell'
 import { SourceTabs } from '../SourceTabs/SourceTabs'
@@ -27,7 +29,10 @@ export function DayPicker({
 }) {
   const today = useMemo(() => todayInBrasilia(), [])
   const libraries = useSourceLibraries()
-  const [source, setSource] = useState<PuzzleSourceId>(puzzleSourceIdSchema.options[0] ?? 'oglobo')
+  const { sources, defaultSource, isPending } = useVisibleSources()
+  const [chosen, setSource] = useState<PuzzleSourceId | null>(null)
+  // A primeira fonte visível abre por padrão; uma escolha que sumiu da lista volta a ela.
+  const source = resolveSource(chosen ?? defaultSource, sources)
   const [month, setMonth] = useState<YearMonth>(() => currentMonth(today))
   const [filter, setFilter] = useState<StatusFilter>('all')
   const [focusDate, setFocusDate] = useState<string | null>(null)
@@ -38,6 +43,9 @@ export function DayPicker({
   )
   const first = firstNavigableMonth(today)
   const last = currentMonth(today)
+
+  // Sem a lista de fontes não há abas: nada de fonte escondida por um instante (feature 060).
+  if (isPending) return <p role="status">Carregando a biblioteca…</p>
 
   return (
     <div>

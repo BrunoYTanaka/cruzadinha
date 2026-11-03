@@ -14,6 +14,7 @@ import {
   createRecoveryService,
   createRegistrationService,
   createOptionalSession,
+  createRequireAdmin,
   createRequireSession,
 } from './modules/identity'
 import {
@@ -31,6 +32,7 @@ import {
   createRateLimiter,
 } from './platform/rate-limit'
 import { createDuelsService, duelsRoutes } from './modules/duels'
+import { createSourcesService, sourcesRoutes } from './modules/sources'
 import { libraryRoutes } from './modules/library/library.routes'
 import { createLibraryService } from './modules/library/library.service'
 import { progressRoutes } from './modules/progress/progress.routes'
@@ -160,6 +162,9 @@ export function buildApp({
   })
   const requireSession = createRequireSession(auth, config, clock)
   const optionalSession = createOptionalSession(auth, config, clock)
+  const requireAdmin = createRequireAdmin(auth, config, clock)
+  const sourcesService = createSourcesService({ db: database })
+  app.register(sourcesRoutes, { sources: sourcesService, requireAdmin })
 
   app.register(identityRoutes, {
     auth,
@@ -176,6 +181,7 @@ export function buildApp({
     db: database,
     clock,
     sources: puzzleSources,
+    sourceVisibility: sourcesService,
     rateLimiter,
     limits: rateLimits,
   })
@@ -187,11 +193,12 @@ export function buildApp({
     limits: rateLimits,
   })
   app.register(progressRoutes, { progress, requireSession })
-  const library = createLibraryService({ db: database })
+  const library = createLibraryService({ db: database, sourceVisibility: sourcesService })
   app.register(libraryRoutes, { library, optionalSession })
   app.register(statsRoutes, { stats: createStatsService({ db: database, clock }), requireSession })
   const duels = createDuelsService({
     db: database,
+    sourceVisibility: sourcesService,
     clock,
     rateLimiter,
     limits: rateLimits,

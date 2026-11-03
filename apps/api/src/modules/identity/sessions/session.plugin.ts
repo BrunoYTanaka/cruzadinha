@@ -13,6 +13,7 @@ declare module 'fastify' {
 
 export type RequireSession = (request: FastifyRequest, reply: FastifyReply) => Promise<void>
 export type OptionalSession = RequireSession
+export type RequireAdmin = RequireSession
 
 type Outcome = 'visitor' | 'user' | 'invalid'
 
@@ -61,5 +62,19 @@ export function createOptionalSession(
   return async (request, reply) => {
     const outcome = await resolveSession(auth, config, clock, request, reply)
     if (outcome === 'invalid') await sendError(reply, 401, 'unauthenticated')
+  }
+}
+
+// Hook onRequest das rotas de administração (feature 060): quem não é admin (visitante, cookie
+// inválido, conta comum) recebe o mesmo 404 de uma rota inexistente, decidido antes de o corpo
+// ser lido. Nunca 401 nem 403, para não revelar a rota nem encerrar a sessão de uma conta comum.
+export function createRequireAdmin(
+  auth: AuthService,
+  config: ServerConfig,
+  clock: Clock,
+): RequireAdmin {
+  return async (request, reply) => {
+    await resolveSession(auth, config, clock, request, reply)
+    if (request.user?.isAdmin !== true) return reply.callNotFound()
   }
 }

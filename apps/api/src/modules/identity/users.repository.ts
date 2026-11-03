@@ -3,12 +3,12 @@ import { isUniqueViolation } from '../../platform/db/errors'
 import type { Executor } from '../../platform/db/client'
 import { users } from '../../platform/db/schema'
 
-export type UserRow = { userId: string; email: string; passwordHash: string }
+export type UserRow = { userId: string; email: string; passwordHash: string; isAdmin: boolean }
 
 // Devolve undefined quando o e-mail já tem conta (o índice único decide, sem corrida).
 export async function insertIfEmailFree(
   db: Executor,
-  values: { email: string; passwordHash: string },
+  values: { email: string; passwordHash: string; isAdmin?: boolean },
 ): Promise<{ userId: string; email: string } | undefined> {
   const [row] = await db
     .insert(users)
@@ -20,7 +20,12 @@ export async function insertIfEmailFree(
 
 export async function findUserByEmail(db: Executor, email: string): Promise<UserRow | undefined> {
   const [row] = await db
-    .select({ userId: users.userId, email: users.email, passwordHash: users.passwordHash })
+    .select({
+      userId: users.userId,
+      email: users.email,
+      passwordHash: users.passwordHash,
+      isAdmin: users.isAdmin,
+    })
     .from(users)
     .where(eq(users.email, email))
   return row
@@ -36,7 +41,12 @@ export async function updatePasswordHash(
 
 export async function findUserById(db: Executor, userId: string): Promise<UserRow | undefined> {
   const [row] = await db
-    .select({ userId: users.userId, email: users.email, passwordHash: users.passwordHash })
+    .select({
+      userId: users.userId,
+      email: users.email,
+      passwordHash: users.passwordHash,
+      isAdmin: users.isAdmin,
+    })
     .from(users)
     .where(eq(users.userId, userId))
   return row
@@ -61,4 +71,18 @@ export async function updateEmail(
 // As tabelas filhas (sessões, progresso, ajustes, tokens, pedido de troca) saem em cascata.
 export async function deleteUser(db: Executor, userId: string): Promise<void> {
   await db.delete(users).where(eq(users.userId, userId))
+}
+
+// Só a CLI do autor chama (feature 060). Devolve false quando não há conta com o e-mail.
+export async function setAdminByEmail(
+  db: Executor,
+  email: string,
+  isAdmin: boolean,
+): Promise<boolean> {
+  const rows = await db
+    .update(users)
+    .set({ isAdmin })
+    .where(eq(users.email, email))
+    .returning({ userId: users.userId })
+  return rows.length > 0
 }

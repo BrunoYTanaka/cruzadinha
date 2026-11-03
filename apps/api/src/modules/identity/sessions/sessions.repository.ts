@@ -16,6 +16,7 @@ export type SessionWithUser = {
   endedAt: Date | null
   userId: string
   email: string
+  isAdmin: boolean
 }
 
 export async function findSessionByTokenHash(
@@ -30,6 +31,7 @@ export async function findSessionByTokenHash(
       endedAt: sessions.endedAt,
       userId: users.userId,
       email: users.email,
+      isAdmin: users.isAdmin,
     })
     .from(sessions)
     .innerJoin(users, eq(users.userId, sessions.userId))

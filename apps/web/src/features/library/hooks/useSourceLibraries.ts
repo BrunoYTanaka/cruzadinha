@@ -1,15 +1,15 @@
 import {
-  puzzleSourceIdSchema,
   puzzleSourceNames,
   type LibraryItem,
   type LibraryResponse,
   type PuzzleSourceId,
 } from '@cruzadinha/shared'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useQueries, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import { getLibrary } from '../../../shared/services/api/library/library'
 import { queryKeys } from '../../../shared/services/api/query-keys/query-keys'
 import { useOnline } from '../../../shared/hooks/useOnline/useOnline'
+import { useVisibleSources } from '../../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useViewer, viewerKey, type Viewer } from '../../session'
 import { mergeGuestLibrary, guestStore } from '../../guest'
 import { listStoredPuzzles, readKnownProgress } from '../../offline'
@@ -55,23 +55,22 @@ async function storedLibrary(viewer: Viewer, source: PuzzleSourceId): Promise<Li
   return { items }
 }
 
-const SOURCES = puzzleSourceIdSchema.options
-
-// Fora do componente, para ser a mesma função a cada render: o TanStack Query só a roda de novo
-// quando algum resultado muda, então `items` fica estável para os `useMemo` de quem usa.
-function combine(results: UseQueryResult<LibraryResponse>[]): SourceLibrary[] {
-  return SOURCES.flatMap((source, index) => {
-    const query = results[index]
-    if (!query) return []
-    return [
-      {
-        source,
-        name: puzzleSourceNames[source],
-        query,
-        items: (query.data?.items ?? []).filter((item) => item.source === source),
-      },
-    ]
-  })
+// Fora do componente, para ser a mesma função enquanto a lista de fontes não muda: o TanStack Query
+// só a roda de novo quando algum resultado muda, então `items` fica estável para os `useMemo`.
+function combineFor(sources: readonly PuzzleSourceId[]) {
+  return (results: UseQueryResult<LibraryResponse>[]): SourceLibrary[] =>
+    sources.flatMap((source, index) => {
+      const query = results[index]
+      if (!query) return []
+      return [
+        {
+          source,
+          name: puzzleSourceNames[source],
+          query,
+          items: (query.data?.items ?? []).filter((item) => item.source === source),
+        },
+      ]
+    })
 }
 
 // Uma consulta por fonte, com as chaves de sempre: calendário, cartões de hoje e atalho de conclusão
@@ -82,6 +81,10 @@ export function useSourceLibraries({
   const viewer = useViewer()
   const online = useOnline()
   const queryClient = useQueryClient()
+  // Só as fontes visíveis (feature 060); enquanto a lista carrega não há consulta nenhuma, para uma
+  // fonte escondida nunca ser pedida (e recusada) por um instante.
+  const { sources, isPending: sourcesPending } = useVisibleSources()
+  const combine = useMemo(() => combineFor(sources), [sources])
   // A lista muda entre os dias guardados (sem rede) e a da API: refaz ao mudar a conexão.
   const first = useRef(true)
   useEffect(() => {
@@ -89,10 +92,10 @@ export function useSourceLibraries({
     else void queryClient.invalidateQueries({ queryKey: queryKeys.libraryAll })
   }, [online, queryClient])
   return useQueries({
-    queries: SOURCES.map((source) => ({
+    queries: sources.map((source) => ({
       queryKey: queryKeys.library(viewer ? viewerKey(viewer) : 'pending', source),
       queryFn: () => (viewer ? libraryFor(viewer, source) : getLibrary(source)),
-      enabled: enabled && viewer !== undefined,
+      enabled: enabled && viewer !== undefined && !sourcesPending,
       // Com a API anterior, a biblioteca de visitante responde 401: um erro só, sem novas tentativas
       // (R19, feature 013).
       retry: false,

@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react'
+import type { QueryClient } from '@tanstack/react-query'
+import { screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { LINK } from '../test/duel-fixtures'
 import { jsonResponse, mockApi } from '../test/http'
@@ -19,8 +20,11 @@ const summary = (attention: boolean, n: number) => ({
   attention,
 })
 
+let client: QueryClient | undefined
+
 function render(duels: unknown[]) {
   const queryClient = makeQueryClient()
+  client = queryClient
   queryClient.setQueryData(queryKeys.session, { user: aUser })
   mockApi({ 'POST /api/duels/mine': () => jsonResponse(200, { duels }) })
   renderRoutes(
@@ -30,7 +34,11 @@ function render(duels: unknown[]) {
   )
 }
 
-afterEach(() => resetSessionHandlers())
+afterEach(async () => {
+  // Nenhum pedido pode terminar depois do teste, quando o jsdom já foi desmontado.
+  if (client) await waitFor(() => expect(client?.isFetching()).toBe(0))
+  resetSessionHandlers()
+})
 
 describe('contador do x1 no menu (feature 058)', () => {
   it('soma só os x1 que pedem atenção e diz isso por texto', async () => {

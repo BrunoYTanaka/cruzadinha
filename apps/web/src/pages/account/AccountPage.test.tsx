@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -21,8 +22,11 @@ const routes = [
   },
 ]
 
+let client: QueryClient | undefined
+
 function visit(user: typeof aUser | null, handlers: Record<string, Handler> = {}) {
   const queryClient = makeQueryClient()
+  client = queryClient
   queryClient.setQueryData(queryKeys.session, user ? { user } : null)
   const api = mockApi({
     'GET /api/auth/me': () =>
@@ -33,7 +37,9 @@ function visit(user: typeof aUser | null, handlers: Record<string, Handler> = {}
   return { ...api, ...view }
 }
 
-afterEach(() => {
+afterEach(async () => {
+  // Nenhum pedido pode terminar depois do teste, quando o jsdom já foi desmontado.
+  if (client) await waitFor(() => expect(client?.isFetching()).toBe(0))
   vi.restoreAllMocks()
   localStorage.clear()
   resetSessionHandlers()
@@ -164,5 +170,20 @@ describe('AccountPage', () => {
     await user.keyboard('{Escape}')
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(screen.getByRole('heading', { level: 1, name: 'Sua conta' })).toBeVisible()
+  })
+
+  it('shows the Administração link only to an admin, never in the header', async () => {
+    visit({ ...aUser, isAdmin: true })
+    const link = await screen.findByRole('link', { name: 'Administração' })
+    expect(link).toHaveAttribute('href', '/admin')
+    expect(
+      within(screen.getByRole('banner')).queryByRole('link', { name: 'Administração' }),
+    ).toBeNull()
+  })
+
+  it('has no Administração link for a plain account', async () => {
+    visit(aUser)
+    await screen.findByRole('heading', { level: 1, name: 'Sua conta' })
+    expect(screen.queryByRole('link', { name: 'Administração' })).not.toBeInTheDocument()
   })
 })

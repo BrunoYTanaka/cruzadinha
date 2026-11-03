@@ -34,6 +34,7 @@ function AccountContent() {
     <div className={styles.page}>
       <h1 className={styles.title}>Sua conta</h1>
       <p className={styles.email}>{user.email}</p>
+      {user.isAdmin ? <Link to="/admin">Administração</Link> : null}
       <ChangePasswordForm />
       <LogoutOthersButton />
       <ChangeEmailForm currentEmail={user.email} />

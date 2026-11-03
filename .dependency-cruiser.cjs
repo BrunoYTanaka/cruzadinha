@@ -97,11 +97,12 @@ module.exports = {
     ...featureOrderRules,
     {
       name: 'web-account-status-only-session',
-      comment: 'account e status dependem só de session e do que é compartilhado.',
+      comment:
+        'account, status e admin (feature 060) dependem só de session e do que é compartilhado.',
       severity: SEVERITY,
-      from: { path: `${WEB}/features/(account|status)/` },
+      from: { path: `${WEB}/features/(account|status|admin)/` },
       to: {
-        path: `${WEB}/features/(guest|library|settings|game|duel|account|status)/`,
+        path: `${WEB}/features/(guest|library|settings|game|duel|account|status|admin)/`,
         pathNot: `${WEB}/features/$1/`,
       },
     },

@@ -13,7 +13,7 @@ afterEach(() => {
 describe('getMe', () => {
   it('devolve a conta com sessão', async () => {
     mockApi({ 'GET /api/auth/me': () => jsonResponse(200, { user }) })
-    await expect(getMe()).resolves.toEqual({ user })
+    await expect(getMe()).resolves.toEqual({ user: { ...user, isAdmin: false } })
   })
 
   it('devolve null sem sessão, sem chamar o tratador de 401', async () => {

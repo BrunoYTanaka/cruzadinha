@@ -29,6 +29,7 @@ export const libraryRoutes: FastifyPluginAsync<LibraryRoutesOptions> = async (
       const items = request.user
         ? await library.list(request.user.id, source)
         : await library.listPublic(source)
+      if (items === null) return sendError(reply, 400, 'invalid-input', ['source'])
       const body: LibraryResponse = { items }
       return body
     },

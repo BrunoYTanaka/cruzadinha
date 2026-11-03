@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { sessions, users } from '../platform/db/schema'
 import { runCli } from '../cli/run-cli'
@@ -322,5 +323,31 @@ describe('puzzles collect: limpeza de sessões', () => {
     expect(err).toContain('Falha ao apagar sessões antigas.')
     expect(err).not.toContain('SEGREDO')
     expect(out).toContain('Coleta ')
+  })
+})
+
+describe('users set-admin e --admin (feature 060)', () => {
+  const adminOf = async (email: string) =>
+    (await db.select().from(users).where(eq(users.email, email)))[0]?.isAdmin
+
+  it('promove, retira, e e-mail sem conta falha sem criar nada', async () => {
+    secrets = [PASSWORD, PASSWORD]
+    expect(await cli('users', 'create', '--email', 'amigo@exemplo.com')).toBe(0)
+    expect(await adminOf('amigo@exemplo.com')).toBe(false)
+
+    expect(await cli('users', 'set-admin', '--email', 'Amigo@Exemplo.com')).toBe(0)
+    expect(await adminOf('amigo@exemplo.com')).toBe(true)
+    expect(await cli('users', 'set-admin', '--email', 'amigo@exemplo.com', '--remove')).toBe(0)
+    expect(await adminOf('amigo@exemplo.com')).toBe(false)
+
+    expect(await cli('users', 'set-admin', '--email', 'ninguem@exemplo.com')).toBe(1)
+    expect(await db.select().from(users)).toHaveLength(1)
+    expect(await cli('users', 'set-admin', '--email', 'nao-e-email')).toBe(2)
+  })
+
+  it('users create --admin cria já como admin', async () => {
+    secrets = [PASSWORD, PASSWORD]
+    expect(await cli('users', 'create', '--email', 'dona@exemplo.com', '--admin')).toBe(0)
+    expect(await adminOf('dona@exemplo.com')).toBe(true)
   })
 })

@@ -2,11 +2,12 @@ import type { QueryClient } from '@tanstack/react-query'
 import { replace, type LoaderFunctionArgs } from 'react-router'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { waitForServer } from '../../shared/services/api/server-wake/server-wake'
+import { fetchVisibleSources } from '../../shared/services/api/visible-sources/visible-sources'
 import { sessionQueryOptions, toViewer, viewerKey } from '../../features/session'
 import {
   isNoPuzzle,
   isSourceDown,
-  loadSourceChoice,
+  defaultSourceFor,
   todayCard,
   type TodayCard,
   libraryFor,
@@ -82,11 +83,13 @@ export function directPlayLoader(
   return async (args?: Pick<LoaderFunctionArgs, 'request'>): Promise<Response | null> => {
     pendingStay = null
     if (!getSettings().directToGame) return null
-    const source = loadSourceChoice()
     try {
       // A landing fica fora do grupo cujo loader espera a API acordar, então este loader acorda e
       // espera o servidor ele mesmo (features 032 e 048).
       await waitForServer({ signal: args?.request.signal })
+      // A cruzada padrão guardada que a administração escondeu vale como a primeira visível, sem
+      // aviso e sem regravar a escolha (feature 060).
+      const source = defaultSourceFor(await fetchVisibleSources(queryClient))
       const viewer = toViewer(await queryClient.ensureQueryData(sessionQueryOptions()))
       const library = await queryClient.ensureQueryData({
         queryKey: queryKeys.library(viewerKey(viewer), source),

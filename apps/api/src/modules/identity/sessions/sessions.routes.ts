@@ -10,7 +10,7 @@ import type { RequireSession } from './session.plugin'
 import { loginSchema, logoutSchema, meSchema } from './sessions.schemas'
 
 function authResponse(user: AuthUser): AuthResponse {
-  return { user: { id: user.id, email: user.email } }
+  return { user: { id: user.id, email: user.email, isAdmin: user.isAdmin } }
 }
 
 export type SessionsRoutesOptions = {

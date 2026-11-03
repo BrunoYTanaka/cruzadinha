@@ -4,6 +4,7 @@
 
 | Version | Date       | Changes                                                                                                                                                                         |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.0.7` | 2026-11-03 | - Campo is_admin em User, alterado só pela linha de comando do autor (060, [DDE-008](./DDE-008-admin-fontes.md)).                                                               |
 | `0.0.6` | 2026-10-26 | - A conta nasce depois de confirmar o e-mail por link e a senha é escolhida ali; recuperação de senha e novas tabelas na DDE-005 (035).                                         |
 | `0.0.5` | 2026-10-26 | - Tabela invites e ação INVITE_CREATE removidas (034, migração 0008). - Login grava a tentativa antes de verificar a senha (034).                                               |
 | `0.0.4` | 2026-10-21 | - Gravação de configurações no limite de tentativas (021). - O que some com a conta (008, 021). - Links para a DDE-004.                                                         |
@@ -44,13 +45,14 @@ Cobre o modelo de dados de contas, sessões e tentativas sujeitas a limite do Cr
 
 ### User
 
-| Field         | Description                                    | Data Type | Mandatory | Notes                                                                     |
-| ------------- | ---------------------------------------------- | --------- | --------- | ------------------------------------------------------------------------- |
-| user_id       | Identificador único do usuário                 | UUID      | Yes       | PK; não revela ordem nem quantidade de registros                          |
-| email         | E-mail usado no login                          | Text      | Yes       | Unique; guardado normalizado (minúsculas, sem espaços nas pontas)         |
-| password_hash | Hash argon2 da senha; a senha nunca é guardada | Text      | Yes       | Senha de 8 a 128 caracteres antes do hash; nunca sai em respostas ou logs |
-| created_at    | Data e hora do cadastro                        | Date      | Yes       | Preenchido pelo banco; UTC                                                |
-| updated_at    | Data e hora da última alteração                | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                    |
+| Field         | Description                                    | Data Type | Mandatory | Notes                                                                                                           |
+| ------------- | ---------------------------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------------------------- |
+| user_id       | Identificador único do usuário                 | UUID      | Yes       | PK; não revela ordem nem quantidade de registros                                                                |
+| email         | E-mail usado no login                          | Text      | Yes       | Unique; guardado normalizado (minúsculas, sem espaços nas pontas)                                               |
+| password_hash | Hash argon2 da senha; a senha nunca é guardada | Text      | Yes       | Senha de 8 a 128 caracteres antes do hash; nunca sai em respostas ou logs                                       |
+| is_admin      | A conta é de administração                     | Boolean   | Yes       | Padrão falso; só a CLI do autor altera (060, [DDE-008](./DDE-008-admin-fontes.md)); lido do banco a cada pedido |
+| created_at    | Data e hora do cadastro                        | Date      | Yes       | Preenchido pelo banco; UTC                                                                                      |
+| updated_at    | Data e hora da última alteração                | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC                                                          |
 
 A conta nasce pelo cadastro (o e-mail é pedido, um link é enviado e a pessoa escolhe a senha ao abri-lo, [DDE-005](./DDE-005-verificacao-email-recuperacao-senha.md); aceito só com a chave de configuração ligada, desligada por padrão) ou pela linha de comando do autor, com ou sem a chave e com as mesmas regras de e-mail e senha (spec 013, FR-014 a FR-019). As contas criadas com convite continuam válidas. Remover a conta remove as sessões dela, o progresso ([DDE-003](./DDE-003-progresso-usuario-puzzle.md); spec 008, FR-014) e as configurações ([DDE-004](./DDE-004-configuracoes-usuario.md); spec 021, FR-026).
 

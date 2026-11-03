@@ -5,6 +5,8 @@ import type { Database } from '../platform/db/client'
 import type { Clock } from '../platform/lib/clock'
 import { hashPassword } from '../platform/lib/password'
 import { insertIfEmailFree } from '../modules/identity/users.repository'
+import { users } from '../platform/db/schema'
+import { eq } from 'drizzle-orm'
 import type { RateLimits } from '../platform/rate-limit/limits'
 import type { EmailSender } from '../platform/email/types'
 import type { CaptchaVerifier } from '../platform/captcha'
@@ -70,8 +72,11 @@ export async function signUpForTest(
   database: Database,
   email: string,
   password: string,
+  options: { isAdmin?: boolean } = {},
 ): Promise<string> {
   await insertIfEmailFree(database, { email, passwordHash: await hashPassword(password) })
+  if (options.isAdmin)
+    await database.update(users).set({ isAdmin: true }).where(eq(users.email, email))
   const response = await app.inject({
     method: 'POST',
     url: '/api/auth/login',

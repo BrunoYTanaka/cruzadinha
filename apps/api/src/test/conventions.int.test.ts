@@ -23,6 +23,8 @@ describe('schema', () => {
       'puzzles',
       'rate_limit_attempts',
       'sessions',
+      'source_setting_changes',
+      'source_settings',
       'user_settings',
       'users',
     ])
@@ -102,6 +104,6 @@ describe('migrations', () => {
     const before = await count()
     await runMigrations(inject('databaseUrl'))
     expect(await count()).toBe(before)
-    expect(before).toBe(13)
+    expect(before).toBe(14)
   })
 })

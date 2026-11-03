@@ -1,11 +1,14 @@
 import { puzzleSourceIdSchema } from '@cruzadinha/shared'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   getSettings,
   resetSettingsStore,
   updateSettings,
 } from '../../../shared/services/settings-store/settings-store'
+import { makeQueryClient } from '../../../test/render'
 import {
   DEFAULT_SOURCE,
   clearRememberedSource,
@@ -14,6 +17,14 @@ import {
   saveSourceChoice,
   useSourceChoice,
 } from './source-choice'
+
+// O hook lê a lista de fontes visíveis (feature 060): precisa de um QueryClient.
+function withClient() {
+  const client = makeQueryClient()
+  return ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  )
+}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -73,26 +84,38 @@ describe('cruzada padrão (feature 021)', () => {
 describe('aba do calendário ao voltar de um jogo (feature 031)', () => {
   it('começa na fonte do jogo de onde a pessoa saiu', () => {
     rememberGameSource('cruzadaonline')
-    const { result } = renderHook(() => useSourceChoice())
+    const { result } = renderHook(() => useSourceChoice(), { wrapper: withClient() })
     expect(result.current[0]).toBe('cruzadaonline')
   })
 
   it('sem jogo lembrado começa na cruzada padrão', () => {
     saveSourceChoice('cruzadaonline')
-    const { result } = renderHook(() => useSourceChoice())
+    const { result } = renderHook(() => useSourceChoice(), { wrapper: withClient() })
     expect(result.current[0]).toBe('cruzadaonline')
     clearRememberedSource()
     saveSourceChoice('oglobo')
-    expect(renderHook(() => useSourceChoice()).result.current[0]).toBe('oglobo')
+    expect(renderHook(() => useSourceChoice(), { wrapper: withClient() }).result.current[0]).toBe(
+      'oglobo',
+    )
   })
 
   it('fonte desconhecida não é lembrada e vale a cruzada padrão', () => {
     rememberGameSource('nova-fonte')
-    expect(renderHook(() => useSourceChoice()).result.current[0]).toBe(DEFAULT_SOURCE)
+    expect(renderHook(() => useSourceChoice(), { wrapper: withClient() }).result.current[0]).toBe(
+      DEFAULT_SOURCE,
+    )
   })
 
   it('lembrar a fonte ou trocar de aba não grava nas configurações', () => {
     rememberGameSource('cruzadaonline')
     expect(getSettings().defaultSource).toBe(DEFAULT_SOURCE)
+  })
+})
+
+describe('resolveSource (feature 060)', () => {
+  it('keeps a visible choice and falls back to the first visible one otherwise', async () => {
+    const { resolveSource } = await import('./source-choice')
+    expect(resolveSource('clube', ['oglobo', 'clube'])).toBe('clube')
+    expect(resolveSource('cruzadaonline', ['clube', 'oglobo'])).toBe('clube')
   })
 })

@@ -47,15 +47,24 @@ export function toPublicLibraryItem(row: PuzzleRow): LibraryItem {
 export type LibraryService = ReturnType<typeof createLibraryService>
 
 // Só lê o que já está guardado: não recebe `PuzzleSource` nem o limitador de busca.
-export function createLibraryService(deps: { db: Database }) {
+export function createLibraryService(deps: {
+  db: Database
+  /** Visibilidade das fontes (feature 060); sem ela toda fonte vale visível. */
+  sourceVisibility?: { isVisible(source: PuzzleSourceId): Promise<boolean> }
+}) {
+  const hidden = async (source: PuzzleSourceId) =>
+    deps.sourceVisibility ? !(await deps.sourceVisibility.isVisible(source)) : false
   return {
     // O limite vale por fonte: a lista traz só a fonte pedida (feature 014).
-    async list(userId: string, source: PuzzleSourceId): Promise<LibraryItem[]> {
+    // `null`: fonte escondida pela administração; a rota responde como a uma fonte inexistente.
+    async list(userId: string, source: PuzzleSourceId): Promise<LibraryItem[] | null> {
+      if (await hidden(source)) return null
       const rows = await listLibraryRows(deps.db, userId, source, LIBRARY_LIMIT)
       return rows.map(toLibraryItem)
     },
 
-    async listPublic(source: PuzzleSourceId): Promise<LibraryItem[]> {
+    async listPublic(source: PuzzleSourceId): Promise<LibraryItem[] | null> {
+      if (await hidden(source)) return null
       const rows = await listPuzzleRows(deps.db, source, LIBRARY_LIMIT)
       return rows.map(toPublicLibraryItem)
     },

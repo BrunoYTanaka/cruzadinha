@@ -26,6 +26,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'open-limit': 'Você já tem x1 abertos demais. Termine ou cancele algum antes.',
   'not-running': 'Este x1 não está em andamento.',
   'not-open': 'Este x1 não está mais aberto.',
+  'no-visible-source': 'Pelo menos uma fonte precisa ficar visível.',
 }
 
 export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {

@@ -13,7 +13,7 @@ import { guestStore } from '../../features/guest/services/guest-store'
 import { savePuzzle } from '../../features/offline'
 import { LibraryPage } from './LibraryPage'
 import { clearDirectPlayStay, peekDirectPlayStay, rememberDirectPlayStay } from './direct-play'
-import { rememberGameSource } from '../../features/library/services/source-choice'
+import { rememberGameSource, saveSourceChoice } from '../../features/library/services/source-choice'
 import { loadLibraryWidth } from '../../features/library/services/library-width'
 import { getSettings, updateSettings } from '../../shared/services/settings-store/settings-store'
 import { sourceDownKey } from '../../features/library/helpers/source-down'
@@ -821,5 +821,37 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
     fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-12' } })
     expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
     expect(document.activeElement?.tagName).not.toBe('A')
+  })
+})
+
+describe('fontes escondidas e ordem da administração (feature 060)', () => {
+  it('mostra as abas e os cartões de "Hoje" só das visíveis, na ordem, e abre na primeira', async () => {
+    const { calls } = mockApi({
+      'GET /api/sources': () => jsonResponse(200, { sources: ['clube', 'oglobo'] }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+    })
+    renderRoutes(routes, ['/'], withAccount())
+    const tabs = await screen.findAllByRole('tab')
+    expect(tabs.map((tab) => tab.textContent ?? '')).toEqual([
+      expect.stringContaining('Cruzadas Clube'),
+      expect.stringContaining('O Globo'),
+    ])
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
+    expect(screen.queryByRole('tab', { name: /Cruzada Online/ })).toBeNull()
+    const asked = calls.filter((call) => call.key === 'GET /api/library').map((call) => call.url)
+    expect(asked.some((url) => url.includes('cruzadaonline'))).toBe(false)
+  })
+
+  it('quem escolheu uma fonte nas configurações mantém a escolha enquanto ela estiver visível', async () => {
+    saveSourceChoice('oglobo')
+    mockApi({
+      'GET /api/sources': () => jsonResponse(200, { sources: ['clube', 'oglobo'] }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+    })
+    renderRoutes(routes, ['/'], withAccount())
+    expect(await screen.findByRole('tab', { name: /O Globo/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
   })
 })

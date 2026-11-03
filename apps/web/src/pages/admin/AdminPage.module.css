@@ -1,0 +1,20 @@
+.page {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}

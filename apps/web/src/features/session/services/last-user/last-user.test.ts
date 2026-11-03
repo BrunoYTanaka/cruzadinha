@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearLastUser, readLastUser, writeLastUser } from './last-user'
 
-const user = { id: '3f1c9a52-1a2b-4c3d-8e4f-0123456789ab', email: 'a@b.com' }
+const user = { id: '3f1c9a52-1a2b-4c3d-8e4f-0123456789ab', email: 'a@b.com', isAdmin: false }
 
 beforeEach(() => localStorage.clear())
 

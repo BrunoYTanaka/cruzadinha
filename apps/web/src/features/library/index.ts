@@ -22,6 +22,9 @@ export { KEYBOARD_STEP, MIN_WIDTH, widthFromDrag } from './services/library-widt
 export {
   clearRememberedSource,
   loadSourceChoice,
+  resolveSource,
+  defaultSourceFor,
   rememberGameSource,
+  saveSourceChoice,
   useSourceChoice,
 } from './services/source-choice'
