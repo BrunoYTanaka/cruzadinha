@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { createBrowserRouter, type LoaderFunction, type RouteObject } from 'react-router'
 import { isServerReady, waitForServer } from '../shared/services/api/server-wake/server-wake'
 import { AccountPage } from '../pages/account/AccountPage'
+import { AdminPage } from '../pages/admin/AdminPage'
 import { ConfirmEmailPage } from '../pages/confirm-email/ConfirmEmailPage'
 import { ForgotPasswordPage } from '../pages/forgot-password/ForgotPasswordPage'
 import { LoginPage } from '../pages/login/LoginPage'
@@ -86,9 +87,11 @@ export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
               children: [
                 // O calendário saiu do endereço raiz, que é a landing (feature 048).
                 { path: '/calendario', element: <LibraryPage /> },
-                { path: '/jogar', loader: playTodayLoader() },
+                { path: '/jogar', loader: playTodayLoader(queryClient) },
                 { path: '/dia/:date', element: <DayRoute /> },
                 { path: '/conta', element: <AccountPage /> },
+                // Administração das fontes (feature 060): só admin; os demais veem a página 404.
+                { path: '/admin', element: <AdminPage /> },
                 { path: '/estatisticas', element: <StatsPage /> },
                 // Duelo x1 (feature 058).
                 { path: '/x1', element: <DuelsPage /> },

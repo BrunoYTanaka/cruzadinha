@@ -5,7 +5,8 @@ import { Button, buttonClass } from '../../../../shared/components/Button/Button
 import { Dialog } from '../../../../shared/components/Dialog/Dialog'
 import { ThemeButton } from '../../../../shared/themes/ThemeButton/ThemeButton'
 import { buildLoginPath, useViewer } from '../../../session'
-import { loadSourceChoice } from '../../../library'
+import { defaultSourceFor, saveSourceChoice } from '../../../library'
+import { useVisibleSources } from '../../../../shared/hooks/useVisibleSources/useVisibleSources'
 import { Notice } from '../../../../shared/components/Notice/Notice'
 import { setSettingsOpen, useSettingsOpen } from '../../services/settings-open'
 import { useSettingsSyncStatus } from '../../services/settings-sync'
@@ -124,11 +125,6 @@ type GroupStyle = CSSProperties & { '--i': number; '--count': number }
 
 export type SourceOption = { id: string; name: string }
 
-const SOURCE_OPTIONS: SourceOption[] = puzzleSourceIdSchema.options.map((id) => ({
-  id,
-  name: puzzleSourceNames[id],
-}))
-
 // Cruzada padrão (FR-012a): botões lado a lado até 3 fontes; acima disso, uma lista de rádios.
 export function SourcePicker({
   sources,
@@ -198,8 +194,11 @@ export function SettingsDialog() {
   const syncStatus = useSettingsSyncStatus()
   const location = useLocation()
   const solvedOnly = settings.strikeMode === 'solved'
-  // Uma cruzada padrão desconhecida vale como a primeira (FR-012b).
-  const defaultSource = loadSourceChoice()
+  // Só as fontes visíveis (feature 060). Uma cruzada padrão desconhecida ou escondida vale como a
+  // primeira visível (FR-012b), sem regravar a escolha guardada.
+  const { sources } = useVisibleSources({ enabled: open })
+  const sourceOptions: SourceOption[] = sources.map((id) => ({ id, name: puzzleSourceNames[id] }))
+  const defaultSource = defaultSourceFor(sources)
   const defaultName = puzzleSourceNames[defaultSource]
 
   return (
@@ -276,9 +275,12 @@ export function SettingsDialog() {
           </h3>
           <span className={styles.hint}>O calendário abre nesta cruzada.</span>
           <SourcePicker
-            sources={SOURCE_OPTIONS}
+            sources={sourceOptions}
             value={defaultSource}
-            onChange={(id) => updateSettings({ defaultSource: id })}
+            onChange={(id) => {
+              const parsed = puzzleSourceIdSchema.safeParse(id)
+              if (parsed.success) saveSourceChoice(parsed.data)
+            }}
           />
         </section>
 

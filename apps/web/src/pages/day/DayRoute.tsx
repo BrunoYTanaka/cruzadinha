@@ -10,9 +10,10 @@ import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { NotFoundPage } from '../../shared/components/NotFoundPage/NotFoundPage'
 import { parseIsoDate, todayInBrasilia } from '../../shared/helpers/dates/dates'
+import { useVisibleSources } from '../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import {
-  loadSourceChoice,
+  defaultSourceFor,
   clearSourceDown,
   markNoPuzzle,
   markSourceDown,
@@ -23,11 +24,16 @@ export function DayRoute() {
   const [params] = useSearchParams()
   // `?fonte=` válido vale só para esta busca; sem ele (ou inválido), vale a cruzada padrão. A
   // cruzada padrão só muda nas configurações (feature 021).
-  const [source] = useState<PuzzleSourceId>(() => {
-    const requested = puzzleSourceIdSchema.safeParse(params.get('fonte'))
-    return requested.success ? requested.data : loadSourceChoice()
+  const [requested] = useState<PuzzleSourceId | null>(() => {
+    const parsed = puzzleSourceIdSchema.safeParse(params.get('fonte'))
+    return parsed.success ? parsed.data : null
   })
+  // Sem `?fonte=`, a cruzada padrão que a administração escondeu vale como a primeira visível
+  // (feature 060). Uma `?fonte=` escondida é pedida mesmo assim: a API recusa e a tela avisa.
+  const { sources, isPending } = useVisibleSources()
   if (!date || !parseIsoDate(date)) return <NotFoundPage />
+  if (requested === null && isPending) return <LoadingState screen="day" level={1} />
+  const source = requested ?? defaultSourceFor(sources)
   return <FetchDay date={date} source={source} />
 }
 

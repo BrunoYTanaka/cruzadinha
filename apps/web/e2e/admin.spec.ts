@@ -1,0 +1,100 @@
+import AxeBuilder from '@axe-core/playwright'
+import { expect, test } from '@playwright/test'
+import {
+  box,
+  createAccount,
+  expectNear,
+  login,
+  makeAdmin,
+  resetAndSeed,
+  SEED_EMAIL,
+  SEED_PASSWORD,
+} from './support'
+
+// Feature 060: administração das fontes contra a API e o banco reais.
+
+const ADMIN_EMAIL = 'admin@cruzadinha.local'
+const ADMIN_PASSWORD = 'senha-de-admin-123'
+
+test.beforeEach(async () => {
+  await resetAndSeed()
+  createAccount(ADMIN_EMAIL, ADMIN_PASSWORD)
+  await makeAdmin(ADMIN_EMAIL)
+})
+
+test('o admin esconde uma fonte, o público não a vê, e ao reativar ela volta', async ({
+  browser,
+}) => {
+  const adminContext = await browser.newContext()
+  const publicContext = await browser.newContext()
+  const admin = await adminContext.newPage()
+  const visitor = await publicContext.newPage()
+  await login(admin, ADMIN_EMAIL, ADMIN_PASSWORD)
+
+  await admin.goto('/conta')
+  await admin.getByRole('link', { name: 'Administração' }).click()
+  await expect(admin.getByRole('heading', { level: 1, name: 'Administração' })).toBeVisible()
+  expect((await new AxeBuilder({ page: admin }).analyze()).violations).toEqual([])
+
+  const save = admin.getByRole('button', { name: 'Salvar' })
+  await admin.getByRole('checkbox', { name: /Cruzada Online/ }).uncheck()
+
+  // Salvar não desloca o layout (FR-017): a posição do botão e da lista não muda.
+  const list = admin.getByRole('list').first()
+  const before = { save: await box(save), list: await box(list) }
+  await save.click()
+  await expect(admin.getByText(/Salvo\. 3 de 4 fontes visíveis/)).toBeVisible()
+  const after = { save: await box(save), list: await box(list) }
+  expectNear(after.save.y, before.save.y)
+  expectNear(after.list.height, before.list.height)
+
+  await visitor.goto('/calendario')
+  await expect(visitor.getByRole('tab', { name: /^O Globo/ })).toBeVisible()
+  await expect(visitor.getByRole('tab', { name: /^Cruzada Online/ })).toHaveCount(0)
+  await expect(visitor.getByRole('link', { name: /^Cruzada Online: / })).toHaveCount(0)
+
+  await admin.getByRole('checkbox', { name: /Cruzada Online/ }).check()
+  await save.click()
+  await expect(admin.getByText(/Salvo\. 4 de 4 fontes visíveis/)).toBeVisible()
+  await visitor.goto('/calendario')
+  await expect(visitor.getByRole('tab', { name: /^Cruzada Online/ })).toBeVisible()
+})
+
+test('o admin reordena e o calendário abre na primeira fonte visível', async ({
+  browser,
+  page,
+}) => {
+  await login(page, ADMIN_EMAIL, ADMIN_PASSWORD)
+  await page.goto('/admin')
+  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
+  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
+  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
+  await page.getByRole('button', { name: 'Salvar' }).click()
+  await expect(page.getByText(/Salvo\./)).toBeVisible()
+
+  const context = await browser.newContext()
+  const visitor = await context.newPage()
+  await visitor.goto('/calendario')
+  const tabs = visitor.getByRole('tab')
+  await expect(tabs.first()).toContainText('Cruzadas Clube')
+  await expect(tabs.first()).toHaveAttribute('aria-selected', 'true')
+})
+
+test('conta comum e visitante veem a página não encontrada em /admin e não têm o link', async ({
+  page,
+  browser,
+}) => {
+  await page.goto('/admin')
+  await expect(page.getByRole('heading', { level: 1, name: 'Página não encontrada' })).toBeVisible()
+
+  const context = await browser.newContext()
+  const plain = await context.newPage()
+  await login(plain, SEED_EMAIL, SEED_PASSWORD)
+  await plain.goto('/admin')
+  await expect(
+    plain.getByRole('heading', { level: 1, name: 'Página não encontrada' }),
+  ).toBeVisible()
+  await plain.goto('/conta')
+  await expect(plain.getByRole('heading', { level: 1, name: 'Sua conta' })).toBeVisible()
+  await expect(plain.getByRole('link', { name: 'Administração' })).toHaveCount(0)
+})

@@ -13,6 +13,7 @@ import { addMonths, todayInBrasilia } from '../../shared/helpers/dates/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { useViewer } from '../../features/session'
 import { useOnline } from '../../shared/hooks/useOnline/useOnline'
+import { useVisibleSources } from '../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery/useMediaQuery'
 import {
   buildMonth,
@@ -41,7 +42,15 @@ import styles from './LibraryPage.module.css'
 // Computador: o calendário fica largo e pode ser redimensionado pela alça da borda.
 export const LIBRARY_DESKTOP_QUERY = '(min-width: 861px)'
 
+// Sem a lista de fontes visíveis (feature 060) não há abas nem consulta por fonte: espera aqui, para
+// uma fonte escondida nunca aparecer por um instante.
 export function LibraryPage() {
+  const { isPending } = useVisibleSources()
+  if (isPending) return <LoadingState screen="library" level={1} />
+  return <LibraryContent />
+}
+
+function LibraryContent() {
   useDocumentTitle('Escolha um dia')
   const today = useMemo(() => todayInBrasilia(), [])
   const viewer = useViewer()

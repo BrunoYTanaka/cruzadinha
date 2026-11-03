@@ -1,4 +1,5 @@
 import { puzzleSourceNames, type Stats } from '@cruzadinha/shared'
+import { useVisibleSources } from '../../../../shared/hooks/useVisibleSources/useVisibleSources'
 import { formatElapsed } from '../../../../shared/helpers/time/time'
 import styles from './StatsView.module.css'
 
@@ -9,6 +10,10 @@ function days(count: number) {
 }
 
 export function StatsView({ stats, guest }: { stats: Stats; guest: boolean }) {
+  // Só as linhas das fontes visíveis (feature 060); total, média e sequência seguem contando tudo.
+  // Enquanto a lista carrega, nenhuma linha: uma fonte escondida nunca aparece por um instante.
+  const { sources, isPending } = useVisibleSources()
+  const rows = isPending ? [] : stats.bySource.filter((row) => sources.includes(row.source))
   return (
     <>
       {guest ? (
@@ -48,7 +53,7 @@ export function StatsView({ stats, guest }: { stats: Stats; guest: boolean }) {
           </tr>
         </thead>
         <tbody>
-          {stats.bySource.map((row) => (
+          {rows.map((row) => (
             <tr key={row.source}>
               <th scope="row">{puzzleSourceNames[row.source]}</th>
               <td>{row.total}</td>

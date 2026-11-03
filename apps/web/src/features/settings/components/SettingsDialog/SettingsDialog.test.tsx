@@ -6,9 +6,11 @@ import { AppLayout } from '../../../../app/AppLayout'
 import { expectNoA11yViolations } from '../../../../test/axe'
 import { apiError, jsonResponse, mockApi } from '../../../../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../../../test/render'
+import { saveSourceChoice } from '../../../library'
 import { SourcePicker } from './SettingsDialog'
 import {
   getSettings,
+  resetSettingsStore,
   settingsDefaults,
   updateSettings,
 } from '../../../../shared/services/settings-store/settings-store'
@@ -38,6 +40,8 @@ async function openSettings() {
 }
 
 afterEach(() => {
+  vi.unstubAllGlobals()
+  resetSettingsStore()
   resetSessionHandlers()
   window.localStorage.clear()
   document.documentElement.removeAttribute('data-theme')
@@ -185,6 +189,34 @@ describe('modal de configurações', () => {
     await expectNoA11yViolations(document.body)
     document.documentElement.setAttribute('data-theme', 'dark')
     await expectNoA11yViolations(document.body)
+  })
+})
+
+describe('fontes escondidas pela administração (feature 060)', () => {
+  it('lista só as visíveis e marca a primeira visível para quem nunca escolheu', async () => {
+    mockApi({ 'GET /api/sources': () => jsonResponse(200, { sources: ['clube', 'oglobo'] }) })
+    const { dialog } = await openSettings()
+    const group = within(dialog).getByRole('group', { name: 'Cruzada padrão' })
+    await waitFor(() => expect(within(group).getAllByRole('button')).toHaveLength(2))
+    expect(within(group).queryByRole('button', { name: 'Cruzada Online' })).toBeNull()
+    expect(within(group).getByRole('button', { name: 'Cruzadas Clube' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('a escolha guardada escondida mostra a primeira visível, sem apagá-la', async () => {
+    saveSourceChoice('cruzadaonline')
+    mockApi({ 'GET /api/sources': () => jsonResponse(200, { sources: ['clube', 'oglobo'] }) })
+    const { dialog } = await openSettings()
+    const group = within(dialog).getByRole('group', { name: 'Cruzada padrão' })
+    await waitFor(() =>
+      expect(within(group).getByRole('button', { name: 'Cruzadas Clube' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      ),
+    )
+    expect(getSettings().defaultSource).toBe('cruzadaonline')
   })
 })
 

@@ -37,7 +37,7 @@ export async function resetDatabase(): Promise<void> {
   const sql = postgres(databaseUrl(), { max: 1, onnotice: () => undefined })
   try {
     await sql.unsafe(
-      'TRUNCATE TABLE duel_participants, duels, progress, sessions, rate_limit_attempts, puzzles, pending_registrations, email_send_block, users CASCADE',
+      'TRUNCATE TABLE source_settings, source_setting_changes, duel_participants, duels, progress, sessions, rate_limit_attempts, puzzles, pending_registrations, email_send_block, users CASCADE',
     )
   } finally {
     await sql.end()
@@ -57,6 +57,16 @@ export function createAccount(email: string, password: string): void {
     ['cli', '-w', '@cruzadinha/api', '--', 'users', 'create', '--email', email],
     `${password}\n`,
   )
+}
+
+// Marca uma conta existente como admin direto no banco local (feature 060), sem depender da CLI.
+export async function makeAdmin(email: string): Promise<void> {
+  const sql = postgres(databaseUrl(), { max: 1, onnotice: () => undefined })
+  try {
+    await sql`UPDATE users SET is_admin = true WHERE email = ${email}`
+  } finally {
+    await sql.end()
+  }
 }
 
 // Linhas de progresso guardadas no servidor (o visitante não grava nenhuma).

@@ -31,8 +31,16 @@ export function mockApi(handlers: Record<string, Handler>) {
     const key = `${method} ${url.split('?')[0]}`
     let body: unknown
     if (typeof init?.body === 'string') body = JSON.parse(init.body)
-    calls.push({ key, url, body })
-    const handler = handlers[key]
+    // O pedido da lista de fontes (padrão do teste) não conta: os testes olham as chamadas da tela.
+    if (key !== 'GET /api/sources' || handlers[key]) calls.push({ key, url, body })
+    // Feature 060: o site pede a lista de fontes visíveis em quase toda tela; sem handler próprio,
+    // o teste vê todas as fontes (como uma API sem configuração).
+    const handler =
+      handlers[key] ??
+      (key === 'GET /api/sources'
+        ? () =>
+            jsonResponse(200, { sources: ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'] })
+        : undefined)
     if (!handler) return jsonResponse(404, { error: 'puzzle-unavailable', message: 'x' })
     return handler({ url, method, body })
   })

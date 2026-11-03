@@ -165,4 +165,19 @@ describe('AccountPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(screen.getByRole('heading', { level: 1, name: 'Sua conta' })).toBeVisible()
   })
+
+  it('shows the Administração link only to an admin, never in the header', async () => {
+    visit({ ...aUser, isAdmin: true })
+    const link = await screen.findByRole('link', { name: 'Administração' })
+    expect(link).toHaveAttribute('href', '/admin')
+    expect(
+      within(screen.getByRole('banner')).queryByRole('link', { name: 'Administração' }),
+    ).toBeNull()
+  })
+
+  it('has no Administração link for a plain account', async () => {
+    visit(aUser)
+    await screen.findByRole('heading', { level: 1, name: 'Sua conta' })
+    expect(screen.queryByRole('link', { name: 'Administração' })).not.toBeInTheDocument()
+  })
 })
