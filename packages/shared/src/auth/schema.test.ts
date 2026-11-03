@@ -125,13 +125,18 @@ describe('loginRequestSchema', () => {
 describe('authResponseSchema', () => {
   it('accepts the user id and e-mail', () => {
     const body = { user: { id: '0b6f0c1e-4b7a-4e1f-9a62-1f6c7d2c9e10', email: 'ana@x.com' } }
-    expect(authResponseSchema.parse(body)).toEqual(body)
+    expect(authResponseSchema.parse(body)).toEqual({ user: { ...body.user, isAdmin: false } })
+  })
+
+  it('reads isAdmin and defaults it to false when missing (older API)', () => {
+    const user = { id: '0b6f0c1e-4b7a-4e1f-9a62-1f6c7d2c9e10', email: 'ana@x.com' }
+    expect(authResponseSchema.parse({ user: { ...user, isAdmin: true } }).user.isAdmin).toBe(true)
   })
 
   it('drops unknown fields in the response (FR-025)', () => {
     const user = { id: '0b6f0c1e-4b7a-4e1f-9a62-1f6c7d2c9e10', email: 'ana@x.com' }
     const parsed = authResponseSchema.parse({ user: { ...user, name: 'Ana' }, extra: 1 })
-    expect(parsed).toEqual({ user })
+    expect(parsed).toEqual({ user: { ...user, isAdmin: false } })
   })
 })
 

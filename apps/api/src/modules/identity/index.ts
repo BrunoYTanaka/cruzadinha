@@ -6,6 +6,10 @@ export { createAccount } from './registration/create-account'
 export { createRegistrationService } from './registration/registration.service'
 export { createAuthService } from './sessions/auth.service'
 export { SESSION_COOKIE } from './sessions/session-cookie'
-export { createOptionalSession, createRequireSession } from './sessions/session.plugin'
-export type { OptionalSession, RequireSession } from './sessions/session.plugin'
-export { insertIfEmailFree } from './users.repository'
+export {
+  createOptionalSession,
+  createRequireAdmin,
+  createRequireSession,
+} from './sessions/session.plugin'
+export type { OptionalSession, RequireAdmin, RequireSession } from './sessions/session.plugin'
+export { insertIfEmailFree, setAdminByEmail } from './users.repository'

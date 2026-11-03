@@ -93,6 +93,7 @@ function propertyNames(value: unknown): string[] {
 }
 
 const catalog = [
+  'GET /api/admin/sources',
   'GET /api/auth/me',
   'GET /api/auth/registration',
   'GET /api/health',
@@ -101,6 +102,7 @@ const catalog = [
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
   'GET /api/settings',
+  'GET /api/sources',
   'GET /api/stats',
   'POST /api/auth/change-email',
   'POST /api/auth/change-password',
@@ -125,6 +127,7 @@ const catalog = [
   'POST /api/duels/state',
   'POST /api/progress/import',
   'POST /api/progress/{puzzleId}/reset',
+  'PUT /api/admin/sources',
   'PUT /api/progress/{puzzleId}',
   'PUT /api/settings',
 ]
@@ -206,6 +209,7 @@ describe('documento OpenAPI', () => {
         'settings',
         'stats',
         'duels',
+        'sources',
       ]).toContain(op.tags?.[0])
       expect(op.summary).toBeTruthy()
     }
@@ -309,6 +313,7 @@ describe('sessão', () => {
     'GET /api/stats',
     'PUT /api/settings',
   ]
+  const adminOperations = ['GET /api/admin/sources', 'PUT /api/admin/sources']
   // Abertas a visitantes (feature 013): a sessão é opcional.
   const optionalSessionOperations = [
     'GET /api/puzzles',
@@ -342,7 +347,12 @@ describe('sessão', () => {
     const [method = '', path = ''] = key.split(' ')
     const op = operation(doc, method.toLowerCase(), path)
 
-    if (protectedOperations.includes(key)) {
+    if (adminOperations.includes(key)) {
+      // Para quem não é admin a rota responde 404, nunca 401 (feature 060).
+      expect(op.security).toEqual([{ session: [] }])
+      expect(op.responses).toHaveProperty('404')
+      expect(op.responses).not.toHaveProperty('401')
+    } else if (protectedOperations.includes(key)) {
       expect(op.security).toEqual([{ session: [] }])
       expect(op.responses).toHaveProperty('401')
     } else if (optionalSessionOperations.includes(key)) {

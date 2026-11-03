@@ -9,6 +9,7 @@ import type {
   LookupDuelRequest,
   LookupDuelResponse,
   StartDuelResponse,
+  PuzzleSourceId,
 } from '@cruzadinha/shared'
 import type { Database, Executor } from '../../platform/db/client'
 import { isUniqueViolation } from '../../platform/db/errors'
@@ -83,6 +84,8 @@ export type DuelsDeps = {
   clock: Clock
   rateLimiter: RateLimiter
   limits: Pick<RateLimits, 'duelCreate' | 'duelLookup' | 'duelMine'>
+  /** Visibilidade das fontes (feature 060); só `create` consulta. Sem ela toda fonte vale visível. */
+  sourceVisibility?: { isVisible(source: PuzzleSourceId): Promise<boolean> }
 }
 
 const iso = (date: Date) => date.toISOString()
@@ -160,7 +163,7 @@ function buildView(
 }
 
 export function createDuelsService(deps: DuelsDeps): DuelsService {
-  const { db, clock, rateLimiter, limits } = deps
+  const { db, clock, rateLimiter, limits, sourceVisibility } = deps
 
   async function admit(
     action: 'DUEL_CREATE' | 'DUEL_LOOKUP' | 'DUEL_MINE',
@@ -243,6 +246,10 @@ export function createDuelsService(deps: DuelsDeps): DuelsService {
       if (throttled) return throttled
       const info = await findPuzzleInfo(db, input.puzzleId)
       if (!info) return { ok: false, reason: 'puzzle-unavailable' }
+      // Só novos x1: um duelo já criado (lookup, start, state, finish) segue inteiro.
+      if (sourceVisibility && !(await sourceVisibility.isVisible(info.source))) {
+        return { ok: false, reason: 'puzzle-unavailable' }
+      }
       if (
         actor.userId &&
         (await countActiveCreatedByUser(db, actor.userId, now)) >= MAX_OPEN_DUELS

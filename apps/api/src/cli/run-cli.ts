@@ -4,7 +4,12 @@ import { describeError } from '../platform/db/errors'
 import type { Database } from '../platform/db/client'
 import type { Clock } from '../platform/lib/clock'
 import { deleteExpiredDuels } from '../modules/duels'
-import { createAccount, createAuthService, deleteExpiredAuthRows } from '../modules/identity'
+import {
+  createAccount,
+  createAuthService,
+  deleteExpiredAuthRows,
+  setAdminByEmail,
+} from '../modules/identity'
 import {
   defaultRateLimits,
   createRateLimitRepository,
@@ -30,7 +35,8 @@ export type CliDeps = {
 
 const USAGE = [
   'Uso:',
-  '  users create --email <email>   cria uma conta (a senha é pedida sem eco ou lida da entrada padrão)',
+  '  users create --email <email> [--admin]   cria uma conta (a senha é pedida sem eco ou lida da entrada padrão); --admin já a cria como admin',
+  '  users set-admin --email <email> [--remove]   dá (ou, com --remove, tira) o acesso de admin de uma conta existente',
   '  puzzles collect                guarda o puzzle do dia (e o histórico que faltar)',
   '  auth cleanup                   apaga pendências, tokens e contagens de tentativas vencidos',
 ].join('\n')
@@ -56,7 +62,7 @@ function authService(deps: CliDeps) {
 async function createUser(args: string[], deps: CliDeps): Promise<number> {
   const { values } = parseArgs({
     args,
-    options: { email: { type: 'string' } },
+    options: { email: { type: 'string' }, admin: { type: 'boolean' } },
     allowPositionals: false,
   })
   if (values.email === undefined) throw new UsageError('Informe --email.')
@@ -70,12 +76,37 @@ async function createUser(args: string[], deps: CliDeps): Promise<number> {
   const confirmation = await deps.readSecret('Confirme a senha: ')
   if (confirmation !== password) throw new UsageError('As senhas não conferem.')
 
-  const result = await createAccount(deps.db, { email: email.data, password })
+  const result = await createAccount(deps.db, {
+    email: email.data,
+    password,
+    isAdmin: values.admin === true,
+  })
   if (!result.ok) {
     deps.stderr('Já existe uma conta com esse e-mail.\n')
     return 1
   }
-  deps.stdout(`Conta criada: ${result.user.email}\n`)
+  deps.stdout(`Conta criada: ${result.user.email}${values.admin ? ' (admin)' : ''}\n`)
+  return 0
+}
+
+// Dá ou tira o acesso de admin de uma conta existente (feature 060). Vale no pedido seguinte; e-mail
+// sem conta falha sem criar nada.
+async function setAdmin(args: string[], deps: CliDeps): Promise<number> {
+  const { values } = parseArgs({
+    args,
+    options: { email: { type: 'string' }, remove: { type: 'boolean' } },
+    allowPositionals: false,
+  })
+  if (values.email === undefined) throw new UsageError('Informe --email.')
+  const email = emailSchema.safeParse(values.email)
+  if (!email.success) throw new UsageError('E-mail inválido.')
+
+  const isAdmin = values.remove !== true
+  if (!(await setAdminByEmail(deps.db, email.data, isAdmin))) {
+    deps.stderr('Não existe uma conta com esse e-mail.\n')
+    return 1
+  }
+  deps.stdout(`${email.data}: ${isAdmin ? 'admin' : 'conta comum'}\n`)
   return 0
 }
 
@@ -149,6 +180,7 @@ export async function runCli(argv: string[], deps: CliDeps): Promise<number> {
   const [group, command, ...rest] = argv
   try {
     if (group === 'users' && command === 'create') return await createUser(rest, deps)
+    if (group === 'users' && command === 'set-admin') return await setAdmin(rest, deps)
     if (group === 'puzzles' && command === 'collect') return await collectPuzzles(rest, deps)
     if (group === 'auth' && command === 'cleanup') return await cleanupAuth(rest, deps)
     return usageError(deps.stderr, 'Comando desconhecido.')

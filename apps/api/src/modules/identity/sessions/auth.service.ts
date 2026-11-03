@@ -13,7 +13,7 @@ import {
 } from './sessions.repository'
 import { findUserByEmail } from '../users.repository'
 
-export type AuthUser = { id: string; email: string }
+export type AuthUser = { id: string; email: string; isAdmin: boolean }
 
 export type OpenedSession = { user: AuthUser; sessionToken: string; expiresAt: Date }
 
@@ -94,7 +94,11 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       // Só falhas contam contra o endereço: a tentativa certa devolve a linha dele.
       await reservation.release([addressKey])
       await rateLimiter.clear(emailKey)
-      const session = await openSession(db, { id: user.userId, email: user.email }, now)
+      const session = await openSession(
+        db,
+        { id: user.userId, email: user.email, isAdmin: user.isAdmin },
+        now,
+      )
       return { ok: true, ...session }
     },
 
@@ -107,7 +111,7 @@ export function createAuthService({ db, clock, rateLimiter, limits }: AuthDeps):
       const decision = decideSession(session, now)
       if (decision.status !== 'active') return null
 
-      const user = { id: session.userId, email: session.email }
+      const user = { id: session.userId, email: session.email, isAdmin: session.isAdmin }
       if (!decision.renewTo) return { user }
       await renewSession(db, session.sessionId, decision.renewTo)
       return { user, renewedExpiresAt: decision.renewTo }

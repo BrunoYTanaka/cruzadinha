@@ -27,6 +27,8 @@ import {
 export type GetPuzzleResult =
   | { ok: true; puzzleId: string; puzzle: Puzzle; solution: Solution }
   | { ok: false; reason: 'unavailable' }
+  // Fonte escondida pela administração (feature 060): a rota responde como a uma fonte inexistente.
+  | { ok: false; reason: 'source-hidden' }
   // `sourceReason` serve só para o log: nunca vai no corpo da resposta.
   | {
       ok: false
@@ -89,6 +91,8 @@ export type PuzzlesDeps = {
   historyDays?: number
   /** Recebe o erro inesperado de um adaptador na coleta, antes de a falha entrar no relatório. */
   onError?: CollectErrorHandler
+  /** Visibilidade das fontes (feature 060); sem ela toda fonte vale visível (CLI de coleta). */
+  sourceVisibility?: { isVisible(source: PuzzleSourceId): Promise<boolean> }
   /** Pausa entre pedidos da coleta; injetável para os testes. */
   sleep?: (ms: number) => Promise<void>
 }
@@ -108,7 +112,17 @@ function deliver(stored: StoredPuzzle): GetPuzzleResult {
 }
 
 export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
-  const { db, clock, sources, rateLimiter, limits, historyDays = 0, sleep = delay, onError } = deps
+  const {
+    db,
+    clock,
+    sources,
+    rateLimiter,
+    limits,
+    historyDays = 0,
+    sleep = delay,
+    onError,
+    sourceVisibility,
+  } = deps
   const bySource = new Map<PuzzleSourceId, PuzzleSource>()
   for (const source of sources) {
     if (bySource.has(source.id)) throw new Error(`fonte repetida: ${source.id}`)
@@ -256,6 +270,10 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
     },
 
     async getByDate(sourceId, level, date, address) {
+      // A fonte escondida só some das buscas por fonte e data; a coleta e o acesso por id seguem.
+      if (sourceVisibility && !(await sourceVisibility.isVisible(sourceId))) {
+        return { ok: false, reason: 'source-hidden' }
+      }
       const source = adapterFor(sourceId)
       const stored = await findPuzzle(db, { source: sourceId, level, date })
       if (stored) return deliver(stored)

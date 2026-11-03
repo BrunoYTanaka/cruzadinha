@@ -33,6 +33,7 @@ export const puzzlesRoutes: FastifyPluginAsync<PuzzlesRoutesOptions> = async (
   ) {
     if (result.reason === 'too-many-attempts')
       return sendTooManyAttempts(reply, result.retryAfterSeconds)
+    if (result.reason === 'source-hidden') return sendError(reply, 400, 'invalid-input', ['source'])
     if (result.reason === 'source-failed') {
       // Só o motivo curto vai ao log: nunca token nem corpo da fonte.
       request.log.warn(

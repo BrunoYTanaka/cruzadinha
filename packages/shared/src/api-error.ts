@@ -31,6 +31,8 @@ export const apiErrorCodeSchema = z.enum([
   'open-limit',
   'not-running',
   'not-open',
+  // Administração das fontes (feature 060): nenhuma fonte ficaria visível.
+  'no-visible-source',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>

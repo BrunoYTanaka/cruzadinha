@@ -114,6 +114,18 @@ export {
   type ProgressStatus,
   type SaveProgressRequest,
 } from './progress/schema'
+export {
+  adminSourceSchema,
+  adminSourcesResponseSchema,
+  resolveVisibleSources,
+  sourcesResponseSchema,
+  updateSourcesRequestSchema,
+  type AdminSource,
+  type AdminSourcesResponse,
+  type SourceRow,
+  type SourcesResponse,
+  type UpdateSourcesRequest,
+} from './sources/schema'
 export { statsSchema, type Stats } from './stats/schema'
 export { computeStats, type StatsRow } from './stats/compute-stats'
 export {

@@ -42,6 +42,8 @@ export type LoginRequest = z.infer<typeof loginRequestSchema>
 export const userSchema = z.object({
   id: z.uuid(),
   email: z.string(),
+  // Feature 060: uma API anterior não manda o campo; lido como conta comum.
+  isAdmin: z.boolean().default(false),
 })
 
 export type User = z.infer<typeof userSchema>

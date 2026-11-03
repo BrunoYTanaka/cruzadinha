@@ -1,6 +1,7 @@
 import type { Puzzle, ProgressCells, Solution } from '@cruzadinha/shared'
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
   check,
   date,
   index,
@@ -24,6 +25,8 @@ export const users = pgTable(
     userId: uuid('user_id').primaryKey().defaultRandom(),
     email: text('email').notNull(),
     passwordHash: text('password_hash').notNull(),
+    // Feature 060: papel de administração; só a CLI do autor altera.
+    isAdmin: boolean('is_admin').notNull().default(false),
     ...timestamps,
   },
   (table) => [uniqueIndex('users_email_unique').on(table.email)],
@@ -340,3 +343,35 @@ export const duelParticipants = pgTable(
     check('duel_participants_helps_check', sql`${table.helpsUsed} BETWEEN 0 AND 1000`),
   ],
 )
+
+export type SourceSettingSnapshot = { sourceId: string; visible: boolean; position: number }[]
+
+// Feature 060: visibilidade e ordem das fontes, uma linha por fonte (sem linhas = padrão do código).
+export const sourceSettings = pgTable(
+  'source_settings',
+  {
+    sourceSettingId: uuid('source_setting_id').primaryKey().defaultRandom(),
+    sourceId: text('source_id').notNull(),
+    visible: boolean('visible').notNull().default(true),
+    position: integer('position').notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('source_settings_source_unique').on(table.sourceId),
+    uniqueIndex('source_settings_position_unique').on(table.position),
+    check(
+      'source_settings_source_check',
+      sql`${table.sourceId} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube')`,
+    ),
+    check('source_settings_position_check', sql`${table.position} >= 0`),
+  ],
+)
+
+// Registro de alterações: uma linha por salvamento que mudou algo; nenhuma rota lê.
+export const sourceSettingChanges = pgTable('source_setting_changes', {
+  sourceSettingChangeId: uuid('source_setting_change_id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.userId, { onDelete: 'set null' }),
+  before: jsonb('before').$type<SourceSettingSnapshot>().notNull(),
+  after: jsonb('after').$type<SourceSettingSnapshot>().notNull(),
+  ...timestamps,
+})

@@ -62,7 +62,9 @@ describe('login and me', () => {
     const cookie = sessionCookieFrom(response.headers['set-cookie'])
     const whoami = await me(cookie)
     expect(whoami.statusCode).toBe(200)
-    expect(whoami.json()).toEqual({ user: { id: expect.any(String), email: 'ana@exemplo.com' } })
+    expect(whoami.json()).toEqual({
+      user: { id: expect.any(String), email: 'ana@exemplo.com', isAdmin: false },
+    })
     expect(whoami.body).not.toContain('password')
     expect(whoami.body).not.toContain('argon2')
   })
