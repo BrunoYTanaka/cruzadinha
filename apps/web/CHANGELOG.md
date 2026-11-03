@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.17.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.16.1...web-v0.17.0) (2026-11-03)
+
+
+### Features
+
+* admin page to hide and reorder puzzle sources ([dca942b](https://github.com/BrunoYTanaka/cruzadinha/commit/dca942b1a8aac2062448e24fc2705a43026f3d1e))
+* **web:** add the /admin page and follow the visible sources ([f2a35c1](https://github.com/BrunoYTanaka/cruzadinha/commit/f2a35c1d3d4e5494255254b6b276a23e598dc308))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.35.0 to 0.36.0
+
 ## [0.16.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.16.0...web-v0.16.1) (2026-11-02)
 
 
