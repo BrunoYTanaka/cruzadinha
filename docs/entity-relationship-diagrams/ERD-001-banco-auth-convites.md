@@ -4,6 +4,7 @@ erDiagram
         uuid user_id PK
         string email UK
         string password_hash
+        boolean is_admin "060: só a CLI do autor altera"
         datetime created_at
         datetime updated_at
     }

@@ -142,6 +142,16 @@ Desde a feature 013 não há convites: qualquer pessoa joga como visitante, e o 
 
 `NODE_ENV=production` faz a CLI ignorar o `.env` local. O comando sai com `1` se o e-mail já tem conta (sem mudar nada) e com `2` para e-mail ou senha inválidos.
 
+**Dar acesso de administração (feature 060).** Só a CLI designa quem é admin; nenhuma tela ou rota pública faz isso. Com a mesma `DATABASE_URL` do comando acima:
+
+```sh
+ NODE_ENV=production npm run cli -w @cruzadinha/api -- users set-admin --email dona@exemplo.com
+ NODE_ENV=production npm run cli -w @cruzadinha/api -- users set-admin --email dona@exemplo.com --remove
+ NODE_ENV=production npm run cli -w @cruzadinha/api -- users create --email dona@exemplo.com --admin
+```
+
+`set-admin` promove uma conta existente; `--remove` tira o acesso; `users create --admin` já cria a conta como admin. O papel vale no pedido seguinte, sem reiniciar a API nem entrar de novo. E-mail sem conta sai com `1` e não cria nada; e-mail inválido, com `2`. A conta com acesso vê o link "Administração" em `/conta` e esconde ou reordena as fontes em `/admin`; para as demais pessoas `/admin` é uma página "não encontrada".
+
 ### E-mail: confirmação do cadastro e recuperação de senha
 
 Desde a feature 035 o cadastro só cria a conta depois de a pessoa abrir um link enviado ao e-mail, e quem esquece a senha recebe um link para redefini-la. Os e-mails saem pelo [Resend](https://resend.com) (plano grátis: 100 e-mails por dia e 3.000 por mês). Sem captcha: a proteção contra abuso é o limite persistido por endereço, por e-mail e um teto global por dia.
