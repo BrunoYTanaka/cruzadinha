@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react'
+import type { QueryClient } from '@tanstack/react-query'
+import { screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppLayout } from '../../app/AppLayout'
 import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
@@ -21,8 +22,11 @@ const sources = [
   { id: 'clube', visible: true, position: 3 },
 ]
 
+let client: QueryClient | undefined
+
 function visit(user: (typeof aUser & { isAdmin: boolean }) | null) {
   const queryClient = makeQueryClient()
+  client = queryClient
   queryClient.setQueryData(queryKeys.session, user ? { user } : null)
   mockApi({
     'GET /api/auth/me': () =>
@@ -33,7 +37,9 @@ function visit(user: (typeof aUser & { isAdmin: boolean }) | null) {
   return renderRoutes(routes, ['/admin'], queryClient)
 }
 
-afterEach(() => {
+afterEach(async () => {
+  // Nenhum pedido pode terminar depois do teste, quando o jsdom já foi desmontado.
+  if (client) await waitFor(() => expect(client?.isFetching()).toBe(0))
   vi.restoreAllMocks()
   resetSessionHandlers()
 })
