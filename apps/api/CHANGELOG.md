@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.13.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.12.1...api-v0.13.0) (2026-11-03)
+
+
+### Features
+
+* admin page to hide and reorder puzzle sources ([dca942b](https://github.com/BrunoYTanaka/cruzadinha/commit/dca942b1a8aac2062448e24fc2705a43026f3d1e))
+* **api:** let admins hide and reorder puzzle sources ([1fffba1](https://github.com/BrunoYTanaka/cruzadinha/commit/1fffba1a3f269a453eb476e1a03cf6d757164a17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.35.0 to 0.36.0
+
 ## [0.12.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.12.0...api-v0.12.1) (2026-11-02)
 
 
