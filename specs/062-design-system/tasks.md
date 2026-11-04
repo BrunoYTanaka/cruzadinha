@@ -64,7 +64,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T033 [P] [US5] `shared/components/ErrorState`, `app/RouteError.tsx`, `shared/components/LoadingState`, `NotFoundPage`, `RequiresConnection` e `pages/status` (`StatusPage`): estilo novo, um `h1` por página
 - [X] T034 [P] [US5] `features/settings` (diálogo de configurações), `features/import` (`ImportOffer`) e avisos de `features/offline`: `Dialog`, `Button`, `Notice` e `Link` novos, sem mudar comportamento
 - [X] T035 [US5] Trocar os textos de link das telas alteradas pelo `Link` (`shared/components/Link/Link`) e conferir com `grep` que nenhum `<a>` de texto ficou fora, exceto na landing; conferir com `grep` que o CSS alterado não tem cor hexadecimal fora de `shared/themes/` (SC-002)
-- [ ] T036 [US5] Conferência tela a tela com Playwright contra `design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
+- [X] T036 [US5] Conferência tela a tela com Playwright contra `design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
 - [X] T037 [US5] Rodar axe nas telas alteradas e `e2e/sem-saltos.spec.ts`; comparar landing e tabuleiro com as capturas de T002 e confirmar que não há diferença (FR-019, SC-007)
 - [ ] T038 [US5] Abrir PR 5 `feat(web): apply the design system to the remaining screens`
 

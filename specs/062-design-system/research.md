@@ -60,3 +60,35 @@ de conclusão (1280), comparadas pixel a pixel (limite de 8 de diferença por ca
   `ClueSheet` o usam. Depois disso o diálogo de conclusão ficou idêntico.
 - A primeira comparação saiu com a fonte errada na base (o Vite do worktree bloqueou os arquivos da
   Fraunces e da Roboto fora da raiz): liberado com `server.fs.strict: false` só no worktree.
+
+## Conferência tela a tela com o artefato (T036)
+
+Método: o artefato (`design-system.html`, `showScreen(id)`, tema e largura) e o site local lado a lado,
+em claro e escuro, 1280 e 390 px, para calendário, entrar, criar conta, esqueci a senha, Sua conta
+(visitante e conta), estatísticas (com números e vazio), x1 (lista, vazio, novo), Administração,
+status e 404.
+
+Divergências encontradas e resolvidas:
+
+- Botão principal azul no site, amarelo (`--sel`) no artefato (FR-003): `Button` primary agora usa
+  `--sel`/`--sel-ink`; os diálogos `classic` do tabuleiro trocam duas variáveis para o azul de antes.
+- Títulos em Roboto: páginas, painéis e diálogos novos usam `--font-title` (Fraunces) a 28/19/22 px.
+- Campos e painéis com contorno de 1 px: campos, painéis da conta, cartão de login, tabela e cartões de
+  estatística, lista de x1 e linhas do Admin passaram a 2 px com `--edge` e raio de 6 px.
+- Calendário: abas coladas ao painel (contorno de 2 px, aba ativa com faixa amarela de 4 px), filtro
+  escolhido preenchido (`--chip-on`, `--chip-on-ink`, derivados de `--ink`/`--bg` e `--word`/`--ink`),
+  dia com contorno de 2 px e "hoje" com `--edge`; o `h1` só de leitor de tela saiu do fluxo do grid.
+- Sua conta: cartão de identidade (círculo com iniciais, e-mail, "Conectada neste aparelho", Sair em
+  largura total).
+- Administração: nome da fonte em Fraunces, caixa de seleção amarela, alça com caixa de 44 px.
+
+Divergências mantidas de propósito:
+
+- Entrar, Criar conta e Esqueci a senha: o artefato desenha uma chamada ao lado do cartão (texto grande
+  e casas "ENTRE NA SUA CRUZADA"). As telas de acesso não estão entre as fatias do brief, então ficam
+  só com o cartão, os campos, os botões e os títulos novos.
+- Administração: o artefato mostra o botão de salvar só com ícone e a frase sobre os cartões de "Hoje"
+  (a 061 os removeu). O site mantém o texto "Salvar" (nome acessível testado) e a frase nova.
+- Sua conta e Administração: o espaço reservado para o aviso (`min-height`) continua, porque a
+  ausência de salto de layout é um requisito testado; o artefato não o mostra.
+- Textos de apoio a 14 px (o artefato usa 15 px): valor herdado, sem efeito em contraste ou toque.
