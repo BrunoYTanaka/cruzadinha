@@ -418,9 +418,10 @@ test.describe('023 US3: link e botão distinguíveis', () => {
     await page.goto('/calendario')
     const accent = await tokenColor(page, '--accent')
 
-    // "Entrar" do visitante: link com aparência de botão discreto.
+    // "Entrar" do visitante: botão primário amarelo (feature 062).
     const enter = page.getByRole('banner').getByRole('link', { name: 'Entrar' })
-    await expectControlBorder(page, enter)
+    await expect(enter).toBeVisible()
+    expect(await css(enter, 'background-color')).toBe(await tokenBackground(page, '--sel'))
     expect(await css(enter, 'text-decoration-line')).toBe('none')
     await enter.hover()
     await expect.poll(() => backgroundImage(enter)).not.toBe('none')
@@ -489,7 +490,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
     // 030) é uma lista de rádios, sem o destaque de segmento (coberto em SettingsDialog.test.tsx).
     const toggle = dialog.getByRole('switch', { name: 'Riscar a dica só quando acerta' })
     if ((await toggle.getAttribute('aria-checked')) !== 'true') await toggle.click()
-    expect(await css(toggle, 'background-color')).toBe(await tokenBackground(page, '--accent'))
+    expect(await css(toggle, 'background-color')).toBe(await tokenBackground(page, '--sel'))
     await expectSelectedKept(page, toggle)
   })
 
