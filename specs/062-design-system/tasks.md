@@ -80,7 +80,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 
 ## Phase 8: Polish
 
-- [ ] T046 Atualizar `CLAUDE.md` ("Where things stand") com a feature 062 e remover do brief os pontos em aberto resolvidos
+- [X] T046 Atualizar `CLAUDE.md` ("Where things stand") com a feature 062 e remover do brief os pontos em aberto resolvidos
 - [ ] T047 Rodar `npm run check:deps`, `lint`, `typecheck`, `test`, `test:e2e` e fechar o `quickstart.md` fatia a fatia
 
 ## Dependencies & Order

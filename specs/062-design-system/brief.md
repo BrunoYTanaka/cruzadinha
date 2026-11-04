@@ -27,9 +27,9 @@ Trazer para o site real o estilo desenhado no artefato, que vem da landing e dos
 
 Substitui as setas de subir e descer por uma alça de arrastar (seis pontos, 44 px). Precisa de Pointer Events, que o `@dnd-kit` já usa (o drag and drop nativo do HTML não funciona no toque): `touch-action: none` na alça, e o arraste começa só por ela. É obrigatória uma alternativa sem arrastar (WCAG 2.5.7): a alça é focável, Espaço pega, setas movem, Espaço solta, Esc cancela, e o leitor anuncia a posição. `aria-label` curto ("Arrastar O Globo") e as instruções num texto fixo ligado por `aria-describedby`. Linha levantada com contorno escuro e sombra suave; faixa amarela de 4 px no destino. **Decisão (aprovada):** usar `@dnd-kit`; o contrato de comportamento acima vale igual (ver `research.md`, D1).
 
-## Pontos em aberto
+## Pontos em aberto (resolvidos, ver `research.md`)
 
-- O artefato mostra `Notice` com a variante `ok`, que não existe no código (`info | warning | error`). Decidir se entra.
-- Os degraus de espaçamento (4, 8, 12, 16, 24, 40) e os pontos de quebra listados em Fundamentos foram inferidos; conferir com o código.
-- O texto de "Administração" no código ainda cita os cartões de "Hoje", que a 061 removeu.
-- O artefato nunca foi conferido renderizado por Playwright (exige login). Conferir tela a tela contra o site local, nos dois temas e em 390, 768 e computador.
+- `Notice` ganhou a variante `ok` (`info | ok | warning | error`).
+- Os degraus de espaçamento e os pontos de quebra foram conferidos com o código.
+- O texto de "Administração" não cita mais os cartões de "Hoje".
+- A conferência renderizada tela a tela está em T036 (`research.md`, "Conferência").
