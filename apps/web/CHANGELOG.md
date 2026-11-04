@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.18.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.17.1...web-v0.18.0) (2026-11-04)
+
+
+### Features
+
+* **web:** leaner calendar, remove Hoje and hide the date filter behind an icon ([ae54bb8](https://github.com/BrunoYTanaka/cruzadinha/commit/ae54bb8a27562833d27c9a7e87e9332b203d086b))
+* **web:** remove the Hoje section and hide the date filter behind a calendar icon ([e2736c3](https://github.com/BrunoYTanaka/cruzadinha/commit/e2736c38988a09f474bf583862832d41391ccd2e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.37.0 to 0.38.0
+
 ## [0.17.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.17.0...web-v0.17.1) (2026-11-03)
 
 
