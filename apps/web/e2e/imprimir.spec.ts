@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { box, css, fillSolution, resetAndSeed, todayPuzzle } from './support'
+import { box, css, fillSolution, resetAndSeed, todayLink, todayPuzzle } from './support'
 
 // Feature 055: a folha de impressão é a única coisa visível em mídia `print`, sem letras.
 
@@ -10,7 +10,7 @@ test.beforeEach(async () => {
 
 async function openToday(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 

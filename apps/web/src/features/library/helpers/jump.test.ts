@@ -29,8 +29,8 @@ describe('monthOptions e periodText', () => {
   it('lista 13 meses, do atual ao mais antigo, em português', () => {
     const options = monthOptions(today)
     expect(options).toHaveLength(13)
-    expect(options[0]).toMatchObject({ value: '2026-10', label: 'outubro de 2026' })
-    expect(options[12]).toMatchObject({ value: '2025-10', label: 'outubro de 2025' })
+    expect(options[0]).toMatchObject({ value: '2026-10', label: 'Outubro de 2026' })
+    expect(options[12]).toMatchObject({ value: '2025-10', label: 'Outubro de 2025' })
   })
 
   it('descreve o período aceito', () => {

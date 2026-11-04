@@ -37,7 +37,7 @@ test.describe('US1: landing em / (feature 048)', () => {
       await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
       await expect(page).toHaveURL(/\/calendario$/, { timeout: 2_000 })
     }).toPass()
-    await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
     await page.goto('/')
     await page.getByRole('link', { name: 'Ver o calendário' }).click()
     await expect(page).toHaveURL(/\/calendario$/)
@@ -69,7 +69,7 @@ test.describe('US1: landing em / (feature 048)', () => {
     ).toBe(false)
 
     await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
-    await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
     await page.getByRole('banner').getByRole('link', { name: 'Cruzadinha' }).click()
     await expect(page).toHaveURL(/\/jogo\//)
   })

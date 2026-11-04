@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { box, resetAndSeed } from './support'
+import { box, resetAndSeed, todayLink } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -7,7 +7,7 @@ test.beforeEach(async () => {
 
 async function openToday(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 

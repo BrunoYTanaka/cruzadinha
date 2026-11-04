@@ -39,7 +39,7 @@ test('trocar a senha encerra o outro aparelho e excluir a conta apaga o acesso',
   await other.getByLabel('E-mail').fill(SEED_EMAIL)
   await other.getByLabel('Senha').fill(NEW_PASSWORD)
   await other.getByRole('button', { name: 'Entrar' }).click()
-  await expect(other.getByRole('heading', { level: 1, name: 'Hoje' })).toHaveCount(0)
+  await expect(other.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toHaveCount(0)
 
   await first.close()
   await second.close()

@@ -89,7 +89,7 @@ for (const theme of THEMES) {
     test('biblioteca: a falha do calendário é h2 sob o h1 "Hoje"', async ({ page }) => {
       await page.route('**/api/library?**', failWith(500, 'internal-error'))
       await page.goto('/calendario')
-      await expectSingleH1(page, 'Hoje')
+      await expectSingleH1(page, 'Escolha um dia')
       await expect(
         page.getByRole('heading', { level: 2, name: 'Não foi possível carregar a biblioteca' }),
       ).toBeVisible()

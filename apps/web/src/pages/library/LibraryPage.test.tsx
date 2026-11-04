@@ -131,45 +131,17 @@ describe('LibraryPage', () => {
     ).toHaveAttribute('href', '/dia/2026-10-01?fonte=oglobo')
   })
 
-  it('mostra "Hoje" com um cartão por fonte, cada um um link para a cruzada do dia', async () => {
+  it('não tem a seção "Hoje": um só h1 escondido e o dia de hoje abre pela grade (feature 061)', async () => {
     library()
-    const first = renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hoje' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Jogar a de hoje' })).not.toBeInTheDocument()
-    expect(
-      await screen.findByRole('link', { name: 'O Globo: não iniciada. Jogar' }),
-    ).toHaveAttribute('href', '/jogo/00000000-0000-4000-8000-000020261014')
-    // A resposta só traz O Globo (como a API anterior à feature 014): a Cruzada Online não herda o
-    // puzzle de outra fonte.
-    expect(
-      screen.getByRole('link', { name: 'Cruzada Online: ainda não guardada. Jogar' }),
-    ).toHaveAttribute('href', '/dia/2026-10-14?fonte=cruzadaonline')
-    first.unmount()
-    library(items.slice(1))
-    renderRoutes(routes, ['/'], withAccount())
-    expect(
-      await screen.findByRole('link', { name: 'O Globo: ainda não guardada. Jogar' }),
-    ).toHaveAttribute('href', '/dia/2026-10-14?fonte=oglobo')
-  })
-
-  it('a falha de uma fonte fica no cartão dela; a outra e o calendário seguem', async () => {
-    const { calls } = mockApi({
-      'GET /api/library': ({ url }) =>
-        new URL(url, 'http://x').searchParams.get('source') === 'cruzadaonline'
-          ? apiError(500, 'internal-error')
-          : jsonResponse(200, { items }),
-    })
-    const user = userEvent.setup()
     renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'O Globo: não iniciada. Jogar' })).toBeInTheDocument()
-    const failed = await screen.findByText('Não foi possível carregar.')
-    const card = failed.closest('li')!
-    await user.click(within(card).getByRole('button', { name: 'Tentar de novo' }))
-    await waitFor(() =>
-      expect(calls.filter((call) => call.url === '/api/library?source=cruzadaonline')).toHaveLength(
-        2,
-      ),
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Escolha um dia')
+    expect(screen.queryByRole('heading', { name: 'Hoje' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^O Globo: / })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Hoje, 14 de outubro, não iniciado' })).toHaveAttribute(
+      'href',
+      '/jogo/00000000-0000-4000-8000-000020261014',
     )
   })
 
@@ -195,12 +167,11 @@ describe('LibraryPage', () => {
     renderRoutes(routes, ['/'], withAccount())
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('Não foi possível carregar a biblioteca')
-    // A página já tem o h1 "Hoje": o erro do calendário entra como h2 (feature 027).
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Hoje')
+    // A página já tem o h1 "Escolha um dia": o erro do calendário entra como h2 (feature 027).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Escolha um dia')
     expect(within(alert).getByRole('heading', { level: 2 })).toHaveTextContent(
       'Não foi possível carregar a biblioteca',
     )
-    // O cartão da fonte também oferece nova tentativa; aqui vale a do calendário.
     await user.click(within(alert).getByRole('button', { name: 'Tentar de novo' }))
     // Uma consulta por fonte (feature 015): a nova tentativa pede de novo a fonte do calendário.
     await waitFor(() =>
@@ -217,7 +188,7 @@ describe('LibraryPage', () => {
     )
     renderRoutes(routes, ['/'], withAccount())
     expect(await screen.findByRole('alert')).toHaveTextContent('Sem conexão')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Hoje')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Escolha um dia')
     expect(within(screen.getByRole('alert')).getByRole('heading', { level: 2 })).toHaveTextContent(
       'Sem conexão',
     )
@@ -263,10 +234,9 @@ describe('LibraryPage', () => {
   describe('largura do calendário (feature 011)', () => {
     const KEY = 'cruzadinha:library-width'
     const handle = () => screen.getByRole('slider', { name: 'Largura do calendário' })
-    // A coluna da biblioteca: título > cabeçalho de "Hoje" > seção "Hoje" > página.
+    // A coluna da biblioteca: o h1 escondido é filho direto da página.
     const page = () =>
-      screen.getByRole('heading', { level: 1, name: 'Hoje' }).parentElement!.parentElement!
-        .parentElement!
+      screen.getByRole('heading', { level: 1, name: 'Escolha um dia' }).parentElement!
 
     afterEach(() => {
       vi.unstubAllGlobals()
@@ -472,7 +442,7 @@ describe('a fonte clube (feature 030)', () => {
     })
   }
 
-  it('mostra quatro abas e quatro cartões "Hoje", cada um no seu lugar', async () => {
+  it('mostra quatro abas, cada uma no seu lugar', async () => {
     allSources()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
@@ -483,9 +453,6 @@ describe('a fonte clube (feature 030)', () => {
       expect.stringContaining('Cruzadas Brasil'),
       expect.stringContaining('Cruzadas Clube'),
     ])
-    const clubeCard = screen.getByText('Sem cruzada hoje').closest('li')!
-    expect(clubeCard).toHaveTextContent('Cruzadas Clube')
-    expect(within(clubeCard).queryByRole('link')).not.toBeInTheDocument()
   })
 
   it('um dia passado sem edição aparece sem cruzada, sem link para buscar', async () => {
@@ -607,7 +574,7 @@ describe('biblioteca do visitante (feature 013)', () => {
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
   })
 
-  it('o cartão de hoje do visitante mostra a situação guardada no navegador', async () => {
+  it('o dia de hoje do visitante mostra a situação guardada no navegador', async () => {
     await guestStore.save({
       puzzleId: publicItems[0]?.puzzleId ?? '',
       date: '2026-10-14',
@@ -620,9 +587,7 @@ describe('biblioteca do visitante (feature 013)', () => {
     mockApi({ 'GET /api/library': () => jsonResponse(200, { items: publicItems }) })
     renderRoutes(guestRoutes, ['/'], asGuest())
     expect(
-      await screen.findByRole('link', {
-        name: 'O Globo: em andamento, 1 minuto e 5 segundos. Continuar',
-      }),
+      await screen.findByRole('link', { name: /^Hoje, 14 de outubro, em andamento/ }),
     ).toBeInTheDocument()
   })
 
@@ -780,10 +745,23 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
     await screen.findByRole('heading', { name: 'outubro de 2026' })
     return { user, view }
   }
+  // O filtro fica atrás do ícone (feature 061); tocar fora o fecha, então abre-se na hora de usar.
+  const openFilter = (user: ReturnType<typeof userEvent.setup>) =>
+    user.click(screen.getByRole('button', { name: 'Ir para uma data' }))
+
+  it('o filtro de data só aparece depois de tocar no ícone e fecha ao tocar de novo (feature 061)', async () => {
+    const { user } = await open()
+    expect(screen.queryByLabelText('Data')).not.toBeInTheDocument()
+    await openFilter(user)
+    expect(screen.getByLabelText('Data')).toBeInTheDocument()
+    await openFilter(user)
+    expect(screen.queryByLabelText('Data')).not.toBeInTheDocument()
+  })
 
   it('o seletor leva direto a outro mês e "Anterior" segue dele; filtro e fonte ficam', async () => {
     const { user } = await open()
     await user.click(screen.getByRole('button', { name: 'Em andamento (1)' }))
+    await openFilter(user)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-04')
     expect(await screen.findByRole('heading', { name: 'abril de 2026' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Em andamento/ })).toHaveAttribute(
@@ -798,6 +776,7 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
 
   it('uma data válida mostra o mês e põe o foco no dia, sem abrir o jogo', async () => {
     const { user } = await open()
+    await openFilter(user)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-09')
     await screen.findByRole('heading', { name: 'setembro de 2026' })
     fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-12' } })
@@ -807,7 +786,8 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
   })
 
   it('uma data fora do período avisa e deixa o mês como está', async () => {
-    await open()
+    const { user } = await open()
+    await openFilter(user)
     fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2024-01-01' } })
     expect(screen.getByRole('alert')).toHaveTextContent('Só há datas de outubro de 2025 até hoje.')
     expect(screen.getByRole('heading', { name: 'outubro de 2026' })).toBeInTheDocument()
@@ -816,6 +796,7 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
   it('um dia fora do filtro só mostra o mês, sem foco', async () => {
     const { user } = await open()
     await user.click(screen.getByRole('button', { name: 'Concluídas (1)' }))
+    await openFilter(user)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Mês' }), '2026-09')
     await screen.findByRole('heading', { name: 'setembro de 2026' })
     fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-10-12' } })
@@ -825,7 +806,7 @@ describe('LibraryPage pular para uma data (feature 054)', () => {
 })
 
 describe('fontes escondidas e ordem da administração (feature 060)', () => {
-  it('mostra as abas e os cartões de "Hoje" só das visíveis, na ordem, e abre na primeira', async () => {
+  it('mostra as abas só das visíveis, na ordem, e abre na primeira', async () => {
     const { calls } = mockApi({
       'GET /api/sources': () => jsonResponse(200, { sources: ['clube', 'oglobo'] }),
       'GET /api/library': () => jsonResponse(200, { items: [] }),

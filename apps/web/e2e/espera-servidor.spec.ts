@@ -22,7 +22,7 @@ test('com a API demorando, explica a espera e depois abre a tela pedida', async 
   await delayHealth(page, 4_000)
   await page.goto('/calendario?origem=teste')
   await expect(page.getByText(WAKE_TEXT)).toBeVisible()
-  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible({
+  await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached({
     timeout: 15_000,
   })
   expect(new URL(page.url()).search).toBe('?origem=teste')
@@ -32,9 +32,9 @@ test('com a API acordada, a espera não aparece', async ({ page }) => {
   await login(page)
   let sawWake = false
   await page.goto('/calendario')
-  const heading = page.getByRole('heading', { level: 1, name: 'Hoje' })
+  const heading = page.getByRole('heading', { level: 1, name: 'Escolha um dia' })
   // Confere durante a carga inteira que o título da espera nunca apareceu.
-  while (!(await heading.isVisible())) {
+  while ((await heading.count()) === 0) {
     if (await page.getByText(WAKE_TEXT).isVisible()) sawWake = true
     await page.waitForTimeout(100)
   }
