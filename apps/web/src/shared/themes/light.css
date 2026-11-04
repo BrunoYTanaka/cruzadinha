@@ -6,6 +6,9 @@
   --mute: #4f5661;
   --line: #cfd4db;
   --edge: var(--ink);
+  /* Filtro escolhido (feature 062). */
+  --chip-on: var(--ink);
+  --chip-on-ink: var(--bg);
 
   --accent: #1a56c4;
   --accent-ink: #ffffff;

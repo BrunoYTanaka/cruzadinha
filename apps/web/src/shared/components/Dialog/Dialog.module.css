@@ -58,6 +58,11 @@
   font-weight: 700;
 }
 
+/* Diálogos novos: título em Fraunces (o `classic` do tabuleiro não muda). */
+.panel:not(.classic) .title {
+  font: 800 22px/1.15 var(--font-title);
+}
+
 .description {
   margin: 0;
   color: var(--mute);

@@ -1,16 +1,15 @@
 .section {
   display: grid;
   gap: 12px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  padding: 18px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
 .title {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font: 800 19px/1.2 var(--font-title);
 }
 
 .lead {

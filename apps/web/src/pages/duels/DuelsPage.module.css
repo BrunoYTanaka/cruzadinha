@@ -10,8 +10,7 @@
 
 .title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 .head {
@@ -24,6 +23,5 @@
 
 .heading {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font: 800 19px/1.2 var(--font-title);
 }

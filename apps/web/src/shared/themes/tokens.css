@@ -9,6 +9,8 @@
    Componentes só leem tokens: nada de cor ou medida fixa. */
 :root {
   --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Títulos das telas (feature 062): a mesma Fraunces da landing. */
+  --font-title: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-sm: 6px;

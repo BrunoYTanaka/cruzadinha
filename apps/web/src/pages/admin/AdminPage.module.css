@@ -9,8 +9,7 @@
 
 .title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 .subtitle {
