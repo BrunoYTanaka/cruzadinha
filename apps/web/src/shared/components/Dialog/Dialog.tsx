@@ -18,7 +18,7 @@ type DialogProps = {
   align?: 'center' | 'bottom'
   // Largura do painel: `wide` chega a 460 px em vez de 420 px (feature 024).
   size?: 'default' | 'wide'
-  // Botão "Fechar" (X) ao lado do título, para diálogos sem ação final (feature 021).
+  // Botão "Fechar" (X) no canto superior direito (feature 062: sempre presente, `false` o tira).
   closeButton?: boolean
 }
 
@@ -34,7 +34,7 @@ export function Dialog({
   closeOnBackdrop = false,
   align = 'center',
   size = 'default',
-  closeButton = false,
+  closeButton = true,
 }: DialogProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -52,6 +52,7 @@ export function Dialog({
     const target =
       initialFocusRef?.current ??
       panel?.querySelector<HTMLElement>('[data-autofocus]') ??
+      panel?.querySelector<HTMLElement>(`:is(${FOCUSABLE}):not([data-dialog-close])`) ??
       panel?.querySelector<HTMLElement>(FOCUSABLE) ??
       panel
     target?.focus()
@@ -139,6 +140,7 @@ export function Dialog({
               type="button"
               className={`${buttonClass({ variant: 'icon' })} ${styles.close}`}
               aria-label="Fechar"
+              data-dialog-close
               onClick={() => onCloseRef.current()}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">

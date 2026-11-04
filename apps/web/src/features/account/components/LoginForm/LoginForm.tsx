@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import {
   clearExpired,
   authMessages,

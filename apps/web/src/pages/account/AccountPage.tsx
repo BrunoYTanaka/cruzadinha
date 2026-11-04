@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import {
   ChangeEmailForm,
   ChangePasswordForm,
@@ -9,6 +9,7 @@ import {
 import { clearAccountData } from '../../features/offline'
 import { useSessionQuery } from '../../features/session'
 import { Button } from '../../shared/components/Button/Button'
+import { LogoutButton } from './LogoutButton/LogoutButton'
 import { RequiresConnection } from '../../shared/components/RequiresConnection/RequiresConnection'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import styles from './AccountPage.module.css'
@@ -35,6 +36,9 @@ function AccountContent() {
       <h1 className={styles.title}>Sua conta</h1>
       <p className={styles.email}>{user.email}</p>
       {user.isAdmin ? <Link to="/admin">Administração</Link> : null}
+      <div>
+        <LogoutButton userId={user.id} />
+      </div>
       <ChangePasswordForm />
       <LogoutOthersButton />
       <ChangeEmailForm currentEmail={user.email} />

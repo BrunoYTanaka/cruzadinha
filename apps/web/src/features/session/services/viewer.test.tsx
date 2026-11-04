@@ -17,6 +17,7 @@ import {
   resetSessionHandlers,
   serverIsReady,
 } from '../../../test/render'
+import { AccountPage } from '../../../pages/account/AccountPage'
 import { AppLayout } from '../../../app/AppLayout'
 import { RouteError } from '../../../app/RouteError'
 import { clearExpired, getSessionExpired } from './session-expired'
@@ -44,6 +45,7 @@ function routesFor(queryClient: ReturnType<typeof makeQueryClient>) {
           children: [
             { path: '/', element: <ViewerProbe /> },
             { path: '/jogo/:id', element: <p>Jogo</p> },
+            { path: '/conta', element: <AccountPage /> },
             { path: '/login', element: <p>Entrar</p> },
           ],
         },
@@ -125,12 +127,12 @@ describe('viewerLoader e useViewer', () => {
     expect(queryClient.getQueryData(queryKeys.session)).toBeNull()
   })
 
-  it('com sessão mostra a conta e o botão Sair', async () => {
+  it('com sessão mostra a conta e o círculo que leva a "Sua conta"', async () => {
     mockApi({ 'GET /api/auth/me': withSession })
     const queryClient = makeQueryClient()
     renderRoutes(routesFor(queryClient), ['/'], queryClient)
     expect(await screen.findByText(`é ${aUser.email}`)).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: 'Sair' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /^Sua conta/ })).toBeInTheDocument()
   })
 
   it('falha de rede ao consultar a sessão cai na tela de erro da rota', async () => {
@@ -163,7 +165,7 @@ describe('viewerLoader e useViewer', () => {
     })
     const user = userEvent.setup()
     const queryClient = makeQueryClient()
-    const { router } = renderRoutes(routesFor(queryClient), ['/jogo/abc'], queryClient)
+    const { router } = renderRoutes(routesFor(queryClient), ['/conta'], queryClient)
     await user.click(await screen.findByRole('button', { name: 'Sair' }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
     expect(calls.some((call) => call.key === 'POST /api/auth/logout')).toBe(true)
@@ -178,7 +180,7 @@ describe('viewerLoader e useViewer', () => {
     })
     const user = userEvent.setup()
     const queryClient = makeQueryClient()
-    const { router } = renderRoutes(routesFor(queryClient), ['/jogo/abc'], queryClient)
+    const { router } = renderRoutes(routesFor(queryClient), ['/conta'], queryClient)
     await user.click(await screen.findByRole('button', { name: 'Sair' }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/'))
   })

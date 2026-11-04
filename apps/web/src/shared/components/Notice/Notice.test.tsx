@@ -14,6 +14,23 @@ describe('Notice', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Falhou.')
   })
 
+  it('a variante ok anuncia com role status e mostra o símbolo ✓ fora da leitura', () => {
+    render(<Notice variant="ok">Importado.</Notice>)
+    const notice = screen.getByRole('status')
+    expect(notice).toHaveTextContent('Importado.')
+    expect(notice.querySelector('[aria-hidden="true"]')).toHaveTextContent('✓')
+  })
+
+  it('cada variante tem o próprio símbolo (estado nunca só por cor)', () => {
+    const symbols = (['info', 'ok', 'warning', 'error'] as const).map((variant) => {
+      const { container, unmount } = render(<Notice variant={variant}>x</Notice>)
+      const symbol = container.querySelector('[aria-hidden="true"]')?.textContent
+      unmount()
+      return symbol
+    })
+    expect(new Set(symbols).size).toBe(4)
+  })
+
   it('mostra o botão de ação e o aciona sem tomar o foco sozinho', async () => {
     const user = userEvent.setup()
     const onClick = vi.fn()

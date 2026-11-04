@@ -18,10 +18,10 @@
   display: grid;
   gap: 4px;
   padding: 8px;
-  border: 1px solid var(--line);
+  border: 2px solid var(--edge);
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 8px 28px rgb(0 0 0 / 0.25);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--ink) 22%, transparent);
 }
 
 /* --menu-shift: deslocamento horizontal que o Menu.tsx mede para o painel caber na janela. */

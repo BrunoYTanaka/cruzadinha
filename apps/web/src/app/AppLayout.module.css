@@ -116,11 +116,69 @@
   display: none;
 }
 
-/* No celular o e-mail não cabe ao lado do tema e de "Sair"; "Visitante" é curto e fica sempre. */
+/* Círculo da conta (feature 062): 38 px com as iniciais do e-mail; leva a "Sua conta". */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--edge);
+  border-radius: 50%;
+  background: var(--sel);
+  color: var(--sel-ink);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.avatar:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Botão de menu: só no celular, no lugar dos links (feature 062). */
+.menu {
+  display: none;
+}
+
+.menuButton {
+  min-width: var(--tap);
+  padding: 0 10px;
+}
+
+.menuIcon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* Até 560 px os links viram o botão de menu; "Visitante" é curto e fica sempre. */
 @media (max-width: 560px) {
-  .email,
+  .calendar,
   .statsLink,
   .duelLink {
     display: none;
+  }
+
+  .menu {
+    display: block;
+  }
+
+  /* 390 px: marca, Calendário, menu, configurações e Entrar têm de caber numa linha. */
+  .header {
+    gap: 8px;
+  }
+
+  .actions {
+    gap: 4px;
+  }
+
+  .brand {
+    font-size: 16px;
   }
 }

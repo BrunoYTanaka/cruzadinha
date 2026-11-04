@@ -1,0 +1,33 @@
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--tap) 28px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 10px 8px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.position {
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Linha levantada: contorno escuro e sombra suave. */
+.lifted {
+  border-color: var(--edge);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* Destino do arraste: faixa amarela de 4 px. */
+.target::before {
+  content: '';
+  position: absolute;
+  inset: -6px 0 auto 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sel);
+}

@@ -6,6 +6,7 @@ import { queryKeys } from '../shared/services/api/query-keys/query-keys'
 import { PUZZLE_ID } from '../test/fixtures'
 import { jsonResponse, mockApi } from '../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../test/render'
+import { AccountPage } from '../pages/account/AccountPage'
 import { AppLayout } from './AppLayout'
 
 const body = {
@@ -16,17 +17,32 @@ const body = {
 }
 const OTHER = '9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d'
 
-function render(user: typeof aUser | null) {
+function render(user: typeof aUser | null, path = '/', serverDown = false) {
   const queryClient = makeQueryClient()
   queryClient.setQueryData(queryKeys.session, user ? { user } : null)
   const api = mockApi({
     'POST /api/auth/logout': () => jsonResponse(200, {}),
-    [`PUT /api/progress/${PUZZLE_ID}`]: () => jsonResponse(200, { progress: null }),
-    [`GET /api/progress/${PUZZLE_ID}`]: () => jsonResponse(200, { progress: null }),
+    // Servidor fora: a pendência não é enviada e fica (a tela da conta precisa estar online).
+    [`PUT /api/progress/${PUZZLE_ID}`]: () =>
+      serverDown ? jsonResponse(500, {}) : jsonResponse(200, { progress: null }),
+    [`GET /api/progress/${PUZZLE_ID}`]: () =>
+      serverDown ? jsonResponse(500, {}) : jsonResponse(200, { progress: null }),
+    [`POST /api/progress/${PUZZLE_ID}`]: () =>
+      serverDown ? jsonResponse(500, {}) : jsonResponse(200, { progress: null }),
   })
   renderRoutes(
-    [{ path: '/', element: <AppLayout />, children: [{ index: true, element: <p>Início</p> }] }],
-    ['/'],
+    [
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <p>Início</p> },
+          // "Sair" mora em "Sua conta" (feature 062).
+          { path: 'conta', element: <AccountPage /> },
+        ],
+      },
+    ],
+    [path],
     queryClient,
   )
   return api
@@ -38,9 +54,32 @@ afterEach(() => {
   resetSessionHandlers()
 })
 
+describe('cabeçalho da conta (feature 062)', () => {
+  it('logada, mostra o círculo com as iniciais que leva a "Sua conta", sem botão Sair', async () => {
+    render(aUser)
+    const circle = await screen.findByRole('link', { name: /^Sua conta/ })
+    expect(circle).toHaveAttribute('href', '/conta')
+    expect(circle).toHaveTextContent(/^[A-Z0-9?]{1,2}$/)
+    expect(screen.queryByRole('button', { name: 'Sair' })).not.toBeInTheDocument()
+  })
+
+  it('o visitante não vê o círculo e continua com "Entrar"', async () => {
+    render(null)
+    expect(await screen.findByRole('link', { name: 'Entrar' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^Sua conta/ })).not.toBeInTheDocument()
+  })
+
+  it('o botão de menu abre Estatísticas e x1', async () => {
+    render(aUser)
+    await userEvent.click(await screen.findByRole('button', { name: 'Menu' }))
+    expect(screen.getByRole('menuitem', { name: 'Estatísticas' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /^x1/ })).toBeInTheDocument()
+  })
+})
+
 describe('AppLayout e as pendências offline (feature 041)', () => {
   it('sair sem pendência não pergunta nada', async () => {
-    const { calls } = render(aUser)
+    const { calls } = render(aUser, '/conta')
     await userEvent.click(await screen.findByRole('button', { name: 'Sair' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await waitFor(() =>
@@ -49,10 +88,8 @@ describe('AppLayout e as pendências offline (feature 041)', () => {
   })
 
   it('sair com pendência pergunta; cancelar mantém tudo, confirmar apaga e sai', async () => {
-    // Sem rede a pendência fica: o envio automático só roda com rede.
-    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     applyOutboxEvent(aUser.id, PUZZLE_ID, { type: 'reset', at: '2026-10-16T12:00:00.000Z' })
-    const { calls } = render(aUser)
+    const { calls } = render(aUser, '/conta', true)
     const leave = await screen.findByRole('button', { name: 'Sair' })
     await userEvent.click(leave)
     const dialog = await screen.findByRole('dialog', { name: 'Sair agora?' })

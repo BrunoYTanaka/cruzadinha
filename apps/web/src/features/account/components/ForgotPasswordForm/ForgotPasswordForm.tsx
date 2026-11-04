@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import { forgotPassword } from '../../../../shared/services/api/auth/auth'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button } from '../../../../shared/components/Button/Button'

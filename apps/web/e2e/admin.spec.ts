@@ -65,9 +65,12 @@ test('o admin reordena e o calendário abre na primeira fonte visível', async (
 }) => {
   await login(page, ADMIN_EMAIL, ADMIN_PASSWORD)
   await page.goto('/admin')
-  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
-  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
-  await page.getByRole('button', { name: 'Subir Cruzadas Clube' }).click()
+  // Sem arrastar (WCAG 2.5.7): Espaço pega a alça, setas movem, Espaço solta.
+  const handle = page.getByRole('button', { name: 'Arrastar Cruzadas Clube' })
+  await handle.focus()
+  await page.keyboard.press('Space')
+  for (let step = 0; step < 3; step++) await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('Space')
   await page.getByRole('button', { name: 'Salvar' }).click()
   await expect(page.getByText(/Salvo\./)).toBeVisible()
 

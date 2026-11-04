@@ -86,6 +86,7 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         open
         onClose={() => setHidden(true)}
         title="Progresso importado"
+        closeButton={false}
         description={`${plural(result.imported, 'cruzada importada', 'cruzadas importadas')}; ${plural(result.kept, 'já estava melhor na conta', 'já estavam melhores na conta')}.`}
       >
         {left > 0 ? (

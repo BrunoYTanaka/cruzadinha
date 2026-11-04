@@ -2,6 +2,7 @@ import { puzzleSourceNames, type DuelStateResponse, type DuelView } from '@cruza
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { Link as TextLink } from '../../../../shared/components/Link/Link'
 import { Button, buttonClass } from '../../../../shared/components/Button/Button'
 import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
@@ -47,7 +48,7 @@ function startErrorText(error: unknown): string {
 
 const Unavailable = () => (
   <ErrorState level={1} title="O x1 não está disponível agora" message="Tente de novo mais tarde.">
-    <Link to="/calendario">Voltar ao calendário</Link>
+    <TextLink to="/calendario">Voltar ao calendário</TextLink>
   </ErrorState>
 )
 
@@ -86,7 +87,7 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
         title="Este x1 não está aberto"
         message="Ele pode ter sido aceito, cancelado ou ter vencido."
       >
-        <Link to="/x1">Meus x1</Link>
+        <TextLink to="/x1">Meus x1</TextLink>
       </ErrorState>
     )
   }
@@ -333,7 +334,7 @@ export function DuelScreen({ linkToken }: { linkToken: string }) {
         }
         onRetry={() => void state.refetch()}
       >
-        <Link to="/x1">Meus x1</Link>
+        <TextLink to="/x1">Meus x1</TextLink>
       </ErrorState>
     )
   }

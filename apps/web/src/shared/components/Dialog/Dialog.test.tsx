@@ -56,14 +56,25 @@ describe('Dialog', () => {
     render(<Harness />)
     await user.click(screen.getByRole('button', { name: 'Abrir' }))
     expect(screen.getByRole('button', { name: 'Pronto' })).toHaveFocus()
+    // O X de fechar vem primeiro no DOM: Tab no último volta a ele.
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus()
     await user.tab()
     expect(screen.getByRole('button', { name: 'Copiar' })).toHaveFocus()
     await user.tab({ shift: true })
-    expect(screen.getByRole('button', { name: 'Pronto' })).toHaveFocus()
-    await user.tab({ shift: true })
-    expect(screen.getByRole('button', { name: 'Copiar' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus()
     await user.tab({ shift: true })
     expect(screen.getByRole('button', { name: 'Pronto' })).toHaveFocus()
+  })
+
+  it('o X de fechar fica no canto, tem o tamanho de toque e fecha; closeButton={false} o tira', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    const { rerender } = render(<Dialog open onClose={onClose} title="Com X" />)
+    await user.click(screen.getByRole('button', { name: 'Fechar' }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+    rerender(<Dialog open onClose={onClose} title="Sem X" closeButton={false} />)
+    expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument()
   })
 
   it('deixa o resto da página inerte enquanto está aberto', async () => {

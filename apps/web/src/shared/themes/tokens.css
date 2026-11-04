@@ -1,6 +1,6 @@
 /* Tokens que não mudam com o tema. Os nomes de cor (iguais nos dois temas) estão em light.css e
    dark.css e seguem contracts/ui-contracts.md:
-   superfícies e texto: --bg --surface --ink --mute --line
+   superfícies e texto: --bg --surface --ink --mute --line --edge (contorno dos controles)
    ação:                --accent --accent-ink --focus
    tabuleiro:           --block --cell --cell-line --bar --word --sel --sel-ink
    ajuda:               --help --bad

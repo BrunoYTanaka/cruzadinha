@@ -17,23 +17,6 @@
   list-style: none;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-}
-
-.position {
-  color: var(--mute);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-}
-
 .visible {
   display: flex;
   align-items: center;
@@ -57,11 +40,6 @@
   min-width: 72px;
   color: var(--mute);
   font-size: 13px;
-}
-
-.moves {
-  display: flex;
-  gap: 4px;
 }
 
 .actions {

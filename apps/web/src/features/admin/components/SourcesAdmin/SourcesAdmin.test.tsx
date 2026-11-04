@@ -40,20 +40,76 @@ describe('SourcesAdmin', () => {
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled()
   })
 
-  it('moves a source up and down; the first cannot go up and the last cannot go down', async () => {
+  const handle = (name: string) => screen.getByRole('button', { name: `Arrastar ${name}` })
+  const live = () => screen.getByRole('status', { name: '' })
+
+  it('keyboard: Space grabs, arrows move, Space drops, with the position announced', async () => {
     const user = userEvent.setup()
     setup()
     await screen.findByRole('checkbox', { name: /O Globo/ })
-    expect(screen.getByRole('button', { name: 'Subir O Globo' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Descer Cruzadas Clube' })).toBeDisabled()
-
-    await user.click(screen.getByRole('button', { name: 'Subir Cruzadas Clube' }))
+    handle('Cruzadas Clube').focus()
+    await user.keyboard(' ')
+    expect(handle('Cruzadas Clube')).toHaveAttribute('aria-pressed', 'true')
+    expect(live()).toHaveTextContent('Cruzadas Clube pega, posição 4 de 4')
+    await user.keyboard('{ArrowUp}')
     expect(names()[2]).toContain('Cruzadas Clube')
-    expect(screen.getByRole('status', { name: '' })).toHaveTextContent(
-      'Cruzadas Clube agora na posição 3 de 4.',
-    )
-    await user.click(screen.getByRole('button', { name: 'Descer O Globo' }))
+    expect(live()).toHaveTextContent('Cruzadas Clube na posição 3 de 4.')
+    // O foco continua na alça da mesma fonte depois de mover.
+    expect(handle('Cruzadas Clube')).toHaveFocus()
+    await user.keyboard('{ArrowDown}{ArrowDown}')
+    expect(names()[3]).toContain('Cruzadas Clube')
+    await user.keyboard('{ArrowUp} ')
+    expect(handle('Cruzadas Clube')).toHaveAttribute('aria-pressed', 'false')
+    expect(live()).toHaveTextContent('Cruzadas Clube solta na posição 3 de 4.')
+    expect(names()[2]).toContain('Cruzadas Clube')
+  })
+
+  it('keyboard: Esc cancels and puts the order back; losing focus also cancels', async () => {
+    const user = userEvent.setup()
+    setup()
+    await screen.findByRole('checkbox', { name: /O Globo/ })
+    handle('O Globo').focus()
+    await user.keyboard(' {ArrowDown}{ArrowDown}')
+    expect(names()[2]).toContain('O Globo')
+    await user.keyboard('{Escape}')
+    expect(names()[0]).toContain('O Globo')
+    expect(live()).toHaveTextContent('Movimento cancelado. O Globo voltou à posição 1 de 4.')
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled()
+
+    await user.keyboard(' {ArrowDown}')
     expect(names()[1]).toContain('O Globo')
+    await user.tab()
+    expect(names()[0]).toContain('O Globo')
+  })
+
+  it('keyboard: arrows do nothing when not grabbed or at the ends', async () => {
+    const user = userEvent.setup()
+    setup()
+    await screen.findByRole('checkbox', { name: /O Globo/ })
+    handle('O Globo').focus()
+    await user.keyboard('{ArrowDown}')
+    expect(names()[0]).toContain('O Globo')
+    await user.keyboard(' {ArrowUp}')
+    expect(names()[0]).toContain('O Globo')
+  })
+
+  it('each handle has a short label and fixed instructions linked with aria-describedby', async () => {
+    setup()
+    await screen.findByRole('checkbox', { name: /O Globo/ })
+    const first = handle('O Globo')
+    const hint = document.getElementById(first.getAttribute('aria-describedby') ?? '')
+    expect(hint).toHaveTextContent(/Espaço pega.*setas.*Esc cancela/)
+    for (const name of ['Cruzadas Clube', 'Cruzada Online', 'Cruzadas Brasil']) {
+      expect(handle(name).getAttribute('aria-describedby')).toBe(
+        first.getAttribute('aria-describedby'),
+      )
+    }
+  })
+
+  it('does not mention the removed "Hoje" cards', async () => {
+    setup()
+    await screen.findByRole('checkbox', { name: /O Globo/ })
+    expect(screen.queryByText(/Hoje/)).not.toBeInTheDocument()
   })
 
   it('saves the visible flags and the order exactly as shown', async () => {
@@ -72,7 +128,8 @@ describe('SourcesAdmin', () => {
     setup(put)
     await screen.findByRole('checkbox', { name: /O Globo/ })
     await user.click(screen.getByRole('checkbox', { name: /O Globo/ }))
-    await user.click(screen.getByRole('button', { name: 'Descer O Globo' }))
+    handle('O Globo').focus()
+    await user.keyboard(' {ArrowDown} ')
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByText(/Salvo\. 3 de 4 fontes visíveis/)).toBeVisible()
@@ -113,13 +170,14 @@ describe('SourcesAdmin', () => {
     await screen.findByRole('checkbox', { name: /O Globo/ })
     await expectNoA11yViolations(container)
     await user.tab()
+    expect(screen.getByRole('button', { name: 'Arrastar O Globo' })).toHaveFocus()
+    await user.tab()
     expect(screen.getByRole('checkbox', { name: /O Globo/ })).toHaveFocus()
     await user.keyboard(' ')
     expect(screen.getByRole('checkbox', { name: /O Globo/ })).not.toBeChecked()
-    // "Subir" do primeiro está desabilitado e fica fora da ordem do Tab.
     await user.tab()
     expect(
-      within(screen.getAllByRole('listitem')[0]!).getByRole('button', { name: /Descer/ }),
+      within(screen.getAllByRole('listitem')[1]!).getByRole('button', { name: /Arrastar/ }),
     ).toHaveFocus()
   })
 })

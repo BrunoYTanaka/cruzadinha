@@ -1,6 +1,14 @@
 .tabs {
   display: flex;
   gap: 4px;
+  /* Uma linha só que rola para o lado, sem barra; a última aba cortada é o sinal de que há mais
+     (feature 062). */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -52,17 +60,12 @@
   font-size: 13px;
 }
 
-/* Celular: as abas (até 3) dividem a largura numa linha (FR-016). */
+/* Celular: cada aba tem a largura do próprio texto; passou da largura, a linha rola (feature 062). */
 @media (max-width: 599px) {
-  .tabs {
-    display: grid;
-    grid-auto-columns: minmax(0, 1fr);
-    grid-auto-flow: column;
-  }
-
   .tab {
+    flex: none;
     align-items: center;
-    padding: 6px 8px;
+    padding: 6px 14px;
     text-align: center;
   }
 }

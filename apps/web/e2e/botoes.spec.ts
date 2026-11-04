@@ -88,9 +88,10 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar palavra/ }))
       await expectControlBorder(page, page.getByRole('button', { name: /^Ajudas/ }))
 
-      // Cabeçalho com conta: "Sair".
+      // Conta: "Sair" fica dentro de "Sua conta" (feature 062).
       await login(page)
-      await expectControlBorder(page, page.getByRole('button', { name: 'Sair' }))
+      await page.goto('/conta')
+      await expectControlBorder(page, page.getByRole('button', { name: 'Sair', exact: true }))
     })
   }
 
@@ -335,18 +336,16 @@ async function expectButtonsAreNotLinks(page: Page) {
   }
 }
 
-// Link de texto: sublinhado, sem fundo; com o mouse, o sublinhado engrossa (FR-014).
+// Link de texto (feature 062): negrito, sublinhado amarelo de 3 px que corre da esquerda para a
+// direita com o mouse (`background-size` de 0% a 100%), sem sublinhado nativo.
 async function expectTextLink(page: Page, link: Locator) {
   await expect(link).toBeVisible()
   await page.mouse.move(0, 0)
-  expect(await css(link, 'text-decoration-line')).toBe('underline')
-  expect(await backgroundImage(link)).toBe('none')
-  const rest = parseFloat(await css(link, 'text-decoration-thickness')) || 1
+  expect(await css(link, 'font-weight')).toBe('700')
+  expect(await backgroundImage(link)).toContain('linear-gradient')
+  expect(await css(link, 'background-size')).toBe('0% 3px')
   await link.hover()
-  await expect
-    .poll(async () => parseFloat(await css(link, 'text-decoration-thickness')))
-    .toBeGreaterThan(rest)
-  expect(await backgroundImage(link)).toBe('none')
+  await expect.poll(() => css(link, 'background-size')).toBe('100% 3px')
 }
 
 function yesterday() {

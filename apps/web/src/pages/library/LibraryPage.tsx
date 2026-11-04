@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../shared/components/LoadingState/LoadingState'

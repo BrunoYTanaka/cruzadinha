@@ -5,6 +5,7 @@
   --ink: #1c1f24;
   --mute: #4f5661;
   --line: #cfd4db;
+  --edge: var(--ink);
 
   --accent: #1a56c4;
   --accent-ink: #ffffff;

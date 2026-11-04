@@ -219,6 +219,23 @@ button.day:active {
   }
 }
 
+/* Calendário estreito (feature 062): o texto de estado dá lugar ao símbolo ✓ ou ◐; o nome acessível
+   da célula continua por extenso. A largura é a do próprio calendário (.month), não a da janela. */
+.glyph {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+@container (max-width: 479px) {
+  .statusText {
+    display: none;
+  }
+
+  .glyph {
+    font-size: 14px;
+  }
+}
+
 /* Marca de cruzada guardada para jogar sem rede (feature 041); o texto está no nome acessível. */
 .offline {
   position: absolute;

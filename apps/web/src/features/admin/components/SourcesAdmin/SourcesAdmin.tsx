@@ -1,5 +1,8 @@
 import { puzzleSourceNames, type AdminSource, type PuzzleSourceId } from '@cruzadinha/shared'
-import { useState } from 'react'
+import { DragDropProvider } from '@dnd-kit/react'
+import { Accessibility, PointerActivationConstraints, PointerSensor } from '@dnd-kit/dom'
+import { move } from '@dnd-kit/helpers'
+import { useId, useState, type KeyboardEvent } from 'react'
 import { Button } from '../../../../shared/components/Button/Button'
 import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
@@ -7,6 +10,15 @@ import { Notice } from '../../../../shared/components/Notice/Notice'
 import { VisuallyHidden } from '../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { useAdminSources } from '../../hooks/useAdminSources/useAdminSources'
+import {
+  announceCanceled,
+  announceDropped,
+  announceGrabbed,
+  announceMoved,
+  moveBy,
+  SORT_INSTRUCTIONS,
+} from '../../helpers/sortable-announcements/sortable-announcements'
+import { SortableRow } from '../SortableRow/SortableRow'
 import styles from './SourcesAdmin.module.css'
 
 type Row = { id: PuzzleSourceId; visible: boolean }
@@ -21,6 +33,17 @@ function sameRows(a: readonly Row[], b: readonly Row[]): boolean {
     a.every((row, i) => row.id === b[i]?.id && row.visible === b[i].visible)
   )
 }
+
+// Ponteiro: mouse e caneta começam pela alça; no toque, ao mexer 5 px (sem espera). Sem a
+// Accessibility do dnd-kit: o teclado e os anúncios são os daqui (WCAG 2.5.7).
+const SENSORS = [
+  PointerSensor.configure({
+    activationConstraints: (event) =>
+      event.pointerType === 'touch'
+        ? [new PointerActivationConstraints.Distance({ value: 5 })]
+        : undefined,
+  }),
+]
 
 function failureText(error: unknown): string {
   if (error instanceof ApiRequestError && error.code === 'no-visible-source') {
@@ -40,6 +63,10 @@ export function SourcesAdmin() {
   const [draft, setDraft] = useState<Row[] | null>(null)
   const [announcement, setAnnouncement] = useState('')
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
+  // Linha pega (por teclado ou ponteiro) e a ordem de antes, para o Esc e o arraste cancelado.
+  const [grabbed, setGrabbed] = useState<PuzzleSourceId | null>(null)
+  const [origin, setOrigin] = useState<Row[] | null>(null)
+  const hintId = useId()
 
   if (query.isPending) return <LoadingState screen="library" level={2} />
   if (query.isError) {
@@ -62,14 +89,57 @@ export function SourcesAdmin() {
     if (message) setAnnouncement(message)
   }
 
-  function move(index: number, by: -1 | 1) {
-    const target = index + by
-    const row = rows[index]
-    if (row === undefined || target < 0 || target >= rows.length) return
-    const next = [...rows]
-    next.splice(index, 1)
-    next.splice(target, 0, row)
-    change(next, `${puzzleSourceNames[row.id]} agora na posição ${target + 1} de ${rows.length}.`)
+  function nameOf(id: PuzzleSourceId) {
+    return puzzleSourceNames[id]
+  }
+
+  function release() {
+    setGrabbed(null)
+    setOrigin(null)
+  }
+
+  function cancelMove() {
+    if (grabbed === null || origin === null) return
+    change(
+      origin,
+      announceCanceled(
+        nameOf(grabbed),
+        origin.findIndex((r) => r.id === grabbed) + 1,
+        origin.length,
+      ),
+    )
+    release()
+  }
+
+  function onHandleKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    id: PuzzleSourceId,
+    index: number,
+  ) {
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault()
+      if (grabbed === id) {
+        setAnnouncement(announceDropped(nameOf(id), index + 1, rows.length))
+        release()
+      } else {
+        setGrabbed(id)
+        setOrigin(rows)
+        setAnnouncement(announceGrabbed(nameOf(id), index + 1, rows.length))
+      }
+      return
+    }
+    if (grabbed !== id) return
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      cancelMove()
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      const by = event.key === 'ArrowUp' ? -1 : 1
+      const target = index + by
+      if (target < 0 || target >= rows.length) return
+      change(moveBy(rows, index, by), announceMoved(nameOf(id), target + 1, rows.length))
+    }
   }
 
   function toggle(index: number, visible: boolean) {
@@ -93,52 +163,61 @@ export function SourcesAdmin() {
   return (
     <div className={styles.admin}>
       <p className={styles.lead}>
-        A ordem vale para as abas do calendário e para os cartões de "Hoje"; a primeira fonte
-        visível abre por padrão. Uma fonte escondida some das listas para todos, mas guarda tudo e
-        pode voltar.
+        A ordem vale para as abas do calendário; a primeira fonte visível abre por padrão. Uma fonte
+        escondida some das listas para todos, mas guarda tudo e pode voltar. Arraste pela alça para
+        reordenar.
       </p>
-      <ol className={styles.list}>
-        {rows.map((row, index) => {
-          const name = puzzleSourceNames[row.id]
-          return (
-            <li key={row.id} className={styles.row}>
-              <span className={styles.position} aria-hidden="true">
-                {index + 1}
-              </span>
+      <VisuallyHidden>
+        <span id={hintId}>{SORT_INSTRUCTIONS}</span>
+      </VisuallyHidden>
+      <DragDropProvider
+        sensors={SENSORS}
+        plugins={(defaults) => defaults.filter((plugin) => plugin !== Accessibility)}
+        onDragStart={() => setOrigin(rows)}
+        onDragOver={(event) => setDraft((current) => move(current ?? saved, event))}
+        onDragEnd={(event) => {
+          if (event.canceled && origin) {
+            change(origin)
+          } else {
+            const id = event.operation.source?.id
+            const position = rows.findIndex((row) => row.id === id) + 1
+            if (typeof id === 'string' && position > 0) {
+              setAnnouncement(announceDropped(nameOf(id as PuzzleSourceId), position, rows.length))
+            }
+          }
+          setOrigin(null)
+        }}
+      >
+        <ol className={styles.list}>
+          {rows.map((row, index) => (
+            <SortableRow
+              key={row.id}
+              id={row.id}
+              index={index}
+              name={nameOf(row.id)}
+              describedBy={hintId}
+              grabbed={grabbed === row.id}
+              onKeyDown={(event) => onHandleKeyDown(event, row.id, index)}
+              onBlur={() => {
+                if (grabbed === row.id) cancelMove()
+              }}
+            >
               <label className={styles.visible}>
                 <input
                   type="checkbox"
                   checked={row.visible}
                   onChange={(event) => toggle(index, event.target.checked)}
                 />
-                <span className={styles.name}>{name}</span>
+                <span className={styles.name}>{nameOf(row.id)}</span>
                 <VisuallyHidden>{row.visible ? ' (visível)' : ' (escondida)'}</VisuallyHidden>
                 <span aria-hidden="true" className={styles.state}>
                   {row.visible ? 'Visível' : 'Escondida'}
                 </span>
               </label>
-              <span className={styles.moves}>
-                <Button
-                  variant="icon"
-                  aria-label={`Subir ${name}`}
-                  disabled={index === 0}
-                  onClick={() => move(index, -1)}
-                >
-                  ↑
-                </Button>
-                <Button
-                  variant="icon"
-                  aria-label={`Descer ${name}`}
-                  disabled={index === rows.length - 1}
-                  onClick={() => move(index, 1)}
-                >
-                  ↓
-                </Button>
-              </span>
-            </li>
-          )
-        })}
-      </ol>
+            </SortableRow>
+          ))}
+        </ol>
+      </DragDropProvider>
       <div className={styles.actions}>
         <Button
           variant="primary"

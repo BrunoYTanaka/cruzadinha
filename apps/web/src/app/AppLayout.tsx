@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
-import { Button, buttonClass } from '../shared/components/Button/Button'
+import { buttonClass } from '../shared/components/Button/Button'
+import { Menu, MenuItem } from '../shared/components/Menu/Menu'
+import { initials } from '../shared/helpers/initials/initials'
 import { Notice } from '../shared/components/Notice/Notice'
 import {
   buildLoginPath,
-  useLogoutMutation,
   useSessionQuery,
   clearAccountDeleted,
   clearEnded,
@@ -13,11 +14,8 @@ import {
 } from '../features/session'
 import { clearRememberedSource } from '../features/library'
 import {
-  clearAccountData,
   discardOtherAccounts,
-  hasOutbox,
   InstallButton,
-  LogoutConfirm,
   OfflineNotice,
   PendingOwnerNotice,
   useOutboxDrain,
@@ -40,7 +38,6 @@ export function AppLayout() {
   // `useSessionQuery` só consulta a sessão depois de o servidor acordar, para não competir com a
   // espera inicial; os loaders já preenchem o cache antes disso nas telas protegidas.
   const session = useSessionQuery()
-  const logout = useLogoutMutation()
   const location = useLocation()
   const navigate = useNavigate()
   const onAuthPage = location.pathname === '/login' || location.pathname === '/cadastro'
@@ -63,12 +60,6 @@ export function AppLayout() {
   useEffect(() => {
     if (userId) void discardOtherAccounts(userId)
   }, [userId])
-  const [confirmingLogout, setConfirmingLogout] = useState(false)
-  async function leave() {
-    setConfirmingLogout(false)
-    if (userId) await clearAccountData(userId)
-    logout.mutate()
-  }
   return (
     <div className={styles.shell}>
       <a href="#conteudo" className={styles.skip}>
@@ -93,26 +84,37 @@ export function AppLayout() {
               {attention > 0 ? attention : ''}
             </span>
           </Link>
+          <div className={styles.menu}>
+            <Menu
+              label="Menu"
+              buttonContent={
+                <>
+                  <svg className={styles.menuIcon} viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 7h16M4 12h16M4 17h16" />
+                  </svg>
+                </>
+              }
+              placement="popover"
+              buttonClassName={styles.menuButton}
+            >
+              <MenuItem onSelect={() => void navigate('/calendario')}>Calendário</MenuItem>
+              <MenuItem onSelect={() => void navigate('/estatisticas')}>Estatísticas</MenuItem>
+              <MenuItem onSelect={() => void navigate('/x1')}>
+                {attention > 0 ? `x1 (${attention} aguardando)` : 'x1'}
+              </MenuItem>
+            </Menu>
+          </div>
           <InstallButton />
           <SettingsButton />
           {session.data ? (
             <>
               <Link
                 to="/conta"
-                className={`${styles.who} ${styles.email}`}
+                className={styles.avatar}
                 aria-label={`Sua conta (${session.data.user.email})`}
               >
-                {session.data.user.email}
+                {initials(session.data.user.email)}
               </Link>
-              <Button
-                variant="quiet"
-                onClick={() =>
-                  userId !== null && hasOutbox(userId) ? setConfirmingLogout(true) : logout.mutate()
-                }
-                disabled={logout.isPending}
-              >
-                Sair
-              </Button>
             </>
           ) : session.data === null ? (
             // Visitante (feature 013): sempre dito por texto, com um caminho para entrar.
@@ -158,11 +160,6 @@ export function AppLayout() {
         <Outlet />
       </main>
       <SettingsDialog />
-      <LogoutConfirm
-        open={confirmingLogout}
-        onConfirm={() => void leave()}
-        onCancel={() => setConfirmingLogout(false)}
-      />
     </div>
   )
 }

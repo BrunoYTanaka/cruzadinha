@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link } from '../Link/Link'
 import styles from '../ErrorState/ErrorState.module.css'
 
 export function NotFoundPage() {

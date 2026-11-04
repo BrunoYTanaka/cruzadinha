@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../Link/Link'
 import { useOnline } from '../../hooks/useOnline/useOnline'
 import { ErrorState } from '../ErrorState/ErrorState'
 

@@ -201,8 +201,41 @@ describe('tokens', () => {
   })
 
   it('os dois temas definem os mesmos tokens', () => {
-    expect(Object.keys(themes['escuro'] ?? {}).sort()).toEqual(
-      Object.keys(themes['claro'] ?? {}).sort(),
-    )
+    // --edge é lido à parte: no claro é var(--ink), não um valor hexadecimal.
+    const names = (tokens: Tokens) =>
+      Object.keys(tokens)
+        .filter((name) => name !== '--edge')
+        .sort()
+    expect(names(themes['escuro'] ?? {})).toEqual(names(themes['claro'] ?? {}))
   })
+})
+
+describe('--edge (contorno dos controles, feature 062)', () => {
+  const edgeOf = (css: string) => css.match(/--edge:\s*([^;]+);/)?.[1]?.trim()
+
+  it('no tema claro vem de --ink e no escuro é um valor próprio, igual nos dois blocos', () => {
+    expect(edgeOf(lightCss)).toBe('var(--ink)')
+    const media = darkCss.slice(0, darkCss.indexOf(":root[data-theme='dark']"))
+    expect(edgeOf(media)).toBeDefined()
+    expect(edgeOf(media)).toBe(edgeOf(darkBlock(darkCss)))
+  })
+
+  it('--focus segue o valor do tema (já existia)', () => {
+    expect(themes['claro']?.['--focus']).toBe('#1a56c4')
+    expect(themes['escuro']?.['--focus']).toBe('#8db4ff')
+  })
+
+  it.each(['--bg', '--surface'])('o contorno escuro contra %s tem pelo menos 3:1', (background) => {
+    const tokens = themes['escuro'] ?? {}
+    const edge = edgeOf(darkBlock(darkCss)) ?? ''
+    expect(contrast(edge, tokens[background] ?? '')).toBeGreaterThanOrEqual(3)
+  })
+
+  it.each(['--bg', '--surface'])(
+    'o contorno claro (--ink) contra %s tem pelo menos 3:1',
+    (background) => {
+      const tokens = themes['claro'] ?? {}
+      expect(contrast(tokens['--ink'] ?? '', tokens[background] ?? '')).toBeGreaterThanOrEqual(3)
+    },
+  )
 })

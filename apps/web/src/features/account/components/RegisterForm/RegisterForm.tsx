@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import { register, resendVerification } from '../../../../shared/services/api/auth/auth'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button } from '../../../../shared/components/Button/Button'
