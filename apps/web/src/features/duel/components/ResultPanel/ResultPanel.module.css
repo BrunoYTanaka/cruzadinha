@@ -5,8 +5,10 @@
 
 .headline {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font:
+    800 26px 'Fraunces Variable',
+    Georgia,
+    serif;
 }
 
 .reason {
@@ -17,12 +19,15 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   font-variant-numeric: tabular-nums;
 }
 
 .table th,
 .table td {
-  padding: 8px 6px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   font-size: 15px;
@@ -30,6 +35,16 @@
 
 .table th {
   font-weight: 700;
+}
+
+.table thead th {
+  background: var(--control);
+  color: var(--mute);
+  font-size: 13px;
+}
+
+.table tr:last-child > * {
+  border-bottom: 0;
 }
 
 .links {

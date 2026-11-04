@@ -55,6 +55,11 @@
   }
 }
 
+/* Telas de erro (feature 062): as mesmas casas, paradas. */
+.still .cell {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cell {
     animation: none;

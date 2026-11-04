@@ -1,5 +1,6 @@
 import { healthStatusSchema, type HealthStatus } from '@cruzadinha/shared'
 import { useQuery } from '@tanstack/react-query'
+import styles from './StatusPage.module.css'
 import { RequiresConnection } from '../../shared/components/RequiresConnection/RequiresConnection'
 
 async function fetchHealth(): Promise<HealthStatus> {
@@ -18,11 +19,18 @@ function Status() {
       : 'indisponível'
 
   return (
-    <main>
-      <h1>Cruzadinha</h1>
-      <p>Servidor: {server}</p>
+    <main className={styles.page}>
+      <h1 className={styles.title}>Cruzadinha</h1>
+      <p
+        className={styles.chip}
+        data-state={health.isPending ? 'wait' : health.isSuccess ? 'ok' : 'bad'}
+      >
+        Servidor: {server}
+      </p>
       {health.isSuccess && (
-        <p>Banco: {health.data.database === 'up' ? 'disponível' : 'indisponível'}</p>
+        <p className={styles.chip} data-state={health.data.database === 'up' ? 'ok' : 'bad'}>
+          Banco: {health.data.database === 'up' ? 'disponível' : 'indisponível'}
+        </p>
       )}
     </main>
   )

@@ -58,11 +58,11 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 ## Phase 6: User Story 5 — Demais telas (P2, PR 5)
 
 - [X] T029 [P] [US5] `features/account/components/*` (LoginForm, RegisterForm, ForgotPasswordForm, ResetPasswordForm, VerifyEmailForm, ChangeEmailForm, ChangePasswordForm, ConfirmEmailChange, ResendLink, DeleteAccountDialog, LogoutOthersButton, AccountSection) e `pages/confirm-email`: usar `Button`, `Link`, `Notice`, `Dialog` novos; ícone de sair no botão Sair
-- [ ] T030 [P] [US5] `features/stats/components/StatsView` conforme a aba Telas
-- [ ] T031 [P] [US5] `features/duel/components/*` (CreateForm, DuelList, DuelScreen, JoinByCode, ShareLinkPanel, ResultPanel, RulesDialog, ForfeitConfirm) conforme as telas do x1; `DuelBoard` só no que cerca o tabuleiro
+- [X] T030 [P] [US5] `features/stats/components/StatsView` conforme a aba Telas
+- [X] T031 [P] [US5] `features/duel/components/*` (CreateForm, DuelList, DuelScreen, JoinByCode, ShareLinkPanel, ResultPanel, RulesDialog, ForfeitConfirm) conforme as telas do x1; `DuelBoard` só no que cerca o tabuleiro
 - [X] T032 [P] [US5] `features/admin/components/SourcesAdmin/SourcesAdmin.tsx`: estilo novo e trocar o texto da linha 96 para não citar os cartões de "Hoje"; atualizar `SourcesAdmin.test.tsx`
-- [ ] T033 [P] [US5] `shared/components/ErrorState`, `app/RouteError.tsx`, `shared/components/LoadingState`, `NotFoundPage`, `RequiresConnection` e `pages/status` (`StatusPage`): estilo novo, um `h1` por página
-- [ ] T034 [P] [US5] `features/settings` (diálogo de configurações), `features/import` (`ImportOffer`) e avisos de `features/offline`: `Dialog`, `Button`, `Notice` e `Link` novos, sem mudar comportamento
+- [X] T033 [P] [US5] `shared/components/ErrorState`, `app/RouteError.tsx`, `shared/components/LoadingState`, `NotFoundPage`, `RequiresConnection` e `pages/status` (`StatusPage`): estilo novo, um `h1` por página
+- [X] T034 [P] [US5] `features/settings` (diálogo de configurações), `features/import` (`ImportOffer`) e avisos de `features/offline`: `Dialog`, `Button`, `Notice` e `Link` novos, sem mudar comportamento
 - [X] T035 [US5] Trocar os textos de link das telas alteradas pelo `Link` (`shared/components/Link/Link`) e conferir com `grep` que nenhum `<a>` de texto ficou fora, exceto na landing; conferir com `grep` que o CSS alterado não tem cor hexadecimal fora de `shared/themes/` (SC-002)
 - [ ] T036 [US5] Conferência tela a tela com Playwright contra `design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
 - [ ] T037 [US5] Rodar axe nas telas alteradas e `e2e/sem-saltos.spec.ts`; comparar landing e tabuleiro com as capturas de T002 e confirmar que não há diferença (FR-019, SC-007)

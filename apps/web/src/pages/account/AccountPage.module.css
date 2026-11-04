@@ -23,14 +23,15 @@
 .danger {
   display: grid;
   gap: 12px;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  padding: 18px;
+  border: 2px solid var(--bad);
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
 .dangerTitle {
   margin: 0;
+  color: var(--bad);
   font-size: 17px;
   font-weight: 700;
 }

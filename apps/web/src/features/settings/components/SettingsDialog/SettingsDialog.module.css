@@ -249,8 +249,8 @@
   gap: 2px;
   margin: 0;
   padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
 }
 
 .legend {
