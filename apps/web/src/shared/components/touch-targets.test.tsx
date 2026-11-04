@@ -39,10 +39,26 @@ describe('alvos de toque (fora do tabuleiro)', () => {
   it.each([
     ['Toolbar.module.css', '.iconButton'],
     ['LegendButton.module.css', '.button'],
+    // Feature 062: fechar do Dialog e alça de arrastar da Administração.
+    ['Dialog.module.css', '.close'],
+    ['DragHandle.module.css', '.handle'],
   ])('%s %s tem pelo menos 44 × 44 px', (file, selector) => {
     const block = rule(css(file), selector)
     expect(size(block, 'width')).toBeGreaterThanOrEqual(44)
     expect(size(block, 'height')).toBeGreaterThanOrEqual(44)
+  })
+
+  it('o botão de menu do cabeçalho e os itens do menu têm pelo menos 44 px (feature 062)', () => {
+    expect(
+      size(rule(css('AppLayout.module.css'), '.menuButton'), 'min-width'),
+    ).toBeGreaterThanOrEqual(44)
+    expect(size(rule(css('Menu.module.css'), '.item'), 'min-height')).toBeGreaterThanOrEqual(44)
+  })
+
+  it('exceção assumida: o círculo da conta tem 38 px (acima do mínimo de 24 px do WCAG 2.5.8)', () => {
+    const block = rule(css('AppLayout.module.css'), '.avatar')
+    expect(size(block, 'width')).toBe(38)
+    expect(size(block, 'height')).toBe(38)
   })
 
   it('a navegação do calendário tem 44 px de largura (a altura vem do botão base)', () => {

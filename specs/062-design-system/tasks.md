@@ -31,7 +31,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T011 [P] [US2] `shared/components/Notice/Notice.tsx`: variante `ok` (`role="status"`, símbolo "✓", `--ok`/`--ok-tint`), estado por símbolo e borda; atualizar `Notice.test.tsx` (inclui axe)
 - [X] T012 [P] [US2] `shared/components/Dialog/Dialog.tsx`: botão de fechar em ícone no canto superior direito (`--tap`), `aria-label="Fechar"`, centralizado; manter `closeOnBackdrop` e foco; atualizar `Dialog.test.tsx`
 - [X] T013 [P] [US2] Conferir `shared/components/Menu/Menu.tsx`: popover sem teclado na tela, folha com itens de 48 px com teclado na tela, `--edge` e overlay; atualizar `Menu.test.tsx`
-- [ ] T014 [US2] Atualizar `shared/components/touch-targets.test.tsx` para cobrir `Link`, fechar do `Dialog` e demais componentes
+- [X] T014 [US2] Atualizar `shared/components/touch-targets.test.tsx` para cobrir `Link`, fechar do `Dialog` e demais componentes
 - [ ] T015 [US2] Abrir PR 2 `feat(web): align the base components with the design system`
 
 **Checkpoint**: componentes prontos e testados; telas ainda usam os atuais onde não foram trocadas.
