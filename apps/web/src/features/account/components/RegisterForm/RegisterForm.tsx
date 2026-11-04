@@ -8,6 +8,7 @@ import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
+import { AuthLayout } from '../../../../shared/components/AuthLayout/AuthLayout'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import {
   authMessages,
@@ -101,7 +102,11 @@ export function RegisterForm() {
 
   if (sentTo) {
     return (
-      <div className={styles.page}>
+      <AuthLayout
+        headline="Crie sua conta."
+        lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
+        rows={['CRIE', 'SUA', 'conta']}
+      >
         <div className={styles.card}>
           <h1 className={styles.title} ref={sentHeading} tabIndex={-1}>
             Confira seu e-mail
@@ -130,12 +135,16 @@ export function RegisterForm() {
             Já confirmou? <Link to="/login">Entrar</Link>
           </p>
         </div>
-      </div>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Crie sua conta."
+      lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
+      rows={['CRIE', 'SUA', 'conta']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
         <p className={styles.lead}>
@@ -175,13 +184,17 @@ export function RegisterForm() {
           Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }
 
 function RegistrationClosed() {
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Crie sua conta."
+      lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
+      rows={['CRIE', 'SUA', 'conta']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
         <p role="status" className={styles.lead}>
@@ -194,6 +207,6 @@ function RegistrationClosed() {
           <Link to="/">Jogar sem entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }
