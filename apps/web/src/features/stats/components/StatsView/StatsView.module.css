@@ -69,3 +69,11 @@
 .table tr:last-child > * {
   border-bottom: 0;
 }
+
+/* 320 px: células mais justas para a tabela caber sem rolagem lateral. */
+@media (max-width: 400px) {
+  .table th,
+  .table td {
+    padding: 10px 6px;
+  }
+}

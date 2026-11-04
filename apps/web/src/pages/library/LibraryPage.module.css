@@ -1,5 +1,6 @@
 .page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   /* minmax(0, 1fr): sem isso a linha de abas (que rola) alarga a coluna além da tela. */
   grid-template-columns: minmax(0, 1fr);
   --bar-attach: 20px;

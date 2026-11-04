@@ -70,13 +70,15 @@ export function AppLayout() {
         <div className={styles.actions}>
           <Link
             to="/estatisticas"
-            className={`${buttonClass({ variant: 'quiet' })} ${styles.statsLink}`}
+            className={`${buttonClass({ variant: 'quiet' })} ${styles.statsLink} ${location.pathname.startsWith('/estatisticas') ? styles.current : ''}`}
+            aria-current={location.pathname.startsWith('/estatisticas') ? 'page' : undefined}
           >
             Estatísticas
           </Link>
           <Link
             to="/x1"
-            className={`${buttonClass({ variant: 'quiet' })} ${styles.duelLink}`}
+            className={`${buttonClass({ variant: 'quiet' })} ${styles.duelLink} ${location.pathname.startsWith('/x1') ? styles.current : ''}`}
+            aria-current={location.pathname.startsWith('/x1') ? 'page' : undefined}
             aria-label={attention > 0 ? `x1, ${attention} aguardando` : 'x1'}
           >
             x1
@@ -104,32 +106,34 @@ export function AppLayout() {
               </MenuItem>
             </Menu>
           </div>
-          <InstallButton />
-          <SettingsButton />
-          {session.data ? (
-            <>
-              <Link
-                to="/conta"
-                className={styles.avatar}
-                aria-label={`Sua conta (${session.data.user.email})`}
-              >
-                {initials(session.data.user.email)}
-              </Link>
-            </>
-          ) : session.data === null ? (
-            // Visitante (feature 013): sempre dito por texto, com um caminho para entrar.
-            <>
-              <span className={styles.who}>Visitante</span>
-              {onAuthPage ? null : (
+          <div className={styles.tail}>
+            <InstallButton />
+            <SettingsButton />
+            {session.data ? (
+              <>
                 <Link
-                  to={loginPath}
-                  className={`${buttonClass({ variant: 'quiet' })} ${styles.login}`}
+                  to="/conta"
+                  className={styles.avatar}
+                  aria-label={`Sua conta (${session.data.user.email})`}
                 >
-                  Entrar
+                  {initials(session.data.user.email)}
                 </Link>
-              )}
-            </>
-          ) : null}
+              </>
+            ) : session.data === null ? (
+              // Visitante (feature 013): sempre dito por texto, com um caminho para entrar.
+              <>
+                <span className={styles.who}>Visitante</span>
+                {onAuthPage ? null : (
+                  <Link
+                    to={loginPath}
+                    className={`${buttonClass({ variant: 'primary' })} ${styles.login}`}
+                  >
+                    Entrar
+                  </Link>
+                )}
+              </>
+            ) : null}
+          </div>
         </div>
       </header>
       <OfflineNotice />

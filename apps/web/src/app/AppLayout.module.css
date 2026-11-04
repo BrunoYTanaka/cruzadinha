@@ -22,20 +22,38 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  min-height: 60px;
   padding: 8px max(var(--gutter), env(safe-area-inset-right, 0px)) 8px
     max(var(--gutter), env(safe-area-inset-left, 0px));
-  border-bottom: 1px solid var(--line);
+  border-bottom: 2px solid var(--edge);
   background: var(--surface);
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 18px;
   color: var(--ink);
-  font-size: 18px;
-  font-weight: 700;
+  font: 800 22px var(--font-title);
   letter-spacing: -0.01em;
   text-decoration: none;
   transition: color 120ms;
+}
+
+/* Quadrado amarelo da marca (feature 062). */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  background: var(--sel);
+  box-shadow: 2px 2px 0 var(--edge);
+  color: var(--sel-ink);
+  font: 800 17px var(--font-title);
 }
 
 @media (hover: hover) {
@@ -52,13 +70,28 @@
 
 .spacer {
   flex: 1;
+  order: 1;
 }
 
+/* Os filhos de `.actions` entram direto na linha do cabeçalho: os links ficam junto da marca e o
+   resto (`.tail`) vai para a direita, depois do espaçador. */
 .actions {
+  display: contents;
+}
+
+.tail {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  order: 2;
+}
+
+/* Página atual: amarelo, como no artefato (feature 062). */
+.current {
+  background-color: var(--sel);
+  border-color: var(--edge);
+  color: var(--sel-ink);
 }
 
 .main {
@@ -143,9 +176,12 @@
   display: none;
 }
 
-.menuButton {
+.menu .menuButton {
   min-width: var(--tap);
   padding: 0 10px;
+  border-color: transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
 }
 
 .menuIcon {
@@ -174,11 +210,40 @@
     gap: 8px;
   }
 
-  .actions {
+  .tail {
     gap: 4px;
   }
 
   .brand {
-    font-size: 16px;
+    margin-right: 0;
+    font-size: 18px;
+  }
+}
+
+/* Telas estreitas: sem o quadrado da marca, para a linha caber em 320 px. */
+@media (max-width: 400px) {
+  .mark {
+    display: none;
+  }
+
+  .header {
+    gap: 4px;
+  }
+
+  .brand {
+    font-size: 17px;
+  }
+
+  .login {
+    padding: 0 10px;
+  }
+
+  /* "Visitante" só para leitor de tela: "Entrar" já mostra que não há conta. */
+  .who {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 }
