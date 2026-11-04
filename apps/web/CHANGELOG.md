@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.18.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.18.1...web-v0.18.2) (2026-11-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.39.0 to 0.40.0
+
 ## [0.18.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.18.0...web-v0.18.1) (2026-11-04)
 
 
