@@ -36,8 +36,7 @@
 
 .heading {
   margin: 8px 0 0;
-  font-size: 17px;
-  font-weight: 700;
+  font: 800 19px/1.2 var(--font-title);
 }
 
 .table {

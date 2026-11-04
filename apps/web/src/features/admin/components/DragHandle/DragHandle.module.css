@@ -4,10 +4,10 @@
   width: var(--tap);
   height: var(--tap);
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--mute);
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-md);
+  background-color: var(--control);
+  color: var(--ink);
   cursor: grab;
   touch-action: none;
 }

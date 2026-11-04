@@ -12,10 +12,49 @@
   font: 800 28px/1.1 var(--font-title);
 }
 
-.email {
-  margin: 0;
+.identity {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.idrow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--edge);
+  border-radius: 50%;
+  background: var(--sel);
+  color: var(--sel-ink);
+  font: 800 20px var(--font-title);
+  letter-spacing: 0.02em;
+}
+
+.who {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.who small {
   color: var(--mute);
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.email {
+  font: 800 17px var(--font-title);
   overflow-wrap: anywhere;
 }
 

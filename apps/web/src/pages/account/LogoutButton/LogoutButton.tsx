@@ -20,6 +20,7 @@ export function LogoutButton({ userId }: { userId: string }) {
     <>
       <Button
         variant="secondary"
+        block
         onClick={() => (hasOutbox(userId) ? setConfirming(true) : logout.mutate())}
         disabled={logout.isPending}
       >

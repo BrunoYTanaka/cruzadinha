@@ -28,11 +28,11 @@
 .visible input {
   width: 20px;
   height: 20px;
-  accent-color: var(--accent);
+  accent-color: var(--sel);
 }
 
 .name {
-  font-weight: 600;
+  font: 800 17px var(--font-title);
 }
 
 /* Largura reservada para o estado: alternar não muda o tamanho da linha. */
