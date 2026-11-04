@@ -54,7 +54,7 @@ async function sleepingApi(page: Page, options: { session: boolean }): Promise<S
 // Lê cabeçalho e corpo a cada 250 ms até o calendário aparecer.
 async function sample(page: Page) {
   const rows: { header: string; wake: boolean; error: boolean; calendar: boolean }[] = []
-  const calendar = page.getByRole('heading', { level: 1, name: 'Hoje' })
+  const calendar = page.getByRole('heading', { level: 1, name: 'Escolha um dia' })
   for (let step = 0; step < 80; step++) {
     const row = {
       header: (
@@ -65,7 +65,7 @@ async function sample(page: Page) {
       ).replace(/\s+/g, ' '),
       wake: await page.getByText(WAKE_TEXT).isVisible(),
       error: await page.getByText(ERROR_TITLE).isVisible(),
-      calendar: await calendar.isVisible(),
+      calendar: (await calendar.count()) > 0,
     }
     rows.push(row)
     if (row.calendar) break

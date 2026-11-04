@@ -4,6 +4,7 @@ import {
   fillSolution,
   login,
   resetAndSeed,
+  todayLink,
   todaySolution,
   typedLetter,
 } from './support'
@@ -21,8 +22,8 @@ test('conta criada pela CLI, biblioteca, jogo, conclusão, modo leitura e jogar 
   createAccount('ana@exemplo.com', 'uma-senha-longa-123')
   await login(page, 'ana@exemplo.com', 'uma-senha-longa-123')
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
+  await todayLink(page).click()
 
   const board = page.getByRole('grid')
   await expect(board).toBeVisible()

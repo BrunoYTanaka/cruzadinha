@@ -84,6 +84,17 @@ export function brasiliaToday(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
 }
 
+// O dia de hoje na grade do calendário: o caminho para o jogo desde que a seção "Hoje" saiu (feature 061).
+export function todayLink(page: Page): Locator {
+  return page.locator(`a[data-date="${brasiliaToday()}"]`)
+}
+
+// Abre a cruzada de hoje de uma fonte: escolhe a aba e usa o dia de hoje da grade.
+export async function openSourceToday(page: Page, source: string): Promise<void> {
+  await page.getByRole('tab', { name: new RegExp(`^${source}`) }).click()
+  await todayLink(page).click()
+}
+
 export async function resetAndSeed(): Promise<void> {
   await resetDatabase()
   seedDatabase()
@@ -94,7 +105,10 @@ export async function login(page: Page, email = SEED_EMAIL, password = SEED_PASS
   await page.getByLabel('E-mail').fill(email)
   await page.getByLabel('Senha').fill(password)
   await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.getByRole('heading', { level: 1, name: 'Hoje' }).waitFor()
+  // O h1 do calendário é visualmente escondido (feature 061): basta estar na página.
+  await page
+    .getByRole('heading', { level: 1, name: 'Escolha um dia' })
+    .waitFor({ state: 'attached' })
 }
 
 type Solution = { cells: (string | null)[][] }

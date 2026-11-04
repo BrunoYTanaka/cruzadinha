@@ -1,18 +1,54 @@
-.jump {
+/* O botão reserva sempre os 46 px; o painel flutua e nunca entra no fluxo (feature 061). */
+.wrap {
+  position: relative;
+  flex: none;
+}
+
+.button {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --jump-shift: deslocamento horizontal que o JumpToDate.tsx mede para o painel caber na janela. */
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
   display: grid;
   gap: 4px;
+  min-width: min(300px, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.25);
+  translate: var(--jump-shift, 0px) 0;
 }
 
 .fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  display: grid;
+  gap: 8px;
 }
 
 .field {
   display: grid;
   gap: 4px;
-  flex: 1 1 140px;
   font-size: 13px;
   font-weight: 500;
 }
@@ -31,7 +67,7 @@
   border-color: var(--bad);
 }
 
-/* Altura fixa: mostrar ou apagar a mensagem não desloca a grade. */
+/* Altura fixa: mostrar ou apagar a mensagem não muda o painel. */
 .error {
   min-height: 2.8em;
   margin: 0;

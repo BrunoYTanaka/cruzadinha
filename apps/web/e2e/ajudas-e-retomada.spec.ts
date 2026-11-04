@@ -6,6 +6,7 @@ import {
   resetAndSeed,
   solutionLetters,
   solveFirstAcrossWord,
+  todayLink,
   typeWord,
 } from './support'
 
@@ -15,7 +16,7 @@ test.beforeEach(async () => {
 
 async function openToday(page: Page) {
   await login(page)
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -81,7 +82,7 @@ for (const theme of ['light', 'dark'] as const) {
     await audit(page)
     await login(page)
     await audit(page)
-    await page.getByRole('link', { name: /^O Globo: / }).click()
+    await todayLink(page).click()
     await expect(page.getByRole('grid')).toBeVisible()
     // Com uma dica resolvida (fundo de sucesso e visto, feature 017), para o axe medir o texto sobre
     // esse fundo no tema.
@@ -95,7 +96,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 test('visitante: só a dica da palavra certa fica riscada (feature 016)', async ({ page }) => {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
   const { puzzle, solution } = await solveFirstAcrossWord(page)
   const [first, second] = puzzle.words.filter((word) => word.direction === 'across')

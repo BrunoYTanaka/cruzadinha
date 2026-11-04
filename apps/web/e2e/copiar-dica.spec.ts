@@ -1,6 +1,14 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { box, expectNear, resetAndSeed, solutionLetters, todayPuzzle, typeWord } from './support'
+import {
+  box,
+  expectNear,
+  resetAndSeed,
+  solutionLetters,
+  todayLink,
+  todayPuzzle,
+  typeWord,
+} from './support'
 
 // Feature 033: copiar a dica com duplo clique e fechar os ajustes ao clicar fora.
 
@@ -33,7 +41,7 @@ async function turnOnCopy(page: Page) {
 // horizontal. Devolve a clique da dica na lista e o texto esperado.
 async function openWithEnds(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
   const today = await todayPuzzle(page.request)
   const word = today.puzzle.words.find((item) => item.direction === 'across')

@@ -10,6 +10,7 @@ import {
   pressLetter,
   probe,
   resetAndSeed,
+  todayLink,
   todaySolution,
   typedLetter,
 } from './support'
@@ -36,7 +37,7 @@ async function openSettings(page: Page) {
 
 async function openToday(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -273,7 +274,7 @@ test.describe('023 US2: resposta ao mouse, ao pressionar e ao teclado', () => {
       .tap()
     expect(await backgroundImage(gear)).toBe('none')
 
-    await page.getByRole('link', { name: /^O Globo: / }).tap()
+    await todayLink(page).tap()
     const letter = page.getByRole('button', { name: /^Revelar letra/ })
     await letter.tap()
     expect(await backgroundImage(letter)).toBe('none')
@@ -428,10 +429,7 @@ test.describe('023 US3: link e botão distinguíveis', () => {
     await expect.poll(() => css(brand, 'color')).toBe(accent)
 
     // Cartão "Hoje" e dia do calendário: borda de destaque com o mouse e fundo ao pressionar.
-    for (const link of [
-      page.getByRole('link', { name: /^O Globo: / }),
-      page.locator('table a').first(),
-    ]) {
+    for (const link of [todayLink(page), page.locator('table a').first()]) {
       await link.hover()
       await expect.poll(() => css(link, 'border-top-color')).toBe(accent)
       await page.mouse.down()

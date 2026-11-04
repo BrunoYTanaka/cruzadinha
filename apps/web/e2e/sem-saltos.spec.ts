@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   box,
+  brasiliaToday,
   css,
   expectNear,
   fillSolution,
@@ -11,6 +12,7 @@ import {
   probe,
   resetAndSeed,
   solveFirstAcrossWord,
+  todayLink,
   todayPuzzle,
 } from './support'
 
@@ -40,7 +42,7 @@ async function lengthenClues(page: Page) {
 
 async function openToday(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -677,4 +679,52 @@ test('Imprimir: a faixa e o tabuleiro não se movem', async ({ page }) => {
   await page.getByRole('button', { name: 'Imprimir' }).click()
   expect(await box(strip)).toEqual(before.strip)
   expect(await box(page.getByRole('grid'))).toEqual(before.grid)
+})
+
+// Feature 061: o filtro de data fica atrás de um ícone e o painel flutua, sem empurrar nada.
+for (const viewport of [
+  { width: 360, height: 740 },
+  { width: 1280, height: 800 },
+]) {
+  test(`calendário em ${viewport.width} px: abrir e fechar o painel de data não move nada`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    await page.goto('/calendario')
+    const tabs = page.getByRole('tablist', { name: 'Fonte do calendário' })
+    const grid = page.getByRole('table')
+    const button = page.getByRole('button', { name: 'Ir para uma data' })
+    await expect(grid).toBeVisible()
+    const before = { tabs: await box(tabs), grid: await box(grid), button: await box(button) }
+
+    await button.click()
+    const panel = page.getByRole('group', { name: 'Ir para uma data' })
+    await expect(panel).toBeVisible()
+    const panelBox = await box(panel)
+    expect(panelBox.x).toBeGreaterThanOrEqual(0)
+    expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width)
+    expect(panelBox.width).toBeGreaterThanOrEqual(Math.min(300, viewport.width - 16) - 1)
+    for (const [key, locator] of [
+      ['tabs', tabs],
+      ['grid', grid],
+      ['button', button],
+    ] as const) {
+      const now = await box(locator)
+      expectNear(now.x, before[key].x)
+      expectNear(now.y, before[key].y)
+      expectNear(now.height, before[key].height)
+    }
+
+    await page.keyboard.press('Escape')
+    await expect(panel).toHaveCount(0)
+    await expect(button).toBeFocused()
+    expectNear((await box(grid)).y, before.grid.y)
+  })
+}
+
+test('calendário: escolher uma data no painel leva o foco ao dia', async ({ page }) => {
+  await page.goto('/calendario')
+  await page.getByRole('button', { name: 'Ir para uma data' }).click()
+  await page.getByLabel('Data', { exact: true }).fill(brasiliaToday())
+  await expect(todayLink(page)).toBeFocused()
 })

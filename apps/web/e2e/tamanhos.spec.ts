@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { login, resetAndSeed } from './support'
+import { login, resetAndSeed, todayLink } from './support'
 
 // Feature 011: medidas reais do layout de computador, das alças e do celular.
 // A cruzada de amostra do seed é 5 × 5; as medidas de referência do celular e da biblioteca foram
@@ -42,7 +42,7 @@ test.beforeEach(async () => {
 
 async function openToday(page: Page) {
   await login(page)
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -227,7 +227,9 @@ test.describe('biblioteca no computador', () => {
     await drag(page, handle, -2000, 0)
     await expect.poll(() => calendarWidth(page)).toBeCloseTo(720, 0)
     // O título acompanha a mesma coluna.
-    const title = await page.getByRole('heading', { level: 1, name: 'Hoje' }).boundingBox()
+    const title = await page
+      .getByRole('heading', { level: 1, name: 'Escolha um dia' })
+      .boundingBox()
     const box = await calendar(page).boundingBox()
     expect(title?.x ?? 0).toBeGreaterThanOrEqual((box?.x ?? 0) - 1)
 
@@ -291,7 +293,7 @@ test.describe('celular', () => {
     expect(day?.height).toBeCloseTo(BASELINE_PHONE.dayHeight, 0)
     await expect(page.getByRole('slider')).toHaveCount(0)
 
-    await page.getByRole('link', { name: /^O Globo: / }).click()
+    await todayLink(page).click()
     const grid = await page.getByRole('grid').boundingBox()
     expect(grid?.width).toBeCloseTo(BASELINE_PHONE.grid, 0)
     expect(grid?.height).toBeCloseTo(BASELINE_PHONE.grid, 0)

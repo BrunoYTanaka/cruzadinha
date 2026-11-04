@@ -12,6 +12,7 @@ import {
 import { addMonths, todayInBrasilia } from '../../shared/helpers/dates/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { useViewer } from '../../features/session'
+import { VisuallyHidden } from '../../shared/components/VisuallyHidden/VisuallyHidden'
 import { useOnline } from '../../shared/hooks/useOnline/useOnline'
 import { useVisibleSources } from '../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery/useMediaQuery'
@@ -29,10 +30,9 @@ import {
   useSourceChoice,
   isSourceDown,
   readNoPuzzleDates,
-  SourceTabs,
+  SourceBar,
   type StatusFilter,
   completedInMonth,
-  TodayCards,
   useLibraryWidth,
   libraryOf,
   useSourceLibraries,
@@ -101,8 +101,7 @@ function LibraryContent() {
     )
   }
 
-  // O carregamento e o erro da fonte escolhida ficam só na área do calendário: os cartões de hoje
-  // aparecem sempre (FR-014).
+  // O carregamento e o erro da fonte escolhida ficam só na área do calendário.
   let calendarArea: ReactNode
   if (library.isPending) {
     calendarArea = <LoadingState screen="library" level={2} />
@@ -148,14 +147,6 @@ function LibraryContent() {
           onNext={() => setMonth((current) => addMonths(current, 1))}
           filter={filter}
           onFilterChange={setFilter}
-          today={today}
-          onJumpMonth={(next) =>
-            setMonth((current) => (compareMonths(next, current) === 0 ? current : next))
-          }
-          onJumpDate={(date, next) => {
-            setMonth(next)
-            setFocusDate(date)
-          }}
           focusDate={focusDate}
           onFocused={onFocused}
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
@@ -173,11 +164,13 @@ function LibraryContent() {
 
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
+      <h1>
+        <VisuallyHidden>Escolha um dia</VisuallyHidden>
+      </h1>
       {directPlay && !directPlayClosed ? (
         <Notice onDismiss={() => setDirectPlayClosed(true)}>{directPlayMessage(directPlay)}</Notice>
       ) : null}
-      <TodayCards libraries={libraries} today={today} />
-      <SourceTabs
+      <SourceBar
         value={source}
         tabs={libraries.map((entry) => ({
           source: entry.source,
@@ -185,6 +178,15 @@ function LibraryContent() {
           count: entry.query.isSuccess ? completedInMonth(entry.items, month) : null,
         }))}
         onChange={setSource}
+        today={today}
+        month={month}
+        onJumpMonth={(next) =>
+          setMonth((current) => (compareMonths(next, current) === 0 ? current : next))
+        }
+        onJumpDate={(date, next) => {
+          setMonth(next)
+          setFocusDate(date)
+        }}
       />
       {calendarArea}
     </div>

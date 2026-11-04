@@ -4,6 +4,7 @@ import {
   brasiliaToday,
   fillSolution,
   helpsItem,
+  openSourceToday,
   pressLetter,
   progressRowCount,
   resetAndSeed,
@@ -19,21 +20,18 @@ const axe = (page: Page) => new AxeBuilder({ page }).exclude('[role="grid"]')
 const todayCell = (page: Page, state: string) =>
   page.getByRole('link', { name: new RegExp(`^Hoje, .*, ${state}(, disponível sem rede)?$`) })
 
-const card = (page: Page, source: string) =>
-  page.getByRole('link', { name: new RegExp(`^${source}: `) })
-
 test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não aparece no O Globo', async ({
   page,
 }) => {
   await page.goto('/calendario')
-  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
   const globo = page.getByRole('tab', { name: /^O Globo/ })
   const cruzada = page.getByRole('tab', { name: /^Cruzada Online/ })
   await expect(globo).toHaveAttribute('aria-selected', 'true')
   expect((await axe(page).analyze()).violations).toEqual([])
 
   // SC-001: a cruzada de hoje de qualquer fonte com um toque, sem trocar a aba antes.
-  await card(page, 'Cruzada Online').click()
+  await openSourceToday(page, 'Cruzada Online')
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzada Online')
 
@@ -46,8 +44,6 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 
   await page.goto('/calendario')
-  await expect(page.getByRole('link', { name: /^Cruzada Online: em andamento/ })).toBeVisible()
-  await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
   await expect(todayCell(page, 'não iniciado')).toBeVisible()
 
   // Abas: a escolha muda o calendário e as setas também trocam. A aba não fica guardada: ao
@@ -103,7 +99,7 @@ test.describe('volta do jogo para o calendário', () => {
     page,
   }) => {
     await page.goto('/calendario')
-    await card(page, 'Cruzada Online').click()
+    await openSourceToday(page, 'Cruzada Online')
     await expect(page.getByRole('grid')).toBeVisible()
     await page.getByRole('link', { name: 'Escolher outro dia' }).click()
     await expect(cruzada(page)).toHaveAttribute('aria-selected', 'true')
@@ -113,7 +109,7 @@ test.describe('volta do jogo para o calendário', () => {
 
   test('o diálogo de conclusão volta na fonte do jogo', async ({ page }) => {
     await page.goto('/calendario')
-    await card(page, 'Cruzada Online').click()
+    await openSourceToday(page, 'Cruzada Online')
     await expect(page.getByRole('grid')).toBeVisible()
     const response = await page.request.get(
       `/api/puzzles?level=daily&date=${brasiliaToday()}&source=cruzadaonline`,
@@ -144,7 +140,7 @@ test.describe('volta do jogo para o calendário', () => {
 
 test('ao concluir o O Globo, o diálogo oferece a Cruzada Online do mesmo dia', async ({ page }) => {
   await page.goto('/calendario')
-  await card(page, 'O Globo').click()
+  await openSourceToday(page, 'O Globo')
   await expect(page.getByRole('grid')).toBeVisible()
   const response = await page.request.get(
     `/api/puzzles?level=daily&date=${brasiliaToday()}&source=oglobo`,
@@ -168,7 +164,7 @@ test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jo
   await expect(page.getByRole('tab').nth(2)).toHaveAccessibleName(/^Cruzadas Brasil/)
 
   // SC-008: um toque no cartão de hoje leva ao jogo.
-  await card(page, 'Cruzadas Brasil').click()
+  await openSourceToday(page, 'Cruzadas Brasil')
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Cruzadas Brasil')
   await expect(page.getByText('Fonte: Exemplo de desenvolvimento (seed)').first()).toBeVisible()
@@ -179,27 +175,30 @@ test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jo
   await expect(page.getByRole('gridcell', { name: /^Linha 1, coluna 2, letra Ç/ })).toBeVisible()
 
   await page.goto('/calendario')
-  await expect(page.getByRole('link', { name: /^Cruzadas Brasil: em andamento/ })).toBeVisible()
-  await expect(page.getByRole('link', { name: /^O Globo: não iniciada/ })).toBeVisible()
-  await expect(page.getByRole('link', { name: /^Cruzada Online: não iniciada/ })).toBeVisible()
+  await expect(todayCell(page, 'não iniciado')).toBeVisible()
+  await page.getByRole('tab', { name: /^Cruzadas Brasil/ }).click()
+  await expect(todayCell(page, 'em andamento')).toBeVisible()
+  await page.getByRole('tab', { name: /^Cruzada Online/ }).click()
+  await expect(todayCell(page, 'não iniciado')).toBeVisible()
 })
 
 for (const viewport of [
   { width: 360, height: 640 },
   { width: 1280, height: 800 },
 ]) {
-  test(`em ${viewport.width} x ${viewport.height}, cartões e abas aparecem sem rolar`, async ({
+  test(`em ${viewport.width} x ${viewport.height}, as abas e o dia de hoje aparecem sem rolar`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport)
     for (const scheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: scheme })
       await page.goto('/calendario')
-      await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+      await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
       // SC-002: todas as fontes e a situação de hoje na primeira tela.
-      await expect(card(page, 'O Globo')).toBeInViewport()
-      await expect(card(page, 'Cruzada Online')).toBeInViewport()
-      await expect(card(page, 'Cruzadas Brasil')).toBeInViewport()
+      for (const source of ['O Globo', 'Cruzada Online', 'Cruzadas Brasil']) {
+        await expect(page.getByRole('tab', { name: new RegExp(`^${source}`) })).toBeInViewport()
+      }
+      await expect(todayCell(page, 'não iniciado')).toBeInViewport()
       await expect(page.getByRole('tablist', { name: 'Fonte do calendário' })).toBeInViewport()
       // FR-015: a página não rola para os lados.
       const overflow = await page.evaluate(

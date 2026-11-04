@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { login, progressRowCount, resetAndSeed, todaySolution, typedLetter } from './support'
+import {
+  login,
+  progressRowCount,
+  resetAndSeed,
+  todayLink,
+  todaySolution,
+  typedLetter,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -8,7 +15,7 @@ test.beforeEach(async () => {
 // Joga uma letra como visitante e entra na conta: a oferta de importação aparece (feature 057).
 async function playOneLetterAsGuest(page: import('@playwright/test').Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
   const solution = await todaySolution(page.request)
   const first = (solution[0] ?? []).filter((letter): letter is string => Boolean(letter))

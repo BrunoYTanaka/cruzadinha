@@ -1,13 +1,11 @@
 import type { PuzzleSourceId } from '@cruzadinha/shared'
 import { Fragment, useEffect, useRef, type ReactNode } from 'react'
-import type { YearMonth } from '../../../../shared/helpers/dates/dates'
 import { Button } from '../../../../shared/components/Button/Button'
 import { MONTH_NAMES, type MonthView } from '../../helpers/calendar'
 import { countByFilter, type StatusFilter as Filter } from '../../helpers/status-filter'
 import styles from './Calendar.module.css'
 import { useOfflinePuzzleIds } from '../../../offline'
 import { DayCell, type DaySelection } from '../DayCell/DayCell'
-import { JumpToDate } from '../JumpToDate/JumpToDate'
 import { StatusFilter } from '../StatusFilter/StatusFilter'
 
 const WEEKDAYS = [
@@ -43,10 +41,8 @@ type CalendarProps = {
   // Filtro de status (feature 053): estado da página, vale por mês e por fonte.
   filter: Filter
   onFilterChange: (filter: Filter) => void
-  // Pular para um mês ou dia (feature 054): `focusDate` é um pedido de foco de uma vez só.
-  today: string
-  onJumpMonth: (month: YearMonth) => void
-  onJumpDate: (date: string, month: YearMonth) => void
+  // Pular para um dia (feature 054): `focusDate` é um pedido de foco de uma vez só. O filtro em si
+  // fica na `SourceBar` (feature 061).
   focusDate: string | null
   onFocused: () => void
   // Computador: alça de redimensionar presa à borda direita do mês.
@@ -64,9 +60,6 @@ export function Calendar({
   onNext,
   filter,
   onFilterChange,
-  today,
-  onJumpMonth,
-  onJumpDate,
   focusDate,
   onFocused,
   resizeHandle,
@@ -124,12 +117,6 @@ export function Calendar({
           ›
         </Button>
       </div>
-      <JumpToDate
-        today={today}
-        month={{ year: view.year, month: view.month }}
-        onJumpMonth={onJumpMonth}
-        onJumpDate={onJumpDate}
-      />
       <StatusFilter value={filter} onChange={onFilterChange} counts={counts} />
       <p role="status" className={styles.statusInfo}>
         {filterInfo}

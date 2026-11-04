@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { fillSolution, login, resetAndSeed, todaySolution } from './support'
+import { fillSolution, login, resetAndSeed, todayLink, todaySolution } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -11,7 +11,7 @@ const lettersFull = (page: Page) => page.getByText(/^0\/\d+ Letra$/)
 const wordsFull = (page: Page) => page.getByText(/^0\/\d+ Palavra$/)
 
 async function openGlobo(page: Page) {
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 

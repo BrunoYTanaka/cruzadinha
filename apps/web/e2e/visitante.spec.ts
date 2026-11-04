@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { fillSolution, progressRowCount, resetAndSeed, todaySolution, typedLetter } from './support'
+import {
+  fillSolution,
+  progressRowCount,
+  resetAndSeed,
+  todayLink,
+  todaySolution,
+  typedLetter,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -14,12 +21,12 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
 }) => {
   const start = Date.now()
   await page.goto('/calendario')
-  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
   await expect(page.getByText('Visitante')).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)
   expect((await axe(page).analyze()).violations).toEqual([])
 
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
   await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
 
@@ -46,7 +53,7 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
   await dialog.getByRole('button', { name: 'Voltar à biblioteca' }).click()
   await expect(page.getByRole('link', { name: /concluído em/ }).first()).toBeVisible()
 
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await page.getByRole('button', { name: 'Jogar de novo' }).click()
   await expect(page.getByText('0/4 Letra')).toBeVisible()
 

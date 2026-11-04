@@ -1,6 +1,14 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { fillSolution, login, resetAndSeed, todayPuzzle, todaySolution, typeWord } from './support'
+import {
+  fillSolution,
+  login,
+  resetAndSeed,
+  todayLink,
+  todayPuzzle,
+  todaySolution,
+  typeWord,
+} from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -102,7 +110,7 @@ test.describe('US1: configurações no aparelho (feature 021)', () => {
     await dialog.getByRole('switch', { name: 'Riscar a dica só quando acerta' }).click()
     await dialog.getByRole('button', { name: 'Fechar' }).click()
 
-    await page.getByRole('link', { name: /^O Globo: / }).click()
+    await todayLink(page).click()
     await expect(page.getByRole('grid')).toBeVisible()
     await expect(page.getByText('0/6 Letra')).toBeVisible()
     await expect(page.getByText('0/∞ Palavra')).toBeVisible()
@@ -208,14 +216,14 @@ test.describe('US2: cruzada padrão e ir direto ao jogo (feature 021)', () => {
     // A cada chegada em / o atalho vale, também pelo logo (feature 048, FR-002); o calendário fica
     // no link "Calendário" do cabeçalho.
     await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
-    await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
     await page.getByRole('banner').getByRole('link', { name: 'Cruzadinha' }).click()
     await expect(page).toHaveURL(/\/jogo\//)
   })
 
   test('concluída hoje, abre o calendário com o aviso citando a cruzada', async ({ page }) => {
     await page.goto('/calendario')
-    await page.getByRole('link', { name: /^O Globo: / }).click()
+    await todayLink(page).click()
     await expect(page.getByRole('grid')).toBeVisible()
     await fillSolution(page, await todaySolution(page.request))
     await expect(page.getByRole('dialog')).toBeVisible()

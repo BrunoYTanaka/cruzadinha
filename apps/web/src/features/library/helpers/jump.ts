@@ -30,12 +30,17 @@ export function periodText(today: string): string {
   return `de ${monthLabel(firstNavigableMonth(today))} até hoje`
 }
 
-// Do mês atual ao mais antigo.
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+// Do mês atual ao mais antigo. O rótulo abre com maiúscula (é item de lista); as mensagens seguem em
+// minúscula, no meio da frase.
 export function monthOptions(today: string): MonthOption[] {
   const first = firstNavigableMonth(today)
   const options: MonthOption[] = []
   for (let m = currentMonth(today); compareMonths(m, first) >= 0; m = addMonths(m, -1)) {
-    options.push({ ...m, value: monthKey(m), label: monthLabel(m) })
+    options.push({ ...m, value: monthKey(m), label: capitalize(monthLabel(m)) })
   }
   return options
 }

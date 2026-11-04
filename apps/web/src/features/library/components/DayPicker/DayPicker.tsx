@@ -14,7 +14,7 @@ import { libraryOf, useSourceLibraries } from '../../hooks/useSourceLibraries'
 import { resolveSource } from '../../services/source-choice'
 import { Calendar } from '../Calendar/Calendar'
 import { type DayPick } from '../DayCell/DayCell'
-import { SourceTabs } from '../SourceTabs/SourceTabs'
+import { SourceBar } from '../SourceBar/SourceBar'
 
 export type { DayPick }
 
@@ -49,7 +49,7 @@ export function DayPicker({
 
   return (
     <div>
-      <SourceTabs
+      <SourceBar
         value={source}
         tabs={libraries.map((entry) => ({
           source: entry.source,
@@ -57,6 +57,13 @@ export function DayPicker({
           count: entry.query.isSuccess ? completedInMonth(entry.items, month) : null,
         }))}
         onChange={setSource}
+        today={today}
+        month={month}
+        onJumpMonth={setMonth}
+        onJumpDate={(date, next) => {
+          setMonth(next)
+          setFocusDate(date)
+        }}
       />
       {active.query.isPending ? (
         <p role="status">Carregando a biblioteca…</p>
@@ -72,12 +79,6 @@ export function DayPicker({
           onNext={() => setMonth((current) => addMonths(current, 1))}
           filter={filter}
           onFilterChange={setFilter}
-          today={today}
-          onJumpMonth={(next) => setMonth(next)}
-          onJumpDate={(date, next) => {
-            setMonth(next)
-            setFocusDate(date)
-          }}
           focusDate={focusDate}
           onFocused={() => setFocusDate(null)}
           selection={{ selectedId, onSelect }}

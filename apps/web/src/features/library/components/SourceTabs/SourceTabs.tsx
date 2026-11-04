@@ -10,7 +10,7 @@ export type SourceTab = {
   count: number | null
 }
 
-type SourceTabsProps = {
+export type SourceTabsProps = {
   value: PuzzleSourceId
   tabs: readonly SourceTab[]
   onChange: (source: PuzzleSourceId) => void

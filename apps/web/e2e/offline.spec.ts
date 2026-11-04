@@ -5,6 +5,7 @@ import {
   login,
   pressLetter,
   resetAndSeed,
+  todayLink,
   todayPuzzle,
   todaySolution,
   typedLetter,
@@ -26,7 +27,7 @@ async function installShell(page: Page) {
 
 async function openToday(page: Page) {
   await page.goto('/calendario')
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -61,7 +62,7 @@ test('uma cruzada que nunca foi aberta avisa que só abre com conexão, e o rest
     page.getByRole('heading', { level: 1, name: 'Esta cruzada só abre com conexão.' }),
   ).toBeVisible()
   await page.getByRole('link', { name: 'Voltar à biblioteca' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Hoje' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
 })
 
 test('conta: letras digitadas sem rede chegam ao servidor quando a rede volta', async ({
@@ -98,7 +99,7 @@ test('conta: letras digitadas sem rede chegam ao servidor quando a rede volta', 
 
 test('uma cruzada já aberta abre de novo sem rede', async ({ page, context }) => {
   await installShell(page)
-  await page.getByRole('link', { name: /^O Globo: / }).click()
+  await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
 
   await context.setOffline(true)

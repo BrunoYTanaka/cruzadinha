@@ -51,7 +51,6 @@ test('o admin esconde uma fonte, o público não a vê, e ao reativar ela volta'
   await visitor.goto('/calendario')
   await expect(visitor.getByRole('tab', { name: /^O Globo/ })).toBeVisible()
   await expect(visitor.getByRole('tab', { name: /^Cruzada Online/ })).toHaveCount(0)
-  await expect(visitor.getByRole('link', { name: /^Cruzada Online: / })).toHaveCount(0)
 
   await admin.getByRole('checkbox', { name: /Cruzada Online/ }).check()
   await save.click()
