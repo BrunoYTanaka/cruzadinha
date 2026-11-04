@@ -34,6 +34,7 @@ export function RulesDialog({
     <Dialog
       open
       onClose={noop}
+      closeButton={false}
       title={`${duel.creatorNickname} desafiou você`}
       description={`${puzzleSourceNames[duel.source]}, cruzada de ${date}. Uma única tentativa: vence o menor tempo.`}
     >

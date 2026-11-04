@@ -18,3 +18,7 @@
   margin: 0;
   color: var(--mute);
 }
+
+.open {
+  justify-self: start;
+}

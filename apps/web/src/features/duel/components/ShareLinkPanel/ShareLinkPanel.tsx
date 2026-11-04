@@ -38,36 +38,43 @@ export function ShareLinkPanel({ linkToken, code, participantToken }: Props) {
     )
   }
 
-  return (
-    <div className={styles.panel}>
-      <div className={styles.row}>
-        <span className={styles.label}>Link do convite</span>
+  const linkRow = (
+    <div className={styles.block}>
+      <h2 className={styles.label}>Link do convite</h2>
+      <div className={styles.copyRow}>
         <p className={styles.value}>{invite}</p>
         <Button onClick={() => void onCopy('Link', invite)}>Copiar link</Button>
       </div>
-      <div className={styles.row}>
-        <span className={styles.label}>Código para digitar</span>
-        <p
-          className={`${styles.value} ${styles.code}`}
-          aria-label={`Código ${code.split('').join(' ')}`}
-        >
-          {code}
-        </p>
-        <Button onClick={() => void onCopy('Código', code)}>Copiar código</Button>
-      </div>
+    </div>
+  )
+  const codeRow = (
+    <div className={styles.block}>
+      <h2 className={styles.label}>Código</h2>
+      <p className={styles.codeBox} aria-label={`Código ${code.split('').join(' ')}`}>
+        {code}
+      </p>
+    </div>
+  )
+
+  return (
+    <div className={styles.panel}>
+      {participantToken ? linkRow : codeRow}
+      {participantToken ? codeRow : linkRow}
       {participantToken ? (
-        <div className={styles.row}>
-          <span className={styles.label}>Link para voltar a este x1</span>
-          <p className={styles.value}>{returnUrl(linkToken, participantToken)}</p>
+        <div className={styles.block}>
+          <h2 className={styles.label}>Link para voltar a este x1</h2>
+          <div className={styles.copyRow}>
+            <p className={styles.value}>{returnUrl(linkToken, participantToken)}</p>
+            <Button
+              onClick={() => void onCopy('Link de retorno', returnUrl(linkToken, participantToken))}
+            >
+              Copiar link
+            </Button>
+          </div>
           <p className={styles.hint}>
             Guarde este link: ele devolve o seu x1 em outro aparelho. Sem ele, e sem este aparelho,
             o x1 se perde. Não o envie a ninguém.
           </p>
-          <Button
-            onClick={() => void onCopy('Link de retorno', returnUrl(linkToken, participantToken))}
-          >
-            Copiar link de retorno
-          </Button>
         </div>
       ) : null}
       <p role="status" className={styles.hint}>

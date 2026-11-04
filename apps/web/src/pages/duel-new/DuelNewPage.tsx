@@ -25,7 +25,10 @@ export function DuelNewPage() {
               code={created.code}
               participantToken={created.participantToken}
             />
-            <Link to={`/x1/${created.linkToken}`} className={buttonClass({ variant: 'primary' })}>
+            <Link
+              to={`/x1/${created.linkToken}`}
+              className={`${buttonClass({ variant: 'primary' })} ${styles.open}`}
+            >
               Abrir o meu x1
             </Link>
           </>

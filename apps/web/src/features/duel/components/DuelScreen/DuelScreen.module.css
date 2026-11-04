@@ -1,5 +1,6 @@
 .page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-content: start;
   width: 100%;
@@ -22,7 +23,10 @@
   display: grid;
   gap: 6px;
   margin: 0;
-  padding-left: 18px;
+  padding: 14px 16px 14px 34px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   font-size: 15px;
 }
 

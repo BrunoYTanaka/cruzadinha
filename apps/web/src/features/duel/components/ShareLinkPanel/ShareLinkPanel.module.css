@@ -1,33 +1,56 @@
 .panel {
   display: grid;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding: 20px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
 
-.row {
+.block {
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
 }
 
 .label {
-  font-size: 14px;
-  font-weight: 700;
+  margin: 0;
+  font: 800 19px/1.2 var(--font-title);
+}
+
+.copyRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .value {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   padding: 10px 12px;
   border: 2px solid var(--edge);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  font-family: ui-monospace, monospace;
-  font-size: 15px;
-  overflow-wrap: anywhere;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   user-select: all;
 }
 
-.code {
-  font-size: 22px;
-  letter-spacing: 0.12em;
+.codeBox {
+  margin: 0;
+  padding: 12px;
+  border: 2px dashed var(--edge);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  font: 700 24px var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.18em;
+  text-align: center;
+  user-select: all;
 }
 
 .hint {

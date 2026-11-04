@@ -1,14 +1,15 @@
 .panel {
   display: grid;
   gap: 16px;
+  padding: 20px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
 
 .headline {
   margin: 0;
-  font:
-    800 26px 'Fraunces Variable',
-    Georgia,
-    serif;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 .reason {
@@ -51,4 +52,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* Celular: o cartão e a tabela de cinco colunas têm de caber em 320 px. */
+@media (max-width: 480px) {
+  .panel {
+    padding: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
 }
