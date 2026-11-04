@@ -221,7 +221,7 @@ export function SettingsDialog() {
         <hr className={styles.separator} />
 
         <section className={styles.group} aria-labelledby="ajudas">
-          <h3 id="ajudas" className={styles.label}>
+          <h3 id="ajudas" className={styles.groupTitle}>
             Ajudas por cruzada
           </h3>
           <LimitControl name="Letras" plural="letras" field="helpLetters" settings={settings} />
@@ -270,7 +270,7 @@ export function SettingsDialog() {
         <hr className={styles.separator} />
 
         <section className={styles.group} aria-labelledby="cruzada-padrao">
-          <h3 id="cruzada-padrao" className={styles.label}>
+          <h3 id="cruzada-padrao" className={styles.groupTitle}>
             Cruzada padrão
           </h3>
           <span className={styles.hint}>O calendário abre nesta cruzada.</span>

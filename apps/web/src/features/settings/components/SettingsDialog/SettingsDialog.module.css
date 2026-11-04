@@ -32,6 +32,15 @@
   gap: 8px;
 }
 
+.groupTitle {
+  margin: 0;
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .label {
   margin: 0;
   font-size: 15px;
@@ -100,7 +109,7 @@
   width: 20px;
   height: 20px;
   margin: 0;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
 }
 
 /* Interruptor: trilho com a bola à esquerda (desligado) ou à direita (ligado). */
@@ -133,7 +142,7 @@
 }
 
 .switch[aria-checked='true'] {
-  background-color: var(--accent);
+  background-color: var(--sel);
 }
 
 @media (hover: hover) {
@@ -160,7 +169,7 @@
 
 .switch[aria-checked='true'] .knob {
   left: 24px;
-  background: var(--accent-ink);
+  background: var(--sel-ink);
 }
 
 .footer {
@@ -248,9 +257,8 @@
   display: grid;
   gap: 2px;
   margin: 0;
-  padding: 4px;
-  border: 2px solid var(--line);
-  border-radius: var(--radius-sm);
+  padding: 0;
+  border: 0;
 }
 
 .legend {
@@ -272,13 +280,9 @@
   cursor: pointer;
 }
 
-.radio:has(input:checked) {
-  background: var(--word);
-}
-
 .radio input {
   width: 20px;
   height: 20px;
   margin: 0;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
 }

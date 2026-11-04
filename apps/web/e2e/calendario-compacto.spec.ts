@@ -29,10 +29,11 @@ for (const theme of ['light', 'dark'] as const) {
       scrollbar: getComputedStyle(element).scrollbarWidth,
     }))
     expect(overflow).toEqual({ scrolls: true, overflowX: 'auto', scrollbar: 'none' })
-    const tabBoxes = await tabs
+    // Uma linha só: as abas inativas descem 4 px, mas nenhuma passa para a linha de baixo.
+    const tops = await tabs
       .getByRole('tab')
       .evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top))
-    expect(new Set(tabBoxes.map(Math.round)).size).toBe(1)
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(6)
 
     const button = page.getByRole('button', { name: 'Ir para uma data' })
     const before = await box(button)
