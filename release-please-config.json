@@ -9,6 +9,6 @@
   "packages": {
     "apps/api": { "component": "api" },
     "apps/web": { "component": "web" },
-    "packages/shared": { "component": "shared", "skip-github-release": true }
+    "packages/shared": { "component": "shared" }
   }
 }
