@@ -42,3 +42,21 @@
 - D5 (pontos de quebra): mantidos os do código (599/861 px nas abas e no calendário) onde já havia teste; os 480 px dos símbolos do calendário são da largura do próprio calendário (`@container (max-width: 479px)`), como no artefato; 560 px do cabeçalho viraram regra de janela.
 - `Dialog`: o X de fechar agora é padrão (`closeButton` `true`); `ClueSheet` (folha de dicas, parte do tabuleiro) e o diálogo de resultado de `ImportOffer` (já tem "Fechar" no rodapé) o desligam com `closeButton={false}`. O foco inicial pula o X.
 - `Tooltip`: sem a seta do artefato (o posicionamento atual não a calcula); contorno, fundo e sombra seguem o artefato.
+
+## Conferência com a base (T002 e T037)
+
+Base: commit `ae54bb8` (antes da feature) servido por um worktree; atual: esta branch. Capturas em
+claro e escuro, 390, 768 e 1280 px, da landing (página inteira), do jogo de um visitante e do diálogo
+de conclusão (1280), comparadas pixel a pixel (limite de 8 de diferença por canal).
+
+- **Landing:** só a faixa do cabeçalho muda (texto dos botões em negrito; no celular o menu). O corpo
+  da página é idêntico nos três tamanhos e nos dois temas.
+- **Jogo:** o tabuleiro, a barra de dica, a lista de dicas e as ferramentas abaixo do cabeçalho são
+  idênticos. Mudam o cabeçalho e o botão "Jogar de novo" da faixa de conclusão (ao redor do
+  tabuleiro, que usa o `Button` novo pelo contrato).
+- **Divergência encontrada e resolvida:** o `Dialog` novo (borda de 2 px, X, padding 20 px) alterava o
+  diálogo de conclusão e a folha de dicas, que o FR-019 manda manter. `Dialog` ganhou `classic`
+  (borda de 1 px, padding 24 px, sem X, botões com o peso de antes); `CompletionDialog` e
+  `ClueSheet` o usam. Depois disso o diálogo de conclusão ficou idêntico.
+- A primeira comparação saiu com a fonte errada na base (o Vite do worktree bloqueou os arquivos da
+  Fraunces e da Roboto fora da raiz): liberado com `server.fs.strict: false` só no worktree.

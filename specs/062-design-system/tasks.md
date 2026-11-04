@@ -11,7 +11,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 ## Phase 1: Setup
 
 - [ ] T001 Fazer commit de `specs/062-design-system/` (brief, artefato, spec, plan, tasks) em `feat/062-design-system` (vai junto no PR 1; as fatias 2 a 6 saem de `main` em `feat/062-<slug>`, ver plan.md) com `docs: add spec, plan and tasks for the design system (feature 062)`
-- [ ] T002 [P] Capturar o estado atual das telas (claro e escuro, 390/768/1280 px) com Playwright em `apps/web/e2e/` para servir de base de regressão da landing e do tabuleiro (FR-019; comparadas em T037), guardando as capturas no diretório de rascunho da sessão, fora do git
+- [X] T002 [P] Capturar o estado atual das telas (claro e escuro, 390/768/1280 px) com Playwright em `apps/web/e2e/` para servir de base de regressão da landing e do tabuleiro (FR-019; comparadas em T037), guardando as capturas no diretório de rascunho da sessão, fora do git
 
 ## Phase 2: User Story 1 — Tokens (P1, PR 1)
 
@@ -65,7 +65,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T034 [P] [US5] `features/settings` (diálogo de configurações), `features/import` (`ImportOffer`) e avisos de `features/offline`: `Dialog`, `Button`, `Notice` e `Link` novos, sem mudar comportamento
 - [X] T035 [US5] Trocar os textos de link das telas alteradas pelo `Link` (`shared/components/Link/Link`) e conferir com `grep` que nenhum `<a>` de texto ficou fora, exceto na landing; conferir com `grep` que o CSS alterado não tem cor hexadecimal fora de `shared/themes/` (SC-002)
 - [ ] T036 [US5] Conferência tela a tela com Playwright contra `design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
-- [ ] T037 [US5] Rodar axe nas telas alteradas e `e2e/sem-saltos.spec.ts`; comparar landing e tabuleiro com as capturas de T002 e confirmar que não há diferença (FR-019, SC-007)
+- [X] T037 [US5] Rodar axe nas telas alteradas e `e2e/sem-saltos.spec.ts`; comparar landing e tabuleiro com as capturas de T002 e confirmar que não há diferença (FR-019, SC-007)
 - [ ] T038 [US5] Abrir PR 5 `feat(web): apply the design system to the remaining screens`
 
 ## Phase 7: User Story 6 — Arrastar para ordenar (P3, PR 6)

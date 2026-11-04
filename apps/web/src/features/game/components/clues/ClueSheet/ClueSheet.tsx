@@ -26,14 +26,7 @@ export function ClueSheet({
   onSelect,
 }: ClueSheetProps) {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title="Dicas"
-      align="bottom"
-      closeOnBackdrop
-      closeButton={false}
-    >
+    <Dialog open={open} onClose={onClose} title="Dicas" align="bottom" closeOnBackdrop classic>
       <div className={styles.body}>
         <ClueList
           puzzle={puzzle}
