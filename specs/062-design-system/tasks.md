@@ -42,7 +42,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T017 [US3] `app/AppLayout.tsx` e `AppLayout.module.css`: círculo de 38 px com `initials(email)` que leva a `/conta`, botão de configurações de 44 px, `Link` nos links de texto, `Tooltip` com o nome nos botões de ícone (configurações, tema)
 - [X] T018 [US3] Mover "Sair" para `features/account/components/AccountSection` (ícone de sair fica na US5); remover o botão do cabeçalho; atualizar `app/AppLayout.test.tsx`
 - [X] T019 [US3] Até 560 px (`@media (max-width: 560px)`): esconder os links, mostrar botão de menu que abre `Menu` como folha embaixo com os mesmos destinos (inclui contador do x1 com largura reservada)
-- [ ] T020 [US3] Atualizar `e2e/sem-saltos.spec.ts` para o cabeçalho novo e conferir visitante (sem círculo, acesso a entrar)
+- [X] T020 [US3] Atualizar `e2e/sem-saltos.spec.ts` para o cabeçalho novo e conferir visitante (sem círculo, acesso a entrar)
 - [ ] T021 [US3] Abrir PR 3 `feat(web): rework the header with the account circle and menu sheet`
 
 ## Phase 5: User Story 4 — Calendário (P2, PR 4)
@@ -52,7 +52,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T024 [P] [US4] `features/library/components/DayCell` e `Calendar/Calendar.module.css`: abaixo de 480 px (container query) mostrar "✓" e "◐" no lugar do texto, `aria-label` por extenso intacto
 - [X] T025 [P] [US4] `features/library/components/LibraryLegend`: mesmos símbolos na legenda abaixo de 480 px
 - [X] T026 [US4] Mesmo tratamento em `features/library/components/DayPicker` (x1); testes de `Calendar`, `DayCell`, `LibraryLegend` e axe
-- [ ] T027 [US4] E2E em `e2e/` do calendário em 390 px e computador, nos dois temas
+- [X] T027 [US4] E2E em `e2e/` do calendário em 390 px e computador, nos dois temas
 - [ ] T028 [US4] Abrir PR 4 `feat(web): make the calendar tabs and cells compact on small screens`
 
 ## Phase 6: User Story 5 — Demais telas (P2, PR 5)
@@ -75,7 +75,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T041 [US6] `features/admin/components/SourcesAdmin`: `DragDropProvider` com `PointerSensor` iniciado só pela alça (sem `Accessibility` nem `KeyboardSensor` do dnd-kit: o teclado é código próprio, ver research.md D1), `onDragEnd` com `move` de `@dnd-kit/helpers` e restauração da ordem quando `event.canceled`; teste de teclado em jsdom (Espaço pega, seta move, Espaço solta, Esc cancela, anúncio na região viva)
 - [X] T042 [US6] `SortableRow` e `DragHandle`, cada um em pasta própria com `.module.css` e teste (`features/admin/components/SortableRow/SortableRow.tsx`, `features/admin/components/DragHandle/DragHandle.tsx`): `useSortable` com `handleRef`, alça de seis pontos 44 px com `touch-action: none`, `aria-label="Arrastar <fonte>"`, texto fixo de instruções ligado por `aria-describedby`; linha levantada com contorno `--edge` e sombra suave; faixa amarela de 4 px no destino; remover as setas
 - [X] T043 [US6] Garantir que o `PUT /api/admin/sources` e as regras da 060 (todas as fontes, ao menos uma visível, sem mudança não grava) seguem iguais; atualizar `SourcesAdmin.test.tsx`
-- [ ] T044 [US6] E2E em `e2e/` da Administração: reordenar com mouse, com teclado (mover uma fonte de uma ponta à outra em no máximo N+2 teclas, SC-004) e com toque emulado sem a página rolar (SC-005); recarregar e conferir a ordem
+- [X] T044 [US6] E2E em `e2e/` da Administração: reordenar com mouse, com teclado (mover uma fonte de uma ponta à outra em no máximo N+2 teclas, SC-004) e com toque emulado sem a página rolar (SC-005); recarregar e conferir a ordem
 - [ ] T045 [US6] Abrir PR 6 `feat(web): reorder sources by dragging in the admin screen`
 
 ## Phase 8: Polish

@@ -68,6 +68,8 @@ test.describe('US1: balão da engrenagem dentro da janela', () => {
     const theme = dialog.getByRole('button', { name: /^Tema:/ })
     await theme.hover()
     await page.mouse.move(0, 0)
+    // O foco inicial do diálogo já pode estar no botão de tema: sai e volta para disparar o foco.
+    await theme.blur()
     await theme.focus()
     const tip = page.locator('[data-tooltip]', { hasText: /^Mudar para/ })
     await expect(tip).toBeVisible()

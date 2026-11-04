@@ -281,7 +281,9 @@ test.describe('US3: configurações salvas na conta (feature 021)', () => {
     await other.close()
 
     await dialog.getByRole('button', { name: 'Fechar' }).click()
-    await page.getByRole('button', { name: 'Sair' }).click()
+    // "Sair" fica dentro de "Sua conta" (feature 062).
+    await page.getByRole('link', { name: /^Sua conta/ }).click()
+    await page.getByRole('button', { name: 'Sair', exact: true }).click()
     await expect(page.getByText('Visitante')).toBeVisible()
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   })

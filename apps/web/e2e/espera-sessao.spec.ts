@@ -93,8 +93,8 @@ for (const session of [false, true]) {
     for (const row of rows.filter((item) => !item.calendar)) {
       expect(row.header).not.toMatch(/Visitante|Entrar|Sair|ana@/)
     }
-    // Ao aparecer o calendário, a identidade já está no cabeçalho.
+    // Ao aparecer o calendário, a identidade já está no cabeçalho (as iniciais, feature 062).
     const last = rows.at(-1)
-    expect(last?.header).toMatch(session ? /ana@exemplo\.com/ : /Visitante/)
+    expect(last?.header).toMatch(session ? /\bAN\b/ : /Visitante/)
   })
 }
