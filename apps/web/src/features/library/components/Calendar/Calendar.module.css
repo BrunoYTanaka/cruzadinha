@@ -6,8 +6,8 @@
   gap: 10px;
   align-content: start;
   padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border: 2px solid var(--edge);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
   background: var(--surface);
 }
 
@@ -75,8 +75,8 @@
   justify-content: space-between;
   min-height: 56px;
   padding: 5px 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
   font-size: 14px;
@@ -190,8 +190,7 @@ button.day:active {
 }
 
 .today {
-  outline: 3px solid var(--focus);
-  outline-offset: 1px;
+  border-color: var(--edge);
 }
 
 /* Computador (feature 011): dias, números e textos acompanham a largura do calendário; a altura do dia

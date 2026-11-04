@@ -2,7 +2,10 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  border-bottom: 1px solid var(--line);
+  /* As abas encostam no painel do calendário: a página define o espaço a recuperar. */
+  position: relative;
+  z-index: 1;
+  margin-bottom: calc(-1 * var(--bar-attach, 0px));
 }
 
 /* As abas ocupam o que sobra e dividem a largura; o botão do filtro mantém os 46 px. A aba escolhida

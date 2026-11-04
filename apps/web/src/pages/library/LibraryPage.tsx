@@ -164,7 +164,7 @@ function LibraryContent() {
 
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
-      <h1>
+      <h1 className={styles.heading}>
         <VisuallyHidden>Escolha um dia</VisuallyHidden>
       </h1>
       {directPlay && !directPlayClosed ? (

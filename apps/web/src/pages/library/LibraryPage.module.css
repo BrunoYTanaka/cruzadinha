@@ -2,6 +2,7 @@
   display: grid;
   /* minmax(0, 1fr): sem isso a linha de abas (que rola) alarga a coluna além da tela. */
   grid-template-columns: minmax(0, 1fr);
+  --bar-attach: 20px;
   gap: 20px;
   width: 100%;
   max-width: var(--content-max);
@@ -40,4 +41,10 @@
   margin: 0;
   font-size: 14px;
   text-align: center;
+}
+
+/* O título só para leitores de tela não ocupa uma linha (nem o espaço entre linhas) do grid. */
+.heading {
+  position: absolute;
+  margin: 0;
 }
