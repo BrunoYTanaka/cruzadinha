@@ -51,13 +51,16 @@ async function expectControlBorder(page: Page, locator: Locator) {
 
 // Botões e links visíveis com o fundo do principal dentro de um formulário ou modal (FR-002).
 async function primaryCount(page: Page, container: Locator) {
+  // Principal: amarelo (feature 062) ou, nos diálogos do tabuleiro, o azul de antes.
   const accent = await tokenBackground(page, '--accent')
+  const sel = await tokenBackground(page, '--sel')
   return container
     .locator('button:visible, a:visible')
     .evaluateAll(
-      (elements, color) =>
-        elements.filter((element) => getComputedStyle(element).backgroundColor === color).length,
-      accent,
+      (elements, colors) =>
+        elements.filter((element) => colors.includes(getComputedStyle(element).backgroundColor))
+          .length,
+      [accent, sel],
     )
 }
 

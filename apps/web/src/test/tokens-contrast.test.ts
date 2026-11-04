@@ -150,6 +150,8 @@ const BUTTON_TEXT_PAIRS: [string, string][] = [
   ['--ink', '--bg'],
   ['--ink', '--pill'],
   ['--accent-ink', '--accent'],
+  // Botão principal amarelo (feature 062).
+  ['--sel-ink', '--sel'],
 ]
 
 describe.each(Object.entries(themes))('estados dos botões (%s)', (name, tokens) => {

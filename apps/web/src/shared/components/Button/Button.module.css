@@ -27,10 +27,12 @@
       box-shadow 120ms;
   }
 
+  /* Principal: o amarelo da seleção (feature 062, como no artefato). Os diálogos `classic` do
+     tabuleiro trocam as duas variáveis pelo azul de antes (FR-019). */
   .primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-ink);
+    background: var(--primary-bg, var(--sel));
+    border-color: var(--primary-bg, var(--sel));
+    color: var(--primary-ink, var(--sel-ink));
   }
 
   .secondary {
