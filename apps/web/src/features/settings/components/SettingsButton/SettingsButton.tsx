@@ -9,7 +9,7 @@ export function SettingsButton() {
     <Tooltip label="Configurações">
       <button
         type="button"
-        className={`${buttonClass({ variant: 'icon' })} ${styles.button}`}
+        className={`${buttonClass({ variant: 'quiet' })} ${styles.button}`}
         aria-label="Configurações"
         aria-haspopup="dialog"
         onClick={() => setSettingsOpen(true)}

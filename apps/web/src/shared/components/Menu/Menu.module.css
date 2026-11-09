@@ -143,3 +143,18 @@
   color: var(--sel-ink);
   font-weight: 700;
 }
+
+/* Menu com caixas de marcar (feature 062, como no artefato): a caixa vem antes do texto e os outros
+   itens recuam para o texto continuar alinhado. */
+.item[role='menuitemcheckbox'] {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.item[role='menuitemcheckbox'] > .track {
+  order: -1;
+}
+
+.panel:has([role='menuitemcheckbox']) .item:not([role='menuitemcheckbox']) {
+  padding-left: 38px;
+}

@@ -99,6 +99,12 @@ Divergências mantidas de propósito (segunda conferência, todas as telas da ab
   horizontal. A faixa do modo leitura ganhou botão principal amarelo e o link novo, e o erro "servidor
   não respondeu" usa as letras ZZZ. A faixa do modo leitura continua dentro da coluna do tabuleiro
   (no artefato ocupa a largura toda acima da barra de ferramentas); mover mexeria no layout do jogo.
+- Quarta conferência (todas as telas alcançáveis, claro e escuro, 1280 e 390 px): a engrenagem do
+  cabeçalho ganhou o contorno (`quiet icon`), as caixas do menu Ajudas vêm antes do texto e a tela de
+  Status virou painel com nome e selo por linha. Mantidos: o texto "Visitante" ao lado da engrenagem
+  (feature 013), "Sessão expirada" na faixa de ferramentas, o botão "Tamanho padrão" desabilitado
+  (o artefato o mostra assim na seção de componentes) e o cabeçalho na tela de Status (o artefato a
+  mostra solta, sem cabeçalho).
 - Não conferidas: recorde, avisos de progresso descartado, importar com sucesso e "servidor não
   respondeu" na tela (com `/api/health` bloqueado a espera passou de 99 s sem mostrar o erro; não
   investigado, o código desse laço não mudou na 062).

@@ -152,12 +152,6 @@ function LibraryContent() {
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
         />
         <LibraryLegend />
-        <p className={styles.stats}>
-          <Link to="/estatisticas">Ver estatísticas</Link>
-          {' · '}
-          {/* No celular o cabeçalho não tem espaço para o x1 (feature 058). */}
-          <Link to="/x1">Meus x1</Link>
-        </p>
       </>
     )
   }
