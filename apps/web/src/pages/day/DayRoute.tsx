@@ -159,6 +159,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
         return (
           <ErrorState
             level={1}
+            word="OFFLINE"
             title="Sem conexão"
             message="Confira a conexão e tente de novo."
             onRetry={() => void query.refetch()}

@@ -25,6 +25,7 @@ export function RouteError() {
   return (
     <ErrorState
       level={1}
+      word={offline ? 'OFFLINE' : undefined}
       title={offline ? 'Sem conexão' : 'Algo deu errado'}
       message={
         offline

@@ -40,6 +40,7 @@ export function GamePage() {
     return (
       <ErrorState
         level={1}
+        word={offline ? 'OFFLINE' : undefined}
         title={offline ? 'Sem conexão' : 'Não foi possível abrir a cruzada'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={retry}

@@ -121,6 +121,7 @@ function LibraryContent() {
     calendarArea = (
       <ErrorState
         level={2}
+        word={offline ? 'OFFLINE' : undefined}
         title={offline ? 'Sem conexão' : 'Não foi possível carregar a biblioteca'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={() => void library.refetch()}

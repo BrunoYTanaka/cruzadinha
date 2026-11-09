@@ -17,7 +17,7 @@ export function LogoutConfirm({ open, onConfirm, onCancel }: LogoutConfirmProps)
         <Button size="small" variant="secondary" onClick={onCancel} data-autofocus>
           Cancelar
         </Button>
-        <Button size="small" onClick={onConfirm}>
+        <Button variant="primary" size="small" onClick={onConfirm}>
           Sair mesmo assim
         </Button>
       </div>
