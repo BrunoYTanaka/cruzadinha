@@ -67,9 +67,13 @@ export function ResetPasswordForm() {
 
   return (
     <AuthLayout
-      headline="Crie sua senha."
-      lead="Última etapa. Depois você volta direto para a sua cruzada."
-      rows={['CRIE', 'SUA', 'senha']}
+      headline={invalid && !done ? 'Esse link não serve mais.' : 'Crie sua senha.'}
+      lead={
+        invalid && !done
+          ? 'Links de recuperação valem por pouco tempo e só uma vez.'
+          : 'Última etapa. Depois você volta direto para a sua cruzada.'
+      }
+      rows={invalid && !done ? ['LINK', 'venceu'] : ['CRIE', 'SUA', 'senha']}
     >
       <div className={styles.card}>
         <h1 className={styles.title}>{title}</h1>

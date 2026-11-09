@@ -10,7 +10,7 @@
 
 .title {
   margin: 0;
-  font-size: 20px;
+  font: 800 clamp(22px, 5vw, 26px) / 1.15 var(--font-title);
 }
 
 .message {

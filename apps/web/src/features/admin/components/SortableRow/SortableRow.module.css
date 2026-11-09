@@ -1,13 +1,21 @@
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: var(--tap) 28px 1fr;
+  grid-template-columns: 28px minmax(0, 1fr) var(--tap);
   align-items: center;
   gap: 8px;
-  padding: 10px 14px 10px 8px;
+  padding: 10px 8px 10px 14px;
   border: 2px solid var(--edge);
   border-radius: var(--radius-sm);
   background: var(--surface);
+}
+
+.row > button {
+  order: 3;
+}
+
+.dimmed {
+  border-color: var(--line);
 }
 
 .position {

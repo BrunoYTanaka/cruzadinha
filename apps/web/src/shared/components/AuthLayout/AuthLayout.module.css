@@ -29,18 +29,18 @@
 
 .grid {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   width: max-content;
-  padding: 2px;
-  background: var(--ink);
-  box-shadow: 4px 4px 0 var(--mute);
 }
 
 .grid i {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 var(--edge);
   font: 700 15px var(--font-mono);
   font-style: normal;
 }
@@ -56,5 +56,5 @@
 }
 
 .closed {
-  background: var(--ink);
+  visibility: hidden;
 }

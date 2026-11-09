@@ -24,7 +24,7 @@ export function AuthLayout({ headline, lead, rows, children }: AuthLayoutProps) 
           <div
             className={styles.grid}
             aria-hidden="true"
-            style={{ gridTemplateColumns: `repeat(${columns}, 36px)` }}
+            style={{ gridTemplateColumns: `repeat(${columns}, 34px)` }}
           >
             {rows.flatMap((row, rowIndex) =>
               [...row.padEnd(columns, '.')].map((char, index) => (

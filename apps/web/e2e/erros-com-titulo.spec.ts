@@ -151,7 +151,7 @@ for (const theme of THEMES) {
         element.replaceWith(clone)
       })
       const asH2 = await look(page.getByRole('alert').getByRole('heading', { level: 2 }))
-      expect(asH1.fontSize).toBe('20px')
+      expect(asH1.fontSize).toBe('26px')
       expect({ ...asH1, box: undefined }).toEqual({ ...asH2, box: undefined })
       expectNear(asH1.box.x, asH2.box.x)
       expectNear(asH1.box.y, asH2.box.y)

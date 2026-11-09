@@ -167,9 +167,6 @@ export function SourcesAdmin() {
         escondida some das listas para todos, mas guarda tudo e pode voltar. Arraste pela alça para
         reordenar.
       </p>
-      <VisuallyHidden>
-        <span id={hintId}>{SORT_INSTRUCTIONS}</span>
-      </VisuallyHidden>
       <DragDropProvider
         sensors={SENSORS}
         plugins={(defaults) => defaults.filter((plugin) => plugin !== Accessibility)}
@@ -197,6 +194,7 @@ export function SourcesAdmin() {
               name={nameOf(row.id)}
               describedBy={hintId}
               grabbed={grabbed === row.id}
+              dimmed={!row.visible}
               onKeyDown={(event) => onHandleKeyDown(event, row.id, index)}
               onBlur={() => {
                 if (grabbed === row.id) cancelMove()
@@ -218,6 +216,9 @@ export function SourcesAdmin() {
           ))}
         </ol>
       </DragDropProvider>
+      <p id={hintId} className={styles.lead}>
+        {SORT_INSTRUCTIONS}
+      </p>
       <div className={styles.actions}>
         <Button
           variant="primary"
@@ -228,18 +229,32 @@ export function SourcesAdmin() {
         >
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path
-              d="M5 12.5l4.5 4.5L19 7.5"
+              d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
+              strokeWidth="2"
               strokeLinejoin="round"
             />
           </svg>
         </Button>
         {dirty ? (
-          <Button variant="quiet" disabled={save.isPending} onClick={() => change(saved)}>
-            Descartar alterações
+          <Button
+            variant="secondary"
+            disabled={save.isPending}
+            onClick={() => change(saved)}
+            aria-label="Descartar alterações"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path
+                d="M9 7L4 12l5 5M4 12h10a6 6 0 010 12"
+                transform="translate(0 -3)"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </Button>
         ) : null}
       </div>

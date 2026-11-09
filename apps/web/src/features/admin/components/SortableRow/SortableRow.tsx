@@ -9,6 +9,8 @@ type SortableRowProps = {
   name: string
   describedBy: string
   grabbed: boolean
+  // Fonte escondida: contorno cinza.
+  dimmed?: boolean
   onKeyDown: KeyboardEventHandler<HTMLButtonElement>
   onBlur: () => void
   children: ReactNode
@@ -22,6 +24,7 @@ export function SortableRow({
   name,
   describedBy,
   grabbed,
+  dimmed = false,
   onKeyDown,
   onBlur,
   children,
@@ -31,6 +34,7 @@ export function SortableRow({
     styles.row,
     isDragging || grabbed ? styles.lifted : '',
     isDropTarget ? styles.target : '',
+    dimmed ? styles.dimmed : '',
   ]
     .filter(Boolean)
     .join(' ')

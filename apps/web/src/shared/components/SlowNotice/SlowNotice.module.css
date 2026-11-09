@@ -1,6 +1,6 @@
 /* Duas linhas reservadas: a mensagem cabe em duas linhas em 320 px e o bloco não muda de altura. */
 .slot {
-  min-height: calc(2 * 1.4em);
+  min-height: calc(2 * 1.4em + 24px);
 }
 
 .text {

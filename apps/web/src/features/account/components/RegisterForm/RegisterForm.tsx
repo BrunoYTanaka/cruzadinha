@@ -103,9 +103,9 @@ export function RegisterForm() {
   if (sentTo) {
     return (
       <AuthLayout
-        headline="Crie sua conta."
-        lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
-        rows={['CRIE', 'SUA', 'conta']}
+        headline="Confira o seu e-mail."
+        lead="O link para ativar a conta já foi."
+        rows={['CONFIRA', 'O', 'email']}
       >
         <div className={styles.card}>
           <h1 className={styles.title} ref={sentHeading} tabIndex={-1}>
