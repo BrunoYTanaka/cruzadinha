@@ -44,7 +44,7 @@ A pessoa digita letras no tabuleiro. O progresso é salvo sozinho como antes, ma
 1. **Given** uma pessoa com conta jogando, **When** ela digita uma letra e o progresso é enviado, **Then** a faixa de ferramentas não mostra "Salvando…" nem "Salvo" e nenhum item dela muda de posição.
 2. **Given** um visitante jogando, **When** ele digita uma letra, **Then** a faixa não mostra "Salvando…" nem "Salvo neste aparelho"; a indicação de que o progresso fica só neste aparelho e o link para entrar continuam visíveis, sempre com o mesmo texto, do início ao fim da partida.
 3. **Given** uma pessoa com conta jogando, **When** a rede cai e o envio falha, **Then** o aviso de sem conexão aparece como hoje e é anunciado ao leitor de tela; **When** a rede volta e o envio dá certo, **Then** o aviso some e a volta é anunciada ("Conexão restabelecida"), sem mostrar "Salvo".
-4. **Given** a sessão expirada, a cruzada concluída em outro aparelho ou o progresso que não pode ser guardado, **When** isso acontece, **Then** o aviso correspondente aparece como hoje.
+4. **Given** a sessão expirada, a cruzada concluída em outro aparelho ou o progresso que não pode ser guardado, **When** isso acontece, **Then** o aviso correspondente aparece como hoje. _Nota (feature 062): a sessão expirada aparece só na faixa de aviso com "Entrar de novo", acima do tabuleiro, e não mais repetida como "Sessão expirada" na faixa de ferramentas._
 5. **Given** letras digitadas, **When** a pessoa recarrega a página ou abre a cruzada em outro aparelho (com conta), **Then** as letras estão lá, como hoje.
 
 ---
@@ -107,7 +107,7 @@ Quando a pessoa acerta uma palavra, a linha da dica na lista ganha o fundo verde
 
 - **FR-001**: A tela de jogo MUST NOT exibir os textos "Salvando…", "Salvo" nem "Salvo neste aparelho" em nenhum momento.
 - **FR-002**: O salvamento automático MUST continuar igual ao de hoje (feature 010, FR-015; feature 013 para o visitante); só a sua exibição muda.
-- **FR-003**: Os avisos de problema no salvamento (sem conexão, sessão expirada, concluída em outro aparelho, não salvo) MUST continuar visíveis e anunciados ao leitor de tela como hoje, incluindo o anúncio de "Conexão restabelecida" quando o envio volta a funcionar.
+- **FR-003**: Os avisos de problema no salvamento (sem conexão, sessão expirada, concluída em outro aparelho, não salvo) MUST continuar visíveis e anunciados ao leitor de tela como hoje, incluindo o anúncio de "Conexão restabelecida" quando o envio volta a funcionar. _Nota (feature 062): a sessão expirada é dita pela faixa de aviso ("Sua sessão expirou. Entre de novo para salvar."), não pela faixa de ferramentas._
 - **FR-004**: O visitante MUST continuar vendo, na tela de jogo, que o progresso fica só neste aparelho e o link para entrar, com um texto que não muda durante a partida.
 - **FR-005**: Um salvamento normal (começar a enviar, terminar de enviar) MUST NOT mudar o tamanho nem a posição de nenhum elemento da tela de jogo.
 - **FR-006**: A barra da dica ativa MUST mostrar sempre uma linha só, com a altura de hoje, em todos os lugares onde aparece (acima do tabuleiro no computador e no celular com teclado na tela, e na coluna de dicas da janela estreita sem teclado na tela (entre 721 e 860 px, com mouse); até 720 px, ou com toque, o celular sempre usa o teclado na tela), qualquer que seja a dica ativa.
