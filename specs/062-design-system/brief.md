@@ -1,6 +1,6 @@
 # Brief: aplicar o design system no site (feature 062)
 
-Entrada para `/speckit-specify`. O contrato visual é `design-system.html`, nesta pasta: cópia do artefato "Design System Cruzadinha" (https://claude.ai/artifact/2ygwAJhFZKMmwmsZyhaHNc), versão `1793797223-ba76`, sha256 `c6897e05495e6cf4db45e1137d83156df43dcb49688d4ee055d458fb8b8f7de6`. Abra o arquivo no navegador: ele tem a aba Fundamentos, a aba Componentes e a aba Telas (todas as telas do site, em claro e escuro, com seletor de largura).
+Entrada para `/speckit-specify`. O contrato visual é `docs/mockups/design-system.html`, nesta pasta: cópia do artefato "Design System Cruzadinha" (https://claude.ai/artifact/2ygwAJhFZKMmwmsZyhaHNc), versão `1793797223-ba76`, sha256 `c6897e05495e6cf4db45e1137d83156df43dcb49688d4ee055d458fb8b8f7de6`. Abra o arquivo no navegador: ele tem a aba Fundamentos, a aba Componentes e a aba Telas (todas as telas do site, em claro e escuro, com seletor de largura).
 
 ## Objetivo
 

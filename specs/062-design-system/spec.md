@@ -6,11 +6,11 @@
 
 **Status**: Draft
 
-**Input**: User description: "Aplicar o design system no site (feature 062). Brief em `specs/062-design-system/brief.md`; contrato visual em `specs/062-design-system/design-system.html`. Só web, cinco fatias (tokens, componentes de base, cabeçalho, calendário, demais telas) mais arrastar para ordenar na Administração."
+**Input**: User description: "Aplicar o design system no site (feature 062). Brief em `specs/062-design-system/brief.md`; contrato visual em `docs/mockups/design-system.html`. Só web, cinco fatias (tokens, componentes de base, cabeçalho, calendário, demais telas) mais arrastar para ordenar na Administração."
 
 ## Contrato visual e limites
 
-O contrato visual é `design-system.html` (abas Fundamentos, Componentes e Telas, em claro e escuro, com seletor de largura). Esta feature traz esse estilo para as telas do site fora da landing e fora do tabuleiro. Nenhum valor de cor novo além do token `--edge` (o `--focus` já existe). Valores exatos de sombra, contorno, tamanho e tempo são os do artefato; em divergência com este texto vale o artefato, e a diferença é registrada em `research.md`. Sem mudança de API, de schema ou de contrato.
+O contrato visual é `docs/mockups/design-system.html` (abas Fundamentos, Componentes e Telas, em claro e escuro, com seletor de largura). Esta feature traz esse estilo para as telas do site fora da landing e fora do tabuleiro. Nenhum valor de cor novo além do token `--edge` (o `--focus` já existe). Valores exatos de sombra, contorno, tamanho e tempo são os do artefato; em divergência com este texto vale o artefato, e a diferença é registrada em `research.md`. Sem mudança de API, de schema ou de contrato.
 
 Ficam como estão, por regra: a landing `/` (feature 050) e a grade do tabuleiro (células, numeração, seleção, teclado na tela, impressão). Por decisão posterior à primeira versão, tudo o que fica em volta da grade segue o artefato: o diálogo de conclusão e o de compartilhar, a folha de dicas do celular, a dica ativa (amarela, em negrito), Letra, Palavra e o botão Ajudas, e a faixa do modo leitura (largura toda, acima da barra de ferramentas).
 

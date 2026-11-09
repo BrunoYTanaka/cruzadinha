@@ -2,7 +2,7 @@
 
 **Branch**: `feat/062-design-system` | **Date**: 2026-11-04 | **Spec**: [spec.md](spec.md)
 
-**Input**: [spec.md](spec.md), [brief.md](brief.md), contrato visual [design-system.html](design-system.html)
+**Input**: [spec.md](spec.md), [brief.md](brief.md), contrato visual [design-system.html](../../docs/mockups/design-system.html)
 
 ## Summary
 
@@ -67,7 +67,6 @@ Branches: a fatia 1 usa `feat/062-design-system` (leva também `specs/062-design
 ```text
 specs/062-design-system/
 ├── brief.md
-├── design-system.html
 ├── spec.md
 ├── plan.md
 ├── research.md

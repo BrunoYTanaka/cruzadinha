@@ -63,7 +63,7 @@ de conclusão (1280), comparadas pixel a pixel (limite de 8 de diferença por ca
 
 ## Conferência tela a tela com o artefato (T036)
 
-Método: o artefato (`design-system.html`, `showScreen(id)`, tema e largura) e o site local lado a lado,
+Método: o artefato (`docs/mockups/design-system.html`, `showScreen(id)`, tema e largura) e o site local lado a lado,
 em claro e escuro, 1280 e 390 px, para calendário, entrar, criar conta, esqueci a senha, Sua conta
 (visitante e conta), estatísticas (com números e vazio), x1 (lista, vazio, novo), Administração,
 status e 404.

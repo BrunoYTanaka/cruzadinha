@@ -17,7 +17,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 
 - [X] T003 [US1] Escrever teste que falha em `shared/themes/tokens.test.ts`: `--edge` existe em `light.css` e `dark.css` e `--focus` mantém o valor atual (use `readCss`)
 - [X] T004 [US1] Acrescentar `--edge: var(--ink)` em `shared/themes/light.css` e `--edge: #868d99` nos dois blocos de `shared/themes/dark.css`; listar `--edge` no comentário de `shared/themes/tokens.css`
-- [X] T005 [US1] Conferir `--hover-overlay`, `--press-overlay`, `--radius-sm/md/lg` (6/10/16) e `--tap: 44px` contra `design-system.html` e alinhar só o que faltar, registrando diferenças em `research.md`
+- [X] T005 [US1] Conferir `--hover-overlay`, `--press-overlay`, `--radius-sm/md/lg` (6/10/16) e `--tap: 44px` contra `docs/mockups/design-system.html` e alinhar só o que faltar, registrando diferenças em `research.md`
 - [X] T006 [US1] Teste de contraste de `--edge` e `--focus` contra `--bg`/`--surface` nos dois temas (mínimo 3:1) em `shared/themes/tokens.test.ts`
 - [X] T007 [US1] Abrir PR 1 `feat(web): add the edge token for the design system`
 
@@ -64,7 +64,7 @@ Caminhos abaixo são relativos a `apps/web/src/`. Cada componente fica em pasta 
 - [X] T033 [P] [US5] `shared/components/ErrorState`, `app/RouteError.tsx`, `shared/components/LoadingState`, `NotFoundPage`, `RequiresConnection` e `pages/status` (`StatusPage`): estilo novo, um `h1` por página
 - [X] T034 [P] [US5] `features/settings` (diálogo de configurações), `features/import` (`ImportOffer`) e avisos de `features/offline`: `Dialog`, `Button`, `Notice` e `Link` novos, sem mudar comportamento
 - [X] T035 [US5] Trocar os textos de link das telas alteradas pelo `Link` (`shared/components/Link/Link`) e conferir com `grep` que nenhum `<a>` de texto ficou fora, exceto na landing; conferir com `grep` que o CSS alterado não tem cor hexadecimal fora de `shared/themes/` (SC-002)
-- [X] T036 [US5] Conferência tela a tela com Playwright contra `design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
+- [X] T036 [US5] Conferência tela a tela com Playwright contra `docs/mockups/design-system.html` (claro/escuro; 390/768/1280) e registrar divergências resolvidas em `research.md`
 - [X] T037 [US5] Rodar axe nas telas alteradas e `e2e/sem-saltos.spec.ts`; comparar landing e tabuleiro com as capturas de T002 e confirmar que não há diferença (FR-019, SC-007)
 - [X] T038 [US5] Abrir PR 5 `feat(web): apply the design system to the remaining screens`
 
