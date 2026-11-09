@@ -12,7 +12,7 @@ export function DuelNewPage() {
   const [created, setCreated] = useState<CreateDuelResponse | null>(null)
   return (
     <RequiresConnection>
-      <div className={styles.page}>
+      <div className={`${styles.page} ${created ? styles.narrow : ''}`}>
         {created ? (
           <>
             <h1 className={styles.title}>x1 criado</h1>

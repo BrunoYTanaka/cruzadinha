@@ -33,12 +33,6 @@
   font-size: 15px;
 }
 
-.option input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--accent);
-}
-
 .picked {
   margin: 0;
   color: var(--mute);

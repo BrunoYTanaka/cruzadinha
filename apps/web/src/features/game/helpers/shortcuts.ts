@@ -42,7 +42,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
           key('ArrowRight', { label: '→', spoken: 'seta para a direita' }),
         ],
         action: 'arrow',
-        description: 'Move para a célula vizinha e muda a direção',
+        description: 'Move pelo tabuleiro',
       },
       { keys: [key('Home')], action: 'wordStart', description: 'Vai ao início da palavra' },
       { keys: [key('End')], action: 'wordEnd', description: 'Vai ao fim da palavra' },
@@ -50,7 +50,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: [key('Tab', { shift: true, label: 'Shift+Tab' })],
         action: 'previousWord',
-        description: 'Volta para a palavra anterior',
+        description: 'Vai para a palavra anterior',
       },
     ],
   },
@@ -60,7 +60,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: [{ key: null, shift: false, label: 'A a Z' }],
         action: 'letter',
-        description: 'Escreve a letra e avança',
+        description: 'Escreve a letra',
       },
       { keys: [key('Backspace')], action: 'backspace', description: 'Apaga a letra e volta' },
       { keys: [key('Delete')], action: 'delete', description: 'Apaga a letra sem mover' },
@@ -72,7 +72,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       {
         keys: [key('Escape', { label: 'Esc' })],
         action: 'releaseTab',
-        description: 'Libera o próximo Tab para sair do tabuleiro',
+        description: 'Solta o foco do tabuleiro',
       },
     ],
   },

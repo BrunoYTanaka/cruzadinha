@@ -208,7 +208,7 @@ export function SettingsDialog() {
       title="Configurações"
       closeButton
       closeOnBackdrop
-      size="wide"
+      size="large"
     >
       <div className={styles.body}>
         <Row
@@ -273,7 +273,6 @@ export function SettingsDialog() {
           <h3 id="cruzada-padrao" className={styles.groupTitle}>
             Cruzada padrão
           </h3>
-          <span className={styles.hint}>O calendário abre nesta cruzada.</span>
           <SourcePicker
             sources={sourceOptions}
             value={defaultSource}
@@ -305,11 +304,7 @@ export function SettingsDialog() {
         ) : null}
 
         <div className={styles.footer}>
-          {viewer?.kind === 'user' ? (
-            <span className={styles.hint}>
-              Salvo automaticamente neste aparelho e na sua conta.
-            </span>
-          ) : (
+          {viewer?.kind === 'user' ? null : (
             <span className={styles.hint}>
               As configurações ficam só neste aparelho.{' '}
               <Link
@@ -321,7 +316,7 @@ export function SettingsDialog() {
               para levar para outros.
             </span>
           )}
-          <Button variant="quiet" onClick={restoreDefaults}>
+          <Button variant="quiet" size="small" onClick={restoreDefaults}>
             Restaurar padrões
           </Button>
         </div>

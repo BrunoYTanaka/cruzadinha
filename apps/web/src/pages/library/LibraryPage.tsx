@@ -13,7 +13,6 @@ import { addMonths, todayInBrasilia } from '../../shared/helpers/dates/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { useViewer } from '../../features/session'
 import { VisuallyHidden } from '../../shared/components/VisuallyHidden/VisuallyHidden'
-import { useOnline } from '../../shared/hooks/useOnline/useOnline'
 import { useVisibleSources } from '../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery/useMediaQuery'
 import {
@@ -81,7 +80,6 @@ function LibraryContent() {
     )
     return buildMonth(month, today, items, readNoPuzzleDates(source, monthDates))
   }, [month, today, items, source])
-  const online = useOnline()
   const wide = useMediaQuery(LIBRARY_DESKTOP_QUERY)
   const pageRef = useRef<HTMLDivElement>(null)
   const size = useLibraryWidth(pageRef, { enabled: wide, ready: library.isSuccess })
@@ -131,7 +129,6 @@ function LibraryContent() {
   } else {
     calendarArea = (
       <>
-        {online ? null : <Notice>Sem conexão: mostrando só as cruzadas guardadas.</Notice>}
         {isSourceDown(source) ? (
           <Notice variant="warning">
             Novas cruzadas não podem ser buscadas agora. As que já estão guardadas continuam

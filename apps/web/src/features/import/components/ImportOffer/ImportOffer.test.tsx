@@ -135,7 +135,7 @@ describe('ImportOffer', () => {
     expect(await guestStore.getAll()).toHaveLength(1)
 
     mockApi({ 'POST /api/progress/import': () => ok(A) })
-    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }))
     expect(await screen.findByRole('dialog', { name: 'Progresso importado' })).toBeInTheDocument()
     expect(await guestStore.getAll()).toEqual([])
   })

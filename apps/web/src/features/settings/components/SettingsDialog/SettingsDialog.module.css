@@ -83,10 +83,11 @@
 
 /* Secundário quadrado (feature 023): cores, desativado e estados vêm do tipo. */
 .step {
-  width: var(--tap);
-  height: var(--tap);
+  width: 36px;
+  min-height: 36px;
+  height: 36px;
   padding: 0;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .value {
@@ -105,28 +106,20 @@
   cursor: pointer;
 }
 
-.check input {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  accent-color: var(--ink);
-}
-
 /* Interruptor: trilho com a bola à esquerda (desligado) ou à direita (ligado). */
 .switch {
   position: relative;
   flex: none;
-  width: 52px;
-  height: 30px;
+  width: 46px;
+  height: 28px;
   /* A regra global de toque (`button { min-height: var(--tap) }`, na camada reset) vencia o
      `height` e esticava o trilho para 44 px; o ::before abaixo devolve a área de toque. */
   min-height: 0;
   padding: 0;
-  /* Borda transparente: com cores forçadas o limite aparece (feature 023). A bola fica 1 px mais
-     para dentro para continuar no mesmo lugar. */
-  border: 1px solid transparent;
+  /* Contorno como no artefato (feature 062); também marca o limite com cores forçadas. */
+  border: 2px solid var(--edge);
   border-radius: 999px;
-  background-color: var(--line);
+  background-color: var(--control);
   cursor: pointer;
   transition:
     background-color 120ms,
@@ -138,7 +131,7 @@
 .switch::before {
   content: '';
   position: absolute;
-  inset: -8px -1px;
+  inset: -10px -2px;
 }
 
 .switch[aria-checked='true'] {
@@ -157,19 +150,22 @@
 
 .knob {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 24px;
-  height: 24px;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+  background: var(--ink);
   transition: left 120ms;
 }
 
 .switch[aria-checked='true'] .knob {
-  left: 24px;
+  left: 21px;
   background: var(--sel-ink);
+}
+
+.footer > :last-child {
+  margin-inline-start: auto;
 }
 
 .footer {
@@ -274,15 +270,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: var(--tap);
-  padding: 0 12px;
+  min-height: 40px;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
-.radio input {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  accent-color: var(--ink);
+/* Com largura para isso, as fontes ficam em duas colunas (como no artefato). */
+@container (min-width: 400px) {
+  .radios {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+  }
 }

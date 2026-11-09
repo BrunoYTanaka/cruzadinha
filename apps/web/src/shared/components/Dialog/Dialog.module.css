@@ -46,6 +46,10 @@
   max-width: 460px;
 }
 
+.large {
+  max-width: 560px;
+}
+
 .bottom .panel {
   max-width: none;
   border-bottom-left-radius: 0;
@@ -60,7 +64,7 @@
 
 /* Diálogos novos: título em Fraunces (o `classic` do tabuleiro não muda). */
 .panel:not(.classic) .title {
-  font: 800 22px/1.15 var(--font-title);
+  font: 800 20px/1.15 var(--font-title);
 }
 
 .description {

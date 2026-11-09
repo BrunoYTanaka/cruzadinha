@@ -70,9 +70,7 @@ for (const theme of THEMES) {
       await expectNoHorizontalScroll(page)
 
       await page.getByLabel('E-mail').press('Enter')
-      await expect(
-        page.getByRole('heading', { level: 1, name: 'Confira seu e-mail' }),
-      ).toBeVisible()
+      await expect(page.getByText(/Enviamos um link para/)).toBeVisible()
 
       const resend = page.getByRole('button', { name: 'Reenviar link' })
       await expect(resend).not.toHaveAttribute('aria-disabled', 'true', { timeout: 5_000 })
@@ -150,7 +148,7 @@ test('sem captcha na API nenhum pedido vai à Cloudflare e o envio sai sem prova
   await page.goto('/cadastro')
   await page.getByLabel('E-mail').fill('ana@exemplo.com')
   await page.getByRole('button', { name: 'Criar conta' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Confira seu e-mail' })).toBeVisible()
+  await expect(page.getByText(/Enviamos um link para/)).toBeVisible()
   expect(requested).toEqual([])
   expect(api.calls.find((c) => c.path === '/api/auth/register')?.body).toEqual({
     email: 'ana@exemplo.com',

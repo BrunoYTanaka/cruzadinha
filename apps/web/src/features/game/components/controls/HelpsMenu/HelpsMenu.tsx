@@ -51,9 +51,13 @@ export function HelpsMenu({
         label={verifyOnType ? 'Ajudas, verificação automática ligada' : 'Ajudas'}
         placement={placement}
         blocked={blocked}
+        buttonClassName={styles.button}
         buttonContent={
           <>
-            <span aria-hidden="true">Ajudas ▾</span>
+            <span aria-hidden="true">Ajudas</span>
+            <svg className={styles.chevron} viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
             <span className={styles.dot} data-on={verifyOnType} aria-hidden="true" />
           </>
         }

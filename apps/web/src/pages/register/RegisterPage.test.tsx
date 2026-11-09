@@ -51,9 +51,7 @@ describe('RegisterPage com o cadastro aberto (feature 013)', () => {
     await fill(user)
     await user.click(screen.getByRole('button', { name: 'Criar conta' }))
 
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' }),
-    ).toBeVisible()
+    expect(await screen.findByText(/Enviamos um link para/)).toBeVisible()
     expect(screen.getByText(aUser.email)).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/cadastro')
     expect(calls.find((call) => call.key === 'POST /api/auth/register')?.body).toEqual({
@@ -126,7 +124,7 @@ describe('RegisterPage com o cadastro aberto (feature 013)', () => {
       renderRoutes(routes, ['/cadastro'])
       await fill(user)
       await user.click(screen.getByRole('button', { name: 'Criar conta' }))
-      await screen.findByRole('heading', { name: 'Confira seu e-mail' })
+      await screen.findByText(/Enviamos um link para/)
       await act(async () => {
         await vi.advanceTimersByTimeAsync(31_000)
       })
@@ -134,7 +132,7 @@ describe('RegisterPage com o cadastro aberto (feature 013)', () => {
       expect(await screen.findByRole('alert')).toHaveTextContent(
         'Não foi possível enviar o e-mail agora. Tente novamente mais tarde.',
       )
-      expect(screen.getByRole('heading', { name: 'Confira seu e-mail' })).toBeVisible()
+      expect(screen.getByRole('heading', { name: 'Criar conta' })).toBeVisible()
       // O botão fica parado, mas sem dizer por quanto tempo.
       const held = screen.getByRole('button', { name: 'Reenviar link' })
       expect(held).toHaveAttribute('aria-disabled', 'true')
@@ -161,7 +159,7 @@ describe('RegisterPage com o cadastro aberto (feature 013)', () => {
       renderRoutes(routes, ['/cadastro'])
       await fill(user)
       await user.click(screen.getByRole('button', { name: 'Criar conta' }))
-      await screen.findByRole('heading', { name: 'Confira seu e-mail' })
+      await screen.findByText(/Enviamos um link para/)
       await act(async () => {
         await vi.advanceTimersByTimeAsync(31_000)
       })

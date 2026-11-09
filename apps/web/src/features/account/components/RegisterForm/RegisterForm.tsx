@@ -4,6 +4,7 @@ import { Navigate, useSearchParams } from 'react-router'
 import { Link } from '../../../../shared/components/Link/Link'
 import { register, resendVerification } from '../../../../shared/services/api/auth/auth'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
@@ -109,15 +110,13 @@ export function RegisterForm() {
       >
         <div className={styles.card}>
           <h1 className={styles.title} ref={sentHeading} tabIndex={-1}>
-            Confira seu e-mail
+            Criar conta
           </h1>
-          <div className={styles.sent}>
-            <p className={styles.lead}>
-              Enviamos um link para <span className={styles.email}>{sentTo}</span>. Abra-o para
-              escolher a senha e ativar a conta.
-            </p>
-            <p className={styles.lead}>Não chegou? Veja a caixa de spam ou peça outro link.</p>
-          </div>
+          <Notice variant="ok">
+            Enviamos um link para <span className={styles.email}>{sentTo}</span>. Abra-o para
+            escolher a senha e ativar a conta.
+          </Notice>
+          <p className={styles.lead}>Não chegou? Veja a caixa de spam ou peça outro link.</p>
           {error ? (
             <div role="alert" className={styles.alert}>
               {error}
@@ -132,7 +131,7 @@ export function RegisterForm() {
           />
           <CaptchaField captcha={resendCaptcha} action="resend" />
           <p className={styles.alt}>
-            Já confirmou? <Link to="/login">Entrar</Link>
+            Já tem conta? <Link to="/login">Entrar</Link>
           </p>
         </div>
       </AuthLayout>

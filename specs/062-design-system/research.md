@@ -108,6 +108,8 @@ Divergências mantidas de propósito (segunda conferência, todas as telas da ab
   largura toda acima das ferramentas, e os formulários não reservam mais o espaço do aviso de
   lentidão (FR-009 da 059 mudou: o aviso empurra o que fica abaixo do botão; a tela de espera segue
   reservando).
+- Também igualados nesta rodada: dica ativa amarela em negrito; Letra, Palavra e Desistir como botão pequeno de 36 px e Ajudas com contorno forte e seta (desfaz o visual `Pill` da 051 e o "Tentar de novo" de "x1 não abriu"); caixas e botões de opção amarelos em todo o site; Configurações com 560 px, interruptor de 46 x 28, passos de 36 px, fontes em duas colunas e rodapé só com "Restaurar padrões" para a conta; erro de login marca os dois campos; convite de x1 como página, sem "Agora não" (a pessoa sai pelo cabeçalho); desafio recusado sem botão; tabela do resultado alinhada à direita com o tempo vencedor em verde; cadastro enviado com o título "Criar conta" e aviso verde; importar com botão amarelo e erro em caixa, sem trocar para "Tentar de novo"; "Esta tela precisa de conexão." sem as casas; um único aviso sem conexão no calendário; textos dos atalhos.
+- Diferente de propósito: o convite de x1 diz quem desafiou e qual cruzada (o artefato só diz "Leia as regras e escolha como responder ao desafio."), porque é o que a pessoa precisa para decidir. "Reenviar link" mostra a contagem antes de liberar. As telas de captcha mantêm o texto de apoio e "Já tem conta?", que o artefato omite.
 - Mantido: a cruzada concluída não tem palavra ativa, então não há barra de dica no modo leitura; o
   botão "Tamanho padrão" desabilitado, como na seção de componentes do artefato.
 - Não conferidas: recorde, avisos de progresso descartado, importar com sucesso e "servidor não

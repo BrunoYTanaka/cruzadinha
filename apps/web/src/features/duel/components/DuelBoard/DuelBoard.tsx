@@ -111,7 +111,7 @@ export function DuelBoard({ credential, view, puzzleId, serverNow, receivedAt, o
 
   const toolbarAction = useMemo(
     () => (
-      <Button variant="quiet" onClick={() => setConfirming(true)}>
+      <Button variant="quiet" size="small" onClick={() => setConfirming(true)}>
         Desistir
       </Button>
     ),

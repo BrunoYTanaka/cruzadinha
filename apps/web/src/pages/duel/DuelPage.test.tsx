@@ -50,21 +50,18 @@ afterEach(() => {
 })
 
 describe('DuelPage: convite', () => {
-  it('mostra as regras e não fecha por Esc nem por clique fora', async () => {
-    const user = userEvent.setup()
+  it('mostra as regras na própria página, com quem desafiou e os dois botões', async () => {
     open({
       [STATE]: () => apiError(404, 'not-found'),
       [LOOKUP]: () => jsonResponse(200, preview),
     })
-    const dialog = await screen.findByRole('dialog', { name: 'Ana desafiou você' })
+    const dialog = await screen.findByRole('region', { name: 'Regras' })
     expect(dialog).toHaveTextContent('soma 30 s')
     expect(dialog).toHaveTextContent('30 min')
-    await user.keyboard('{Escape}')
-    await user.click(document.body)
-    expect(screen.getByRole('dialog', { name: 'Ana desafiou você' })).toBeInTheDocument()
+    expect(screen.getByText(/Ana desafiou você/)).toBeVisible()
     expect(screen.getByRole('button', { name: 'Começar' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Agora não' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Recusar desafio' })).toBeVisible()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Recusar' })).toBeVisible()
   })
 
   it('abrir o convite só consulta: nada de começar nem recusar', async () => {
@@ -72,7 +69,7 @@ describe('DuelPage: convite', () => {
       [STATE]: () => apiError(404, 'not-found'),
       [LOOKUP]: () => jsonResponse(200, preview),
     })
-    await screen.findByRole('dialog')
+    await screen.findByRole('region', { name: 'Regras' })
     expect(api.calls.map((call) => call.key).sort()).toEqual([LOOKUP, STATE])
   })
 
@@ -95,7 +92,7 @@ describe('DuelPage: convite', () => {
           serverNow: NOW,
         }),
     })
-    await screen.findByRole('dialog')
+    await screen.findByRole('region', { name: 'Regras' })
     await user.type(screen.getByLabelText('Seu apelido'), 'Beto')
     await user.click(screen.getByRole('button', { name: 'Começar' }))
     await waitFor(() => expect(api.calls.some((call) => call.key === START)).toBe(true))
@@ -113,36 +110,23 @@ describe('DuelPage: convite', () => {
       [LOOKUP]: () => jsonResponse(200, preview),
       [START]: () => apiError(409, 'duel-taken'),
     })
-    await screen.findByRole('dialog')
+    await screen.findByRole('region', { name: 'Regras' })
     await user.type(screen.getByLabelText('Seu apelido'), 'Caio')
     await user.click(screen.getByRole('button', { name: 'Começar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('já foi aceito')
   })
 
-  it('"Recusar desafio" encerra o duelo', async () => {
+  it('"Recusar" encerra o duelo', async () => {
     const user = userEvent.setup()
     const api = open({
       [STATE]: () => apiError(404, 'not-found'),
       [LOOKUP]: () => jsonResponse(200, preview),
       [DECLINE]: () => jsonResponse(200, { declined: true }),
     })
-    await screen.findByRole('dialog')
-    await user.click(screen.getByRole('button', { name: 'Recusar desafio' }))
+    await screen.findByRole('region', { name: 'Regras' })
+    await user.click(screen.getByRole('button', { name: 'Recusar' }))
     expect(await screen.findByRole('heading', { name: 'Desafio recusado' })).toBeVisible()
     expect(api.calls.find((call) => call.key === DECLINE)?.body).toEqual({ linkToken: LINK })
-  })
-
-  it('"Agora não" sai sem chamar nada que mude o duelo', async () => {
-    const user = userEvent.setup()
-    const api = open({
-      [STATE]: () => apiError(404, 'not-found'),
-      [LOOKUP]: () => jsonResponse(200, preview),
-    })
-    await screen.findByRole('dialog')
-    await user.click(screen.getByRole('button', { name: 'Agora não' }))
-    expect(await screen.findByText('Calendário')).toBeVisible()
-    expect(api.calls.map((call) => call.key)).not.toContain(START)
-    expect(api.calls.map((call) => call.key)).not.toContain(DECLINE)
   })
 
   it('duelo que não está aberto: mensagem única', async () => {

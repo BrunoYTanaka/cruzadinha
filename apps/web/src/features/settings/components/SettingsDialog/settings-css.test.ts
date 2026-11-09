@@ -17,7 +17,7 @@ function body(selector: string): string | undefined {
 }
 
 describe('interruptor das configurações (feature 025)', () => {
-  it('zera o min-height global de toque para manter o trilho de 30 px', () => {
+  it('zera o min-height global de toque para manter o trilho de 28 px', () => {
     expect(body('.switch')).toMatch(/min-height:\s*0\s*;/)
   })
 
@@ -25,7 +25,7 @@ describe('interruptor das configurações (feature 025)', () => {
     const before = body('.switch::before')
     expect(before).toBeDefined()
     expect(before).toMatch(/position:\s*absolute/)
-    expect(before).toMatch(/inset:\s*-8px\s+-1px/)
+    expect(before).toMatch(/inset:\s*-10px\s+-2px/)
   })
 })
 

@@ -25,12 +25,6 @@
   cursor: pointer;
 }
 
-.visible input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--sel);
-}
-
 .name {
   font: 800 17px var(--font-title);
 }

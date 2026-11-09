@@ -33,7 +33,7 @@ for (const theme of THEMES) {
       await page.getByLabel('E-mail').fill('ana@exemplo.com')
       await page.getByRole('button', { name: 'Criar conta' }).click()
 
-      await expectSingleH1(page, 'Confira seu e-mail')
+      await expectSingleH1(page, 'Criar conta')
       await expect(page.getByText('ana@exemplo.com')).toBeVisible()
       // A contagem usa o `retryAfter` da API (90 s), sem número fixo.
       await expect(
@@ -143,7 +143,7 @@ for (const theme of THEMES) {
       await expectNoHorizontalScroll(page)
       await page.getByLabel('E-mail').fill('uma-pessoa-com-um-endereco-bem-longo@exemplo.com.br')
       await page.getByRole('button', { name: 'Criar conta' }).click()
-      await expectSingleH1(page, 'Confira seu e-mail')
+      await expectSingleH1(page, 'Criar conta')
       await expectNoHorizontalScroll(page)
       await page.goto(`/verificar-email#token=${TOKEN}`)
       await expectSingleH1(page, 'Escolha sua senha')

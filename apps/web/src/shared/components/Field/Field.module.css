@@ -33,7 +33,7 @@
 }
 
 .error {
-  color: var(--ink);
-  font-size: 13px;
+  color: var(--bad);
+  font-size: 12px;
   font-weight: 500;
 }

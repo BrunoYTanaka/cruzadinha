@@ -2,7 +2,7 @@
   display: grid;
   gap: 14px;
   justify-items: center;
-  max-width: 420px;
+  max-width: 480px;
   margin: 24px auto;
   padding: 20px var(--gutter);
   text-align: center;

@@ -152,13 +152,13 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
           expectNear(other.x + other.width, content.right)
         }
 
-        // "Restaurar padrões": a caixa visível, com o contorno, começa na margem esquerda do
-        // conteúdo e nunca antes dela (feature 025, SC-004; substitui a regra do texto da 024).
+        // "Restaurar padrões": botão pequeno no canto direito do conteúdo (como no artefato, feature
+        // 062), dentro da margem.
         const restore = dialog.getByRole('button', { name: 'Restaurar padrões' })
         const restoreBox = await box(restore)
-        expectNear(restoreBox.x, content.left)
+        expectNear(restoreBox.x + restoreBox.width, content.right)
         expect(restoreBox.x).toBeGreaterThanOrEqual(content.left - 0.5)
-        expect(restoreBox.height).toBeGreaterThanOrEqual(44)
+        expect(restoreBox.height).toBeGreaterThanOrEqual(36)
 
         // Seletor: com mais de 3 fontes (feature 030) é uma lista de rádios, uma opção por fonte.
         await expect(
@@ -436,8 +436,8 @@ test.describe('F025-US1: interruptor com o desenho certo', () => {
           for (const pass of [0, 1]) {
             if (pass === 1) await toggle.click()
             const track = await box(toggle)
-            expect(Math.abs(track.height - 30)).toBeLessThanOrEqual(0.5)
-            expect(Math.abs(track.width - 52)).toBeLessThanOrEqual(0.5)
+            expect(Math.abs(track.height - 28)).toBeLessThanOrEqual(0.5)
+            expect(Math.abs(track.width - 46)).toBeLessThanOrEqual(0.5)
 
             const knob = await box(toggle.locator('[class*="knob"]'))
             const offset = knob.y + knob.height / 2 - (track.y + track.height / 2)

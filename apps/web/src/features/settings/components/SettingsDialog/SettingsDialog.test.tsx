@@ -334,14 +334,12 @@ describe('com conta (US3)', () => {
     return api
   }
 
-  it('o rodapé diz que fica no aparelho e na conta', async () => {
+  it('com conta, o rodapé só tem Restaurar padrões', async () => {
     const user = userEvent.setup()
     asUser(200)
     await user.click(await screen.findByRole('button', { name: 'Configurações' }))
     const dialog = screen.getByRole('dialog', { name: 'Configurações' })
-    expect(
-      within(dialog).getByText('Salvo automaticamente neste aparelho e na sua conta.'),
-    ).toBeInTheDocument()
+    expect(within(dialog).queryByText(/Salvo automaticamente/)).toBeNull()
     expect(within(dialog).queryByRole('link', { name: 'Entre' })).toBeNull()
   })
 

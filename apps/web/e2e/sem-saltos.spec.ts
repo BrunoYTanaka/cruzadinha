@@ -292,15 +292,15 @@ for (const theme of ['light', 'dark'] as const) {
     // que ele usa o token --ok (FR-012).
     expect(await css(check, 'stroke')).toBe(await probe(page, 'stroke', 'var(--ok)'))
 
-    // Ativa e resolvida: o fundo da palavra ativa, com o visto.
+    // Ativa e resolvida: o fundo da dica ativa (amarelo, como no artefato), com o visto.
     await cell(page, firstWord).click()
     await expect(first).toHaveAttribute('aria-current', 'true')
     expect(await css(first, 'background-color')).toBe(
-      await probe(page, 'background-color', 'var(--word)'),
+      await probe(page, 'background-color', 'var(--sel)'),
     )
     await expect(check).toBeVisible()
     expect(await css(first, 'text-decoration-line')).toBe('line-through')
-    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
+    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--sel-ink)'))
     // A barra da dica acima do tabuleiro nunca fica riscada (FR-014).
     expect(await css(clueBar(page), 'text-decoration-line')).toBe('none')
 

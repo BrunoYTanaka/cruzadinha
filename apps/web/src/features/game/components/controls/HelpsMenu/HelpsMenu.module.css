@@ -1,3 +1,29 @@
+/* Botão do menu como no artefato (feature 062). `button.button` vence a classe própria do Menu sem
+   depender da ordem dos arquivos. */
+button.button {
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 10px 0 12px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  font-size: 12px;
+}
+
+button.button[aria-expanded='true'] {
+  background-color: var(--pill);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* Ponto de "verificação automática ligada" no botão Ajudas. Fica no canto, fora do fluxo, para a
    largura do botão (e a faixa) não mudar ao ligar a opção. */
 .dot {

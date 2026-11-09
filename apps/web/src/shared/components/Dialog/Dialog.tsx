@@ -16,8 +16,8 @@ type DialogProps = {
   initialFocusRef?: RefObject<HTMLElement | null>
   closeOnBackdrop?: boolean
   align?: 'center' | 'bottom'
-  // Largura do painel: `wide` chega a 460 px em vez de 420 px (feature 024).
-  size?: 'default' | 'wide'
+  // Largura do painel: `wide` chega a 460 px e `large` a 560 px, em vez de 420 px (features 024, 062).
+  size?: 'default' | 'wide' | 'large'
   // Botão "Fechar" (X) no canto superior direito (feature 062: sempre presente, `false` o tira).
   closeButton?: boolean
   // Aparência de antes da feature 062 (borda de 1 px, sem X): fica no diálogo de conclusão e na folha
@@ -133,7 +133,11 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={[styles.panel, size === 'wide' ? styles.wide : '', classic ? styles.classic : '']
+        className={[
+          styles.panel,
+          size === 'wide' ? styles.wide : size === 'large' ? styles.large : '',
+          classic ? styles.classic : '',
+        ]
           .filter(Boolean)
           .join(' ')}
       >

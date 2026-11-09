@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import type { GuestProgress } from '../../../../domain/guest/guest-progress'
 import { Button } from '../../../../shared/components/Button/Button'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { Dialog } from '../../../../shared/components/Dialog/Dialog'
 import { queryKeys } from '../../../../shared/services/api/query-keys/query-keys'
 import { guestStore } from '../../../guest'
@@ -100,7 +101,7 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
           </p>
         ) : null}
         <div className={styles.actions}>
-          <Button onClick={() => setHidden(true)} data-autofocus>
+          <Button variant="primary" onClick={() => setHidden(true)} data-autofocus>
             Fechar
           </Button>
         </div>
@@ -120,7 +121,9 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
           <Button variant="secondary" onClick={() => setStep('offer')} data-autofocus>
             Voltar
           </Button>
-          <Button onClick={() => void discard()}>Descartar mesmo assim</Button>
+          <Button variant="primary" onClick={() => void discard()}>
+            Descartar mesmo assim
+          </Button>
         </div>
       </Dialog>
     )
@@ -144,9 +147,9 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         concluída na conta nunca é trocada.
       </p>
       {step === 'error' ? (
-        <p className={styles.message} role="alert">
+        <Notice variant="error">
           Não foi possível importar agora. Seu progresso continua neste aparelho.
-        </p>
+        </Notice>
       ) : null}
       <div className={styles.actions}>
         <Button variant="quiet" onClick={() => setStep('discard')} disabled={busy}>
@@ -155,8 +158,13 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         <Button variant="secondary" onClick={notNow} disabled={busy}>
           Agora não
         </Button>
-        <Button onClick={() => void confirmImport()} disabled={busy} data-autofocus>
-          {busy ? 'Importando…' : step === 'error' ? 'Tentar de novo' : 'Importar'}
+        <Button
+          variant="primary"
+          onClick={() => void confirmImport()}
+          disabled={busy}
+          data-autofocus
+        >
+          {busy ? 'Importando…' : 'Importar'}
         </Button>
       </div>
     </Dialog>

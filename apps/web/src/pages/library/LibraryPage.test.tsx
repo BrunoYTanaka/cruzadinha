@@ -103,7 +103,6 @@ describe('LibraryPage', () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     const { calls } = mockApi({})
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByText(/Sem conexão: mostrando só as cruzadas guardadas/)).toBeVisible()
     expect(calls.some((call) => call.key.startsWith('GET /api/library'))).toBe(false)
     expect(
       await screen.findByRole('link', { name: '13 de outubro, não iniciado, disponível sem rede' }),

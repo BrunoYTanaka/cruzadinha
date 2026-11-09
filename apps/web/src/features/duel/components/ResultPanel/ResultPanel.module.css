@@ -38,6 +38,16 @@
   font-weight: 700;
 }
 
+.table :is(td, thead th:not(:first-child)) {
+  text-align: right;
+}
+
+/* Tempo de quem venceu: verde e em negrito (nunca só a cor). */
+.table .won {
+  color: var(--ok);
+  font-weight: 800;
+}
+
 .table thead th {
   background: var(--control);
   color: var(--mute);

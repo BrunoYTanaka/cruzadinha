@@ -89,7 +89,10 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
       await openToday(page)
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar letra/ }))
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar palavra/ }))
-      await expectControlBorder(page, page.getByRole('button', { name: /^Ajudas/ }))
+      // O botão Ajudas tem o contorno forte do artefato (feature 062).
+      expect(await css(page.getByRole('button', { name: /^Ajudas/ }), 'border-top-width')).toBe(
+        '2px',
+      )
 
       // Conta: "Sair" fica dentro de "Sua conta" (feature 062).
       await login(page)

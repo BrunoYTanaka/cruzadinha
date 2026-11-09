@@ -9,7 +9,7 @@ export function CrosswordCells({ word, still = false }: { word: string; still?: 
       {[...word].map((letter, index) => (
         <span key={index} className={styles.cell} style={{ '--i': index } as CSSProperties}>
           {letter}
-          {index === 0 ? <small>1</small> : null}
+          {index === 0 && !still ? <small>1</small> : null}
         </span>
       ))}
     </div>

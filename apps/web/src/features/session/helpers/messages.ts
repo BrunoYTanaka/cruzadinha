@@ -3,7 +3,7 @@ import { formatWait } from '../../../shared/helpers/time/time'
 
 // Textos fixos. Nunca dizem se um e-mail existe.
 export const authMessages = {
-  invalidCredentials: 'E-mail ou senha incorretos.',
+  invalidCredentials: 'E-mail ou senha incorretos. Confira e tente de novo.',
   registrationClosed: 'O cadastro está fechado no momento.',
   registrationFailed: 'Não foi possível criar a conta.',
   offline: 'Sem conexão. Tente de novo quando voltar.',
@@ -64,7 +64,8 @@ export function emailRequestErrorMessage(error: unknown): string {
 
 // Campos que o servidor marcou como inválidos (só em `invalid-input`).
 export function invalidFields(error: unknown): string[] {
-  return error instanceof ApiRequestError && error.code === 'invalid-input'
-    ? (error.fields ?? [])
-    : []
+  if (!(error instanceof ApiRequestError)) return []
+  // Marca os dois: dizer qual errou revelaria se o e-mail tem conta.
+  if (error.code === 'invalid-credentials') return ['email', 'password']
+  return error.code === 'invalid-input' ? (error.fields ?? []) : []
 }
