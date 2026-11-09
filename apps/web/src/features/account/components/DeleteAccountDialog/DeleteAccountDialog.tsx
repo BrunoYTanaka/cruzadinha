@@ -75,10 +75,11 @@ export function DeleteAccountDialog({ open, onClose, onDeleted }: Props) {
           error={error ?? undefined}
         />
         <div className={styles.actions}>
-          <Button type="button" variant="quiet" onClick={close}>
+          <Button size="small" type="button" variant="quiet" onClick={close}>
             Cancelar
           </Button>
           <Button
+            size="small"
             type="submit"
             variant="primary"
             disabled={mutation.isPending || mutation.isSuccess}

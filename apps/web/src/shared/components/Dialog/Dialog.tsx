@@ -20,9 +20,6 @@ type DialogProps = {
   size?: 'default' | 'wide' | 'large'
   // Botão "Fechar" (X) no canto superior direito (feature 062: sempre presente, `false` o tira).
   closeButton?: boolean
-  // Aparência de antes da feature 062 (borda de 1 px, sem X): fica no diálogo de conclusão e na folha
-  // de dicas, que a feature não muda (FR-019). Implica `closeButton: false`.
-  classic?: boolean
 }
 
 // Diálogo acessível: `role="dialog"`, título e descrição ligados, foco preso, `Esc` fecha e o foco
@@ -37,8 +34,7 @@ export function Dialog({
   closeOnBackdrop = false,
   align = 'center',
   size = 'default',
-  classic = false,
-  closeButton = !classic,
+  closeButton = true,
 }: DialogProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -136,7 +132,6 @@ export function Dialog({
         className={[
           styles.panel,
           size === 'wide' ? styles.wide : size === 'large' ? styles.large : '',
-          classic ? styles.classic : '',
         ]
           .filter(Boolean)
           .join(' ')}

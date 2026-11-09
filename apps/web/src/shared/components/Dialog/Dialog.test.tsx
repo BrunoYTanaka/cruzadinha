@@ -77,12 +77,6 @@ describe('Dialog', () => {
     expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument()
   })
 
-  it('classic (diálogo de conclusão e folha de dicas) não tem o X e guarda a aparência de antes', () => {
-    render(<Dialog open onClose={() => {}} title="Clássico" classic />)
-    expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument()
-    expect(screen.getByRole('dialog').className).toMatch(/classic/)
-  })
-
   it('deixa o resto da página inerte enquanto está aberto', async () => {
     const user = userEvent.setup()
     const { container } = render(<Harness />)

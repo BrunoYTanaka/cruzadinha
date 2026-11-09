@@ -28,20 +28,6 @@
   box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
 }
 
-/* Antes da feature 062: o diálogo de conclusão e a folha de dicas não mudam. */
-.classic {
-  --primary-bg: var(--accent);
-  --primary-ink: var(--accent-ink);
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-}
-
-/* O texto dos botões do tabuleiro segue com o peso de antes (Button agora é 700). */
-.classic :is(button, a) {
-  font-weight: 500;
-}
-
 .wide {
   max-width: 460px;
 }
@@ -58,12 +44,6 @@
 
 .title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-/* Diálogos novos: título em Fraunces (o `classic` do tabuleiro não muda). */
-.panel:not(.classic) .title {
   font: 800 20px/1.15 var(--font-title);
 }
 

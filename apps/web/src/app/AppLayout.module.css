@@ -218,8 +218,8 @@
   }
 }
 
-/* Telas estreitas: sem o quadrado da marca, para a linha caber em 320 px. */
-@media (max-width: 400px) {
+/* Telas bem estreitas: sem o quadrado da marca, para a linha caber em 320 px. */
+@media (max-width: 370px) {
   .mark {
     display: none;
   }

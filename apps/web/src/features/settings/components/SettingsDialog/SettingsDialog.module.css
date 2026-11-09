@@ -61,7 +61,7 @@
 
 /* Com 400 px ou mais de conteúdo, nome, passos, valor e "Sem limite" cabem numa linha (≈ 371 px) e a
    opção vai para o canto direito; abaixo disso ela desce para uma linha própria, à esquerda. */
-@container (min-width: 400px) {
+@container (min-width: 300px) {
   .limit {
     flex-wrap: nowrap;
   }
@@ -72,7 +72,7 @@
 }
 
 .limitName {
-  min-width: 72px;
+  min-width: 60px;
 }
 
 .stepper {

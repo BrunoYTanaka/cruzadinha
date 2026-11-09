@@ -27,12 +27,11 @@
       box-shadow 120ms;
   }
 
-  /* Principal: o amarelo da seleção (feature 062, como no artefato). Os diálogos `classic` do
-     tabuleiro trocam as duas variáveis pelo azul de antes (FR-019). */
+  /* Principal: o amarelo da seleção (feature 062, como no artefato). */
   .primary {
-    background: var(--primary-bg, var(--sel));
-    border-color: var(--primary-bg, var(--sel));
-    color: var(--primary-ink, var(--sel-ink));
+    background: var(--sel);
+    border-color: var(--sel);
+    color: var(--sel-ink);
   }
 
   .secondary {

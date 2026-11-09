@@ -132,7 +132,7 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.invite}`}>
       <h1 className={styles.title}>Convite de x1</h1>
       <RulesPanel
         duel={lookup.data}

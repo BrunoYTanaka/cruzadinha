@@ -9,6 +9,10 @@
   padding: 28px var(--gutter);
 }
 
+.invite {
+  max-width: calc(520px + 2 * var(--gutter));
+}
+
 .title {
   margin: 0;
   font: 800 28px/1.1 var(--font-title);

@@ -36,10 +36,10 @@ export function ForfeitConfirm({ kind, busy, error, onConfirm, onCancel }: Props
         </p>
       ) : null}
       <div className={styles.actions}>
-        <Button variant="secondary" onClick={onCancel} data-autofocus>
+        <Button size="small" variant="secondary" onClick={onCancel} data-autofocus>
           {text.back}
         </Button>
-        <Button variant="primary" onClick={onConfirm} disabled={busy}>
+        <Button size="small" variant="primary" onClick={onConfirm} disabled={busy}>
           {busy ? 'Aguarde…' : text.confirm}
         </Button>
       </div>

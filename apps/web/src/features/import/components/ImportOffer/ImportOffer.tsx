@@ -101,7 +101,7 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
           </p>
         ) : null}
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => setHidden(true)} data-autofocus>
+          <Button size="small" variant="primary" onClick={() => setHidden(true)} data-autofocus>
             Fechar
           </Button>
         </div>
@@ -118,10 +118,10 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         description="O que você jogou como visitante será apagado deste aparelho e não entrará na conta. Isso não pode ser desfeito."
       >
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={() => setStep('offer')} data-autofocus>
+          <Button size="small" variant="secondary" onClick={() => setStep('offer')} data-autofocus>
             Voltar
           </Button>
-          <Button variant="primary" onClick={() => void discard()}>
+          <Button size="small" variant="primary" onClick={() => void discard()}>
             Descartar mesmo assim
           </Button>
         </div>
@@ -152,13 +152,14 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         </Notice>
       ) : null}
       <div className={styles.actions}>
-        <Button variant="quiet" onClick={() => setStep('discard')} disabled={busy}>
+        <Button size="small" variant="quiet" onClick={() => setStep('discard')} disabled={busy}>
           Descartar
         </Button>
-        <Button variant="secondary" onClick={notNow} disabled={busy}>
+        <Button size="small" variant="secondary" onClick={notNow} disabled={busy}>
           Agora não
         </Button>
         <Button
+          size="small"
           variant="primary"
           onClick={() => void confirmImport()}
           disabled={busy}
