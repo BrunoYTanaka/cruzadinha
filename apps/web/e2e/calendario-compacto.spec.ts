@@ -54,7 +54,10 @@ for (const theme of ['light', 'dark'] as const) {
     await page.setViewportSize({ width: 1280, height: 800 })
     await openToday(page)
     await fillSolution(page, await todaySolution(page.request))
-    await expect(page.getByRole('dialog', { name: 'Cruzada concluída' })).toBeVisible()
+    const dialog = page.getByRole('dialog', { name: 'Cruzada concluída' })
+    await expect(dialog).toBeVisible()
+    // O melhor tempo só aparece depois de a conclusão ficar gravada: sair antes pode perdê-la.
+    await expect(dialog.locator('dt:text-is("Melhor tempo") + dd')).toHaveText(/\d{2}:\d{2}/)
 
     await page.goto('/calendario')
     const cell = todayLink(page)
