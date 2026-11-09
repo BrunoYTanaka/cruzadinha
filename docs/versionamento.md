@@ -74,7 +74,7 @@ Merges que não são o aceite do pedido de lançamento não publicam nada: o Dep
 
 ## 5. Tags, registros de mudanças e releases
 
-- Tags: `api-vX.Y.Z`, `web-vX.Y.Z` e `shared-vX.Y.Z` (esta sem página de lançamento).
+- Tags: `api-vX.Y.Z`, `web-vX.Y.Z` e `shared-vX.Y.Z` (o `deploy.yml` lê só `api-v*` e `web-v*`).
 - Registros: `apps/api/CHANGELOG.md`, `apps/web/CHANGELOG.md`, `packages/shared/CHANGELOG.md`, gerados e fora do Prettier.
 - Releases: uma página por versão da API e do site em **Releases** no GitHub, com o registro de mudanças.
 

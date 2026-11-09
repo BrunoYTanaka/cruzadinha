@@ -1,6 +1,6 @@
 {
   "name": "@cruzadinha/web",
-  "version": "0.17.1",
+  "version": "0.18.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@cruzadinha/shared": "0.37.0",
+    "@cruzadinha/shared": "0.39.0",
     "@dnd-kit/dom": "0.5.3",
     "@dnd-kit/helpers": "0.5.3",
     "@dnd-kit/react": "0.5.3",
