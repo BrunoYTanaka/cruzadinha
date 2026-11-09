@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Front básico do Cruzadinha: login e cadastro com convite, biblioteca em calendário mensal, tela de jogo com tabuleiro, dicas, teclado na tela, cronômetro e ajudas, janela de conclusão com modo leitura e jogar de novo, e modal de convite aberto pelo código Konami. Referências visuais em `docs/mockups/`." _Nota (feature 062): os mockups da 010 (`game.html`, `library.html`, `finish.html`) saíram de `docs/mockups/` no commit 5f521cc e estão no histórico do git (`git show 9a70702:docs/mockups/game.html`); a referência atual é `docs/mockups/design-system.html`._
+**Input**: User description: "Front básico do Cruzadinha: login e cadastro com convite, biblioteca em calendário mensal, tela de jogo com tabuleiro, dicas, teclado na tela, cronômetro e ajudas, janela de conclusão com modo leitura e jogar de novo, e modal de convite aberto pelo código Konami. Referências visuais em `docs/mockups/`."
 
 ## Clarifications
 
