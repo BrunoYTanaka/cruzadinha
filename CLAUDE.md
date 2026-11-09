@@ -86,4 +86,4 @@ Skills in `.claude/skills/`, in order: `/speckit-constitution` (`.specify/memory
 - Branches are `<type>/<kebab-description>` (`feat/NNN-slug` for Spec Kit); see `.claude/rules/git-conventions.md`.
 - Work type decides the flow: new behavior → full Spec Kit cycle; bug fix → `fix/<slug>` starting with a failing regression test, committed with the fix; a fix that changes a documented rule → update that `spec.md` first and treat it as a feature; chores/docs/ci → direct, no spec. Issue templates in `.github/ISSUE_TEMPLATE/` follow the same split.
 - Schema changes update `docs/data-definitions` (DDE) and `docs/entity-relationship-diagrams` (ERD).
-- Design source: `docs/design.md`.
+- Design source: `docs/design.md`; visual reference: `docs/mockups/design-system.html`.
