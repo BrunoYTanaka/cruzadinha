@@ -5,9 +5,14 @@
 
 .text {
   margin: 0;
-  color: var(--mute);
+  padding: 10px 14px;
+  border: 2px solid var(--warn);
+  border-radius: var(--radius-md);
+  background: var(--warn-tint);
+  color: var(--ink);
   font-size: 14px;
   line-height: 1.4;
+  text-align: left;
   animation: appear 300ms ease-out;
 }
 

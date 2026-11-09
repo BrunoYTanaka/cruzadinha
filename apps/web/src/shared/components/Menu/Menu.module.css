@@ -142,3 +142,9 @@
     transition: left 120ms;
   }
 }
+
+.item.current {
+  background-color: var(--sel);
+  color: var(--sel-ink);
+  font-weight: 700;
+}

@@ -96,12 +96,25 @@ export function AppLayout() {
                   </svg>
                 </>
               }
-              placement="popover"
+              placement="sheet"
               buttonClassName={styles.menuButton}
             >
-              <MenuItem onSelect={() => void navigate('/calendario')}>Calendário</MenuItem>
-              <MenuItem onSelect={() => void navigate('/estatisticas')}>Estatísticas</MenuItem>
-              <MenuItem onSelect={() => void navigate('/x1')}>
+              <MenuItem
+                current={location.pathname.startsWith('/calendario')}
+                onSelect={() => void navigate('/calendario')}
+              >
+                Calendário
+              </MenuItem>
+              <MenuItem
+                current={location.pathname.startsWith('/estatisticas')}
+                onSelect={() => void navigate('/estatisticas')}
+              >
+                Estatísticas
+              </MenuItem>
+              <MenuItem
+                current={location.pathname.startsWith('/x1')}
+                onSelect={() => void navigate('/x1')}
+              >
                 {attention > 0 ? `x1 (${attention} aguardando)` : 'x1'}
               </MenuItem>
             </Menu>

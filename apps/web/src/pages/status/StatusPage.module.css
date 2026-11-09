@@ -10,43 +10,36 @@
 
 .title {
   margin: 0;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 /* Selo de estado: cor, símbolo e borda, nunca só a cor (feature 062). */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
   margin: 0;
-  padding: 4px 10px;
-  border: 1.5px solid currentColor;
-  border-radius: 999px;
-  font-size: 14px;
+  padding: 14px 16px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-size: 16px;
   font-weight: 700;
 }
 
 .chip::before {
   content: '…';
-}
-
-.chip[data-state='ok'] {
-  background: var(--ok-tint);
-  color: var(--ok);
+  color: var(--mute);
 }
 
 .chip[data-state='ok']::before {
   content: '✓';
-}
-
-.chip[data-state='bad'] {
-  background: color-mix(in srgb, var(--bad) 10%, var(--surface));
-  color: var(--bad);
+  color: var(--ok);
 }
 
 .chip[data-state='bad']::before {
   content: '✕';
-}
-
-.chip[data-state='wait'] {
-  color: var(--mute);
+  color: var(--bad);
 }
