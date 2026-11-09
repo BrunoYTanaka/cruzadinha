@@ -49,7 +49,7 @@ Reavaliado após o desenho: sem violação, sem exceção a justificar.
 - O texto de `SourcesAdmin.tsx:96` ainda cita os cartões de "Hoje" (FR-014).
 - O artefato lista pontos de quebra 480, 560 e 860 px; o código usa 599 px nas abas e 861 px no calendário. A fatia 4 decide, com registro, qual lado ajusta.
 
-## Fatias (um PR cada)
+## Fatias (planejadas como um PR cada; entregues juntas no PR #159)
 
 Branches: a fatia 1 usa `feat/062-design-system` (leva também `specs/062-design-system/`); as fatias 2 a 6 saem de `main` já com a anterior mesclada, em `feat/062-<slug>` (`feat/062-base-components`, `feat/062-header`, `feat/062-calendar`, `feat/062-screens`, `feat/062-sortable-sources`), como pede `check:branch`.
 

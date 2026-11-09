@@ -12,9 +12,9 @@
 
 O contrato visual é `design-system.html` (abas Fundamentos, Componentes e Telas, em claro e escuro, com seletor de largura). Esta feature traz esse estilo para as telas do site fora da landing e fora do tabuleiro. Nenhum valor de cor novo além do token `--edge` (o `--focus` já existe). Valores exatos de sombra, contorno, tamanho e tempo são os do artefato; em divergência com este texto vale o artefato, e a diferença é registrada em `research.md`. Sem mudança de API, de schema ou de contrato.
 
-Ficam como estão, por regra: a landing `/` (feature 050), o tabuleiro e tudo que é parte dele (células, barra de dica, lista de dicas, teclado na tela, impressão); o diálogo de conclusão e o de compartilhar usam o estilo novo, como no artefato (decisão posterior à primeira versão). O que está ao redor do tabuleiro usa os componentes novos.
+Ficam como estão, por regra: a landing `/` (feature 050) e a grade do tabuleiro (células, numeração, seleção, teclado na tela, impressão). Por decisão posterior à primeira versão, tudo o que fica em volta da grade segue o artefato: o diálogo de conclusão e o de compartilhar, a folha de dicas do celular, a dica ativa (amarela, em negrito), Letra, Palavra e o botão Ajudas, e a faixa do modo leitura (largura toda, acima da barra de ferramentas).
 
-Cada fatia (histórias 1 a 5, e a 6 que depende da 5) é entregue num PR próprio, nesta ordem.
+As fatias (histórias 1 a 6) foram entregues juntas num só PR (#159), por decisão posterior.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -145,7 +145,7 @@ Quem administra as fontes ordena arrastando uma alça de seis pontos de 44 px, e
 - **FR-002**: `--hover-overlay` e `--press-overlay` MUST estar conferidos nos dois temas; botões MUST usar só essa camada para hover e clique, sem sombra e sem movimento.
 - **FR-003**: `Button` MUST ter as variantes `primary`, `secondary`, `quiet` e `icon`, `small`, `block` e `pending`, como no artefato.
 - **FR-004**: O site MUST ter um componente `Link` em negrito em repouso, com sublinhado amarelo de 3 px que corre da esquerda para a direita em 280 ms no mouse e 5 px no clique, só com `(hover: hover)` e sem animação com movimento reduzido; os textos de link das telas alteradas MUST usá-lo (a landing não).
-- **FR-005**: O site MUST ter uma única dica flutuante para nome de botão de ícone e aviso de espera, com sombra suave, que fica dentro da janela.
+- **FR-005**: O site MUST ter uma única dica flutuante para nome de botão de ícone e aviso de espera, com sombra suave, que fica dentro da janela; com o mouse ela abre depois de 500 ms parado em cima, e com o foco do teclado abre na hora.
 - **FR-006**: `Notice` MUST indicar o estado por texto ou símbolo e borda, nunca só por cor.
 - **FR-007**: `Dialog` MUST ser centralizado, com botão de fechar em ícone no canto superior direito de tamanho `--tap`.
 - **FR-008**: O cabeçalho MUST mostrar, para conta logada, um círculo de 38 px com as iniciais do e-mail que leva a "Sua conta", e MUST ter Sair dentro de "Sua conta".
@@ -159,7 +159,7 @@ Quem administra as fontes ordena arrastando uma alça de seis pontos de 44 px, e
 - **FR-016**: A ordenação MUST ter alternativa sem arrastar: a alça é focável; Espaço pega, setas movem, Espaço solta, Esc cancela; a posição é anunciada a leitores de tela; `aria-label` curto e instruções num texto fixo associado.
 - **FR-017**: A linha levantada MUST ter contorno escuro e sombra suave, e o destino MUST ter faixa amarela de 4 px.
 - **FR-018**: Toda mudança MUST valer nos dois temas e em 390 px, 768 px e computador, e o estado MUST nunca depender só de cor.
-- **FR-019**: A landing e o tabuleiro (e seus elementos listados em "Contrato visual e limites") MUST ficar sem alteração visual ou de comportamento.
+- **FR-019**: A landing e a grade do tabuleiro (listadas em "Contrato visual e limites") MUST ficar sem alteração visual ou de comportamento.
 - **FR-020**: Nenhuma rota, esquema, contrato de API ou regra de dados MUST mudar; o site novo MUST continuar funcionando com a API atual.
 
 ### Key Entities

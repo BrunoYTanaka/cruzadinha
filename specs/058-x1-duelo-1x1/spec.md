@@ -37,7 +37,7 @@ Uma pessoa (com conta ou como visitante) quer desafiar um amigo. Ela abre o cale
 
 ### User Story 2 - Aceitar o desafio, jogar e ver o resultado (Priority: P1)
 
-O oponente recebe o link (ou digita o código), vê as regras numa janela e decide: "Começar", "Agora não" ou "Recusar desafio". Ao começar, o relógio do servidor dispara e a pessoa joga a cruzada uma única vez. Ao terminar, quem acabou primeiro vê "Aguardando o oponente", sem o tempo do outro; quando os dois terminam, o resultado mostra vencedor, diferença, tempos, penalidades e ajudas.
+O oponente recebe o link (ou digita o código), vê as regras na página do convite e decide: "Começar" ou "Recusar" (a feature 062 trocou a janela pela página e tirou "Agora não": quem não quer decidir agora sai pelo cabeçalho). Ao começar, o relógio do servidor dispara e a pessoa joga a cruzada uma única vez. Ao terminar, quem acabou primeiro vê "Aguardando o oponente", sem o tempo do outro; quando os dois terminam, o resultado mostra vencedor, diferença, tempos, penalidades e ajudas.
 
 **Why this priority**: É o núcleo da competição.
 
@@ -46,9 +46,9 @@ O oponente recebe o link (ou digita o código), vê as regras numa janela e deci
 **Acceptance Scenarios**:
 
 1. **Given** um link ou código de duelo `open`, **When** o oponente o abre ou consulta, **Then** vê as regras e nada muda no duelo (nem por pré-visualização de mensageiro).
-2. **Given** a janela de regras, **When** a pessoa tenta fechá-la por clique fora ou `Esc`, **Then** ela não fecha; só "Começar", "Agora não" ou "Recusar desafio" a encerram.
-3. **Given** a janela de regras, **When** a pessoa escolhe "Agora não", **Then** o duelo continua `open` e nada é gravado.
-4. **Given** a janela de regras, **When** a pessoa escolhe "Recusar desafio", **Then** o duelo é encerrado e o criador vê que foi recusado.
+2. **Given** a página do convite, **When** a pessoa sai dela sem escolher, **Then** o duelo continua `open` e nada é gravado (feature 062: substitui a janela que não fechava e o "Agora não").
+3. **Given** a página do convite, **When** a pessoa só lê as regras, **Then** nada muda no duelo; só "Começar" ou "Recusar" agem.
+4. **Given** a página do convite, **When** a pessoa escolhe "Recusar", **Then** o duelo é encerrado e o criador vê que foi recusado.
 5. **Given** dois "Começar" simultâneos de pessoas diferentes, **When** o servidor os processa, **Then** só uma ocupa a vaga de oponente; a outra vê que o duelo já foi aceito.
 6. **Given** um jogador no meio da partida, **When** recarrega a página ou abre o diálogo de configurações, **Then** o relógio não reinicia nem pausa: o tempo decorrido é o do servidor desde o "Começar".
 7. **Given** um jogador que termina dentro do tempo máximo, **When** o outro ainda não terminou, **Then** ele vê "Aguardando o oponente" e nenhum tempo do outro.
