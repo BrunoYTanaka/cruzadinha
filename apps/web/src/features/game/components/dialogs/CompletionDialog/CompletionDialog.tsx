@@ -109,7 +109,6 @@ export function CompletionDialog({
           : `Você terminou em ${spokenElapsed(elapsedMs)}.`
       }
       initialFocusRef={otherSource ? shortcut : primary}
-      classic
     >
       {view === 'share' ? (
         <>

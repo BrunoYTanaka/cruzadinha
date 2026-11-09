@@ -129,10 +129,9 @@
 }
 
 .count {
-  position: absolute;
-  top: 2px;
-  right: 2px;
+  display: inline-block;
   min-width: 16px;
+  margin-left: 6px;
   padding: 0 4px;
   border-radius: 8px;
   background: var(--accent);
@@ -146,7 +145,7 @@
 }
 
 .count[data-empty='true'] {
-  display: none;
+  visibility: hidden;
 }
 
 /* Círculo da conta (feature 062): 38 px com as iniciais do e-mail; leva a "Sua conta". */

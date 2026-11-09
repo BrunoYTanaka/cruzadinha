@@ -12,7 +12,7 @@
 
 O contrato visual é `design-system.html` (abas Fundamentos, Componentes e Telas, em claro e escuro, com seletor de largura). Esta feature traz esse estilo para as telas do site fora da landing e fora do tabuleiro. Nenhum valor de cor novo além do token `--edge` (o `--focus` já existe). Valores exatos de sombra, contorno, tamanho e tempo são os do artefato; em divergência com este texto vale o artefato, e a diferença é registrada em `research.md`. Sem mudança de API, de schema ou de contrato.
 
-Ficam como estão, por regra: a landing `/` (feature 050), o tabuleiro e tudo que é parte dele (células, barra de dica, lista de dicas, teclado na tela, diálogo de conclusão, impressão). O que está ao redor do tabuleiro usa os componentes novos.
+Ficam como estão, por regra: a landing `/` (feature 050), o tabuleiro e tudo que é parte dele (células, barra de dica, lista de dicas, teclado na tela, impressão); o diálogo de conclusão e o de compartilhar usam o estilo novo, como no artefato (decisão posterior à primeira versão). O que está ao redor do tabuleiro usa os componentes novos.
 
 Cada fatia (histórias 1 a 5, e a 6 que depende da 5) é entregue num PR próprio, nesta ordem.
 

@@ -91,11 +91,9 @@ Divergências mantidas de propósito (segunda conferência, todas as telas da ab
   instruções do teclado é o do site; "Arrastando" não foi capturada (arraste com o mouse).
 - Sua conta e Administração: o espaço reservado para o aviso (`min-height`) continua, porque a
   ausência de salto de layout é um requisito testado.
-- Diálogo de conclusão e de compartilhar: ficam no estilo antigo por regra (parte do tabuleiro,
-  FR-019); o artefato os mostra com o estilo novo.
-- Contador do x1 no cabeçalho: um selo no canto, que reserva a largura; o artefato o põe ao lado do
-  texto.
-- Menu Ajudas: abre à esquerda do botão; o artefato alinha à direita.
+- Diálogo de conclusão e de compartilhar: passaram ao estilo novo (X, título em Fraunces, botão principal amarelo), como no artefato, por decisão posterior; a folha de dicas continua no estilo antigo.
+- Contador do x1 no cabeçalho: agora fica ao lado do texto e reserva a largura mesmo vazio (`visibility: hidden`).
+- Menu Ajudas: alinha à borda direita do botão, como o artefato; a diferença na captura vem da faixa de ferramentas, que quebra de linha para visitante (aviso "Progresso só neste aparelho").
 - Não conferidas (precisam de estado que o ambiente local não gera): modo leitura, teclado na
   tela do celular, recorde, avisos de progresso descartado, importar com sucesso, "x1 não abriu"
   e "servidor não respondeu" (90 s).
