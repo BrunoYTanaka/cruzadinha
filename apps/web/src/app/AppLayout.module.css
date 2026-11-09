@@ -103,14 +103,13 @@
   outline: none;
 }
 
+/* "Visitante" só para leitor de tela (como no artefato): "Entrar" já mostra que não há conta. */
 .who {
-  min-width: 0;
-  max-width: 24ch;
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  color: var(--mute);
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 /* "Entrar" do visitante: link com aparência de botão discreto, como o "Sair" (feature 023). */
@@ -192,7 +191,7 @@
   stroke-linecap: round;
 }
 
-/* Até 560 px os links viram o botão de menu; "Visitante" é curto e fica sempre. */
+/* Até 560 px os links viram o botão de menu. */
 @media (max-width: 560px) {
   .calendar,
   .statsLink,
@@ -235,14 +234,5 @@
 
   .login {
     padding: 0 10px;
-  }
-
-  /* "Visitante" só para leitor de tela: "Entrar" já mostra que não há conta. */
-  .who {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
   }
 }

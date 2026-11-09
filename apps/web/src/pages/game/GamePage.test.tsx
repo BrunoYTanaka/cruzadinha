@@ -252,7 +252,7 @@ describe('GamePage', () => {
       await screen.findByText(/Sua sessão expirou\. Entre de novo para salvar\./),
     ).toBeInTheDocument()
     expect(grid()).toBeInTheDocument()
-    expect(await screen.findByText('Sessão expirada')).toBeInTheDocument()
+    expect(await screen.findByText(/Sua sessão expirou/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Entrar de novo' }))
     const dialog = screen.getByRole('dialog', { name: 'Entrar de novo' })

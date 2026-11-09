@@ -52,7 +52,7 @@ export function LoadingState({
         {title}
       </Title>
       <div className={styles.extra} data-show={slow}>
-        <SlowNotice active={slow} />
+        <SlowNotice active={slow} reserve />
         <div className={styles.progress} aria-hidden="true">
           <i />
         </div>

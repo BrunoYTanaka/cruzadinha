@@ -34,7 +34,7 @@
   min-width: 0;
 }
 
-.board > :first-child {
+.board > :first-child:not(.boardWrap) {
   align-self: stretch;
 }
 
@@ -77,9 +77,9 @@
   flex: none;
 }
 
-/* A barra da dica e a faixa de modo leitura têm a largura do tabuleiro e nunca o alargam: uma dica
-   longa não empurra a coluna de dicas (feature 018). */
-.desktop .board > :first-child {
+/* A barra da dica tem a largura do tabuleiro e nunca o alarga: uma dica longa não empurra a coluna
+   de dicas (feature 018). Na cruzada concluída não há barra, e o primeiro filho é o tabuleiro. */
+.desktop .board > :first-child:not(.boardWrap) {
   contain: inline-size;
   min-width: var(--clue-bar-min);
 }

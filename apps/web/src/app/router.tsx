@@ -44,12 +44,13 @@ function gameLoader(queryClient: QueryClient): LoaderFunction {
 
 export function createAppRoutes(queryClient: QueryClient): RouteObject[] {
   return [
+    // A página de status é solta, sem cabeçalho (feature 062): mostra o próprio health e não espera
+    // o servidor acordar.
+    { path: '/status', element: <StatusPage />, errorElement: <RouteError /> },
     {
       element: <AppLayout />,
       errorElement: <RouteError />,
       children: [
-        // A página de status mostra o próprio health; não espera o servidor acordar.
-        { path: '/status', element: <StatusPage /> },
         {
           // A landing não precisa da API: o loader só espera o servidor quando "Ir direto ao jogo"
           // está ligado, e então mostra a tela de espera, nunca a landing (feature 048).

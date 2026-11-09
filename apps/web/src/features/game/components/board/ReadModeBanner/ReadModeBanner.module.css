@@ -2,10 +2,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  padding: 8px 12px;
-  border: 2px solid var(--ok);
-  border-radius: var(--radius-md);
+  gap: 10px 14px;
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--ok);
   background: var(--ok-tint);
   color: var(--ink);
 }

@@ -133,7 +133,7 @@ export function AppLayout() {
                 </Link>
               </>
             ) : session.data === null ? (
-              // Visitante (feature 013): sempre dito por texto, com um caminho para entrar.
+              // Visitante (feature 013): dito ao leitor de tela, com um caminho para entrar.
               <>
                 <span className={styles.who}>Visitante</span>
                 {onAuthPage ? null : (

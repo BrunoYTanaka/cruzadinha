@@ -5,10 +5,10 @@ import type { SaveState } from '../../../services/save-queue'
 import styles from './SaveStatus.module.css'
 
 // Só os avisos de problema aparecem. O salvamento normal (`saved`, `saving`) não mostra nada: o texto
-// trocando a cada letra fazia a faixa de ferramentas pular (feature 017).
+// trocando a cada letra fazia a faixa de ferramentas pular (feature 017). A sessão expirada tem a
+// faixa de aviso com "Entrar de novo" logo abaixo, então não se repete aqui (feature 062).
 const WARNING: Partial<Record<SaveState, string>> = {
   offline: 'Sem conexão, tentando de novo',
-  'session-expired': 'Sessão expirada',
   'completed-elsewhere': 'Concluída em outro aparelho',
   'local-only': 'Não salvo: vale só nesta aba',
 }

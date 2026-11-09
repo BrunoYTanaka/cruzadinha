@@ -142,12 +142,6 @@ function cluesAside(page: Page) {
   return page.getByRole('complementary', { name: 'Dicas' })
 }
 
-// O primeiro item da coluna do tabuleiro: a barra da dica ou, na cruzada concluída, a faixa de modo
-// leitura (feature 018).
-function boardHead(page: Page) {
-  return page.getByRole('region', { name: 'Tabuleiro' }).locator(':scope > :first-child')
-}
-
 type Box = { x: number; y: number; width: number; height: number }
 
 // Mesma posição horizontal e mesma largura, com a tolerância de `expectNear`.
@@ -379,24 +373,24 @@ test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
     await settled()
   })
 
-  test('a faixa de modo leitura segue a mesma regra', async ({ page }) => {
+  test('a faixa de modo leitura ocupa a largura toda e não muda com o tabuleiro', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await openToday(page)
     const { solution } = await todayPuzzle(page.request)
     await fillSolution(page, solution.cells)
     await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
-    expectSameSpan(await box(boardHead(page)), await box(page.getByRole('grid')))
+    const banner = page
+      .getByText(/^Concluída em \d/)
+      .first()
+      .locator('xpath=ancestor::div[1]')
+    expectNear((await box(banner)).width, 1280)
 
     await setCellSize(page, 'Home')
-    const banner = await box(boardHead(page))
-    expectNear(banner.width, CLUE_BAR_MIN)
-    // A faixa não alarga a coluna além do mínimo: as dicas começam um `column-gap` depois dela.
-    const gap = await page
-      .getByRole('region', { name: 'Tabuleiro' })
-      .evaluate((section) =>
-        Number.parseFloat(getComputedStyle(section.parentElement ?? section).columnGap),
-      )
-    expectNear((await box(cluesAside(page))).x, banner.x + banner.width + gap)
+    expectNear((await box(banner)).width, 1280)
+    const grid = await box(page.getByRole('grid'))
+    expect(grid.x + grid.width).toBeLessThanOrEqual((await box(cluesAside(page))).x)
   })
 })
 

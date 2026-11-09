@@ -23,7 +23,7 @@
   gap: 16px;
 }
 
-/* Espaço reservado para o resultado: o aviso entra sem empurrar o que está abaixo. */
-.status {
-  min-height: 56px;
+/* Vazio, o espaço do resultado sai do fluxo: não deixa vão nem soma o `gap` do formulário. */
+.status:empty {
+  position: absolute;
 }

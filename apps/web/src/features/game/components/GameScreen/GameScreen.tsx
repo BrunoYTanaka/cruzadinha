@@ -197,10 +197,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
     document.getElementById('board')?.focus()
   }
 
+  // Concluída não tem palavra ativa: sem barra de dica, e a faixa verde fica acima das ferramentas.
   const bar =
-    state.mode === 'completed' ? (
-      <ReadModeBanner elapsedMs={finishedMs} onPlayAgain={() => void onPlayAgain()} busy={busy} />
-    ) : desktop ? (
+    state.mode === 'completed' ? null : desktop ? (
       <ClueBar
         word={word}
         onPrevious={() => stepWord('previousWord')}
@@ -232,6 +231,9 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         } as React.CSSProperties
       }
     >
+      {state.mode === 'completed' ? (
+        <ReadModeBanner elapsedMs={finishedMs} onPlayAgain={() => void onPlayAgain()} busy={busy} />
+      ) : null}
       <Toolbar
         title={
           <h1 className={styles.title}>
