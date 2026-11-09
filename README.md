@@ -1,5 +1,7 @@
 # Cruzadinha
 
+[![Página inicial do Cruzadinha](docs/images/landing.png)](https://cruzadinha.app.br)
+
 [![CI](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/ci.yml)
 [![Deploy](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/deploy.yml/badge.svg)](https://github.com/BrunoYTanaka/cruzadinha/actions/workflows/deploy.yml)
 [![Release](https://img.shields.io/github/v/release/BrunoYTanaka/cruzadinha)](https://github.com/BrunoYTanaka/cruzadinha/releases)
@@ -19,7 +21,22 @@ Monorepo em npm workspaces, tudo em TypeScript (modo estrito):
 | `apps/web` (`@cruzadinha/web`)           | Site em React 19 + Vite 8, estado de servidor com TanStack Query.       |
 | `packages/shared` (`@cruzadinha/shared`) | Schemas Zod e tipos compartilhados entre API e web.                     |
 
-Banco de dados: Postgres 17. Testes: Vitest e Testing Library. Qualidade: Prettier, ESLint, Husky e lint-staged, com CI no GitHub Actions.
+| Camada                | Tecnologias                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Site**              | ![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=flat-square&logo=vite&logoColor=white) ![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=flat-square&logo=reactquery&logoColor=white) ![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=flat-square&logo=pwa&logoColor=white)    |
+| **API**               | ![Fastify](https://img.shields.io/badge/Fastify_5-000000?style=flat-square&logo=fastify&logoColor=white) ![Drizzle](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black) ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js_24-339933?style=flat-square&logo=nodedotjs&logoColor=white) |
+| **Linguagem**         | ![TypeScript](https://img.shields.io/badge/TypeScript_6-3178C6?style=flat-square&logo=typescript&logoColor=white) ![npm workspaces](https://img.shields.io/badge/npm_workspaces-CB3837?style=flat-square&logo=npm&logoColor=white)                                                                                                                                                                                         |
+| **Banco de dados**    | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_17-4169E1?style=flat-square&logo=postgresql&logoColor=white) ![Neon](https://img.shields.io/badge/Neon-00E599?style=flat-square&logo=neon&logoColor=black) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)                                                                                                       |
+| **Testes**            | ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white) ![Testing Library](https://img.shields.io/badge/Testing_Library-E33332?style=flat-square&logo=testinglibrary&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white)                                                                          |
+| **Qualidade**         | ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat-square&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat-square&logo=prettier&logoColor=black) ![Husky](https://img.shields.io/badge/Husky-lint--staged-000000?style=flat-square)                                                                                                                           |
+| **Hospedagem e CI**   | ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-F38020?style=flat-square&logo=cloudflarepages&logoColor=white) ![Render](https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=black) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)                                                            |
+| **Serviços externos** | ![Resend](https://img.shields.io/badge/Resend-000000?style=flat-square&logo=resend&logoColor=white) ![Turnstile](https://img.shields.io/badge/Turnstile-F38020?style=flat-square&logo=cloudflare&logoColor=white)                                                                                                                                                                                                          |
+
+## Infraestrutura
+
+![Infraestrutura do Cruzadinha: site no Cloudflare Pages, API no Render, Postgres no Neon, serviços externos e automações no GitHub Actions](docs/images/infraestrutura.png)
+
+O detalhe de cada peça está em [`docs/deploy.md`](docs/deploy.md).
 
 ## Pré-requisitos
 
