@@ -92,7 +92,7 @@ Divergências mantidas de propósito (segunda conferência, todas as telas da ab
 - Sua conta e Administração: o espaço reservado para o aviso (`min-height`) continua, porque a
   ausência de salto de layout é um requisito testado.
 - Diálogo de conclusão e de compartilhar: passaram ao estilo novo (X, título em Fraunces, botão principal amarelo), como no artefato, por decisão posterior; a folha de dicas continua no estilo antigo.
-- Contador do x1 no cabeçalho: agora fica ao lado do texto e reserva a largura mesmo vazio (`visibility: hidden`).
+- Contador do x1 no cabeçalho: fica ao lado do texto e some quando está vazio (`display: none`), para o botão não ficar largo.
 - Menu Ajudas: alinha à borda direita do botão, como o artefato; a diferença na captura vem da faixa de ferramentas, que quebra de linha para visitante (aviso "Progresso só neste aparelho").
 - Terceira conferência: sessão expirada, teclado na tela, "x1 não abriu", "Nova senha", arrastando e
   modo leitura conferem com o artefato (claro e escuro); 768 px e escuro a 390 px não têm estouro

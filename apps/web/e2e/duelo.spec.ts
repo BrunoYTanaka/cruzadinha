@@ -177,7 +177,9 @@ test('entrar por código e "Meus x1": voltar pelo aparelho e pelo link de retorn
   await beto.context.close()
 })
 
-test('o contador do menu não faz o cabeçalho pular', async ({ browser }) => {
+test('o contador do menu só aparece com x1 esperando e não move os outros links', async ({
+  browser,
+}) => {
   const ana = await person(browser)
   const beto = await person(browser)
   const { invite } = await createDuel(ana.page)
@@ -185,14 +187,17 @@ test('o contador do menu não faz o cabeçalho pular', async ({ browser }) => {
   const link = ana.page.getByRole('link', { name: /^x1/ })
   await expect(link).toBeVisible()
   const before = await link.boundingBox()
+  const calendar = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
 
   await accept(beto.page, invite)
-  // Agora há um x1 em andamento que pede atenção: o número aparece, o link não muda de tamanho.
+  // Agora há um x1 que pede atenção: o número aparece e só o link do x1 cresce, para a direita.
   await ana.page.reload()
   await expect(ana.page.getByRole('link', { name: 'x1, 1 aguardando' })).toBeVisible()
   const after = await ana.page.getByRole('link', { name: /^x1/ }).boundingBox()
-  expect(Math.abs((after?.width ?? 0) - (before?.width ?? 0))).toBeLessThan(0.5)
+  expect(after?.width ?? 0).toBeGreaterThan(before?.width ?? 0)
   expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(0.5)
+  const calendarAfter = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
+  expect(Math.abs((calendarAfter?.x ?? 0) - (calendar?.x ?? 0))).toBeLessThan(0.5)
   await ana.context.close()
   await beto.context.close()
 })

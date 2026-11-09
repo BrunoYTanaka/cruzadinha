@@ -145,7 +145,7 @@
 }
 
 .count[data-empty='true'] {
-  visibility: hidden;
+  display: none;
 }
 
 /* Círculo da conta (feature 062): 38 px com as iniciais do e-mail; leva a "Sua conta". */
