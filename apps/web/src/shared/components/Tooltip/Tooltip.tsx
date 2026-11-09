@@ -9,6 +9,9 @@ import {
 import { clampShift } from './tooltip-position'
 import styles from './Tooltip.module.css'
 
+// Tempo com o mouse parado antes de o balão abrir (o mesmo do balão da dica). Foco abre já.
+export const TOOLTIP_DELAY_MS = 500
+
 type TooltipProps = {
   // Texto do balão. O alvo já tem o mesmo nome acessível; o balão é só visual.
   label: string
@@ -16,12 +19,15 @@ type TooltipProps = {
   children: ReactNode
 }
 
-// Balão curto sobre um botão de ícone (feature 021): aparece com o mouse parado em cima ou com o
+// Balão curto sobre um botão de ícone (feature 021): aparece com o mouse parado em cima (após `TOOLTIP_DELAY_MS`) ou com o
 // foco do teclado, nunca com toque, e fecha com Esc. Não muda o layout (posição absoluta). Fica
 // centrado no alvo e só se desloca na horizontal o que precisar para caber na janela (feature 024).
 export function Tooltip({ label, placement = 'below', children }: TooltipProps) {
   const [open, setOpen] = useState(false)
   const tipRef = useRef<HTMLSpanElement>(null)
+  const timer = useRef<number>(undefined)
+  const stopTimer = () => window.clearTimeout(timer.current)
+  useEffect(() => stopTimer, [])
 
   // Esc fecha o balão sem parar o evento: o diálogo ou o tabuleiro em volta ainda o recebem.
   useEffect(() => {
@@ -57,16 +63,25 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
   }, [open, label])
 
   const onPointerEnter = (event: PointerEvent) => {
-    if (event.pointerType !== 'touch') setOpen(true)
+    if (event.pointerType === 'touch') return
+    stopTimer()
+    timer.current = window.setTimeout(() => setOpen(true), TOOLTIP_DELAY_MS)
+  }
+  const close = () => {
+    stopTimer()
+    setOpen(false)
   }
 
   return (
     <span
       className={styles.wrap}
       onPointerEnter={onPointerEnter}
-      onPointerLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
+      onPointerLeave={close}
+      onFocus={() => {
+        stopTimer()
+        setOpen(true)
+      }}
+      onBlur={close}
     >
       {children}
       {open ? (

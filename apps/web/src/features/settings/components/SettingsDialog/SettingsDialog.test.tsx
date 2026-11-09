@@ -55,7 +55,9 @@ describe('engrenagem do cabeçalho', () => {
     expect(gear).toHaveAttribute('aria-haspopup', 'dialog')
     expect(screen.queryByRole('button', { name: /Trocar tema/ })).toBeNull()
     await user.hover(gear)
-    expect(screen.getByText('Configurações', { selector: '[data-tooltip]' })).toBeInTheDocument()
+    expect(
+      await screen.findByText('Configurações', { selector: '[data-tooltip]' }),
+    ).toBeInTheDocument()
     await user.click(gear)
     expect(screen.getByRole('dialog', { name: 'Configurações' })).toBeInTheDocument()
   })
