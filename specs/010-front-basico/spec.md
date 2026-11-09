@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Front básico do Cruzadinha: login e cadastro com convite, biblioteca em calendário mensal, tela de jogo com tabuleiro, dicas, teclado na tela, cronômetro e ajudas, janela de conclusão com modo leitura e jogar de novo, e modal de convite aberto pelo código Konami. Referências visuais em `docs/mockups/`."
+**Input**: User description: "Front básico do Cruzadinha: login e cadastro com convite, biblioteca em calendário mensal, tela de jogo com tabuleiro, dicas, teclado na tela, cronômetro e ajudas, janela de conclusão com modo leitura e jogar de novo, e modal de convite aberto pelo código Konami. Referências visuais em `docs/mockups/`." _Nota (feature 062): os mockups da 010 (`game.html`, `library.html`, `finish.html`) saíram de `docs/mockups/` no commit 5f521cc e estão no histórico do git (`git show 9a70702:docs/mockups/game.html`); a referência atual é `docs/mockups/design-system.html`._
 
 ## Clarifications
 
@@ -23,7 +23,7 @@
 
 ## Contexto
 
-O backend já entrega conta, convites, puzzles, progresso e biblioteca (features 004 a 009). O site hoje tem só uma página de status. Esta feature entrega a experiência de jogar, de ponta a ponta, para o autor e os amigos convidados. As referências visuais estão em `docs/mockups/` (`game.html`, `library.html`, `finish.html`) e valem como guia de layout, cores e comportamento; textos, tempos e datas dos mockups são inventados.
+O backend já entrega conta, convites, puzzles, progresso e biblioteca (features 004 a 009). O site hoje tem só uma página de status. Esta feature entrega a experiência de jogar, de ponta a ponta, para o autor e os amigos convidados. As referências visuais estão em `docs/mockups/` (`game.html`, `library.html`, `finish.html`) e valem como guia de layout, cores e comportamento; textos, tempos e datas dos mockups são inventados. _Nota (feature 062): os mockups da 010 (`game.html`, `library.html`, `finish.html`) saíram de `docs/mockups/` no commit 5f521cc e estão no histórico do git (`git show 9a70702:docs/mockups/game.html`); a referência atual é `docs/mockups/design-system.html`._
 
 Fora do escopo desta feature: recuperação de senha, "sair de todos os aparelhos", estatísticas, ranking, outras fontes de puzzle, outros níveis além do diário, sincronização das ajudas entre aparelhos e qualquer mudança no servidor.
 
@@ -266,5 +266,5 @@ Uma pessoa logada digita a sequência ↑ ↑ ↓ ↓ ← → ← → B A e rece
 - Células menores que 44 px no tabuleiro do celular são uma exceção assumida; a seleção também funciona pelas dicas, pelas setas e pela barra da palavra ativa.
 - O dia de hoje e as datas seguem o horário de Brasília.
 - O site continua privado e restrito a convidados; não há versão pública.
-- O tom visual, as telas e os comportamentos dos mockups em `docs/mockups/` valem como referência; divergências de detalhe são decididas no plano.
+- O tom visual, as telas e os comportamentos dos mockups em `docs/mockups/` valem como referência; divergências de detalhe são decididas no plano. _Nota (feature 062): os mockups da 010 (`game.html`, `library.html`, `finish.html`) saíram de `docs/mockups/` no commit 5f521cc e estão no histórico do git (`git show 9a70702:docs/mockups/game.html`); a referência atual é `docs/mockups/design-system.html`._
 - Uma pessoa joga uma cruzada por vez por aparelho; abrir várias abas da mesma cruzada não é um caso suportado.

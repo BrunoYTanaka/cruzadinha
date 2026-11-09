@@ -1,6 +1,6 @@
 # Contrato: rotas, tema e acessibilidade do site
 
-**Feature**: [spec.md](../spec.md) | **Modelo**: [data-model.md](../data-model.md) | **Referências visuais**: `docs/mockups/`
+**Feature**: [spec.md](../spec.md) | **Modelo**: [data-model.md](../data-model.md) | **Referências visuais**: `docs/mockups/` _Nota (feature 062): os mockups da 010 (`game.html`, `library.html`, `finish.html`) saíram de `docs/mockups/` no commit 5f521cc e estão no histórico do git (`git show 9a70702:docs/mockups/game.html`); a referência atual é `docs/mockups/design-system.html`._
 
 ## Rotas do site
 
