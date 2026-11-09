@@ -1,5 +1,5 @@
-import { Link } from 'react-router'
 import { Button } from '../../../../../shared/components/Button/Button'
+import { Link } from '../../../../../shared/components/Link/Link'
 import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import { formatElapsed, spokenElapsed } from '../../../../../shared/helpers/time/time'
 import styles from './ReadModeBanner.module.css'
@@ -21,7 +21,7 @@ export function ReadModeBanner({ elapsedMs, onPlayAgain, busy = false }: ReadMod
         <span aria-hidden="true">Concluída em {formatElapsed(elapsedMs)}</span>
         <VisuallyHidden>Concluída em {spokenElapsed(elapsedMs)}</VisuallyHidden>
       </p>
-      <Button onClick={onPlayAgain} disabled={busy}>
+      <Button variant="primary" size="small" onClick={onPlayAgain} disabled={busy}>
         Jogar de novo
       </Button>
       <Link to="/calendario" className={styles.link}>

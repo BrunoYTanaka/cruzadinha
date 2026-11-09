@@ -86,15 +86,20 @@ Divergências mantidas de propósito (segunda conferência, todas as telas da ab
 
 - Entrar, Criar conta, Esqueci a senha e Nova senha agora têm a chamada e a cruzada de enfeite; o
   texto do erro de login segue o do site (`E-mail ou senha incorretos.`), e a tela "Nova senha" com
-  link válido não foi conferida (precisa de um token real).
+  link válido foi conferida (o formulário abre com qualquer token de 43 caracteres) e confere.
 - Administração: a frase sobre os cartões de "Hoje" não existe (a 061 os removeu) e o texto das
-  instruções do teclado é o do site; "Arrastando" não foi capturada (arraste com o mouse).
+  instruções do teclado é o do site; "Arrastando" foi capturada com o mouse e confere (linha levantada com sombra e marca amarela de destino).
 - Sua conta e Administração: o espaço reservado para o aviso (`min-height`) continua, porque a
   ausência de salto de layout é um requisito testado.
 - Diálogo de conclusão e de compartilhar: passaram ao estilo novo (X, título em Fraunces, botão principal amarelo), como no artefato, por decisão posterior; a folha de dicas continua no estilo antigo.
 - Contador do x1 no cabeçalho: agora fica ao lado do texto e reserva a largura mesmo vazio (`visibility: hidden`).
 - Menu Ajudas: alinha à borda direita do botão, como o artefato; a diferença na captura vem da faixa de ferramentas, que quebra de linha para visitante (aviso "Progresso só neste aparelho").
-- Não conferidas (precisam de estado que o ambiente local não gera): modo leitura, teclado na
-  tela do celular, recorde, avisos de progresso descartado, importar com sucesso, "x1 não abriu"
-  e "servidor não respondeu" (90 s).
+- Terceira conferência: sessão expirada, teclado na tela, "x1 não abriu", "Nova senha", arrastando e
+  modo leitura conferem com o artefato (claro e escuro); 768 px e escuro a 390 px não têm estouro
+  horizontal. A faixa do modo leitura ganhou botão principal amarelo e o link novo, e o erro "servidor
+  não respondeu" usa as letras ZZZ. A faixa do modo leitura continua dentro da coluna do tabuleiro
+  (no artefato ocupa a largura toda acima da barra de ferramentas); mover mexeria no layout do jogo.
+- Não conferidas: recorde, avisos de progresso descartado, importar com sucesso e "servidor não
+  respondeu" na tela (com `/api/health` bloqueado a espera passou de 99 s sem mostrar o erro; não
+  investigado, o código desse laço não mudou na 062).
 - Textos de apoio a 14 px (o artefato usa 15 px): valor herdado, sem efeito em contraste ou toque.

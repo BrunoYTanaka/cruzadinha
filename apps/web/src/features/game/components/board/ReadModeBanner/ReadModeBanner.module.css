@@ -4,9 +4,10 @@
   align-items: center;
   gap: 8px 12px;
   padding: 8px 12px;
+  border: 2px solid var(--ok);
   border-radius: var(--radius-md);
   background: var(--ok-tint);
-  color: var(--ok);
+  color: var(--ink);
 }
 
 .icon {
@@ -22,13 +23,13 @@
 .text {
   flex: 1;
   margin: 0;
+  color: var(--ok);
   font-weight: 700;
 }
 
+/* Link de texto (shared/Link): só garante a área de toque. */
 .link {
   min-height: var(--tap);
   display: inline-flex;
   align-items: center;
-  color: var(--ok);
-  font-weight: 500;
 }
