@@ -82,13 +82,21 @@ Divergências encontradas e resolvidas:
   largura total).
 - Administração: nome da fonte em Fraunces, caixa de seleção amarela, alça com caixa de 44 px.
 
-Divergências mantidas de propósito:
+Divergências mantidas de propósito (segunda conferência, todas as telas da aba Telas):
 
-- Entrar, Criar conta e Esqueci a senha: o artefato desenha uma chamada ao lado do cartão (texto grande
-  e casas "ENTRE NA SUA CRUZADA"). As telas de acesso não estão entre as fatias do brief, então ficam
-  só com o cartão, os campos, os botões e os títulos novos.
-- Administração: o artefato mostra o botão de salvar só com ícone e a frase sobre os cartões de "Hoje"
-  (a 061 os removeu). O site mantém o texto "Salvar" (nome acessível testado) e a frase nova.
+- Entrar, Criar conta, Esqueci a senha e Nova senha agora têm a chamada e a cruzada de enfeite; o
+  texto do erro de login segue o do site (`E-mail ou senha incorretos.`), e a tela "Nova senha" com
+  link válido não foi conferida (precisa de um token real).
+- Administração: a frase sobre os cartões de "Hoje" não existe (a 061 os removeu) e o texto das
+  instruções do teclado é o do site; "Arrastando" não foi capturada (arraste com o mouse).
 - Sua conta e Administração: o espaço reservado para o aviso (`min-height`) continua, porque a
-  ausência de salto de layout é um requisito testado; o artefato não o mostra.
+  ausência de salto de layout é um requisito testado.
+- Diálogo de conclusão e de compartilhar: ficam no estilo antigo por regra (parte do tabuleiro,
+  FR-019); o artefato os mostra com o estilo novo.
+- Contador do x1 no cabeçalho: um selo no canto, que reserva a largura; o artefato o põe ao lado do
+  texto.
+- Menu Ajudas: abre à esquerda do botão; o artefato alinha à direita.
+- Não conferidas (precisam de estado que o ambiente local não gera): modo leitura, teclado na
+  tela do celular, recorde, avisos de progresso descartado, importar com sucesso, "x1 não abriu"
+  e "servidor não respondeu" (90 s).
 - Textos de apoio a 14 px (o artefato usa 15 px): valor herdado, sem efeito em contraste ou toque.
