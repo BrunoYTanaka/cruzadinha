@@ -18,6 +18,8 @@ export class ServerWakeTimeoutError extends Error {
 
 let ready = false
 const readyListeners = new Set<() => void>()
+// Quem espera por `whenServerReady` também precisa saber quando `waitForServer` desiste.
+const timeoutListeners = new Set<() => void>()
 
 export function isServerReady(): boolean {
   return ready
@@ -129,7 +131,10 @@ export async function waitForServer(
       restartWhenOnline()
       return
     }
-    if (Date.now() - startedAt + WAKE_RETRY_MS > WAKE_TIMEOUT_MS) throw new ServerWakeTimeoutError()
+    if (Date.now() - startedAt + WAKE_RETRY_MS > WAKE_TIMEOUT_MS) {
+      for (const listener of [...timeoutListeners]) listener()
+      throw new ServerWakeTimeoutError()
+    }
     await pause(WAKE_RETRY_MS, signal)
   }
 }
@@ -145,6 +150,7 @@ export function whenServerReady(signal?: AbortSignal): Promise<void> {
     }
     const stop = () => {
       unsubscribe()
+      timeoutListeners.delete(onTimeout)
       window.removeEventListener('offline', onOffline)
       signal?.removeEventListener('abort', onAbort)
     }
@@ -161,6 +167,11 @@ export function whenServerReady(signal?: AbortSignal): Promise<void> {
       stop()
       reject(abortError())
     }
+    function onTimeout() {
+      stop()
+      reject(new ServerWakeTimeoutError())
+    }
+    timeoutListeners.add(onTimeout)
     signal?.addEventListener('abort', onAbort, { once: true })
   })
 }

@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import type { GuestProgress } from '../../../../domain/guest/guest-progress'
 import { Button } from '../../../../shared/components/Button/Button'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { Dialog } from '../../../../shared/components/Dialog/Dialog'
 import { queryKeys } from '../../../../shared/services/api/query-keys/query-keys'
 import { guestStore } from '../../../guest'
@@ -86,6 +87,7 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         open
         onClose={() => setHidden(true)}
         title="Progresso importado"
+        closeButton={false}
         description={`${plural(result.imported, 'cruzada importada', 'cruzadas importadas')}; ${plural(result.kept, 'já estava melhor na conta', 'já estavam melhores na conta')}.`}
       >
         {left > 0 ? (
@@ -99,7 +101,7 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
           </p>
         ) : null}
         <div className={styles.actions}>
-          <Button onClick={() => setHidden(true)} data-autofocus>
+          <Button size="small" variant="primary" onClick={() => setHidden(true)} data-autofocus>
             Fechar
           </Button>
         </div>
@@ -116,10 +118,12 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         description="O que você jogou como visitante será apagado deste aparelho e não entrará na conta. Isso não pode ser desfeito."
       >
         <div className={styles.actions}>
-          <Button variant="secondary" onClick={() => setStep('offer')} data-autofocus>
+          <Button size="small" variant="secondary" onClick={() => setStep('offer')} data-autofocus>
             Voltar
           </Button>
-          <Button onClick={() => void discard()}>Descartar mesmo assim</Button>
+          <Button size="small" variant="primary" onClick={() => void discard()}>
+            Descartar mesmo assim
+          </Button>
         </div>
       </Dialog>
     )
@@ -143,19 +147,25 @@ export function ImportOffer({ userId, suspended = false }: ImportOfferProps) {
         concluída na conta nunca é trocada.
       </p>
       {step === 'error' ? (
-        <p className={styles.message} role="alert">
+        <Notice variant="error">
           Não foi possível importar agora. Seu progresso continua neste aparelho.
-        </p>
+        </Notice>
       ) : null}
       <div className={styles.actions}>
-        <Button variant="quiet" onClick={() => setStep('discard')} disabled={busy}>
+        <Button size="small" variant="quiet" onClick={() => setStep('discard')} disabled={busy}>
           Descartar
         </Button>
-        <Button variant="secondary" onClick={notNow} disabled={busy}>
+        <Button size="small" variant="secondary" onClick={notNow} disabled={busy}>
           Agora não
         </Button>
-        <Button onClick={() => void confirmImport()} disabled={busy} data-autofocus>
-          {busy ? 'Importando…' : step === 'error' ? 'Tentar de novo' : 'Importar'}
+        <Button
+          size="small"
+          variant="primary"
+          onClick={() => void confirmImport()}
+          disabled={busy}
+          data-autofocus
+        >
+          {busy ? 'Importando…' : 'Importar'}
         </Button>
       </div>
     </Dialog>

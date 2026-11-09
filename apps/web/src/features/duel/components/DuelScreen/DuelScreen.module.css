@@ -1,5 +1,6 @@
 .page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-content: start;
   width: 100%;
@@ -8,10 +9,13 @@
   padding: 28px var(--gutter);
 }
 
+.invite {
+  max-width: calc(520px + 2 * var(--gutter));
+}
+
 .title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 .lead {
@@ -23,7 +27,10 @@
   display: grid;
   gap: 6px;
   margin: 0;
-  padding-left: 18px;
+  padding: 14px 16px 14px 34px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   font-size: 15px;
 }
 

@@ -153,6 +153,18 @@ describe('whenServerReady', () => {
     expect(resolved).toBe(true)
   })
 
+  // Sem isto o loader irmão (`viewerLoader`) ficava pendurado e a rota nunca mostrava o erro de 90 s.
+  it('rejects with ServerWakeTimeoutError when waitForServer gives up', async () => {
+    const fetch = vi.fn(async () => down())
+    const waiting = whenServerReady()
+    const waitingAssertion = expect(waiting).rejects.toBeInstanceOf(ServerWakeTimeoutError)
+    const wake = waitForServer({ fetch })
+    const wakeAssertion = expect(wake).rejects.toBeInstanceOf(ServerWakeTimeoutError)
+    await vi.advanceTimersByTimeAsync(WAKE_TIMEOUT_MS)
+    await wakeAssertion
+    await waitingAssertion
+  })
+
   it('rejects with AbortError when the signal aborts, and ignores a later wake-up', async () => {
     const controller = new AbortController()
     const waiting = whenServerReady(controller.signal)

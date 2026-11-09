@@ -3,12 +3,15 @@ import { Button } from '../Button/Button'
 import styles from './Notice.module.css'
 
 type NoticeProps = {
-  variant?: 'info' | 'warning' | 'error'
+  variant?: 'info' | 'ok' | 'warning' | 'error'
   children: ReactNode
   action?: { label: string; onClick: () => void }
   // Botão "Fechar" opcional, para avisos que a pessoa pode dispensar.
   onDismiss?: () => void
 }
+
+// O estado nunca depende só da cor (feature 062): cada variante tem um símbolo, além da borda.
+const SYMBOLS = { info: 'i', ok: '✓', warning: '!', error: '✕' } as const
 
 // Aviso que não bloqueia: fica fora do tabuleiro, não toma o foco e não cobre o jogo. `status`
 // anuncia com educação (`aria-live="polite"`); só o erro usa `alert`.
@@ -18,6 +21,9 @@ export function Notice({ variant = 'info', children, action, onDismiss }: Notice
       className={`${styles.notice} ${styles[variant]}`}
       role={variant === 'error' ? 'alert' : 'status'}
     >
+      <span className={styles.symbol} aria-hidden="true">
+        {SYMBOLS[variant]}
+      </span>
       <p className={styles.text}>{children}</p>
       {action ? (
         <Button onClick={action.onClick} className={styles.action}>

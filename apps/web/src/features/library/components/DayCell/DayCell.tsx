@@ -18,20 +18,27 @@ export type DaySelection = {
   onSelect: (pick: DayPick) => void
 }
 
-// O estado de cada dia aparece sempre por texto, nunca só por cor.
-function visibleStatus(day: CalendarDay): string | null {
+// O estado de cada dia aparece sempre por texto ou símbolo, nunca só por cor. Em calendário estreito
+// (menos de 480 px) só o símbolo de concluído (✓) e de em andamento (◐) fica; o nome acessível
+// continua por extenso (feature 062).
+type VisibleStatus = { glyph: string; text: string }
+
+function visibleStatus(day: CalendarDay): VisibleStatus | null {
   const { state } = day
   switch (state.kind) {
     case 'completed':
-      return state.finishedMs === null ? '✓' : `✓ ${formatElapsed(state.finishedMs)}`
+      return {
+        glyph: '✓',
+        text: state.finishedMs === null ? '' : ` ${formatElapsed(state.finishedMs)}`,
+      }
     case 'in_progress':
-      return '◐ Em jogo'
+      return { glyph: '◐', text: ' Em jogo' }
     case 'not_started':
-      return day.isToday ? 'Hoje' : 'Jogar'
+      return { glyph: '', text: day.isToday ? 'Hoje' : 'Jogar' }
     case 'fetchable':
-      return 'Buscar'
+      return { glyph: '', text: 'Buscar' }
     case 'none':
-      return 'Sem cruzada'
+      return { glyph: '', text: 'Sem cruzada' }
     case 'future':
       return null
   }
@@ -85,7 +92,8 @@ export function DayCell({
     ? 'não guardado, não pode ser escolhido'
     : `${spokenStatus(day)}${done ? ', você já fez esta' : ''}`
   const label = `${day.isToday ? 'Hoje, ' : ''}${day.day} de ${MONTH_NAMES[month - 1] ?? ''}, ${spoken}${offline ? ', disponível sem rede' : ''}${dimmed ? ', fora do filtro' : ''}`
-  const status = done ? `${visibleStatus(day)} · já fez` : visibleStatus(day)
+  const visible = visibleStatus(day)
+  const status = visible && done ? { ...visible, text: `${visible.text} · já fez` } : visible
   const classes = [
     styles.day,
     styles[state.kind],
@@ -106,7 +114,8 @@ export function DayCell({
       ) : null}
       {status ? (
         <small className={styles.status} aria-hidden="true">
-          {status}
+          {status.glyph ? <span className={styles.glyph}>{status.glyph}</span> : null}
+          <span className={status.glyph ? styles.statusText : undefined}>{status.text}</span>
         </small>
       ) : null}
     </>

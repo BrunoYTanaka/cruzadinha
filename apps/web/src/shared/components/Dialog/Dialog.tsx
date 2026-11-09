@@ -16,9 +16,9 @@ type DialogProps = {
   initialFocusRef?: RefObject<HTMLElement | null>
   closeOnBackdrop?: boolean
   align?: 'center' | 'bottom'
-  // Largura do painel: `wide` chega a 460 px em vez de 420 px (feature 024).
-  size?: 'default' | 'wide'
-  // Botão "Fechar" (X) ao lado do título, para diálogos sem ação final (feature 021).
+  // Largura do painel: `wide` chega a 460 px e `large` a 560 px, em vez de 420 px (features 024, 062).
+  size?: 'default' | 'wide' | 'large'
+  // Botão "Fechar" (X) no canto superior direito (feature 062: sempre presente, `false` o tira).
   closeButton?: boolean
 }
 
@@ -34,7 +34,7 @@ export function Dialog({
   closeOnBackdrop = false,
   align = 'center',
   size = 'default',
-  closeButton = false,
+  closeButton = true,
 }: DialogProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -52,6 +52,7 @@ export function Dialog({
     const target =
       initialFocusRef?.current ??
       panel?.querySelector<HTMLElement>('[data-autofocus]') ??
+      panel?.querySelector<HTMLElement>(`:is(${FOCUSABLE}):not([data-dialog-close])`) ??
       panel?.querySelector<HTMLElement>(FOCUSABLE) ??
       panel
     target?.focus()
@@ -128,7 +129,12 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={size === 'wide' ? `${styles.panel} ${styles.wide}` : styles.panel}
+        className={[
+          styles.panel,
+          size === 'wide' ? styles.wide : size === 'large' ? styles.large : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
         {closeButton ? (
           <div className={styles.header}>
@@ -139,6 +145,7 @@ export function Dialog({
               type="button"
               className={`${buttonClass({ variant: 'icon' })} ${styles.close}`}
               aria-label="Fechar"
+              data-dialog-close
               onClick={() => onCloseRef.current()}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">

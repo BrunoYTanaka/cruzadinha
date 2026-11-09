@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import type { CalendarDay } from '../../helpers/calendar'
 import { expectNoA11yViolations } from '../../../../test/axe'
+import { readCss } from '../../../../test/css-file'
 import { DayCell } from './DayCell'
 
 const day: CalendarDay = {
@@ -116,5 +117,33 @@ describe('DayCell em modo de seleção (feature 058)', () => {
     const { container } = pick(state)
     expect(screen.getByRole('img', { name: `13 de outubro, ${spoken}` })).toBeInTheDocument()
     expect(container.querySelector('a, button')).toBeNull()
+  })
+})
+
+describe('DayCell com símbolos em calendário estreito (feature 062)', () => {
+  const css = readCss('Calendar.module.css')
+  const inState = (state: CalendarDay['state']) =>
+    render(
+      <MemoryRouter>
+        <DayCell day={{ ...day, state }} month={10} source="oglobo" />
+      </MemoryRouter>,
+    )
+
+  it('concluído tem ✓ e em andamento ◐, e o nome acessível continua por extenso', () => {
+    const { container, unmount } = inState({
+      kind: 'completed',
+      puzzleId: 'p-13',
+      finishedMs: 65000,
+    })
+    expect(container.querySelector('small')).toHaveTextContent(/^✓ \d+:\d{2}$/)
+    expect(screen.getByRole('link').getAttribute('aria-label')).toMatch(/concluído em/)
+    unmount()
+    const second = inState({ kind: 'in_progress', puzzleId: 'p-13' })
+    expect(second.container.querySelector('small')).toHaveTextContent('◐ Em jogo')
+    expect(screen.getByRole('link').getAttribute('aria-label')).toMatch(/em andamento/)
+  })
+
+  it('abaixo de 480 px de calendário o texto some e o símbolo fica', () => {
+    expect(css).toMatch(/@container \(max-width: 479px\)\s*{\s*\.statusText\s*{\s*display: none/)
   })
 })

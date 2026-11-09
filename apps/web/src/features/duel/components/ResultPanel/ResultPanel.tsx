@@ -12,14 +12,16 @@ const endLabel = {
   timeout: 'Tempo esgotado',
 } as const
 
-function Side({ side, label }: { side: NonNullable<DuelView['result']>['me']; label: string }) {
+type ResultSide = NonNullable<DuelView['result']>['me']
+
+function Side({ side, label, won }: { side: ResultSide; label: string; won: boolean }) {
   return (
     <tr>
       <th scope="row">
         {side.nickname} <span className={styles.reason}>({label})</span>
       </th>
       <td>{side.endReason ? endLabel[side.endReason] : 'Não jogou'}</td>
-      <td>{timeText(side.elapsedMs)}</td>
+      <td className={won ? styles.won : undefined}>{timeText(side.elapsedMs)}</td>
       <td>{side.penaltyMs > 0 ? `+${timeText(side.penaltyMs)}` : '—'}</td>
       <td>{side.helpsUsed}</td>
     </tr>
@@ -68,8 +70,10 @@ export function ResultPanel({ view }: { view: DuelView }) {
             </tr>
           </thead>
           <tbody>
-            <Side side={result.me} label="você" />
-            {result.opponent ? <Side side={result.opponent} label="oponente" /> : null}
+            <Side side={result.me} label="você" won={result.verdict === 'won'} />
+            {result.opponent ? (
+              <Side side={result.opponent} label="oponente" won={result.verdict === 'lost'} />
+            ) : null}
           </tbody>
         </table>
         {links}

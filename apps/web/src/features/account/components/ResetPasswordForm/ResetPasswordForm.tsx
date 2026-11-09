@@ -8,6 +8,7 @@ import { Button, buttonClass } from '../../../../shared/components/Button/Button
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
+import { AuthLayout } from '../../../../shared/components/AuthLayout/AuthLayout'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from '../../../session'
 import { useFragmentToken } from '../../helpers/token-fragment'
@@ -65,7 +66,15 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline={invalid && !done ? 'Esse link não serve mais.' : 'Crie sua senha.'}
+      lead={
+        invalid && !done
+          ? 'Links de recuperação valem por pouco tempo e só uma vez.'
+          : 'Última etapa. Depois você volta direto para a sua cruzada.'
+      }
+      rows={invalid && !done ? ['LINK', 'venceu'] : ['CRIE', 'SUA', 'senha']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>{title}</h1>
         {done ? (
@@ -125,6 +134,6 @@ export function ResetPasswordForm() {
           </>
         )}
       </div>
-    </div>
+    </AuthLayout>
   )
 }

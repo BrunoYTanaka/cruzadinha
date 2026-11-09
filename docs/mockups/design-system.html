@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System Cruzadinha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Catálogo de componentes. Tokens do site (light.css e dark.css), forma dos componentes tirada da landing. Layout, tabuleiro e tela do jogo não mudam. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #1c1f24; --mute: #4f5661; --line: #cfd4db;
+  --accent: #1a56c4; --accent-ink: #ffffff; --focus: #1a56c4;
+  --sel: #ffd23f; --sel-ink: #1c1f24; --word: #cfe0ff; --cell: #ffffff; --cell-line: #aeb4bd; --block: #1f2329;
+  --ok: #17693a; --ok-tint: #dff3e6; --warn: #8a5300; --warn-tint: #fdeccd; --bad: #d32f2f; --help: #4f5661;
+  --pill: #e4e7ec; --control: #eef0f3; --control-line: #80878f;
+  --hover-overlay: rgb(28 31 36 / 0.08); --press-overlay: rgb(28 31 36 / 0.16);
+  --font: 'Roboto', system-ui, sans-serif; --mono: 'Roboto Mono', ui-monospace, monospace; --display: 'Fraunces', Georgia, serif;
+  --edge: var(--ink); --shade: var(--ink); --p-edge: var(--ink); --p-border: var(--ink); --chip-on: var(--ink); --chip-on-ink: var(--bg);
+  --depth: #c79a00; --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+  color-scheme: light;
+}
+.ds[data-mode="dark"] {
+  --bg: #121316; --surface: #1a1c20; --ink: #eceef2; --mute: #a4abb6; --line: #33373f;
+  --accent: #8db4ff; --accent-ink: #0a1a33; --focus: #8db4ff;
+  --sel: #e8b93a; --sel-ink: #1c1f24; --word: #27406e; --cell: #25282e; --cell-line: #50555f; --block: #07080a;
+  --ok: #6fd69a; --ok-tint: #17301f; --warn: #f0b95e; --warn-tint: #3a2b10; --bad: #ff6b6b; --help: #a4abb6;
+  --pill: #2c3038; --control: #24272d; --control-line: #6e7581;
+  --hover-overlay: rgb(236 238 242 / 0.1); --press-overlay: rgb(236 238 242 / 0.18);
+  --depth: #8f6f12; --edge: #868d99; --shade: #3b4049; --p-edge: #6b717c; --p-border: #0b0c0e; --chip-on: var(--word); --chip-on-ink: var(--ink);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; font-family: var(--font); }
+body { background: #c9cdd4; }
+.ds { background: var(--bg); color: var(--ink); min-height: 100vh; }
+.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top b { font: 800 18px var(--display); }
+.top .sp { flex: 1; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 20px 64px; display: grid; gap: 44px; }
+.intro h1 { margin: 0 0 8px; font: 800 clamp(28px, 4.5vw, 40px)/1.08 var(--display); text-wrap: balance; }
+.intro p { margin: 0; max-width: 62ch; color: var(--mute); line-height: 1.55; }
+section > h2 { margin: 0 0 4px; font: 800 24px/1.15 var(--display); }
+section > .lead { margin: 0 0 16px; color: var(--mute); font-size: 14px; max-width: 70ch; line-height: 1.5; }
+.box { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); padding: 18px; display: grid; gap: 18px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; }
+.cap { font: 500 12px var(--mono); color: var(--mute); margin: 0 0 8px; }
+.spec { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 500 12px var(--mono); color: var(--mute); }
+.spec b { color: var(--ink); font-weight: 700; }
+
+/* cores */
+.sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.sw div { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; background: var(--surface); }
+.sw i { display: block; height: 48px; border-bottom: 1px solid var(--line); }
+.sw span { display: block; padding: 6px 8px; font: 500 11px var(--mono); }
+.sw em { display: block; font-style: normal; color: var(--mute); }
+
+/* tipografia */
+.type { display: grid; gap: 10px; }
+.type > div { display: grid; grid-template-columns: 190px 1fr; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.type > div:last-child { border: 0; padding: 0; }
+.type code { font: 500 11px var(--mono); color: var(--mute); }
+
+/* botão simples: face chapada, sem sombra e sem movimento; mouse e clique escurecem por uma camada */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 1px solid transparent; border-radius: var(--r-md); font: 700 15px/1 var(--font); text-decoration: none; cursor: pointer; background: var(--surface); color: var(--ink); transition: background-color 120ms, background-image 120ms, border-color 120ms, color 120ms; }
+.btn.primary { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+.btn.secondary { background: var(--control); border-color: var(--control-line); }
+.btn.quiet { background: transparent; border-color: var(--control-line); }
+.btn.icon { width: 44px; padding: 0; background: transparent; }
+.btn.small { min-height: 36px; padding: 0 14px; font-size: 13px; border-radius: var(--r-sm); }
+.btn.icon.small { width: 36px; padding: 0; }
+.btn.block { width: 100%; }
+.btn.hover { background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay)); }
+@media (hover: hover) {
+  .btn:not([disabled]):hover, .tab:hover, .chip:hover, .day:not(.off):hover, .menu .mi:not([disabled]):hover { background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay)); }
+}
+.btn.press, .btn:not([disabled]):active, .tab:active, .chip:active, .day:not(.off):active { background-image: linear-gradient(var(--press-overlay), var(--press-overlay)); }
+.btn.focus, .btn:focus-visible, .tab:focus-visible, .chip:focus-visible, .day:focus-visible, .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.btn[disabled] { opacity: .6; cursor: not-allowed; background-image: none; }
+.spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: s .8s linear infinite; }
+@keyframes s { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } .btn { transition: none; } }
+
+/* aba de fonte */
+.tab { min-height: 40px; padding: 0 16px; border: 2px solid var(--line); border-radius: var(--r-sm); background: transparent; color: var(--ink); font: 700 14px var(--font); cursor: pointer; display: inline-flex; flex-direction: column; justify-content: center; text-align: left; }
+.tab small { font: 400 11px var(--font); color: var(--mute); }
+.tab[aria-selected="true"] { border-color: var(--edge); background: var(--sel); color: var(--sel-ink); }
+.tab[aria-selected="true"] small { color: var(--sel-ink); }
+
+/* filtro */
+.chip { min-height: 36px; padding: 0 14px; border: 2px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font: 700 13px var(--font); cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--edge); background: var(--chip-on); color: var(--chip-on-ink); }
+
+/* cartão */
+.card { display: grid; gap: 4px; padding: 14px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); min-width: 220px; flex: 1; }
+.card b { font: 800 16px var(--display); }
+.card > span { font-size: 13px; color: var(--mute); }
+.card .row { justify-content: space-between; margin-top: 8px; flex-wrap: nowrap; }
+.card.flat { box-shadow: none; border-color: var(--line); }
+
+/* status */
+.status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font: 700 12px var(--font); border: 1.5px solid currentColor; }
+.status.ok { color: var(--ok); background: var(--ok-tint); }
+.status.warn { color: var(--warn); background: var(--warn-tint); }
+.status.none { color: var(--mute); }
+.badge { min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font: 700 11px/18px var(--font); text-align: center; }
+
+/* campos */
+.field { min-height: 44px; padding: 0 12px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: 500 15px var(--font); min-width: 220px; }
+.field.err { border-color: var(--bad); }
+.lbl { display: grid; gap: 6px; font: 700 13px var(--font); }
+.lbl small { font: 400 12px var(--font); color: var(--mute); }
+.lbl small.bad { color: var(--bad); font-weight: 500; }
+
+/* dia do calendário */
+.days { display: flex; flex-wrap: wrap; gap: 10px; }
+.day { position: relative; width: 104px; min-height: 64px; padding: 6px 8px; border: 2px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); text-align: left; font: 700 15px var(--font); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+.day small { font: 700 11px var(--font); color: var(--mute); }
+.day.done { border-color: var(--ok); background: var(--ok-tint); } .day.done small { color: var(--ok); }
+.day.prog { border-color: var(--warn); background: var(--warn-tint); } .day.prog small { color: var(--warn); }
+.day.today { border-color: var(--edge); }
+.day.off { opacity: .5; cursor: not-allowed; background: transparent; border-style: dashed; }
+
+/* aviso e diálogo */
+.notice { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 2px solid currentColor; border-radius: var(--r-sm); font-size: 14px; line-height: 1.4; }
+.notice b { font-weight: 700; }
+.notice.info { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.notice.ok { color: var(--ok); background: var(--ok-tint); }
+.notice.warn { color: var(--warn); background: var(--warn-tint); }
+.notice.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface)); }
+.notice span { color: var(--ink); }
+.dialog { max-width: 420px; border: 2px solid var(--edge); border-radius: var(--r-md); background: var(--surface); padding: 20px; display: grid; gap: 12px; }
+.dialog h3 { margin: 0; font: 800 22px/1.15 var(--display); }
+.dialog p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.5; }
+.dialog .row { justify-content: flex-end; }
+
+/* intocado */
+.frozen { border: 2px dashed var(--line); border-radius: var(--r-md); padding: 16px; color: var(--mute); font-size: 14px; line-height: 1.5; }
+.frozen b { color: var(--ink); }
+
+/* telas */
+.frame { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--bg); container: fr / inline-size; }
+.frame-h { flex-wrap: wrap; display: flex; align-items: center; gap: 4px 6px; padding: 0 16px; min-height: 60px; border-bottom: 2px solid var(--edge); background: var(--surface); }
+.frame-h .brand { display: inline-flex; align-items: center; gap: 10px; margin-right: 18px; color: var(--ink); text-decoration: none; font: 800 22px var(--display); letter-spacing: -0.01em; }
+.frame-h .brand i { width: 30px; height: 30px; display: grid; place-items: center; border: 2px solid var(--edge); border-radius: 4px; background: var(--sel); color: var(--sel-ink); box-shadow: 2px 2px 0 var(--edge); font: 800 17px var(--display); font-style: normal; }
+.frame-h { padding-top: 8px; padding-bottom: 8px; }
+.frame-h nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.frame-h nav a[aria-current="page"] { background: var(--sel); border-color: var(--edge); color: var(--sel-ink); }
+.frame-h .gearbtn { width: 44px; height: 44px; }
+.avatar:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.avatar { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 2px solid var(--edge); border-radius: 50%; background: var(--sel); color: var(--sel-ink); font: 800 14px var(--display); letter-spacing: .02em; text-decoration: none; }
+.avatar:hover { filter: brightness(.94); }
+.avatar[aria-current="page"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--edge); }
+.avatar.big { width: 56px; height: 56px; font-size: 20px; }
+.idrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.idrow > span:not(.avatar) { flex: 1; min-width: 0; display: grid; }
+.idrow b { font: 800 17px var(--display); overflow-wrap: anywhere; }
+.idrow small { color: var(--mute); font-size: 13px; }
+.frame-h .sp { flex: 1; }
+.frame-h .who { color: var(--mute); font-size: 14px; }
+.frame-b { padding: 18px 16px 22px; display: grid; gap: 18px; }
+.frame-b h1 { margin: 0; font: 800 28px/1.1 var(--display); }
+.frame-b h2 { margin: 0 0 8px; font: 800 19px/1.2 var(--display); }
+.todays { display: flex; flex-wrap: wrap; gap: 14px; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+.bar h2 { margin: 0; min-width: 9ch; }
+.bar .chips { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.cal7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal7 .dow { font: 700 12px var(--font); color: var(--mute); text-align: center; }
+.cal7 .day { width: auto; min-height: 56px; }
+.day .g, .legend .g2 { display: none; }
+@container fr (max-width: 480px) { .cal7 .day .t { display: none; } .cal7 .day .g { display: inline; font-size: 14px; line-height: 1; white-space: nowrap; } .legend .g2 { display: inline; } }
+.form { max-width: 380px; display: grid; gap: 14px; }
+.form .field { width: 100%; }
+.form .links { font-size: 14px; display: flex; justify-content: space-between; }
+.form .links a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.g-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.g-pill { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--control-line); background: var(--pill); color: var(--ink); font: 700 14px var(--font); display: inline-flex; align-items: center; }
+.g-btn { min-height: 44px; padding: 0 18px; border-radius: var(--r-md); border: 1px solid var(--control-line); background: var(--control); color: var(--ink); font: 500 15px var(--font); display: inline-flex; align-items: center; }
+.g-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 320px); gap: 24px; align-items: start; }
+@container fr (max-width: 720px) { .g-main { grid-template-columns: 1fr; } }
+.g-cluebar { max-width: 460px; padding: 10px 14px; margin-bottom: 12px; background: var(--ink); color: var(--bg); font: 500 15px var(--font); }
+.g-cluebar b { color: var(--sel); margin-right: 6px; font-family: var(--mono); }
+.g-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--cell-line); background: var(--block); gap: 1px; max-width: 460px; aspect-ratio: 1; }
+.g-cell { position: relative; background: var(--cell); display: grid; place-items: center; font: 500 clamp(18px, 4.6vw, 28px) var(--font); }
+.g-cell.block { background: var(--block); } .g-cell.word { background: var(--word); }
+.g-cell.sel { background: var(--sel); color: var(--sel-ink); } .g-cell.help { color: var(--help); }
+.g-cell .n { position: absolute; top: 2px; left: 3px; font: 500 10px var(--mono); color: var(--mute); }
+.g-clues { border-left: 1px solid var(--line); padding-left: 12px; }
+.g-clues h3 { margin: 0 0 6px; font: 500 16px var(--font); }
+.g-clues ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.g-clues li { display: grid; grid-template-columns: 28px 1fr auto; gap: 6px; padding: 6px 8px; font-size: 14px; }
+.g-clues li.active { background: var(--word); }
+.g-clues .k { font: 700 13px var(--mono); color: var(--accent); }
+.badge-new { font: 700 11px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--sel); color: var(--sel-ink); border: 1.5px solid var(--ink); vertical-align: middle; margin-left: 8px; }
+.badge-old { font: 700 11px var(--mono); padding: 2px 8px; border-radius: 999px; background: var(--pill); color: var(--mute); border: 1.5px solid var(--line); vertical-align: middle; margin-left: 8px; }
+
+/* telas novas */
+.toc { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; }
+.toc a { min-height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); font: 700 12px var(--font); text-decoration: none; }
+.toc a:hover { background: var(--pill); }
+.shot-cap { margin: 0 0 8px; font: 500 12px var(--mono); color: var(--mute); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.shot-cap code { color: var(--ink); }
+.lede { margin: 0; color: var(--mute); font-size: 15px; line-height: 1.5; max-width: 60ch; }
+.kick { margin: 0; font: 700 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.frame-b h3 { margin: 0; font: 800 17px/1.2 var(--display); }
+.page-narrow { max-width: 460px; display: grid; gap: 14px; }
+.panel { border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); padding: 18px; display: grid; gap: 14px; }
+.panel.plain { border: 1px solid var(--line); }
+.panel.danger { border-color: var(--bad); }
+.panel.danger h2 { color: var(--bad); }
+.alt { margin: 0; font-size: 14px; color: var(--mute); }
+.alt a, .lnk { color: var(--ink); font-weight: 700; text-decoration: none; padding-bottom: 2px; background: linear-gradient(var(--sel), var(--sel)) 0 100% / 0% 3px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size 280ms ease; cursor: pointer; }
+.lnk.hover, .alt a.hover { background-size: 100% 3px; }
+@media (hover: hover) { .alt a:hover, .lnk:hover { background-size: 100% 3px; } }
+.alt a:active, .lnk:active { background-size: 100% 5px; }
+.alt a:focus-visible, .lnk:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { .alt a, .lnk { transition: none; } }
+.land .alt a, .land .lnk { background: none; padding-bottom: 0; text-decoration: underline; text-underline-offset: 3px; }
+.stat4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0; }
+.stat { display: grid; gap: 4px; padding: 14px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); }
+.stat dt { color: var(--mute); font-size: 13px; }
+.stat dd { margin: 0; font: 800 26px var(--display); font-variant-numeric: tabular-nums; }
+table.t { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); }
+table.t th, table.t td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+table.t th:first-child { text-align: left; }
+table.t thead th { color: var(--mute); font-size: 13px; font-weight: 700; background: var(--control); }
+table.t tr:last-child > * { border-bottom: 0; }
+.opts { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+fieldset.grp { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+fieldset.grp legend { padding: 0; font: 800 17px var(--display); margin-bottom: 8px; }
+.duels { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.duels li { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; align-items: center; padding: 12px 14px; border: 2px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
+.duels li.att { border-color: var(--edge); }
+.duels b { font: 800 16px var(--display); }
+.codebox { font: 700 24px var(--mono); letter-spacing: .12em; padding: 10px 14px; border: 2px dashed var(--edge); border-radius: var(--r-sm); background: var(--bg); text-align: center; }
+.copyrow { display: flex; gap: 8px; }
+.copyrow .field { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; }
+.win { color: var(--ok); }
+.hero { position: relative; overflow: hidden; display: grid; gap: 18px; padding: 28px 18px 30px; border-bottom: 1px solid var(--line); background-color: var(--bg); }
+.hero .cells { display: flex; gap: 4px; flex-wrap: wrap; }
+.hero .cells span { position: relative; width: 38px; height: 44px; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--edge); border-radius: 4px; font: 800 22px var(--display); }
+.hero .cells span:nth-child(3n+1) { background: var(--sel); color: var(--sel-ink); }
+.hero .cells small { position: absolute; top: 1px; left: 3px; font: 700 9px var(--mono); }
+.hero .lede, .band .lede { max-width: 58ch; }
+.hero h1 { margin: 0; font: 800 clamp(26px, 4vw, 38px)/1.1 var(--display); max-width: 20ch; text-wrap: balance; }
+.hero h1 em { font-style: normal; background: linear-gradient(transparent 62%, var(--sel) 62%); }
+.sect { padding: 22px 18px; display: grid; gap: 14px; border-bottom: 1px solid var(--line); }
+.sect h2 { margin: 0; font: 800 24px/1.15 var(--display); }
+.cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.cards3 .panel { gap: 6px; padding: 14px; }
+.ico { width: 34px; height: 34px; display: grid; place-items: center; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--sel); color: var(--sel-ink); font-weight: 800; }
+.cards3 p { margin: 0; font-size: 14px; color: var(--mute); line-height: 1.45; }
+.pillrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pillrow li { padding: 5px 12px; border-radius: 999px; background: var(--pill); border: 1px solid var(--control-line); font: 700 12px var(--font); }
+.band { background: var(--block); color: #fff; padding: 30px 18px; display: grid; gap: 14px; justify-items: start; }
+.band h2 { margin: 0; font: 800 26px/1.15 var(--display); color: #fff; }
+.band .btn.quiet { color: #fff; border-color: #ffffffaa; }
+.load { display: grid; gap: 14px; justify-items: start; }
+.load .cells { display: flex; gap: 4px; }
+.load .cells span { width: 30px; height: 36px; border: 2px solid var(--edge); border-radius: 4px; background: var(--surface); display: grid; place-items: center; font: 800 16px var(--display); }
+.load .bar2 { width: 260px; height: 8px; border: 1px solid var(--edge); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.load .bar2 i { display: block; height: 100%; width: 40%; background: var(--sel); }
+
+.ptabs { display: flex; gap: 4px; margin-left: 16px; }
+.ptabs button { min-height: 36px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--mute); font: 700 14px var(--font); cursor: pointer; }
+.ptabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--sel); }
+.shots { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; align-items: start; }
+.shots .toc { position: sticky; top: 64px; flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 8px; margin: 0; }
+.shots .toc a { border: 0; border-radius: var(--r-sm); border-radius: 6px; min-height: 36px; justify-content: flex-start; font-size: 13px; }
+.shots .toc a[aria-current="page"] { background: var(--sel); color: var(--sel-ink); }
+@media (max-width: 800px) { .shots { grid-template-columns: 1fr; } .shots .toc { position: static; flex-direction: row; flex-wrap: wrap; } }
+
+.page-narrow { margin: 0 auto; width: 100%; }
+/* administração: alça de arrastar (toque e mouse); a linha levantada e a faixa do destino */
+.admlist .handle { width: 44px; min-height: 44px; cursor: grab; touch-action: none; }
+.admlist .handle:active { cursor: grabbing; }
+.admlist .admrow.drag { position: relative; z-index: 2; background: var(--surface); border-color: var(--edge); box-shadow: 0 8px 24px rgb(0 0 0 / .25); }
+.admlist .admdrop { list-style: none; height: 4px; margin: -2px 0; border-radius: 2px; background: var(--sel); outline: 1px solid var(--edge); }
+/* abas de fonte: uma linha só; o que não cabe rola para o lado (a última aba aparece cortada como sinal) */
+.frame .tabs-attached.row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 2px; margin-bottom: -2px; }
+.frame .tabs-attached.row::-webkit-scrollbar { display: none; }
+.frame-b > * { min-width: 0; }
+.frame .tabs-attached.row .tab { flex: none; white-space: nowrap; scroll-snap-align: start; }
+.alt.c { text-align: center; }
+.todays4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.todays4 .card { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.chips2 { display: flex; flex-wrap: wrap; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--mute); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 14px; height: 14px; border: 2px solid var(--line); border-radius: 3px; display: inline-block; }
+.lg.ok { border-color: var(--ok); } .lg.warn { border-color: var(--warn); } .lg.dash { border-style: dashed; } .lg.off { background: var(--pill); border-color: var(--pill); }
+.hero { grid-template-columns: 1fr; }
+.hero .cells.big span { width: clamp(28px, 7.6vw, 62px); height: clamp(36px, 9vw, 74px); font-size: clamp(18px, 4.4vw, 38px); }
+.hero-copy { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: end; }
+@container fr (max-width: 760px) { .hero-copy { grid-template-columns: 1fr; } }
+.fl { position: absolute; width: 38px; height: 38px; display: grid; place-items: center; border: 2px solid var(--edge); background: var(--surface); font: 800 18px var(--display); border-radius: 4px; opacity: .7; }
+.fl.f1 { right: 18px; top: 26px; transform: rotate(8deg); } .fl.f2 { right: 120px; top: 90px; background: var(--sel); color: var(--sel-ink); transform: rotate(-6deg); } .fl.f3 { right: 10px; bottom: 30px; transform: rotate(7deg); }
+.minirow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@container fr (max-width: 760px) { .minirow { grid-template-columns: 1fr; } }
+.m-grid { display: grid; grid-template-columns: repeat(5, 1fr); border: 2px solid var(--edge); max-width: 340px; margin: 0 auto; width: 100%; }
+.m-cell { position: relative; aspect-ratio: 1; background: var(--cell); border: 1px solid var(--cell-line); display: grid; place-items: center; font: 700 24px var(--font); }
+.m-cell.blk { background: var(--block); } .m-cell.wd { background: var(--word); } .m-cell.sel { background: var(--sel); color: var(--sel-ink); }
+.m-cell i { position: absolute; top: 2px; left: 3px; font: 500 10px var(--mono); font-style: normal; color: var(--mute); }
+.m-clues h4 { margin: 0 0 6px; font: 700 12px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.m-clues ol { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 2px; }
+.m-clues li { display: grid; grid-template-columns: 28px 1fr; padding: 7px 8px; font-size: 14px; border-left: 3px solid transparent; }
+.m-clues li b { color: var(--accent); font: 700 12px var(--mono); }
+.m-clues li.act { background: var(--word); border-left-color: var(--accent); }
+.srcs { border-top: 2px solid var(--ink); }
+.src { display: grid; grid-template-columns: minmax(130px, 1fr) 2fr; gap: 12px; padding: 14px 8px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.src b { font: 800 19px var(--display); } .src span { font-size: 14px; color: var(--mute); }
+.band.row2 { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+.cards3 .ico { width: auto; padding: 0 8px; justify-self: start; height: 30px; background: var(--word); color: var(--ink); font: 700 14px var(--mono); }
+.day.plain { border-color: transparent; background: transparent; color: var(--mute); }
+.day.plain.off { opacity: 1; }
+.legend { margin-top: 12px; }
+
+/* landing: fica como está hoje (botão com sombra deslocada, grade no fundo, cartões quadrados) */
+.frame-b.flush { padding: 0; gap: 0; }
+.land .lbtn { min-height: 44px; padding: 0 18px; border: 2px solid var(--ink); border-radius: var(--r-sm); font: 700 15px var(--font); display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); background: var(--surface); }
+.land .lbtn.primary { background: var(--sel); color: var(--sel-ink); box-shadow: 4px 4px 0 var(--ink); }
+.land .band .lbtn.primary { border-color: #fff; box-shadow: 3px 3px 0 #ffffff66; }
+.land .band .row a:not(.lbtn) { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+.land .hero { background-image: linear-gradient(color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px); background-size: 34px 34px; border-bottom: 0; }
+.land .hero .cells span, .land .hero .cells span:nth-child(3n+1) { background: var(--surface); color: var(--ink); border-radius: 0; }
+.land .sect { border-bottom: 0; padding: 40px 18px; }
+.land .panel { border-radius: 0; border-width: 2px; border-color: var(--ink); }
+.land .cards3 .panel:nth-child(2) { margin-top: 12px; }
+.land .minirow > .panel { box-shadow: 8px 8px 0 var(--ink); }
+.land .pillrow li { background: var(--surface); border: 1px solid var(--line); font-weight: 400; }
+.land .btn.small { border-radius: var(--r-sm); }
+
+/* abas coladas no painel: mesmo contorno de 2px do painel, a ativa se funde a ele e leva faixa amarela */
+.tabs-attached { gap: 4px; position: relative; z-index: 1; }
+.tabs-attached .tab { border: 2px solid var(--edge); border-bottom: 0; border-radius: var(--r-md) var(--r-md) 0 0; background: var(--pill); color: var(--ink); padding: 4px 18px 0; min-height: 42px; margin-top: 4px; }
+.tabs-attached .tab[aria-selected="true"] { background: var(--surface); margin-top: 0; margin-bottom: -2px; min-height: 48px; padding: 4px 18px 2px; box-shadow: inset 0 4px 0 var(--sel); }
+.tabs-attached .tab[aria-selected="true"] small { color: var(--mute); }
+.tabs-attached + .panel { margin-top: 0 !important; border-top-left-radius: 0; }
+.grp .tabs-attached { margin-bottom: -8px; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; padding: 20px 8px 28px; }
+@container fr (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+.split h2.big { margin: 0 0 12px; font: 800 clamp(30px, 4.4vw, 46px)/1.05 var(--display); max-width: 12ch; }
+.split-l .lede { font-size: 16px; margin-bottom: 18px; }
+.sgrid { display: grid; grid-template-columns: repeat(5, 36px); gap: 2px; width: max-content; padding: 2px; background: var(--ink); box-shadow: 4px 4px 0 var(--mute); }
+.sgrid i { width: 36px; height: 36px; display: grid; place-items: center; font: 700 15px var(--mono); font-style: normal; }
+.sgrid i.y { background: var(--sel); }
+.sgrid i.f { background: var(--surface); color: var(--ink); } .sgrid i.e { background: var(--ink); }
+.split-card { box-shadow: 6px 6px 0 var(--ink); max-width: 440px; width: 100%; justify-self: center; }
+.split-card h1 { margin: 0; }
+
+/* cruzada de enfeite: só as casas com letra aparecem, soltas, sem fundo escuro */
+.sgrid { background: transparent; box-shadow: none; padding: 0; gap: 4px; }
+.sgrid i.e { visibility: hidden; }
+.sgrid i.f, .sgrid i.y { border: 2px solid var(--ink); border-radius: 4px; box-shadow: 2px 2px 0 var(--ink); }
+.sgrid i.f { background: var(--surface); color: var(--ink); }
+
+/* jogo: igual ao site de hoje */
+.gm-info { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: 14px; }
+.gm-src { padding: 4px 10px; border-radius: 999px; background: var(--pill); font: 700 12px var(--font); }
+.gm-date { font-weight: 500; }
+.gm-sp { flex: 1; }
+.gm-clock { display: inline-flex; align-items: center; gap: 8px; } .gm-clock b { font: 500 15px var(--font); }
+.gm-div { width: 1px; height: 24px; background: var(--line); }
+.gm-ic { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 0; background: transparent; color: var(--ink); border-radius: 8px; cursor: pointer; }
+.gm-size { padding: 9px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--control); color: var(--mute); font-size: 13px; }
+.gm-main { display: grid; grid-template-columns: minmax(260px, 1.1fr) minmax(0, 1fr); gap: 24px; padding: 20px 20px 8px; align-items: start; }
+@container fr (max-width: 760px) { .gm-main { grid-template-columns: 1fr; } }
+.gm-bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-bottom: 8px; background: var(--word); border-radius: 8px; font-size: 15px; }
+.gm-bar span:first-child, .gm-bar span:last-child { font-size: 22px; line-height: 1; } .gm-bar span:last-child { margin-left: auto; }
+.gm-grid { display: grid; grid-template-columns: repeat(5, 1fr); aspect-ratio: 1; border: 3px solid var(--ink); outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 3px; background: var(--cell-line); gap: 1px; }
+.gm-cell { position: relative; background: var(--cell); } .gm-cell.blk { background: var(--block); } .gm-cell.wd { background: var(--word); } .gm-cell.sel { background: var(--sel); }
+.gm-cell i { position: absolute; top: 2px; left: 5px; font: 700 clamp(13px, 2.2vw, 20px) var(--font); font-style: normal; color: var(--mute); } .gm-cell.sel i { color: var(--ink); }
+.gm-clues { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@container fr (max-width: 760px) { .gm-clues { grid-template-columns: 1fr; } }
+.gm-clues h3 { margin: 0 0 14px; font: 700 14px var(--font); letter-spacing: .1em; text-transform: uppercase; }
+.gm-clues ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gm-clues li { padding: 10px 12px; border-radius: 8px; font-size: 15px; line-height: 1.35; } .gm-clues li.act { background: var(--word); }
+.gm-foot { display: flex; justify-content: space-between; align-items: center; padding: 8px 20px 20px; color: var(--mute); font-size: 12px; }
+.gm-help { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 20px var(--font); }
+.gm-info { gap: 8px 8px; padding: 10px 12px; }
+.gm-info .g-pill { min-height: 36px; padding: 0 12px; font-size: 13px; }
+.gm-size { padding: 8px 10px; font-size: 12px; }
+.gm-info .gm-div { height: 20px; }
+.gm-info { gap: 6px; padding: 8px 10px; }
+.gm-info .g-pill { padding: 0 10px; font-size: 12px; min-height: 34px; }
+.gm-ic { width: 32px; height: 32px; }
+.gm-date { font-size: 13px; }
+.gm-size { padding: 7px 8px; }
+.gm-clock { gap: 4px; }
+.gm-info .btn.small { padding: 0 10px; font-size: 12px; }
+.gm-info .btn.icon.small { padding: 0; width: 32px; min-height: 32px; }
+.gm-clues li.act { background: var(--sel); color: var(--sel-ink); font-weight: 700; }
+
+/* seleção: interruptor, caixa, opção, contador, menu */
+.tgl { width: 46px; height: 28px; flex: none; border: 2px solid var(--edge); border-radius: 999px; background: var(--control); position: relative; cursor: pointer; padding: 0; transition: background-color 120ms; }
+.tgl::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); transition: transform 120ms; }
+.tgl[aria-checked="true"] { background: var(--sel); } .tgl[aria-checked="true"]::after { transform: translateX(18px); background: #1c1f24; }
+.tgl:focus-visible, input.ctl:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.tgl[disabled] { opacity: .55; cursor: not-allowed; }
+input.ctl { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; flex: none; margin: 0; border: 2px solid var(--edge); background: var(--surface); cursor: pointer; display: inline-grid; place-content: center; }
+input.ctl[type="checkbox"] { border-radius: 5px; }
+input.ctl[type="checkbox"]:checked { background: var(--sel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1f24' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / 80% no-repeat; }
+input.ctl[type="radio"] { border-radius: 50%; }
+input.ctl[type="radio"]:checked { background: radial-gradient(circle, #1c1f24 0 4.5px, var(--sel) 5.5px); }
+input.ctl[disabled] { opacity: .55; cursor: not-allowed; }
+.pick { display: inline-flex; align-items: center; gap: 10px; min-height: 40px; font: 500 15px var(--font); cursor: pointer; }
+.srow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.srow .t { font: 700 15px var(--font); } .srow .h { display: block; margin-top: 2px; font: 400 13px/1.4 var(--font); color: var(--mute); max-width: 46ch; }
+.stepper { display: inline-flex; align-items: center; gap: 8px; }
+.stepper output { min-width: 5.5ch; text-align: center; font: 700 15px var(--mono); }
+.menu { min-width: 250px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); padding: 6px; display: grid; gap: 2px; text-align: left; }
+.menu .mi { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px 0 8px; border-radius: 6px; font: 500 14px var(--font); color: var(--ink); background: transparent; border: 0; cursor: pointer; text-align: left; }
+.menu .mi:hover, .menu .mi.hov { background: var(--pill); }
+.menu .mi[disabled] { opacity: .5; cursor: not-allowed; }
+.menu .mi .ck { width: 20px; height: 20px; display: inline-grid; place-items: center; border: 2px solid var(--edge); border-radius: 5px; flex: none; font-size: 0; }
+.menu .mi[aria-checked="true"] .ck { background: var(--sel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1f24' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / 80% no-repeat; }
+.menu .mi:not([role="menuitemcheckbox"]) { padding-left: 38px; }
+.menu .mg { padding: 10px 10px 2px 38px; font: 700 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+.stage { position: relative; }
+.scrim { position: absolute; inset: 0; background: rgba(8, 9, 11, .55); overflow: auto; padding: 16px; display: grid; justify-items: center; align-content: start; }
+.dlg-wide { width: min(560px, 100%); max-width: none; gap: 16px; }
+.dlg-wide .dh { display: flex; justify-content: space-between; align-items: center; }
+.dlg-wide hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+.dlg-wide h4 { margin: 0 0 6px; font: 700 12px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.dlg-wide .grp2 { display: grid; gap: 8px; }
+.menuhost { position: relative; display: inline-block; }
+.menuhost .menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 6; }
+.selbtn { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px 0 12px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: 700 12px var(--font); cursor: pointer; }
+.selbtn:hover { background: var(--pill); }
+.selbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.selbtn[aria-expanded="true"] { background: var(--pill); }
+
+/* balão (tooltip) */
+.tip { position: fixed; z-index: 50; max-width: 260px; padding: 6px 10px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: 700 12px/1.3 var(--font); pointer-events: none; white-space: nowrap; box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 18%, transparent); }
+.tip.static { position: relative; display: inline-block; }
+.tip::after { content: ''; position: absolute; left: var(--ax, 50%); width: 8px; height: 8px; background: var(--surface); border: 2px solid var(--edge); transform: translateX(-50%) rotate(45deg); }
+.tip.above::after { bottom: -6px; border-top: 0; border-left: 0; }
+.tip.below::after { top: -6px; border-bottom: 0; border-right: 0; }
+.tip.msg { white-space: normal; max-width: 300px; font-weight: 500; font-size: 14px; line-height: 1.4; padding: 8px 12px; }
+.tip.static.msg { text-align: left; }
+.tip.static.below::after { left: 24px; }
+.tipdemo { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.tip.static.above { margin-bottom: 0; } .tip.static.below { margin-top: 0; }
+
+/* tela de espera */
+.wait { display: grid; justify-items: center; gap: 20px; max-width: 560px; margin: 28px auto; padding: 16px; text-align: center; }
+.wcells { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.wcells span { position: relative; display: grid; place-items: center; width: 44px; height: 52px; border: 2px solid var(--edge); border-radius: 6px; background: var(--surface); color: var(--ink); box-shadow: 2px 2px 0 var(--edge); font: 700 26px/1 var(--display); animation: wave 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * .12s); }
+.wcells small { position: absolute; top: 2px; left: 4px; color: var(--mute); font: 600 9px var(--font); }
+@keyframes wave { 0%, 55%, 100% { transform: translateY(0); } 20% { transform: translateY(-8px); background: var(--sel); color: var(--sel-ink); } }
+.wait h1, .wait p.wt { margin: 0; font: 600 clamp(22px, 5vw, 30px)/1.15 var(--display); }
+.wait .extra { display: grid; justify-items: center; gap: 14px; width: 100%; transition: opacity 350ms; }
+.wait .extra[data-show="false"] { opacity: 0; visibility: hidden; }
+.wait .notice { text-align: left; max-width: 460px; }
+.wait .bar2 { width: min(320px, 100%); height: 8px; border: 1px solid var(--edge); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.wait .bar2 i { display: block; height: 100%; width: 40%; border-radius: inherit; background: var(--sel); animation: slide 1.6s ease-in-out infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.wait .counter { margin: 0; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--mute); font: 400 14px var(--font); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .wait .wcells span, .wait .bar2 i { animation: none; } .wait .bar2 i { width: 100%; opacity: .5; } }
+@container fr (max-width: 480px) { .wait .wcells span { width: 32px; height: 40px; font-size: 20px; } }
+.waits { display: grid; gap: 14px; }
+.waits .wrow { display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.waits .wrow:last-child { border: 0; padding: 0; }
+.waits .wcells { justify-content: flex-start; } .waits .wcells span { position: relative; width: 26px; height: 32px; font-size: 15px; animation: none; box-shadow: 1px 1px 0 var(--edge); border-radius: 4px; }
+
+/* administração */
+.admlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.admrow { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 12px; padding: 8px 12px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); }
+.admrow.hid { border-color: var(--line); }
+.admrow .pos { color: var(--mute); font: 700 15px var(--mono); }
+.admrow label { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.admrow .nm { font: 800 17px var(--display); } .admrow.hid .nm { color: var(--mute); }
+.admrow .st { min-width: 72px; color: var(--mute); font-size: 13px; }
+.admrow .mv { display: flex; gap: 4px; }
+.admrow .mv .btn { font: 700 18px/1 var(--font); color: var(--ink); }
+.btn.primary.icon { background: var(--sel); border-color: var(--sel); }
+.btn.secondary.icon { background: var(--control); border-color: var(--control-line); }
+.btn.primary.icon[disabled] { opacity: .55; }
+.toc .cnt { margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--pill); font: 700 11px/18px var(--font); text-align: center; }
+.shots .toc a { justify-content: space-between; }
+.shots .toc a[aria-current="page"] .cnt { background: #ffffff99; }
+
+.status.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface)); }
+.strow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font: 700 16px var(--font); }
+.strow:last-child { border: 0; padding-bottom: 0; } .strow:first-child { padding-top: 0; }
+.status .spin { width: 10px; height: 10px; border-width: 2px; }
+.wcells.still span { animation: none; }
+.errbox { max-width: 420px; margin: 24px auto; display: grid; gap: 14px; justify-items: center; text-align: center; }
+.errbox h1 { margin: 0; } .errbox p { margin: 0; color: var(--mute); }
+
+/* diálogos, avisos e peças do jogo */
+.notice .btn { margin-left: auto; flex: none; }
+.dialog .dh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.dialog .dh .btn { margin: -10px -12px 0 0; flex: none; }
+.dialog .dh .btn.icon { width: 44px; min-height: 44px; border-radius: var(--r-md); font-size: 24px; }
+.dialog .stack { display: grid; gap: 8px; }
+.dialog .stack .btn { width: 100%; }
+.dlg-stats { display: grid; margin: 0; }
+.dlg-stats div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.dlg-stats dt { color: var(--mute); font-size: 14px; }
+.dlg-stats dd { margin: 0; display: flex; align-items: center; gap: 8px; font: 800 20px var(--display); font-variant-numeric: tabular-nums; }
+.dlist { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.55; }
+.dwarn { color: var(--bad) !important; font-weight: 700; }
+.kk { display: inline-block; min-width: 28px; padding: 2px 8px; border: 2px solid var(--edge); border-radius: 5px; background: var(--control); font: 700 12px var(--mono); text-align: center; }
+.scg h4 { margin: 10px 0 2px; font: 700 12px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+.scr { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 0; font-size: 14px; border-bottom: 1px solid var(--line); }
+.scr .ks { display: flex; gap: 4px; flex: none; }
+.scrim { display: flex; }
+.scrim > .dialog { margin: auto; }
+.scrim.bottom { padding: 0; }
+.scrim.bottom > .dialog { margin: auto 0 0; }
+.scrim.bottom .dialog { width: 100%; max-width: none; border-radius: var(--r-md) var(--r-md) 0 0; border-bottom: 0; }
+.cover { aspect-ratio: 1; border: 3px solid var(--ink); border-radius: 3px; background: var(--surface); display: grid; place-content: center; justify-items: center; gap: 14px; }
+.cover p { margin: 0; font: 800 24px var(--display); }
+.readbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 16px; background: var(--ok-tint); border-bottom: 2px solid var(--ok); color: var(--ink); }
+.readbar b { color: var(--ok); font-size: 15px; }
+.readbar .sp { flex: 1; }
+.osk { display: grid; gap: 6px; padding: 10px 8px 14px; border-top: 2px solid var(--edge); background: var(--surface); }
+.osk .r { display: flex; justify-content: center; gap: 4px; }
+.osk button { flex: 1; max-width: 38px; min-height: 46px; border: 2px solid var(--edge); border-radius: 6px; background: var(--control); color: var(--ink); font: 700 16px var(--font); cursor: pointer; }
+.osk button.w { max-width: 64px; font-size: 13px; }
+.legpanel { display: inline-grid; gap: 6px; padding: 10px 12px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 18%, transparent); font-size: 14px; }
+.legpanel i { display: inline-block; width: 18px; height: 18px; margin-right: 8px; vertical-align: -4px; border: 1px solid var(--cell-line); background: var(--cell); }
+.captchabox { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 300px; min-height: 65px; padding: 0 14px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); font-size: 14px; }
+.captchabox .ck2 { width: 24px; height: 24px; border: 2px solid var(--edge); border-radius: 4px; flex: none; }
+.grip { width: 10px; height: 44px; border: 2px solid var(--edge); border-radius: 999px; background: var(--control); cursor: ew-resize; }
+.frame-h .menubtn { display: none; }
+@container fr (max-width: 560px) { .frame-h nav { display: none; } .frame-h .menubtn { display: inline-flex; } .frame-h .brand { margin-right: 0; } .frame-h { padding: 0 12px; } .frame-b { padding-inline: 12px; } }
+.menu.sheet { width: 100%; padding: 8px 8px 16px; }
+.menu.sheet .mi { min-height: 48px; padding-left: 12px; font-size: 15px; text-decoration: none; }
+.menu .mi[aria-current="page"] { background: var(--sel); color: var(--sel-ink); }
+.scrim.bottom > .menu { margin: auto 0 0; border-radius: var(--r-md) var(--r-md) 0 0; border-bottom: 0; }
+#screens .frame { max-width: var(--vw, none); margin-inline: auto; width: 100%; }
+.vp { position: sticky; top: 56px; z-index: 3; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; background: var(--bg); }
+.cindex { position: fixed; top: 76px; left: max(20px, calc((100vw - 1240px) / 2 + 20px)); width: 210px; max-height: calc(100vh - 96px); overflow: auto; display: flex; flex-direction: column; gap: 2px; padding: 8px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); z-index: 4; }
+.cindex .cap { margin: 4px 8px 6px; }
+.cindex a { padding: 8px 10px; border-radius: 6px; color: var(--ink); font: 700 13px var(--font); text-decoration: none; }
+.cindex a:hover { background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay)); }
+.cindex a[aria-current] { background: var(--sel); color: var(--sel-ink); }
+.wrap.idx > section { margin-left: 238px; scroll-margin-top: 70px; }
+@media (max-width: 900px) { .cindex { position: static; width: auto; max-height: none; flex-direction: row; flex-wrap: wrap; margin: 20px 20px 0; } .wrap.idx > section { margin-left: 0; } }
+.ty-display { font: 800 clamp(30px, 4.4vw, 46px)/1.05 var(--display); }
+.ty-page { font: 800 28px/1.1 var(--display); }
+.ty-section { font: 800 19px/1.2 var(--display); }
+.ty-block { font: 800 17px/1.2 var(--display); }
+.ty-lede { font: 400 15px/1.5 var(--font); color: var(--mute); }
+.ty-support { font: 400 14px/1.5 var(--font); color: var(--mute); }
+.ty-label { font: 700 13px var(--font); }
+.ty-hint { font: 400 12px var(--font); color: var(--mute); }
+.ty-kicker { font: 700 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.ty-stat { font: 800 26px var(--display); font-variant-numeric: tabular-nums; }
+.ty-code { font: 700 24px var(--mono); letter-spacing: .12em; }
+.ty-mono { font: 700 15px var(--mono); }
+.lbl.ttl { font: 800 17px var(--display); }
+.copyrow.join .field { font-family: var(--font); font-size: 15px; }
+.day.picked { border-color: var(--edge); background: var(--word); }
+.dgal { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 22px; align-items: start; }
+.dgal .dialog { max-width: none; }
+.dgal figcaption { margin: 0 0 6px; font: 500 12px var(--mono); color: var(--mute); }
+.dgal figure { margin: 0; }
+</style>
+</head>
+<body>
+<div class="ds" id="ds" data-mode="light">
+  <header class="top">
+    <b>Cruzadinha</b><span style="color:var(--mute);font-size:14px">Design system</span>
+    <nav class="ptabs" role="tablist" id="ptabs" aria-label="Páginas"></nav><span class="sp"></span>
+    <button class="btn quiet small" type="button" id="toggle" aria-pressed="false">Tema: claro</button>
+  </header>
+
+  <div class="wrap">
+    <div class="intro">
+      <h1>Componentes da Cruzadinha no estilo da landing</h1>
+      <p>Mesmas cores e mesmo layout do site. Muda a forma dos componentes: contorno de 2px, títulos em Fraunces, botões simples. Abaixo estão todas as telas do site com esses componentes. Use o botão do topo para ver nos dois temas.</p>
+    </div>
+
+    <section>
+      <h2>Cores</h2>
+      <p class="lead">Os tokens atuais de <code>light.css</code> e <code>dark.css</code>, sem valor novo. <code>--edge</code> (contorno) e <code>--focus</code> são do design system e derivam de <code>--ink</code> e <code>--accent</code>; no escuro o contorno fica mais claro para continuar visível.</p>
+      <div class="box"><div class="sw" id="sw"></div></div>
+    </section>
+
+    <section>
+      <h2>Tipografia</h2>
+      <p class="lead">Fraunces nos títulos, Roboto no texto, Roboto Mono em números e códigos. Já estão no projeto. A escala abaixo é a que as telas usam; nelas, h1, h2 e h3 já seguem Página, Seção e Bloco.</p>
+      <div class="box type">
+        <div><code>Display 30–46 / 800</code><span class="ty-display">Sua cruzada espera</span></div>
+        <div><code>Página 28 / 800</code><span class="ty-page">Estatísticas</span></div>
+        <div><code>Seção 19 / 800</code><span class="ty-section">Por fonte</span></div>
+        <div><code>Bloco 17 / 800</code><span class="ty-block">1. Escolha a cruzada</span></div>
+        <div><code>Introdução 15 / 400</code><span class="ty-lede">Continue de onde parou, em qualquer aparelho.</span></div>
+        <div><code>Apoio 14 / 400</code><span class="ty-support">Seu progresso fica guardado neste aparelho.</span></div>
+        <div><code>Rótulo 13 / 700</code><span class="ty-label">E-mail</span></div>
+        <div><code>Dica 12 / 400</code><span class="ty-hint">No mínimo 8 caracteres.</span></div>
+        <div><code>Chamada 12 / 700 mono</code><span class="ty-kicker">Como funciona</span></div>
+        <div><code>Resumo 26 / 800</code><span class="ty-stat">12:41</span></div>
+        <div><code>Código 24 / 700 mono</code><span class="ty-code">K7P2M9XQ</span></div>
+        <div><code>Número 15 / 700 mono</code><span class="ty-mono">04:37 · 12/30 · (7)</span></div>
+        <div><code>Link 15 / 700</code><span><a class="lnk" href="#ds">Esqueci a senha</a></span></div>
+        
+        
+        
+        
+      </div>
+    </section>
+
+    <section>
+      <h2>Forma e tamanho</h2>
+      <p class="lead">Raios, contorno e a área mínima de toque.</p>
+      <div class="box">
+        <div><p class="cap">Raio</p><div class="row" style="gap:20px"><div style="width:96px;height:64px;border:2px solid var(--edge);border-radius:var(--r-sm);display:grid;place-items:center;font:700 12px var(--mono)">6 px</div><div style="width:96px;height:64px;border:2px solid var(--edge);border-radius:var(--r-md);display:grid;place-items:center;font:700 12px var(--mono)">10 px</div><div style="width:96px;height:64px;border:2px solid var(--edge);border-radius:var(--r-lg);display:grid;place-items:center;font:700 12px var(--mono)">16 px</div><div style="width:96px;height:64px;border:2px solid var(--edge);border-radius:999px;display:grid;place-items:center;font:700 12px var(--mono)">pilula</div></div></div>
+        <div><p class="cap">Contorno</p><div class="row" style="gap:20px"><div style="width:150px;height:56px;border:2px solid var(--edge);border-radius:var(--r-sm);display:grid;place-items:center;font-size:13px">2px, ação e painel</div><div style="width:150px;height:56px;border:1px solid var(--line);border-radius:var(--r-sm);display:grid;place-items:center;font-size:13px">1px, divisão</div><div style="width:150px;height:56px;border:2px dashed var(--edge);border-radius:var(--r-sm);display:grid;place-items:center;font-size:13px">tracejado, código</div></div></div>
+        <ul class="spec"><li><b>toque</b> 44 px de altura mínima (36 px nos botões pequenos), 40 px nas linhas de escolha</li><li><b>espaçamento</b> degraus de 4, 8, 12, 16, 24 e 40 px</li><li><b>raio</b> 6 px em campos e cartões, 10 px em botões e diálogos, 16 px só em folhas e capas</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Sombra e movimento</h2>
+      <p class="lead">Sombra quase nunca: só onde algo flutua ou faz parte do desenho da landing.</p>
+      <div class="box">
+        <div class="row" style="gap:28px;align-items:stretch">
+          <div class="panel" style="min-width:200px"><b>Sem sombra</b><span class="alt">botões, cartões, diálogos</span></div>
+          <div class="panel" style="min-width:200px;box-shadow:6px 6px 0 var(--ink)"><b>Dura</b><span class="alt">cartão das telas de entrada e peças da cruzada de enfeite</span></div>
+          <div class="panel" style="min-width:200px;box-shadow:0 6px 18px color-mix(in srgb, var(--ink) 18%, transparent)"><b>Suave</b><span class="alt">balão e legenda, o que flutua sobre a tela</span></div>
+        </div>
+        <ul class="spec"><li><b>botão, interruptor</b> 120 ms</li><li><b>link</b> sublinhado em 280 ms</li><li><b>balão</b> espera 300 ms do mouse antes de aparecer</li><li><b>espera</b> onda de 2,4 s; aviso por opacidade em 350 ms</li><li><b>movimento reduzido</b> tudo vale sem animação</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ícones</h2>
+      <p class="lead">Traço simples, sem preenchimento, na cor do texto. Botão de ícone sempre leva nome acessível e, quando só tem ícone, o balão.</p>
+      <div class="box"><div class="row" id="icons" style="gap:22px"></div>
+        <ul class="spec"><li><b>tamanho</b> 20 px em botões de ícone pequenos e barra do jogo, 22 px na engrenagem, 18 px ao lado de texto</li><li><b>traço</b> 1,8 a 2 px, pontas e cantos arredondados</li><li><b>grade</b> 24 × 24</li></ul></div>
+    </section>
+
+    <section>
+      <h2>Pontos de quebra</h2>
+      <p class="lead">As larguras em que o site muda de forma hoje. Servem de base para o seletor de largura da aba Telas.</p>
+      <div class="box"><table class="t"><thead><tr><th scope="col">Largura</th><th scope="col">O que muda</th></tr></thead><tbody>
+        <tr><th scope="row">até 480 px</th><td style="text-align:left">casas da tela de espera encolhem</td></tr>
+        <tr><th scope="row">até 560 px</th><td style="text-align:left">cabeçalho: links vão para o botão de menu</td></tr>
+        <tr><th scope="row">até 599 px</th><td style="text-align:left">abas de fonte dividem a largura numa linha</td></tr>
+        <tr><th scope="row">até 720 px</th><td style="text-align:left">faixa de ferramentas do jogo</td></tr>
+        <tr><th scope="row">até 760 px</th><td style="text-align:left">telas divididas, jogo e cruzada de teste empilham</td></tr>
+        <tr><th scope="row">até 860 px</th><td style="text-align:left">jogo sem layout de computador, dicas em folha; calendário e biblioteca</td></tr>
+        <tr><th scope="row">até 820 px</th><td style="text-align:left">seções da landing</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section>
+      <h2>Botão</h2>
+      <p class="lead">Quatro tipos: primário amarelo, secundário, discreto e ícone. Sem sombra e sem movimento; mouse e clique só escurecem a face.</p>
+      <div class="box">
+        <div><p class="cap">Tipos</p><div class="row">
+          <button class="btn primary" type="button">Jogar</button>
+          <button class="btn secondary" type="button">Voltar</button>
+          <button class="btn quiet" type="button">Cancelar</button>
+          <button class="btn icon" type="button" aria-label="Alternar tema"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
+        </div></div>
+        <div><p class="cap">Estados do primário</p><div class="row">
+          <button class="btn primary" type="button">Padrão</button>
+          <button class="btn primary hover" type="button">Mouse por cima</button>
+          <button class="btn primary press" type="button">Pressionado</button>
+          <button class="btn primary focus" type="button">Foco</button>
+          <button class="btn primary" type="button" disabled>Desativado</button>
+          <button class="btn primary" type="button" aria-busy="true"><span class="spin"></span>Entrando</button>
+        </div></div>
+        <div><p class="cap">Tamanhos</p><div class="row">
+          <button class="btn primary small" type="button">Pequeno</button>
+          <button class="btn primary" type="button">Padrão</button>
+          <button class="btn quiet small" type="button">Estatísticas</button>
+          <button class="btn quiet small" type="button">x1 <span class="badge">2</span></button>
+        </div></div>
+        <ul class="spec"><li><b>altura</b> 44 px (36 px pequeno)</li><li><b>raio</b> 10px (6px pequeno)</li><li><b>borda</b> 1px</li><li><b>mouse / clique</b> escurece a face, sem movimento</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Link</h2>
+      <p class="lead">Link de texto: sem sublinhado em repouso; ao passar o mouse, um sublinhado amarelo corre da esquerda para a direita. Link com cara de botão usa o componente Botão.</p>
+      <div class="box">
+        <div><p class="cap">Estados</p><div class="row" style="gap:28px">
+          <a class="lnk" href="#ds">Esqueci a senha</a>
+          <a class="lnk hover" href="#ds">Mouse por cima</a>
+          <a class="lnk" href="#ds" style="outline:3px solid var(--focus);outline-offset:3px;border-radius:2px">Foco</a>
+        </div></div>
+        <div><p class="cap">Dentro de um texto</p><p class="alt" style="max-width:56ch;line-height:1.7">Ainda não tem conta? <a class="lnk" href="#ds">Criar conta</a> para guardar o progresso, ou <a class="lnk" href="#ds">jogar sem entrar</a> e continuar neste aparelho, sem pressa e sem cadastro.</p></div>
+        <ul class="spec"><li><b>cor</b> a do texto, nunca azul</li><li><b>repouso</b> sem sublinhado, em negrito (700) para se distinguir do texto</li><li><b>mouse</b> sublinhado amarelo de 3px, 280 ms, da esquerda para a direita; só com ponteiro que passa por cima</li><li><b>clique</b> o sublinhado engrossa para 5px</li><li><b>foco</b> contorno de 3px</li><li><b>movimento reduzido</b> a faixa aparece sem animar</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Aba de fonte</h2>
+      <p class="lead">Escolhe entre O Globo, Cruzada Online, Cruzadas Brasil e Cruzadas Clube. As abas ficam coladas no painel que controlam, como parte dele.</p>
+      <div class="box"><div><div class="row tabs-attached" role="tablist" id="tabs"></div><div class="panel"><p class="alt">Conteúdo da fonte selecionada: calendário, filtros e dias.</p></div></div>
+        <div><p class="cap">Botão do filtro de data, fechado, com o mouse por cima e aberto</p><div class="row" style="gap:28px;align-items:flex-start;min-height:250px"><button class="btn icon" type="button" aria-label="Ir para uma data" aria-expanded="false" style="width:46px;height:46px;padding:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button><button class="btn icon hover" type="button" aria-label="Ir para uma data" aria-expanded="false" style="width:46px;height:46px;padding:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button><span style="position:relative;flex:none;margin-left:auto"><button class="btn icon hover" type="button" aria-label="Ir para uma data" aria-expanded="true" style="width:46px;height:46px;padding:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button><div role="group" aria-label="Ir para uma data" style="position:absolute;top:calc(100% + 6px);right:0;z-index:5;display:grid;gap:8px;min-width:300px;padding:12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);box-shadow:0 8px 28px rgb(0 0 0 / .25)"><label class="lbl">Mês<select class="field"><option>novembro de 2026</option></select></label><label class="lbl">Data<input class="field err" type="date" value="2026-12-25"></label><p class="bad" role="alert" style="min-height:2.8em;margin:0;font-size:13px">Esta data ainda não chegou. Use uma data de 04/11/2025 a hoje.</p></div></span></div></div>
+        <ul class="spec"><li><b>filtro de data</b> botão só de ícone, 46 × 46 px, na ponta direita da linha das abas; nome acessível "Ir para uma data"</li><li><b>painel</b> flutua abaixo do botão, alinhado à direita, mínimo de 300 px, contorno de 1px, sombra suave; nunca empurra a página e se desloca para caber na janela</li><li><b>campos</b> Mês e Data com 44 px; o erro tem altura fixa (2,8 linhas), então aparecer ou sumir não muda o painel</li><li><b>teclado</b> abre com o foco em Mês; Esc fecha só o painel e devolve o foco ao botão</li><li><b>fecha</b> com Esc, com um toque fora ou ao clicar no botão de novo; ao fechar, o erro some</li></ul>
+        <ul class="spec"><li><b>contorno</b> 2px escuro, o mesmo do painel</li><li><b>topo</b> arredondado (10px)</li><li><b>ativa</b> fundo do painel, sem linha entre os dois, faixa amarela no topo</li><li><b>inativas</b> fundo cinza, um pouco mais baixas</li><li><b>celular</b> todas na mesma linha, sem quebrar; o que não cabe rola para o lado, sem barra, e a última aba aparece cortada para avisar. O botão de data fica fixo à direita</li></ul></div>
+    </section>
+
+    <section>
+      <h2>Filtro</h2>
+      <p class="lead">Todas, Em andamento, Concluídas. Um por vez.</p>
+      <div class="box"><div class="row" role="group" id="chips"></div></div>
+    </section>
+
+    <section>
+      <h2>Cartão e status</h2>
+      <p class="lead">Cartão de "Hoje" com contorno escuro por ser a ação principal da tela. O cartão plano serve para listas.</p>
+      <div class="box">
+        <div class="row" style="align-items:stretch">
+          <div class="card"><b>O Globo</b><span>3 de novembro</span><div class="row"><span class="status warn">Em andamento</span><a class="btn primary small" href="#ds">Continuar</a></div></div>
+          <div class="card"><b>Cruzada Online</b><span>3 de novembro</span><div class="row"><span class="status ok">✓ Concluída</span><a class="btn quiet small" href="#ds">Ver</a></div></div>
+          <div class="card flat"><b>Clube</b><span>Sem cruzada hoje</span><div class="row"><span class="status none">Indisponível</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Campos</h2>
+      <p class="lead">Seletor de mês e data do "Pular para uma data".</p>
+      <div class="box"><div class="row" style="align-items:flex-start">
+        <label class="lbl" for="f1">Mês<select class="field" id="f1"><option>Novembro 2026</option><option>Outubro 2026</option></select></label>
+        <label class="lbl" for="f2">Data<input class="field" id="f2" type="date" value="2026-11-03"><small>Entre 04/11/2025 e hoje</small></label>
+        <label class="lbl" for="f3">Data com erro<input class="field err" id="f3" type="date" value="2026-12-25" aria-describedby="e3"><small class="bad" id="e3">Essa data ainda não chegou. Escolha até hoje.</small></label>
+      </div></div>
+    </section>
+
+    <section>
+      <h2>Dia do calendário</h2>
+      <p class="lead">O estado aparece em cor, em texto e em borda, nunca só em cor.</p>
+      <div class="box"><div class="days">
+        <button class="day" type="button"><span>1</span><small>Disponível</small></button>
+        <button class="day done" type="button"><span>2</span><small>✓ Feita</small></button>
+        <button class="day prog today" type="button"><span>3</span><small>Em andamento</small></button>
+        <button class="day off" type="button" disabled><span>4</span><small>Em breve</small></button>
+        <button class="day picked" type="button"><span>5</span><small>Escolhida</small></button>
+      </div></div>
+    </section>
+
+    <section>
+      <h2>Aviso</h2>
+      <p class="lead">Avisos que não bloqueiam o jogo.</p>
+      <div class="box">
+        <div class="notice info" role="status"><b>i</b><span>A tela precisa de conexão para carregar a cruzada de hoje.</span></div>
+        <div class="notice ok" role="status"><b>✓</b><span>Progresso salvo neste aparelho.</span></div>
+        <div class="notice warn" role="status"><b>!</b><span>O servidor está acordando. Pode levar até 30 segundos.</span></div>
+        <div class="notice bad" role="alert"><b>×</b><span>Não deu para salvar. Vamos tentar de novo.</span></div>
+      </div>
+    </section>
+
+
+    <section>
+      <h2>Interruptor, caixa e opção</h2>
+      <p class="lead">Usados nas Configurações. Contorno de 2px, marcado em amarelo, sempre com o texto ao lado.</p>
+      <div class="box">
+        <div><p class="cap">Interruptor</p><div class="row">
+          <div class="srow" style="gap:12px"><button class="tgl" role="switch" aria-checked="false" aria-label="Desligado" type="button"></button><span>Desligado</span></div>
+          <div class="srow" style="gap:12px"><button class="tgl" role="switch" aria-checked="true" aria-label="Ligado" type="button"></button><span>Ligado</span></div>
+          <div class="srow" style="gap:12px"><button class="tgl" role="switch" aria-checked="true" aria-label="Desativado" type="button" disabled></button><span>Desativado</span></div>
+        </div></div>
+        <div><p class="cap">Caixa de seleção</p><div class="row">
+          <label class="pick"><input class="ctl" type="checkbox">Sem limite</label>
+          <label class="pick"><input class="ctl" type="checkbox" checked>Sem limite</label>
+          <label class="pick"><input class="ctl" type="checkbox" disabled>Desativada</label>
+        </div></div>
+        <div><p class="cap">Opção (uma só)</p><div class="row">
+          <label class="pick"><input class="ctl" type="radio" name="o1" checked>O Globo</label>
+          <label class="pick"><input class="ctl" type="radio" name="o1">Cruzada Online</label>
+          <label class="pick"><input class="ctl" type="radio" name="o1">Cruzadas Brasil</label>
+        </div></div>
+        <ul class="spec"><li><b>interruptor</b> 46 × 28, trilho de 2px, bolinha desliza</li><li><b>caixa e opção</b> 22 px, marcada em amarelo com marca escura</li><li><b>área de toque</b> a linha toda, mínimo 40 px</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Contador</h2>
+      <p class="lead">Limite de ajudas: menos, valor e mais, com "Sem limite" ao lado.</p>
+      <div class="box"><div class="row" style="gap:28px">
+        <div class="stepper"><button class="btn secondary icon small" type="button" aria-label="Menos letras">−</button><output>4</output><button class="btn secondary icon small" type="button" aria-label="Mais letras">+</button></div>
+        <div class="stepper"><button class="btn secondary icon small" type="button" disabled aria-label="Menos">−</button><output>Sem limite</output><button class="btn secondary icon small" type="button" disabled aria-label="Mais">+</button></div>
+      </div></div>
+    </section>
+
+    <section>
+      <h2>Menu</h2>
+      <p class="lead">O menu "Ajudas" do jogo: ação, itens de marcar e grupos. Contorno de 2px, sem sombra.</p>
+      <div class="box"><div class="row" style="align-items:flex-start;gap:28px">
+        <div class="menu" role="menu"><button class="mi" role="menuitem" type="button">Verificar</button><hr><div class="mg">Automática</div><button class="mi" role="menuitemcheckbox" aria-checked="true" type="button"><span class="ck"></span>Verificar ao digitar</button><hr><div class="mg">Rascunho</div><button class="mi" role="menuitemcheckbox" aria-checked="false" type="button"><span class="ck"></span>Lápis</button><button class="mi hov" role="menuitem" type="button">Confirmar rascunho</button><button class="mi" role="menuitem" type="button" disabled>Descartar rascunho</button></div>
+        <ul class="spec"><li><b>item</b> 40 px (48 px no celular, em folha)</li><li><b>mouse</b> fundo cinza</li><li><b>marcado</b> caixa amarela à esquerda</li><li><b>grupo</b> título pequeno em caixa alta</li></ul>
+      </div></div>
+    </section>
+
+    <section>
+      <h2>Balão</h2>
+      <p class="lead">Um só balão para o site todo, em duas formas: o nome de um botão de ícone e o aviso de espera. Passe o mouse nos ícones da página para ver a primeira.</p>
+      <div class="box"><div class="row" style="gap:48px;align-items:flex-end">
+        <div class="tipdemo"><span class="tip static above" style="--ax:50%">Imprimir</span><button class="btn quiet icon" type="button" aria-label="Imprimir">🖶</button><span class="cap" style="margin:0">em cima (padrão)</span></div>
+        <div class="tipdemo"><button class="btn quiet icon" type="button" aria-label="Configurações">⚙</button><span class="tip static below">Configurações</span><span class="cap" style="margin:0">embaixo (sem espaço em cima)</span></div>
+        <div class="tipdemo" style="align-items:flex-start"><button class="btn primary" type="button" aria-busy="true">Abrindo…</button><span class="tip static below msg" role="status">O servidor tirou uma soneca. Já estamos acordando ele, pode levar até um minuto.</span><span class="cap" style="margin:0">aviso de espera (landing, "Jogar")</span></div>
+        <ul class="spec"><li><b>contorno</b> 2px, fundo do painel, seta apontando para o botão</li><li><b>nome de botão</b> 12 px, negrito, uma linha, ao passar o mouse ou focar</li><li><b>aviso de espera</b> 14 px, até 300 px, várias linhas, nasce 2 s depois do clique e fica até a tela abrir</li><li><b>não</b> leva botão nem link</li><li><b>quem usa</b> botões só com ícone (nome) e links de espera (aviso)</li></ul>
+      </div></div>
+    </section>
+
+    <section>
+      <h2>Tela de espera</h2>
+      <p class="lead">Uma só para o site inteiro. As casas acendem em onda, o título muda por tela e, depois de 2 s, o servidor "acordando" aparece no espaço que já estava reservado, então nada se mexe.</p>
+      <div class="box">
+        <div><p class="cap">Carregando (0 a 2 s)</p><div class="frame"><div class="frame-b" id="w1"></div></div></div>
+        <div><p class="cap">Acordando o servidor (depois de 2 s)</p><div class="frame"><div class="frame-b" id="w2"></div></div></div>
+        <div><p class="cap">Título e palavra de cada tela</p><div class="waits" id="w3"></div></div>
+        <div><p class="cap">Botão enviando, com o mesmo aviso depois de 2 s</p><div style="max-width:360px;display:grid;gap:10px"><button class="btn primary block" type="button" aria-busy="true"><span class="spin"></span>Entrando…</button><div class="notice warn" role="status"><b>!</b><span>O servidor tirou uma soneca. Já estamos acordando ele, pode levar até um minuto.</span></div></div></div>
+        <ul class="spec"><li><b>casas</b> 44 × 52, a primeira numerada, onda de 2,4 s (parada com movimento reduzido)</li><li><b>título</b> Fraunces 600, 30 px, fixo durante toda a espera</li><li><b>aviso</b> aparece depois de 2 s só com opacidade</li><li><b>barra e contador</b> "N s esperando"</li></ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tabela</h2>
+      <p class="lead">Estatísticas por fonte e resultado do x1. Contorno de 2px, títulos de coluna em cinza, números alinhados à direita.</p>
+      <div class="box"><table class="t"><thead><tr><th scope="col">Fonte</th><th scope="col">Concluídas</th><th scope="col">Tempo médio</th><th scope="col">Recorde</th></tr></thead><tbody><tr><th scope="row">O Globo</th><td>12</td><td>13:02</td><td>08:45</td></tr><tr><th scope="row">Cruzada Online</th><td>4</td><td>10:20</td><td>07:58</td></tr><tr><th scope="row">Cruzadas Brasil</th><td>0</td><td>—</td><td>—</td></tr></tbody></table>
+      <ul class="spec"><li><b>números</b> tabulares, à direita; sem valor, traço longo</li><li><b>primeira coluna</b> à esquerda, célula de título de linha</li></ul></div>
+    </section>
+
+    <section>
+      <h2>Resumo numérico</h2>
+      <p class="lead">Os números grandes de Estatísticas: rótulo pequeno e valor em Fraunces.</p>
+      <div class="box"><dl class="stat4"><div class="stat"><dt>Sequência atual</dt><dd>5 dias</dd></div><div class="stat"><dt>Maior sequência</dt><dd>12 dias</dd></div><div class="stat"><dt>Concluídas</dt><dd>18</dd></div><div class="stat"><dt>Tempo médio</dt><dd>12:41</dd></div></dl></div>
+    </section>
+
+    <section>
+      <h2>Lista de itens</h2>
+      <p class="lead">Lista de x1 ativos. O item que pede a sua ação leva contorno escuro; os outros, cinza. O estado vai em texto, com o chip de status.</p>
+      <div class="box"><ul class="duels"><li class="att"><span><b>O Globo, 03/11/2026</b> contra Beto</span><span class="status warn">Em andamento: falta você começar</span></li><li><span><b>Cruzada Online, 02/11/2026</b></span><span class="status none">Aguardando alguém aceitar</span></li><li><span><b>Cruzadas Clube, 30/10/2026</b> contra Carla</span><span class="status ok">Terminou: veja o resultado</span></li></ul></div>
+    </section>
+
+    <section>
+      <h2>Código e link</h2>
+      <p class="lead">Código do x1 em caixa tracejada, campo só de leitura com botão de copiar e campo com botão para entrar por código.</p>
+      <div class="box" style="max-width:560px">
+        <div><p class="cap">Código</p><div class="codebox">K7P2M9XQ</div></div>
+        <div><p class="cap">Link com copiar</p><div class="copyrow"><input class="field" readonly value="cruzadinha.app/x1/Zq83kLmP" aria-label="Link do convite"><button class="btn secondary" type="button">Copiar link</button></div></div>
+        <div><p class="cap">Campo com botão</p><div class="copyrow join"><input class="field" aria-label="Código ou link do x1"><button class="btn primary" type="button" disabled>Entrar</button></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Cabeçalho</h2>
+      <p class="lead">Marca à esquerda com os links, configurações e entrada à direita. Logado, o e-mail dá lugar ao círculo com as iniciais; o Sair fica em Sua conta.</p>
+      <div class="box" id="hd"></div>
+    </section>
+
+    <section>
+      <h2>Diálogos</h2>
+      <p class="lead">Todos os diálogos que o site abre, com contorno escuro de 2px e sem sombra. Botões na ordem: dispensar à esquerda, ação principal à direita.</p>
+      <div class="box"><div class="dgal" id="dlgs"></div></div>
+    </section>
+
+    <section>
+      <h2>Avisos do site</h2>
+      <p class="lead">Avisos que não bloqueiam, mensagem curta do jogo, estado de salvamento e verificação de segurança.</p>
+      <div class="box" id="avs"></div>
+    </section>
+
+    <section>
+      <h2>Peças do jogo</h2>
+      <p class="lead">Tudo ao redor do tabuleiro, que continua como está: pausa, modo leitura, teclado na tela, legenda e alça de tamanho.</p>
+      <div class="box" id="jg"></div>
+    </section>
+
+    <section>
+      <h2>Telas com os componentes</h2>
+      <p class="lead">Todas as telas do site hoje, com o mesmo layout e os componentes acima. Use os atalhos para pular entre elas. O jogo fica como está.</p>
+      <nav class="toc box" id="toc" aria-label="Telas"></nav>
+      <div style="display:grid;gap:36px;margin-top:20px" id="screens"></div>
+    </section>
+
+    <section>
+      <h2>Não muda</h2>
+      <div class="frozen"><b>Tela do jogo.</b> Tabuleiro, células, barra de dica, lista de dicas, barra de ferramentas (Letra, Palavra, Ajudas), teclado, diálogo de conclusão e impressão ficam exatamente como estão hoje. O mesmo vale para o layout das páginas. O cabeçalho é novo: links à esquerda, configurações e entrada (ou o círculo com as iniciais) à direita; o Sair fica em Sua conta.</div>
+    </section>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const tokens = [['--bg','Fundo'],['--surface','Superfície'],['--ink','Texto'],['--mute','Texto apoio'],['--line','Linha'],['--accent','Destaque'],['--sel','Amarelo'],['--word','Palavra atual'],['--ok','Sucesso'],['--warn','Aviso'],['--bad','Erro'],['--pill','Pílula'],['--control','Controle'],['--control-line','Linha do controle'],['--cell','Casa'],['--cell-line','Linha da casa'],['--block','Casa escura'],['--help','Ajuda'],['--ok-tint','Sucesso (fundo)'],['--warn-tint','Aviso (fundo)'],['--sel-ink','Texto no amarelo'],['--accent-ink','Texto no destaque'],['--focus','Foco'],['--edge','Contorno'],['--hover-overlay','Mouse por cima'],['--press-overlay','Pressionado']];
+function swatches() {
+  const cs = getComputedStyle($('ds'));
+  $('sw').innerHTML = tokens.map(([t, n]) => '<div><i style="background:var(' + t + ')"></i><span>' + n + '<em>' + t + ' ' + cs.getPropertyValue(t).trim() + '</em></span></div>').join('');
+}
+const sources = [['O Globo','12 concluídas'],['Cruzada Online','4 concluídas'],['Cruzadas Brasil','0 concluídas'],['Cruzadas Clube','2 concluídas']];
+let src = 0, flt = 'Todas';
+function tabs() {
+  $('tabs').innerHTML = '';
+  sources.forEach(([n, s], i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab'; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i === src); b.innerHTML = n + '<small>' + s + '</small>'; b.onclick = () => { src = i; tabs(); }; $('tabs').appendChild(b); });
+}
+function chips() {
+  $('chips').innerHTML = '';
+  ['Todas','Em andamento','Concluídas'].forEach(f => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', f === flt); b.textContent = f; b.onclick = () => { flt = f; chips(); }; $('chips').appendChild(b); });
+}
+tabs(); chips(); swatches();
+$('toggle').onclick = () => {
+  const d = $('ds').dataset.mode !== 'dark';
+  $('ds').dataset.mode = d ? 'dark' : 'light';
+  $('toggle').textContent = 'Tema: ' + (d ? 'escuro' : 'claro');
+  $('toggle').setAttribute('aria-pressed', d);
+  swatches();
+};
+
+
+// ---------- telas ----------
+const brand = '<span class="brand">Cruzadinha</span>';
+const themeBtn = '<button class="btn icon small" type="button" aria-label="Alternar tema">◐</button>';
+const gear = '<button class="btn icon small" type="button" aria-label="Configurações">⚙</button>';
+const initials = email => email.split('@')[0].replace(/[^a-zA-Z]/g, '').slice(0, 2).toUpperCase();
+function head(mode, route) {
+  const cur = p => route && route.startsWith(p) ? ' aria-current="page"' : '';
+  const right = mode === 'user' ? '<a class="avatar" href="#ds"' + cur('/conta') + ' aria-label="Sua conta, ana@exemplo.com">' + initials('ana@exemplo.com') + '</a>'
+    : mode === 'login' ? '' : '<a class="btn primary" href="#ds">Entrar</a>';
+  return '<div class="frame-h"><a class="brand" href="#ds"><i aria-hidden="true">C</i>Cruzadinha</a>' +
+    '<button class="btn icon menubtn" type="button" aria-label="Menu" aria-haspopup="menu" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
+    '<nav aria-label="Principal"><a class="btn quiet" href="#ds"' + cur('/calendario') + '>Calendário</a><a class="btn quiet" href="#ds"' + cur('/estatisticas') + '>Estatísticas</a><a class="btn quiet" href="#ds"' + cur('/x1') + '>x1' + (mode === 'user' ? ' <span class="badge">2</span>' : '') + '</a></nav>' +
+    '<span class="sp"></span><button class="btn quiet icon gearbtn" type="button" aria-label="Configurações"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>' + right + '</div>';
+}
+const fld = (id, label, type, val, extra) => '<label class="lbl" for="' + id + '">' + label + '<input class="field' + ((extra||{}).err ? ' err' : '') + '" id="' + id + '" type="' + (type||'text') + '" value="' + (val||'') + '"' + ((extra||{}).err ? ' aria-describedby="' + id + 'e"' : '') + '>' + ((extra||{}).err ? '<small class="bad" id="' + id + 'e">' + extra.err + '</small>' : ((extra||{}).hint ? '<small>' + extra.hint + '</small>' : '')) + '</label>';
+const A = (t, cls) => '<a class="' + (cls || 'lnk') + '" href="#ds">' + t + '</a>';
+const radios = (name, items, on) => '<div class="opts" role="radiogroup">' + items.map((t, i) => '<label class="pick"><input class="ctl" type="radio" name="' + name + '"' + (i === on ? ' checked' : '') + '>' + t + '</label>').join('') + '</div>';
+const miniMonth = () => '<div class="cal7">' + ['dom','seg','ter','qua','qui','sex','sáb'].map(d => '<div class="dow">' + d + '</div>').join('') + Array.from({length: 21}, (_, i) => { const d = i + 1, st = d > 3 ? (d < 12 ? 'done' : '') : d === 3 ? 'prog' : d % 2 ? 'done' : ''; return '<button class="day' + (st ? ' ' + st : '') + (d === 3 ? ' today' : '') + (d > 12 ? '' : '') + '" type="button"><span>' + d + '</span><small>' + stTxt(st) + '</small></button>'; }).join('') + '</div>';
+const days = (c) => c + (c === 1 ? ' dia' : ' dias');
+const stTxt = st => st === 'done' ? '<span class="t">✓ Feita</span><span class="g" aria-hidden="true">✓</span>' : st === 'prog' ? '<span class="t">Em andamento</span><span class="g" aria-hidden="true">◐</span>' : '';
+
+const tabsHtml = (sel, id) => '<div class="row tabs-attached" role="tablist"' + (id ? ' id="' + id + '"' : '') + '>' + ['O Globo','Cruzada Online','Cruzadas Brasil','Cruzadas Clube'].map((n, i) => '<button class="tab" type="button" role="tab" aria-selected="' + (i === sel) + '">' + n + '<small>' + (i === 0 ? '12' : i === 1 ? '4' : '0') + ' concluídas</small></button>').join('') + '</div>';
+const mini = () => { const g = ['COS..', '.#.#.', '.....', '.#.#.', '.....']; const nums = {'0,0':1,'0,2':2,'0,4':3,'2,0':4,'4,0':5}; let h = '';
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) { const ch = g[r][c]; h += '<div class="m-cell' + (ch === '#' ? ' blk' : r === 0 ? ' wd' : '') + (r === 0 && c === 3 ? ' sel' : '') + '">' + (nums[r + ',' + c] ? '<i>' + nums[r + ',' + c] + '</i>' : '') + (/[A-Z]/.test(ch) ? ch : '') + '</div>'; } return h; };
+const gridLegend = '<div class="legend"><span><i class="lg ok"></i><b class="g2" aria-hidden="true">✓ </b>Concluído</span><span><i class="lg warn"></i><b class="g2" aria-hidden="true">◐ </b>Em andamento</span><span><i class="lg"></i>Não iniciado</span><span><i class="lg dash"></i>Buscar na fonte</span><span><i class="lg off"></i>Indisponível</span></div>';
+
+
+const splitGrid = (rows) => rows.map(r => [...r.padEnd(Math.max(...rows.map(x => x.length)), '.')].map(c => c === '.' ? '<i class="e"></i>' : c === '_' ? '<i class="y"></i>' : /[a-z]/.test(c) ? '<i class="y">' + c.toUpperCase() + '</i>' : '<i class="f">' + c + '</i>').join('')).join('');
+const split = (title, lead, card, rows, pills) => '<div class="split"><div class="split-l"><h2 class="big">' + title + '</h2><p class="lede">' + lead + '</p>' +
+  '<div class="sgrid" aria-hidden="true" style="grid-template-columns:repeat(' + Math.max(...rows.map(r => r.length)) + ',36px)">' + splitGrid(rows) + '</div>' +
+  (pills ? '<ul class="pillrow" style="margin-top:18px">' + pills.map(p => '<li>' + p + '</li>').join('') + '</ul>' : '') + '</div><div class="panel split-card">' + card + '</div></div>';
+
+const gIc = {clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',pause:'<path d="M9 6v12M15 6v12"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',kbd:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',print:'<path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2"/><rect x="7" y="14" width="10" height="6"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',prev:'<path d="M15 5l-7 7 7 7"/>',next:'<path d="M9 5l7 7-7 7"/>'};
+const gi = k => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + gIc[k] + '</svg>';
+function gameHtml(menuOpen) {
+  const L = ['....#', '.#.#.', '.....', '.#.#.', '#....'];
+  const N = {'0,0':1,'0,2':2,'1,4':3,'2,0':4,'4,1':5};
+  let cells = '';
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+    const blk = L[r][c] === '#', cls = blk ? ' blk' : (r === 0 && c === 0) ? ' sel' : (r === 0 && c < 4) ? ' wd' : '';
+    cells += '<div class="gm-cell' + cls + '">' + (N[r + ',' + c] ? '<i>' + N[r + ',' + c] + '</i>' : '') + '</div>';
+  }
+  const li = (n, t, act, solved) => '<li' + (act ? ' class="act"' : '') + '><b>' + n + '.</b> ' + t + (solved ? ' <span style="display:inline-block;vertical-align:-4px;margin-left:6px">' + gi('check') + '</span>' : '') + '</li>';
+  const ib = (k, l) => '<button class="btn icon small" type="button" aria-label="' + l + '">' + gi(k) + '</button>';
+  return '<div class="gm-info"><span class="status none">O Globo</span><span class="gm-date">3 de novembro</span><span class="gm-sp"></span>' +
+    '<span class="gm-clock">' + gi('clock') + '<b>00:04</b>' + ib('pause', 'Pausar') + '</span><span class="gm-div"></span>' +
+    ib('cal', 'Calendário') + '<span class="gm-div"></span><select class="field" aria-label="Tamanho do tabuleiro" style="min-width:0;min-height:36px;font-size:13px;padding:0 8px"><option>Tamanho padrão</option></select><span class="gm-div"></span>' +
+    ib('kbd', 'Atalhos de teclado') + '<span class="gm-div"></span>' + ib('print', 'Imprimir') + '<span class="gm-sp"></span>' +
+    ib('eye', 'Ver') + '<button class="btn secondary small" type="button">0/4 Letra</button><button class="btn secondary small" type="button">0/2 Palavra</button>' + '<span class="menuhost"><button class="selbtn" type="button" aria-haspopup="menu" aria-expanded="' + !!menuOpen + '">Ajudas<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' + (menuOpen ? '<div class="menu" role="menu"><button class="mi" role="menuitem" type="button">Verificar</button><hr><div class="mg">Automática</div><button class="mi" role="menuitemcheckbox" aria-checked="true" type="button"><span class="ck"></span>Verificar ao digitar</button><hr><div class="mg">Rascunho</div><button class="mi" role="menuitemcheckbox" aria-checked="false" type="button"><span class="ck"></span>Lápis</button><button class="mi" role="menuitem" type="button" disabled>Confirmar rascunho</button><button class="mi" role="menuitem" type="button" disabled>Descartar rascunho</button></div>' : '') + '</span></div>' +
+    '<div class="gm-main"><div class="gm-board"><div class="gm-bar"><button class="btn icon small" type="button" aria-label="Dica anterior">' + gi('prev') + '</button><b>1 Horizontal</b><span class="gm-clue">Moradia</span><button class="btn icon small" type="button" aria-label="Próxima dica" style="margin-left:auto">' + gi('next') + '</button></div><div class="gm-grid">' + cells + '</div></div>' +
+    '<div class="gm-clues"><div><h3>Horizontais</h3><ol>' + li(1, 'Moradia', true) + li(4, 'Astro-rei', false, true) + li(5, 'Faixa de terra junto ao mar', false) + '</ol></div>' +
+    '<div><h3>Verticais</h3><ol>' + li(1, 'Terreno de futebol', false) + li(2, 'Aparelho que mede a profundidade', false) + li(3, 'Pôr do sol', false) + '</ol></div></div></div>' +
+    '<div class="gm-foot"><span>Fonte: Exemplo de desenvolvimento</span><button class="btn primary" type="button" aria-label="Legenda do tabuleiro" style="width:44px;padding:0;border-radius:50%">?</button></div>';
+}
+
+const sw = (on, label) => '<button class="tgl" role="switch" aria-checked="' + on + '" aria-label="' + label + '" type="button"></button>';
+const srow = (t, h, ctl) => '<div class="srow"><span><span class="t">' + t + '</span>' + (h ? '<span class="h">' + h + '</span>' : '') + '</span>' + ctl + '</div>';
+const stp = (name, v, unl) => '<div class="srow"><span class="t">' + name + '</span><span class="row" style="gap:14px;flex-wrap:nowrap"><span class="stepper"><button class="btn secondary icon small" type="button"' + (unl ? ' disabled' : '') + ' aria-label="Menos ' + name.toLowerCase() + '">−</button><output>' + (unl ? 'Sem limite' : v) + '</output><button class="btn secondary icon small" type="button"' + (unl ? ' disabled' : '') + ' aria-label="Mais ' + name.toLowerCase() + '">+</button></span><label class="pick"><input class="ctl" type="checkbox"' + (unl ? ' checked' : '') + '>Sem limite</label></span></div>';
+function settingsHtml() {
+  return '<div class="stage">' + gameHtml(false) + '<div class="scrim"><div class="dialog dlg-wide" role="dialog" aria-labelledby="cfg-t"><div class="dh"><h3 id="cfg-t">Configurações</h3>' + xb + '</div>' +
+  srow('Tema', 'Toque para trocar.', '<button class="btn secondary small" type="button">' + gi('sun') + 'Claro</button>') + '<hr>' +
+  '<div class="grp2"><h4>Ajudas por cruzada</h4>' + stp('Letras', 4, false) + stp('Palavras', 2, false) + '</div><hr>' +
+  srow('Riscar a dica só quando acerta', 'A dica só recebe o risco quando a palavra está certa.', sw(true, 'Riscar a dica só quando acerta')) +
+  srow('Copiar a dica', 'Dois cliques numa dica copiam o texto, o tamanho da palavra e as letras já preenchidas.', sw(false, 'Copiar a dica')) +
+  srow('Verificar ao digitar', 'Marca a letra errada assim que você digita; não gasta Letra nem Palavra.', sw(false, 'Verificar ao digitar')) + '<hr>' +
+  '<div class="grp2"><h4>Cruzada padrão</h4><div class="opts" role="radiogroup" aria-label="Cruzada padrão">' + ['O Globo','Cruzada Online','Cruzadas Brasil','Cruzadas Clube'].map((n, i) => '<label class="pick" style="min-width:48%"><input class="ctl" type="radio" name="cp"' + (i === 0 ? ' checked' : '') + '>' + n + '</label>').join('') + '</div>' +
+  srow('Ir direto ao jogo', 'Ao abrir o site, vai para a cruzada de hoje de O Globo em vez do calendário.', sw(false, 'Ir direto ao jogo')) + '</div>' +
+  '<div class="row" style="justify-content:flex-end"><button class="btn quiet small" type="button">Restaurar padrões</button></div></div></div></div>';
+}
+
+const SLOW_MSG = 'O servidor tirou uma soneca. Já estamos acordando ele, pode levar até um minuto.';
+const waitHtml = (word, title, slow, secs, lvl) => '<section class="wait" aria-busy="true"><div class="wcells" aria-hidden="true">' + [...word].map((l, i) => '<span style="--i:' + i + '">' + l + (i === 0 ? '<small>1</small>' : '') + '</span>').join('') + '</div>' +
+  '<' + (lvl || 'p class="wt" role="status"') + (lvl ? '' : '') + '>' + title + '</' + (lvl ? lvl : 'p') + '>' +
+  '<div class="extra" data-show="' + slow + '"><div class="notice warn" role="status"><b>!</b><span>O servidor tirou uma soneca. Já estamos acordando ele, pode levar até um minuto.</span></div><div class="bar2" aria-hidden="true"><i></i></div><p class="counter" aria-hidden="true">' + secs + ' s esperando</p></div></section>';
+const WAITS = [['Entrada', 'CRUZADA', 'Preparando as palavras…'], ['Jogo', 'GRADE', 'Montando a grade…'], ['Dia', 'BUSCANDO', 'Procurando a cruzada de hoje…'], ['Calendário', 'CALENDÁRIO', 'Folheando o calendário…'], ['Estatísticas', 'ACERTOS', 'Contando seus acertos…']];
+
+const grip = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+const adm = (rows, dirty, notice, drag, drop) => '<div class="page-narrow" style="max-width:688px"><h1>Administração</h1><h2 style="margin:0">Fontes de cruzadas</h2>' +
+  '<p class="lede">A ordem vale para as abas do calendário e para os cartões de "Hoje"; a primeira fonte visível abre por padrão. Uma fonte escondida some das listas para todos, mas guarda tudo e pode voltar.</p>' +
+  '<ol class="admlist">' + rows.map((r, i) => (drop === i ? '<li class="admdrop" aria-hidden="true"></li>' : '') + '<li class="admrow' + (r[1] ? '' : ' hid') + (drag === i ? ' drag' : '') + '"><span class="pos" aria-hidden="true">' + (i + 1) + '</span><label><input class="ctl" type="checkbox"' + (r[1] ? ' checked' : '') + '><span class="nm">' + r[0] + '</span><span class="st">' + (r[1] ? 'Visível' : 'Escondida') + '</span></label>' +
+  '<span class="mv"><button class="btn secondary icon handle" type="button" aria-label="Arrastar ' + r[0] + '" aria-describedby="admhint"' + (drag === i ? ' aria-pressed="true"' : '') + '>' + grip + '</button></span></li>').join('') + '</ol><p class="alt" id="admhint">Arraste pela alça. No teclado: Espaço pega, setas movem, Espaço solta, Esc cancela.</p>' +
+  '<div class="row"><button class="btn primary icon" type="button" aria-label="Salvar"' + (dirty ? '' : ' disabled') + '><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg></button>' + (dirty ? '<button class="btn secondary icon" type="button" aria-label="Descartar alterações"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>' : '') + '</div>' +
+  '<div style="min-height:64px">' + (notice || '') + '</div></div>';
+
+const stat = (srv, db, notice) => '<div class="page-narrow" style="max-width:420px"><h1>Cruzadinha</h1><div class="panel"><div class="strow"><span>Servidor</span>' + srv + '</div>' + (db ? '<div class="strow"><span>Banco</span>' + db + '</div>' : '') + '</div>' + (notice || '') + '</div>';
+const chipOk = '<span class="status ok">✓ disponível</span>', chipBad = '<span class="status bad">× indisponível</span>', chipWait = '<span class="status none"><span class="spin"></span>verificando…</span>';
+
+const errPage = (title, msg, btn, link, tiles) => '<div class="errbox" role="alert">' + (tiles ? '<div class="wcells still" aria-hidden="true">' + [...tiles].map(l => '<span>' + l + '</span>').join('') + '</div>' : '') + '<h1>' + title + '</h1>' + (msg ? '<p>' + msg + '</p>' : '') + (btn ? '<button class="btn secondary" type="button">' + btn + '</button>' : '') + (link ? '<p>' + A(link) + '</p>' : '') + '</div>';
+const rulesHtml = '<ul class="dlist"><li>Cada ajuda de letra ou palavra soma 30 s ao seu tempo. Verificar fica desligado.</li><li>Tempo máximo de 30 min depois de começar; passou disso, perde.</li><li>Prazo para começar: até 04/11/2026 14:30 (horário de Brasília).</li><li>O relógio é do servidor: começa no "Começar", não pausa e não reinicia ao recarregar.</li></ul>';
+const duelGame = () => gameHtml(false).replace(/<button class="btn icon small" type="button" aria-label="(Pausar|Imprimir)">[\s\S]*?<\/button>/g, '').replace('<span class="menuhost">', '<button class="btn quiet small" type="button">Desistir</button><span class="menuhost">');
+const duelLinks = '<div class="row">' + A('Meus x1', 'btn primary') + A('Novo x1', 'btn secondary') + A('Calendário', 'btn quiet') + '</div>';
+const resTbl = (a, b) => '<table class="t"><thead><tr><th scope="col">Jogador</th><th scope="col">Fim</th><th scope="col">Tempo</th><th scope="col">Penalidade</th><th scope="col">Ajudas</th></tr></thead><tbody>' + [a, b].map(r => '<tr><th scope="row">' + r[0] + '</th><td>' + r[1] + '</td><td' + (r[5] ? ' class="win"' : '') + '>' + (r[5] ? '<b>' + r[2] + '</b>' : r[2]) + '</td><td>' + r[3] + '</td><td>' + r[4] + '</td></tr>').join('') + '</tbody></table>';
+const sharePanel = '<div class="panel"><h2>Link do convite</h2><div class="copyrow"><input class="field" readonly value="cruzadinha.app/x1/Zq83kLmP" aria-label="Link do convite"><button class="btn secondary" type="button">Copiar link</button></div><h2>Código</h2><div class="codebox">K7P2M9XQ</div></div>';
+const todayDemo = '<div style="display:grid;gap:14px;min-height:420px;align-content:start"><div class="bar" style="justify-content:space-between"><h2 style="margin:0">Hoje</h2><span class="alt">Terça, 3 de novembro</span></div>' + [['O Globo', 'Continuar'], ['Cruzada Online', 'Ver']].map(c => '<div class="card"><div><b>' + c[0] + '</b></div>' + A(c[1], 'btn quiet small') + '</div>').join('') + '</div>';
+const sheetMenu = '<div class="menu sheet" role="menu" aria-label="Navegação"><a class="mi" role="menuitem" href="#ds" aria-current="page">Calendário</a><a class="mi" role="menuitem" href="#ds">Estatísticas</a><a class="mi" role="menuitem" href="#ds">x1 <span class="badge">2</span></a></div>';
+const nt = (v, text, act, dis) => '<div class="notice ' + v + '" role="' + (v === 'bad' ? 'alert' : 'status') + '"><b>' + ({info: 'i', warn: '!', bad: '×', ok: '✓'}[v]) + '</b><span style="flex:1">' + text + '</span>' + (act ? '<button class="btn secondary small" type="button">' + act + '</button>' : '') + (dis ? '<button class="btn quiet small" type="button">Fechar</button>' : '') + '</div>';
+const XI = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const xb = '<button class="btn icon small" type="button" aria-label="Fechar">' + XI + '</button>';
+const dlg = (title, desc, body, btns, noclose) => '<div class="dialog" role="dialog" aria-label="' + title + '"><div class="dh"><h3>' + title + '</h3>' + (noclose ? '' : xb) + '</div>' + (desc ? '<p>' + desc + '</p>' : '') + (body || '') + '<div class="row" style="justify-content:flex-end">' + btns + '</div></div>';
+const Bt = (t, v, dis) => '<button class="btn ' + v + ' small" type="button"' + (dis ? ' disabled' : '') + '>' + t + '</button>';
+const SI = {share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>', text: '<path d="M5 6h14M5 12h14M5 18h9"/>', image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-8 9"/>', back: '<path d="M19 12H5M12 19l-7-7 7-7"/>'};
+const sic = k => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none">' + SI[k] + '</svg>';
+const stk = items => '<div class="stack">' + items.map(([t, v, ic, opt]) => '<button class="btn ' + v + '" type="button">' + (opt ? '<span style="display:inline-flex;align-items:center;gap:10px;width:11.5rem">' + sic(ic) + t + '</span>' : (ic ? sic(ic) : '') + t) + '</button>').join('') + '</div>';
+const D = {
+  conclusao: dlg('Cruzada concluída', 'Você terminou em 12 minutos e 41 segundos.', '<dl class="dlg-stats"><div><dt>Seu tempo</dt><dd>12:41</dd></div><div><dt>Melhor tempo</dt><dd>08:45</dd></div><div><dt>Ajudas usadas</dt><dd>1</dd></div></dl><p>Também há cruzada deste dia em Cruzada Online.</p>', '') .replace('<div class="row" style="justify-content:flex-end"></div>', stk([['Jogar Cruzada Online deste dia', 'primary'], ['Voltar à biblioteca', 'secondary'], ['Ver o tabuleiro', 'secondary'], ['Compartilhar', 'secondary', 'share']])),
+  recorde: dlg('Cruzada concluída', 'Você terminou em 08 minutos e 12 segundos.', '<dl class="dlg-stats"><div><dt>Seu tempo</dt><dd>08:12</dd></div><div><dt>Melhor tempo</dt><dd>08:12 <span class="status ok">Novo recorde</span></dd></div><div><dt>Ajudas usadas</dt><dd>0</dd></div></dl>', '').replace('<div class="row" style="justify-content:flex-end"></div>', stk([['Voltar à biblioteca', 'primary'], ['Ver o tabuleiro', 'secondary'], ['Compartilhar', 'secondary', 'share']])),
+  compartilhar: dlg('Compartilhar resultado', 'Escolha como enviar. Nada revela as respostas.', '', '').replace('<div class="row" style="justify-content:flex-end"></div>', stk([['Compartilhar texto', 'secondary', 'text', true], ['Compartilhar imagem', 'secondary', 'image', true], ['Voltar', 'quiet', 'back']])),
+  atalhos: '<div class="dialog dlg-wide" role="dialog" aria-label="Atalhos de teclado"><div class="dh"><h3>Atalhos de teclado</h3>' + xb + '</div>' + [['Mover', [[['↑','↓','←','→'], 'Move pelo tabuleiro'], [['Home'], 'Vai ao início da palavra'], [['End'], 'Vai ao fim da palavra'], [['Tab'], 'Vai para a próxima palavra'], [['Shift+Tab'], 'Vai para a palavra anterior']]], ['Escrever', [[['A a Z'], 'Escreve a letra'], [['Backspace'], 'Apaga a letra e volta'], [['Delete'], 'Apaga a letra sem mover']]], ['Sair do tabuleiro', [[['Esc'], 'Solta o foco do tabuleiro']]], ['Ajuda', [[['?'], 'Abre esta lista de atalhos']]]].map(g => '<section class="scg"><h4>' + g[0] + '</h4>' + g[1].map(r => '<div class="scr"><span>' + r[1] + '</span><span class="ks">' + r[0].map(k => '<kbd class="kk">' + k + '</kbd>').join('') + '</span></div>').join('') + '</section>').join('') + '</div>',
+  importar: dlg('Importar seu progresso de visitante?', 'Você jogou neste aparelho antes de entrar. Quer levar esse progresso para a sua conta?', '<ul class="dlist"><li>5 cruzadas no aparelho</li><li>3 concluídas</li><li>2 em andamento</li></ul><p>Se a conta já tiver a mesma cruzada, fica a versão salva mais recentemente, e uma cruzada concluída na conta nunca é trocada.</p>', Bt('Descartar', 'quiet') + Bt('Agora não', 'secondary') + Bt('Importar', 'primary')),
+  importarErro: dlg('Importar seu progresso de visitante?', 'Você jogou neste aparelho antes de entrar. Quer levar esse progresso para a sua conta?', '<ul class="dlist"><li>5 cruzadas no aparelho</li><li>3 concluídas</li><li>2 em andamento</li></ul>' + nt('bad', 'Não foi possível importar agora. Seu progresso continua neste aparelho.'), Bt('Descartar', 'quiet') + Bt('Agora não', 'secondary') + Bt('Importar', 'primary')),
+  descartar: dlg('Descartar o progresso deste aparelho?', 'O que você jogou como visitante será apagado deste aparelho e não entrará na conta. Isso não pode ser desfeito.', '', Bt('Voltar', 'secondary') + Bt('Descartar mesmo assim', 'primary')),
+  importado: dlg('Progresso importado', '3 cruzadas importadas; 1 já estava melhor na conta.', '', Bt('Fechar', 'primary')),
+  relogin: dlg('Entrar de novo', 'Sua partida continua aqui. Entre para salvar o que você já fez.', fld('rl1', 'E-mail', 'email', 'ana@exemplo.com') + fld('rl2', 'Senha', 'password', ''), '').replace('<div class="row" style="justify-content:flex-end"></div>', '<button class="btn primary block" type="button">Entrar</button>'),
+  sair: dlg('Sair agora?', 'Há progresso ainda não enviado. Sair agora descarta esse progresso.', '', Bt('Cancelar', 'secondary') + Bt('Sair mesmo assim', 'primary')),
+  excluir: dlg('Excluir a conta?', '', '<p>Isto apaga para sempre:</p><ul class="dlist"><li>a conta e o e-mail dela;</li><li>as sessões em todos os aparelhos;</li><li>o progresso salvo na conta;</li><li>os ajustes da conta;</li><li>as cruzadas guardadas para jogar sem rede neste aparelho.</li></ul><p class="dwarn">Não há como desfazer. O progresso de visitante deste aparelho fica.</p>' + fld('ex1', 'Senha atual', 'password', ''), Bt('Cancelar', 'quiet') + Bt('Excluir para sempre', 'primary')),
+  regras: dlg('Beto desafiou você', 'O Globo, cruzada de 03/11/2026. Uma única tentativa: vence o menor tempo.', '' + rulesHtml + '' + fld('rg1', 'Seu apelido', 'text', 'Ana'), Bt('Recusar desafio', 'quiet') + Bt('Agora não', 'secondary') + Bt('Começar', 'primary'), true),
+  desistir: dlg('Desistir deste x1?', 'Você perde na hora e o oponente vence. Isso não pode ser desfeito.', '', Bt('Continuar jogando', 'secondary') + Bt('Desistir', 'primary')),
+  cancelar: dlg('Cancelar este x1?', 'O link e o código deixam de valer. Isso não pode ser desfeito.', '', Bt('Voltar', 'secondary') + Bt('Cancelar o x1', 'primary')),
+  dicas: dlg('Dicas', '', '<div class="gm-clues" style="grid-template-columns:1fr 1fr"><div><h3>Horizontais</h3><ol><li class="act"><b>1.</b> Moradia</li><li><b>4.</b> Astro-rei</li><li><b>5.</b> Faixa de terra junto ao mar</li></ol></div><div><h3>Verticais</h3><ol><li><b>1.</b> Terreno de futebol</li><li><b>2.</b> Aparelho que mede a profundidade</li><li><b>3.</b> Pôr do sol</li></ol></div></div>', Bt('Fechar', 'primary'))
+};
+const over = (d, bottom, bg) => '<div class="stage">' + (bg || gameHtml(false)) + '<div class="scrim' + (bottom ? ' bottom' : '') + '">' + d + '</div></div>';
+const contaBg = '<div class="page-narrow" style="max-width:488px;padding:18px 16px"><h1>Sua conta</h1><div class="panel idrow"><span class="avatar big" aria-hidden="true">AN</span><span><b>ana@exemplo.com</b><small>Conectada neste aparelho</small></span></div><div class="panel"><h2>Excluir a conta</h2><p class="lede">Apaga a conta e tudo o que é dela. Não há como desfazer.</p></div></div>';
+const readBar = '<div class="readbar"><b style="display:inline-flex;align-items:center;gap:8px">' + gi('check') + 'Concluída em 12:41</b><span class="sp"></span><button class="btn primary small" type="button">Jogar de novo</button>' + A('Voltar à biblioteca') + '</div>';
+const oskHtml = '<div class="osk" role="group" aria-label="Teclado">' + ['QWERTYUIOP', 'ASDFGHJKLÇ', 'ZXCVBNM'].map((r, i) => '<div class="r">' + (i === 2 ? '<button class="w" type="button">Dicas</button>' : '') + [...r].map(l => '<button type="button">' + l + '</button>').join('') + (i === 2 ? '<button class="w" type="button" aria-label="Apagar">⌫</button>' : '') + '</div>').join('') + '</div>';
+const pauseGame = () => gameHtml(false).replace(/<div class="gm-grid">[\s\S]*?(?=<\/div><\/div><div class="gm-clues">)/, '<div class="cover"><p>Jogo pausado</p><button class="btn primary" type="button">Continuar</button>');
+const jumpIc = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+const jumpBtn = open => '<button class="btn icon' + (open ? ' hover' : '') + '" type="button" aria-label="Ir para uma data" aria-expanded="' + !!open + '" style="width:46px;height:46px;padding:0;display:grid;place-items:center;flex:none">' + jumpIc + '</button>';
+const jumpPanel = '<div role="group" aria-label="Ir para uma data" style="position:absolute;top:calc(100% + 6px);right:0;z-index:5;display:grid;gap:8px;min-width:300px;padding:12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);box-shadow:0 8px 28px rgb(0 0 0 / .25)"><label class="lbl">Mês<select class="field"><option>novembro de 2026</option></select></label><label class="lbl">Data<input class="field" type="date"></label><p class="bad" role="alert" style="min-height:2.8em;margin:0;font-size:13px"></p></div>';
+const srcBar = (id, open) => '<div style="display:flex;align-items:flex-end;gap:8px;position:relative"><div style="flex:1;min-width:0">' + tabsHtml(0, id) + '</div><span style="position:relative;flex:none">' + jumpBtn(open) + (open ? jumpPanel : '') + '</span></div>';
+const SCREENS = [
+ { id: 'inicio', name: 'Início', route: '/', note: 'Landing mantida exatamente como está hoje: não recebe os componentes novos.', bar: 'guest', flush: true, html:
+  '<div class="land"><div class="hero"><span class="fl f1">Ç</span><span class="fl f2">A</span><span class="fl f3">É</span><div class="cells big">' + [...'CRUZADINHA'].map((l, i) => '<span>' + l + (i === 0 ? '<small>1</small>' : i === 4 ? '<small>2</small>' : i === 6 ? '<small>3</small>' : '') + '</span>').join('') + '</div>' +
+  '<div class="hero-copy"><h1>Palavras cruzadas <em>todo dia</em>, sem cadastro e sem pressa.</h1><div><p class="lede">O jogo abre direto no navegador. Escolha entre quatro fontes de cruzadas, jogue no seu ritmo e continue de onde parou.</p>' +
+  '<div class="row" style="margin-top:14px">' + A('Jogar a cruzada de hoje', 'lbtn primary') + A('Experimentar aqui', 'lbtn quiet') + '</div></div></div></div>' +
+  '<div class="sect"><p class="kick">Como funciona</p><h2>Abriu, jogou. O resto é opcional.</h2><div class="cards3">' +
+  '<div class="panel"><span class="ico">1↓</span><h3>Sem conta para começar</h3><p>Seu progresso fica guardado neste aparelho. Se quiser levar o jogo para outro lugar, crie uma conta depois.</p></div>' +
+  '<div class="panel"><span class="ico">2→</span><h3>Uma cruzada por dia, de quatro fontes</h3><p>A seção "Hoje" mostra uma cruzada de cada fonte e se você já começou, terminou ou ainda não tocou nela.</p></div>' +
+  '<div class="panel"><span class="ico">3↓</span><h3>Funciona até sem internet</h3><p>Instale o site como aplicativo e baixe a cruzada de hoje para jogar no ônibus, no avião, onde for.</p></div></div>' +
+  '<ul class="pillrow"><li>Modo lápis para rascunhar</li><li>Atalhos de teclado (tecle ?)</li><li>Tema claro e escuro</li><li>Tabuleiro que se ajusta à tela</li><li>Cronômetro que pausa sozinho</li></ul></div>' +
+  '<div class="sect"><p class="kick">Experimente</p><h2>Uma mini cruzada, bem aqui.</h2><div class="minirow"><div class="panel"><div class="m-grid">' + mini() + '</div><div class="row" style="justify-content:space-between"><span class="alt">0 de 6 palavras certas.</span><button class="btn quiet small" type="button">Limpar</button></div></div>' +
+  '<div class="m-clues"><h4>Horizontais</h4><ol><li class="act"><b>1</b>Faixa de terra junto ao mar (5)</li><li><b>4</b>O planeta Terra (5)</li><li><b>5</b>Pôr do sol (5)</li></ol><h4>Verticais</h4><ol><li><b>1</b>Terreno de futebol ou de plantação (5)</li><li><b>2</b>Aparelho que mede a profundidade (5)</li><li><b>3</b>Partícula de matéria (sem acento) (5)</li></ol><p class="alt" style="font-size:13px">Clique de novo na mesma casa para trocar de direção. Setas andam pelo tabuleiro. As dicas são só desta amostra.</p></div></div></div>' +
+  '<div class="sect"><p class="kick">Fontes</p><h2>4 fontes, um só lugar.</h2><div class="srcs">' +
+  [['O Globo','A cruzada diária do jornal O Globo, do Rio de Janeiro.'],['Cruzada Online','A cruzada publicada pelo jornal Público, de Portugal, em português europeu.'],['Cruzadas Brasil','As cruzadas diárias do site Cruzadas Brasil.'],['Cruzadas Clube','As edições do Cruzadas Clube, disponíveis a partir dos dias que o Cruzadinha já guardou.']].map(r => '<div class="src"><b>' + r[0] + '</b><span>' + r[1] + '</span></div>').join('') +
+  '</div><p class="alt" style="font-size:13px">As cruzadas pertencem às fontes; cada uma aparece no jogo com a atribuição de quem a publica.</p></div>' +
+  '<div class="band row2"><h2>A cruzada de hoje já está esperando.</h2><div class="row">' + A('Jogar agora', 'lbtn primary') + A('Ver o calendário') + '</div></div></div>' },
+
+ { id: 'calendario', name: 'Calendário', route: '/calendario', bar: 'guest', html:
+  '<div>' + srcBar('s-tabs', false) + '<div class="panel"><div class="bar" style="justify-content:space-between"><button class="btn secondary small" type="button" aria-label="Mês anterior">‹</button><b>Novembro de 2026</b><button class="btn secondary small" type="button" aria-label="Próximo mês">›</button></div>' +
+  '<div class="chips2" id="s-chips"></div><div class="cal7" id="s-cal"></div></div>' + gridLegend + '</div>', note: 'Sem a seção "Hoje". O filtro de data é o botão com ícone de calendário na ponta das abas.' },
+
+ { id: 'calendario-data', name: 'Calendário (filtro de data aberto)', route: '/calendario', bar: 'guest', note: 'O painel flutua sobre a página, sem empurrar nada. Esc ou um toque fora fecha.', html:
+  '<div>' + srcBar('', true) + '<div class="panel"><div class="bar" style="justify-content:space-between"><button class="btn secondary small" type="button" aria-label="Mês anterior">‹</button><b>Novembro de 2026</b><button class="btn secondary small" type="button" aria-label="Próximo mês">›</button></div>' +
+  '<div class="chips2">' + ['Todas (3)','Não iniciadas (1)','Em andamento (1)','Concluídas (1)'].map((t, i) => '<button class="chip" type="button" aria-pressed="' + (i === 0) + '">' + t + '</button>').join('') + '</div>' + miniMonth() + '</div>' + gridLegend + '</div>' },
+
+ { id: 'entrar', name: 'Entrar', route: '/login', bar: 'login', note: 'Tela dividida: chamada, cruzada de enfeite e benefícios ao lado do cartão.', html:
+  split('Sua cruzada espera por você.', 'Entre para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Entrar</h1><p class="lede">Continue de onde parou, em qualquer aparelho.</p>' + fld('l1', 'E-mail', 'email', '') + fld('l2', 'Senha', 'password', '') +
+  '<button class="btn primary block" type="button">Entrar</button><p class="alt c">' + A('Esqueci a senha') + '</p><p class="alt c">Ainda não tem conta? ' + A('Criar conta') + '</p><p class="alt c">' + A('Jogar sem entrar') + '</p>',
+  ['ENTRE', 'NA', 'SUA', 'cruzada']) },
+
+ { id: 'entrar-erro', name: 'Entrar (erro)', route: '/login', bar: 'login', html:
+  split('Sua cruzada espera por você.', 'Entre para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Entrar</h1><p class="lede">Continue de onde parou, em qualquer aparelho.</p><div class="notice bad" role="alert"><b>×</b><span>E-mail ou senha incorretos. Confira e tente de novo.</span></div>' +
+  fld('le1', 'E-mail', 'email', 'ana@exemplo.com', {err: 'Confira este campo.'}) + fld('le2', 'Senha', 'password', '123456', {err: 'Confira este campo.'}) +
+  '<button class="btn primary block" type="button" aria-busy="true"><span class="spin"></span>Entrando…</button><p class="alt c">' + A('Esqueci a senha') + '</p>',
+  ['ENTRE', 'NA', 'SUA', 'cruzada']) },
+
+ { id: 'cadastro', name: 'Criar conta', route: '/cadastro', bar: 'login', note: 'Cadastro aberto.', html:
+  split('Crie sua conta.', 'Crie uma conta para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Criar conta</h1><p class="lede">Com uma conta, seu progresso fica salvo em qualquer aparelho. Informe seu e-mail e enviaremos um link para escolher a senha e ativar a conta.</p>' + fld('c1', 'E-mail', 'email', '') +
+  '<button class="btn primary block" type="button">Criar conta</button><p class="alt c">Já tem conta? ' + A('Entrar') + '</p>',
+  ['CRIE', 'SUA', 'conta']) },
+
+ { id: 'cadastro-enviado', name: 'Criar conta (enviado)', route: '/cadastro', bar: 'login', note: 'Depois de enviar o e-mail.', html:
+  split('Confira o seu e-mail.', 'O link para ativar a conta já foi.',
+  '<h1>Criar conta</h1><div class="notice ok" role="status"><b>✓</b><span>Enviamos um link para ana@exemplo.com. Abra-o para escolher a senha e ativar a conta.</span></div><p class="lede">Não chegou? Veja a caixa de spam ou peça outro link.</p><button class="btn secondary block" type="button">Reenviar link</button><p class="alt c">Já tem conta? ' + A('Entrar') + '</p>',
+  ['CONFIRA', 'O', 'email']) },
+
+ { id: 'cadastro-fechado', name: 'Criar conta (fechado)', route: '/cadastro', bar: 'login', note: 'Cadastro desligado, o padrão em produção.', html:
+  split('Crie sua conta.', 'Crie uma conta para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Criar conta</h1><p class="lede">O cadastro está fechado no momento.</p><p class="alt c">Já tem conta? ' + A('Entrar') + '</p><p class="alt c">' + A('Jogar sem entrar') + '</p>',
+  ['CRIE', 'SUA', 'conta']) },
+
+ { id: 'esqueci', name: 'Esqueci a senha', route: '/esqueci-a-senha', bar: 'login', html:
+  split('Sem pânico. A gente resolve.', 'Informe o e-mail da conta e enviaremos um link para escolher uma senha nova.',
+  '<h1>Esqueci a senha</h1><p class="lede">Informe o e-mail da conta e enviaremos um link para escolher uma senha nova.</p>' + fld('f1', 'E-mail', 'email', '') +
+  '<button class="btn primary block" type="button">Enviar link</button><p class="alt c">' + A('Voltar para entrar') + '</p>',
+  ['ESQUECI', 'A', 'senha']) },
+
+ { id: 'redefinir', name: 'Nova senha', route: '/redefinir-senha', bar: 'login', html:
+  split('Crie sua senha.', 'Última etapa. Depois você volta direto para a sua cruzada.',
+  '<h1>Nova senha</h1><p class="lede">Escolha uma senha nova para a sua conta.</p>' + fld('r1', 'Nova senha', 'password', '', {hint: 'No mínimo 8 caracteres.'}) + fld('r2', 'Repita a nova senha', 'password', '') + '<button class="btn primary block" type="button">Salvar senha</button>',
+  ['CRIE', 'SUA', 'senha']) },
+
+ { id: 'redefinir-invalido', name: 'Link inválido', route: '/redefinir-senha', bar: 'login', html:
+  split('Esse link não serve mais.', 'Links de recuperação valem por pouco tempo e só uma vez.',
+  '<h1>Este link não vale mais</h1><p class="lede">O link venceu, já foi usado ou foi trocado por outro mais novo. Peça um novo link.</p><button class="btn primary block" type="button">Pedir novo link</button>',
+  ['LINK', 'venceu']) },
+
+ { id: 'admin', name: 'Administração', route: '/admin', bar: 'user', note: 'Só admin. Sem alterações: Salvar desativado.', html:
+  adm([['O Globo', true], ['Cruzada Online', true], ['Cruzadas Brasil', true], ['Cruzadas Clube', true]], false, '') },
+
+ { id: 'admin-editando', name: 'Administração (editando)', route: '/admin', bar: 'user', note: 'Ordem trocada e uma fonte escondida.', html:
+  adm([['Cruzada Online', true], ['O Globo', true], ['Cruzadas Clube', false], ['Cruzadas Brasil', true]], true, '') },
+
+ { id: 'admin-arrastando', name: 'Administração (arrastando)', route: '/admin', bar: 'user', note: 'Arrastando pela alça: a linha levanta e a faixa amarela mostra onde ela vai cair.', html:
+  adm([['O Globo', true], ['Cruzada Online', true], ['Cruzadas Clube', true], ['Cruzadas Brasil', true]], true, '', 2, 0) },
+
+ { id: 'admin-salvo', name: 'Administração (salvo)', route: '/admin', bar: 'user', html:
+  adm([['Cruzada Online', true], ['O Globo', true], ['Cruzadas Clube', false], ['Cruzadas Brasil', true]], false, '<div class="notice info" role="status"><b>i</b><span>Salvo. 3 de 4 fontes visíveis para todos.</span></div>') },
+
+ { id: 'admin-erro', name: 'Administração (erro)', route: '/admin', bar: 'user', html:
+  adm([['Cruzada Online', false], ['O Globo', false], ['Cruzadas Clube', false], ['Cruzadas Brasil', false]], true, '<div class="notice bad" role="alert"><b>×</b><span>Pelo menos uma fonte precisa ficar visível. Nada foi alterado.</span></div>') },
+
+ { id: 'conta-visitante', name: 'Sua conta (visitante)', route: '/conta', bar: 'guest', html:
+  '<div class="page-narrow" style="max-width:488px"><h1>Sua conta</h1><p class="lede">Entre para gerenciar sua conta.</p><p class="alt">' + A('Entrar') + '</p></div>' },
+
+ { id: 'conta', name: 'Sua conta', route: '/conta', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:488px"><h1>Sua conta</h1>' +
+  '<div class="panel idrow"><span class="avatar big" aria-hidden="true">AN</span><span><b>ana@exemplo.com</b><small>Conectada neste aparelho</small></span><button class="btn secondary" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button></div>' +
+  '<div class="panel"><h2>Trocar a senha</h2>' + fld('a1', 'Senha atual', 'password', '') + fld('a2', 'Nova senha', 'password', '', {hint: 'No mínimo 8 caracteres.'}) + '<button class="btn primary block" type="button">Trocar senha</button></div>' +
+  '<div class="panel"><h2>Sair de todos os aparelhos</h2><p class="lede">Encerra a conta em todos os outros aparelhos. Este continua conectado.</p><div><button class="btn secondary" type="button">Sair dos outros aparelhos</button></div></div>' +
+  '<div class="panel"><h2>Trocar o e-mail</h2><p class="lede">Enviamos um link ao novo endereço. O e-mail da conta só muda quando você abre o link.</p>' + fld('a3', 'Novo e-mail', 'email', '') + fld('a4', 'Senha atual', 'password', '') + '<button class="btn secondary block" type="button">Enviar link</button></div>' +
+  '<div class="panel danger"><h2>Excluir a conta</h2><p class="lede">Apaga a conta e tudo o que é dela. Não há como desfazer.</p><div><button class="btn secondary" type="button">Excluir conta</button></div></div></div>' },
+
+ { id: 'estatisticas', name: 'Estatísticas', route: '/estatisticas', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:688px"><h1>Estatísticas</h1>' +
+  '<dl class="stat4"><div class="stat"><dt>Sequência atual</dt><dd>' + days(5) + '</dd></div><div class="stat"><dt>Maior sequência</dt><dd>' + days(12) + '</dd></div><div class="stat"><dt>Concluídas</dt><dd>18</dd></div><div class="stat"><dt>Tempo médio</dt><dd>12:41</dd></div></dl>' +
+  '<h2>Por fonte</h2><table class="t"><thead><tr><th scope="col">Fonte</th><th scope="col">Concluídas</th><th scope="col">Tempo médio</th><th scope="col">Recorde</th></tr></thead><tbody>' +
+  '<tr><th scope="row">O Globo</th><td>12</td><td>13:02</td><td>08:45</td></tr><tr><th scope="row">Cruzada Online</th><td>4</td><td>10:20</td><td>07:58</td></tr><tr><th scope="row">Cruzadas Brasil</th><td>0</td><td>—</td><td>—</td></tr><tr><th scope="row">Cruzadas Clube</th><td>2</td><td>15:11</td><td>14:30</td></tr></tbody></table></div>' },
+
+ { id: 'estatisticas-visitante', name: 'Estatísticas (vazio)', route: '/estatisticas', bar: 'guest', html:
+  '<div class="page-narrow" style="max-width:688px"><h1>Estatísticas</h1><p class="alt">Estes números valem só para este aparelho. Entre na conta para guardá-los no servidor.</p><p class="alt">Nenhuma cruzada concluída ainda. Que tal começar hoje?</p>' +
+  '<dl class="stat4"><div class="stat"><dt>Sequência atual</dt><dd>' + days(0) + '</dd></div><div class="stat"><dt>Maior sequência</dt><dd>' + days(0) + '</dd></div><div class="stat"><dt>Concluídas</dt><dd>0</dd></div><div class="stat"><dt>Tempo médio</dt><dd>—</dd></div></dl>' +
+  '<h2>Por fonte</h2><table class="t"><thead><tr><th scope="col">Fonte</th><th scope="col">Concluídas</th><th scope="col">Tempo médio</th><th scope="col">Recorde</th></tr></thead><tbody>' +
+  ['O Globo','Cruzada Online','Cruzadas Brasil','Cruzadas Clube'].map(n => '<tr><th scope="row">' + n + '</th><td>0</td><td>—</td><td>—</td></tr>').join('') + '</tbody></table></div>' },
+
+ { id: 'x1', name: 'Meus x1', route: '/x1', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:688px"><div class="bar" style="justify-content:space-between"><h1>Meus x1</h1>' + A('Novo x1', 'btn primary') + '</div>' +
+  '<div><h2>Entrar em um x1</h2><label class="lbl" style="margin-bottom:6px">Código ou link do x1</label><div class="copyrow join"><input class="field" aria-label="Código ou link do x1"><button class="btn primary" type="button" disabled>Entrar</button></div></div>' +
+  '<div><h2>Ativos</h2><ul class="duels">' +
+  '<li class="att"><span><b>O Globo, 03/11/2026</b> contra Beto</span><span class="status warn">Em andamento: falta você começar</span></li>' +
+  '<li><span><b>Cruzada Online, 02/11/2026</b></span><span class="status none">Aguardando alguém aceitar</span></li>' +
+  '<li><span><b>Cruzadas Clube, 30/10/2026</b> contra Carla</span><span class="status ok">Terminou: veja o resultado</span></li></ul></div></div>' },
+
+ { id: 'x1-visitante', name: 'Meus x1 (vazio)', route: '/x1', bar: 'guest', html:
+  '<div class="page-narrow" style="max-width:688px"><div class="bar" style="justify-content:space-between"><h1>Meus x1</h1>' + A('Novo x1', 'btn primary') + '</div>' +
+  '<div><h2>Entrar em um x1</h2><label class="lbl" style="margin-bottom:6px">Código ou link do x1</label><div class="copyrow join"><input class="field" aria-label="Código ou link do x1"><button class="btn primary" type="button" disabled>Entrar</button></div></div>' +
+  '<div><h2>Ativos</h2><p class="alt">Esta lista vale só para este aparelho. Entre numa conta para ver seus x1 em qualquer lugar.</p><p class="alt">Nenhum x1 ativo.</p></div></div>' },
+
+ { id: 'x1-novo', name: 'Novo x1', route: '/x1/novo', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:828px"><h1>Novo x1</h1><p class="lede">Desafie alguém: cada um joga quando quiser, uma única tentativa, e vence o menor tempo.</p>' +
+  '<fieldset class="grp"><legend>1. Escolha a cruzada</legend>' + tabsHtml(0) + '<div class="panel"><div class="days">' +
+  '<button class="day done" type="button"><span>1</span><small>você já fez esta</small></button><button class="day" type="button"><span>2</span><small>Disponível</small></button><button class="day picked" type="button"><span>3</span><small>Escolhida</small></button><button class="day off" type="button" disabled><span>4</span><small>Em breve</small></button></div></div>' +
+  '<p class="alt" role="status">Escolhida: O Globo, 03/11/2026.</p></fieldset>' +
+  '<fieldset class="grp"><legend>2. Ajudas</legend>' + radios('h', ['Livres', 'Proibidas', 'Com penalidade'], 0) + '</fieldset>' +
+  '<fieldset class="grp"><legend>3. Tempo máximo da partida</legend>' + radios('m', ['Sem limite', '15 min', '30 min', '60 min'], 2) + '</fieldset>' +
+  '<fieldset class="grp"><legend>4. Prazo para o oponente começar</legend>' + radios('d', ['1 hora', '24 horas', '7 dias'], 1) + '</fieldset>' +
+  '<div class="grp"><label class="lbl ttl">5. Seu apelido<input class="field" style="width:100%"><small>Aparece para o seu oponente. De 1 a 24 caracteres.</small></label></div>' +
+  '<button class="btn primary block" type="button">Criar x1</button></div>' },
+
+ { id: 'x1-criado', name: 'x1 criado', route: '/x1/novo', bar: 'user', html:
+  '<div class="page-narrow"><h1>x1 criado</h1><p class="lede">Envie o link ou o código para quem você quer desafiar. Você pode jogar a sua partida quando quiser.</p>' +
+  '<div class="panel"><h2>Código</h2><div class="codebox">K7P2M9XQ</div><h2>Link</h2><div class="copyrow"><input class="field" readonly value="cruzadinha.app/x1/Zq83kLmP"><button class="btn secondary" type="button">Copiar</button></div></div>' +
+  '<div>' + A('Abrir o meu x1', 'btn primary') + '</div></div>' },
+
+ { id: 'x1-convite', name: 'Convite de x1', route: '/x1/:link', bar: 'guest', html:
+  '<div class="page-narrow" style="max-width:520px"><h1>Convite de x1</h1><p class="lede">Leia as regras e escolha como responder ao desafio.</p>' +
+  '<div class="panel"><h2>Regras</h2>' + rulesHtml + '</div>' +
+  fld('v1', 'Seu apelido', 'text', 'Beto') +
+  '<div class="row"><button class="btn primary" type="button">Começar</button><button class="btn quiet" type="button">Recusar</button></div></div>' },
+
+ { id: 'x1-resultado', name: 'Resultado do x1', route: '/x1/:link', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:640px"><div class="panel"><h1>Você venceu!</h1><p class="lede">O Globo, 03/11/2026. O menor tempo, já com as penalidades, vence.</p>' +
+  '<table class="t"><thead><tr><th scope="col">Jogador</th><th scope="col">Fim</th><th scope="col">Tempo</th><th scope="col">Penalidade</th><th scope="col">Ajudas</th></tr></thead><tbody>' +
+  '<tr><th scope="row">Ana <small>(você)</small></th><td>Concluiu</td><td class="win"><b>11:20</b></td><td>—</td><td>0</td></tr><tr><th scope="row">Beto</th><td>Concluiu</td><td>13:05</td><td>+00:30</td><td>1</td></tr></tbody></table></div>' +
+  '<div class="row">' + A('Meus x1', 'btn primary') + A('Novo x1', 'btn secondary') + A('Voltar ao calendário', 'btn quiet') + '</div></div>' },
+
+ { id: 'jogo', name: 'Jogo', route: '/jogo/:id', old: true, bar: 'user', flush: true, html: gameHtml() },
+
+ { id: 'jogo-ajudas', name: 'Jogo: menu Ajudas', route: '/jogo/:id', old: true, bar: 'user', flush: true, note: 'O menu aberto; o tabuleiro não muda.', html: gameHtml(true) },
+
+ { id: 'configuracoes', name: 'Configurações', route: 'diálogo no jogo', bar: 'user', flush: true, html: settingsHtml() },
+
+ { id: 'carregando', name: 'Carregando', route: 'espera (todas as telas)', bar: 'guest', note: 'Os primeiros 2 segundos: só as casas e o título. O espaço do aviso já está reservado.', html:
+  waitHtml('CRUZADA', 'Preparando as palavras…', false, 0, 'h1') },
+
+ { id: 'carregando-acordando', name: 'Acordando o servidor', route: 'espera (depois de 2 s)', bar: 'guest', note: 'Depois de 2 s aparecem o aviso, a barra e o contador, sem mover nada.', html:
+  waitHtml('CRUZADA', 'Preparando as palavras…', true, 12, 'h1') },
+
+ { id: 'status', name: 'Status', route: '/status', bar: false, note: 'Página solta, sem cabeçalho. Tudo no ar.', html: stat(chipOk, chipOk) },
+
+ { id: 'status-verificando', name: 'Status (verificando)', route: '/status', bar: false, html: stat(chipWait, '') },
+
+ { id: 'status-falha', name: 'Status (servidor fora)', route: '/status', bar: false, html: stat(chipBad, '') },
+
+ { id: 'status-banco', name: 'Status (banco fora)', route: '/status', bar: false, html: stat(chipOk, chipBad) },
+
+ { id: 'status-offline', name: 'Status (sem conexão)', route: '/status', bar: false, html:
+  '<div class="page-narrow" style="max-width:420px;margin:30px auto"><h1>Esta tela precisa de conexão.</h1><p class="alt">' + A('Voltar à biblioteca') + '</p></div>' },
+
+ { id: 'erro', name: 'Erro dentro da página', route: '(qualquer tela)', bar: 'user', note: 'O erro aparece no lugar do conteúdo; o título da página continua.', html:
+  '<div class="page-narrow" style="max-width:688px"><h1>Estatísticas</h1><div class="errbox"><div class="wcells still" aria-hidden="true"><span>E</span><span>R</span><span>R</span><span>O</span></div><h2 style="margin:0">Algo deu errado</h2><p>Não foi possível carregar as estatísticas agora.</p><button class="btn secondary" type="button">Tentar de novo</button></div></div>' },
+
+ { id: 'erro-404', name: 'Página não encontrada', route: '*', bar: 'guest', html:
+  errPage('Página não encontrada', 'O endereço não existe ou foi removido.', '', 'Voltar à biblioteca', '404') },
+
+ { id: 'erro-generico', name: 'Algo deu errado', route: '(erro da rota)', bar: 'guest', html:
+  errPage('Algo deu errado', 'Não foi possível carregar a página. Tente de novo.', 'Tentar de novo', '', 'ERRO') },
+
+ { id: 'erro-offline', name: 'Sem conexão', route: '(erro da rota)', bar: 'guest', html:
+  errPage('Sem conexão', 'Não foi possível falar com o servidor. Confira a conexão.', 'Tentar de novo', '', 'OFFLINE') },
+
+ { id: 'erro-servidor', name: 'Servidor não respondeu', route: '(erro da rota)', bar: 'guest', html:
+  errPage('Não foi possível falar com o servidor.', 'O servidor não respondeu em 90 segundos.', 'Tentar de novo', '', 'ZZZ') },
+
+ { id: 'x1-convite-erro', name: 'Convite de x1 (erro)', route: '/x1/:link', bar: 'guest', html:
+  '<div class="page-narrow" style="max-width:520px"><h1>Convite de x1</h1><p class="lede">Leia as regras e escolha como responder ao desafio.</p><div class="panel"><h2>Regras</h2>' + rulesHtml + '</div>' + fld('ve1', 'Seu apelido', 'text', 'Beto') + nt('bad', 'Este x1 já foi aceito por outra pessoa.') + '<div class="row"><button class="btn primary" type="button">Começar</button><button class="btn quiet" type="button">Recusar</button></div></div>' },
+ { id: 'x1-convite-recusado', name: 'Desafio recusado', route: '/x1/:link', bar: 'guest', html:
+  '<div class="page-narrow"><h1>Desafio recusado</h1><p class="lede">O criador vê que você recusou.</p></div>' },
+ { id: 'x1-esperando', name: 'x1 aberto (criador)', route: '/x1/:link', bar: 'user', note: 'Quem criou pode jogar antes de o oponente aceitar.', html:
+  '<div class="page-narrow" style="max-width:560px"><h1>O Globo, 03/11/2026</h1><p class="lede">Envie o link ou o código. Você pode começar a sua partida quando quiser; ela não espera o oponente.</p><div class="panel">' + rulesHtml + '</div>' + sharePanel + '<div class="row"><button class="btn primary" type="button">Começar a minha partida</button><button class="btn quiet" type="button">Cancelar x1</button></div></div>' },
+ { id: 'x1-aceito', name: 'x1 aceito', route: '/x1/:link', bar: 'user', note: 'O oponente já aceitou; falta você começar. Não há mais como cancelar.', html:
+  '<div class="page-narrow" style="max-width:560px"><h1>O Globo, 03/11/2026</h1><p class="lede">Beto já aceitou. Falta você começar.</p><div class="panel">' + rulesHtml + '</div><div class="row"><button class="btn primary" type="button">Começar a minha partida</button></div></div>' },
+ { id: 'x1-jogando', name: 'x1 em andamento', route: '/x1/:link', bar: 'user', flush: true, note: 'O tabuleiro de sempre, sem pausa nem impressão; o relógio é do servidor. Desistir fica na faixa.', html: duelGame() },
+ { id: 'x1-aguardando', name: 'Aguardando o oponente', route: '/x1/:link', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:640px"><div class="panel"><h1>Aguardando o oponente</h1><p class="lede" role="status">O Globo, 03/11/2026. Você terminou. O resultado aparece quando Beto terminar ou o prazo vencer.</p>' + duelLinks + '</div></div>' },
+ { id: 'x1-resultado-derrota', name: 'Resultado do x1 (derrota)', route: '/x1/:link', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:640px"><div class="panel"><h1>Você perdeu.</h1><p class="lede">O Globo, 03/11/2026. Seu tempo esgotou: passou do tempo máximo.</p>' + resTbl(['Ana <small>(você)</small>', 'Tempo esgotado', '30:00', '—', 0], ['Beto', 'Concluiu', '13:05', '+00:30', 1, true]) + duelLinks + '</div></div>' },
+ { id: 'x1-resultado-empate', name: 'Resultado do x1 (empate)', route: '/x1/:link', bar: 'user', html:
+  '<div class="page-narrow" style="max-width:640px"><div class="panel"><h1>Empate!</h1><p class="lede">O Globo, 03/11/2026. Os dois fizeram o mesmo tempo.</p>' + resTbl(['Ana <small>(você)</small>', 'Concluiu', '12:00', '—', 0], ['Beto', 'Concluiu', '12:00', '—', 0]) + duelLinks + '</div></div>' },
+ { id: 'x1-encerrado', name: 'x1 cancelado ou vencido', route: '/x1/:link', bar: 'user', note: 'Sem resultado: cancelado ou prazo vencido, sem tempos.', html:
+  '<div class="page-narrow" style="max-width:640px"><div class="panel"><h1>Este x1 foi cancelado.</h1><p class="lede">O Globo, 03/11/2026.</p>' + duelLinks + '</div></div>' },
+ { id: 'x1-indisponivel', name: 'x1 indisponível', route: '/x1/*', bar: 'guest', note: 'Site com uma API mais antiga.', html: errPage('O x1 não está disponível agora', 'Tente de novo mais tarde.', '', 'Voltar ao calendário', 'ERRO') },
+ { id: 'x1-tentativas', name: 'Muitas tentativas', route: '/x1/:link', bar: 'guest', html: errPage('Muitas tentativas', 'Espere um pouco e tente de novo.', '', '', 'ERRO') },
+ { id: 'x1-nao-aberto', name: 'x1 não está aberto', route: '/x1/:link', bar: 'guest', note: 'Texto de apoio escrito por mim: o do código não foi lido.', html: errPage('Este x1 não está aberto', 'O link não vale mais.', '', 'Meus x1', 'ERRO') },
+ { id: 'x1-nao-abriu', name: 'Não foi possível abrir o x1', route: '/x1/:link', bar: 'user', html: errPage('Não foi possível abrir o x1', 'Tente de novo em instantes.', '', 'Meus x1', 'ERRO') },
+
+ { id: 'cab-celular', name: 'Cabeçalho no celular', route: '(até 560 px)', bar: 'guest', vw: 390, note: 'Os links saem da barra e vão para o botão de menu.', html: todayDemo },
+ { id: 'cab-celular-menu', name: 'Cabeçalho no celular (menu aberto)', route: '(até 560 px)', bar: 'user', vw: 390, note: 'Folha embaixo, itens de 48 px; a tela atual fica amarela.', html: over(sheetMenu, true, todayDemo) },
+
+ { id: 'jogo-pausa', name: 'Jogo pausado', route: '/jogo/:id', bar: 'user', flush: true, note: 'A capa cobre só o tabuleiro; o foco vai para Continuar.', html: pauseGame() },
+ { id: 'jogo-leitura', name: 'Jogo: modo leitura', route: '/jogo/:id', bar: 'user', flush: true, note: 'Cruzada já concluída: faixa verde com o tempo.', html: readBar + gameHtml(false) },
+ { id: 'jogo-sessao', name: 'Jogo: sessão expirada', route: '/jogo/:id', bar: 'user', flush: true, note: 'Aviso que não bloqueia: o jogo segue.', html: '<div style="padding:10px 16px 0">' + nt('warn', 'Sua sessão expirou. Entre de novo para salvar.', 'Entrar de novo') + '</div>' + gameHtml(false) },
+ { id: 'jogo-celular', name: 'Jogo: teclado na tela', route: '/jogo/:id', bar: 'user', flush: true, note: 'Telas de toque: teclado embaixo, com Dicas e Apagar.', html: gameHtml(false) + oskHtml },
+
+ { id: 'dlg-conclusao', name: 'Cruzada concluída', route: 'diálogo no jogo', bar: 'user', flush: true, html: over(D.conclusao) },
+ { id: 'dlg-recorde', name: 'Cruzada concluída (recorde)', route: 'diálogo no jogo', bar: 'user', flush: true, html: over(D.recorde) },
+ { id: 'dlg-compartilhar', name: 'Compartilhar resultado', route: 'diálogo no jogo', bar: 'user', flush: true, note: 'Troca o conteúdo do mesmo diálogo.', html: over(D.compartilhar) },
+ { id: 'dlg-atalhos', name: 'Atalhos de teclado', route: 'diálogo no jogo', bar: 'user', flush: true, html: over(D.atalhos) },
+ { id: 'dlg-dicas', name: 'Dicas (celular)', route: 'folha no jogo', bar: 'user', flush: true, html: over(D.dicas, true) },
+ { id: 'dlg-importar', name: 'Importar progresso', route: 'diálogo (depois de entrar)', bar: 'user', flush: true, html: over(D.importar) },
+ { id: 'dlg-importar-erro', name: 'Importar progresso (erro)', route: 'diálogo', bar: 'user', flush: true, html: over(D.importarErro) },
+ { id: 'dlg-importar-descartar', name: 'Descartar progresso', route: 'diálogo', bar: 'user', flush: true, html: over(D.descartar) },
+ { id: 'dlg-importar-feito', name: 'Progresso importado', route: 'diálogo', bar: 'user', flush: true, html: over(D.importado) },
+ { id: 'dlg-relogin', name: 'Entrar de novo', route: 'diálogo no jogo', bar: 'user', flush: true, html: over(D.relogin) },
+ { id: 'dlg-sair', name: 'Sair agora?', route: 'diálogo', bar: 'user', flush: true, note: 'Só aparece quando há progresso ainda não enviado.', html: over(D.sair, false, contaBg) },
+ { id: 'dlg-excluir', name: 'Excluir a conta', route: '/conta', bar: 'user', flush: true, html: over(D.excluir, false, contaBg) },
+ { id: 'dlg-x1-regras', name: 'Regras do x1', route: '/x1/:link', bar: 'guest', flush: true, html: over(D.regras) },
+ { id: 'dlg-x1-desistir', name: 'Desistir do x1', route: 'diálogo no x1', bar: 'user', flush: true, html: over(D.desistir) },
+ { id: 'dlg-x1-cancelar', name: 'Cancelar o x1', route: 'diálogo no x1', bar: 'user', flush: true, html: over(D.cancelar) },
+
+ { id: 'aviso-offline', name: 'Sem conexão', route: '(qualquer tela)', bar: 'guest', html: nt('info', 'Sem conexão. O que já está guardado neste aparelho continua disponível.') + '<div class="bar" style="justify-content:space-between"><h2 style="margin:0">Hoje</h2><span class="alt">Terça-feira, 3 de novembro</span></div><div class="todays4">' + [['O Globo', 'Continuar'], ['Cruzada Online', 'Ver']].map(c => '<div class="card"><div><b>' + c[0] + '</b><br><span class="status none" style="margin-top:6px">Disponível sem rede</span></div>' + A(c[1], 'btn quiet small') + '</div>').join('') + '</div>' },
+ { id: 'aviso-descarte', name: 'Progresso descartado', route: '(qualquer tela, uma vez)', bar: 'user', html: nt('info', 'O progresso não enviado da conta anterior foi descartado.', '', true) + '<div class="bar"><h2 style="margin:0">Hoje</h2></div><p class="alt">Resto da tela como de costume.</p>' },
+ { id: 'cadastro-captcha', name: 'Criar conta (verificação)', route: '/cadastro', bar: 'login', note: 'Só aparece quando o servidor exige a verificação.', html:
+  split('Crie sua conta.', 'Crie uma conta para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Criar conta</h1><p class="lede">Com uma conta, seu progresso fica salvo em qualquer aparelho. Informe seu e-mail e enviaremos um link para escolher a senha e ativar a conta.</p>' + fld('cc1', 'E-mail', 'email', 'ana@exemplo.com') + '<div class="captchabox"><span class="ck2"></span>Confirme que você é uma pessoa</div><button class="btn primary block" type="button">Criar conta</button>',
+  ['CRIE', 'SUA', 'conta']) },
+ { id: 'cadastro-captcha-erro', name: 'Criar conta (verificação indisponível)', route: '/cadastro', bar: 'login', html:
+  split('Crie sua conta.', 'Crie uma conta para guardar o progresso e continuar em qualquer aparelho.',
+  '<h1>Criar conta</h1>' + fld('cd1', 'E-mail', 'email', 'ana@exemplo.com') + nt('bad', 'Não foi possível carregar a verificação de segurança.', 'Tentar de novo') + '<button class="btn primary block" type="button" disabled>Criar conta</button>',
+  ['CRIE', 'SUA', 'conta']) },
+ { id: 'x1-criado-visitante', name: 'x1 criado (visitante)', route: '/x1/novo', bar: 'guest', note: 'O visitante também recebe o link para voltar a este x1.', html:
+  '<div class="page-narrow"><h1>x1 criado</h1><p class="lede">Envie o link ou o código para quem você quer desafiar. Você pode jogar a sua partida quando quiser.</p>' +
+  '<div class="panel"><h2>Link do convite</h2><div class="copyrow"><input class="field" readonly value="cruzadinha.app/x1/Zq83kLmP"><button class="btn secondary" type="button">Copiar link</button></div><h2>Código</h2><div class="codebox">K7P2M9XQ</div><h2>Link para voltar a este x1</h2><div class="copyrow"><input class="field" readonly value="cruzadinha.app/x1/Zq83kLmP#p=…"><button class="btn secondary" type="button">Copiar link</button></div></div>' +
+  '<div>' + A('Abrir o meu x1', 'btn primary') + '</div></div>' },
+
+];
+
+const GROUPS = [
+  { name: 'Início', ids: ['inicio'] },
+  { name: 'Calendário', ids: ['calendario', 'calendario-data'] },
+  { name: 'Entrar', ids: ['entrar', 'entrar-erro'] },
+  { name: 'Criar conta', ids: ['cadastro', 'cadastro-captcha', 'cadastro-captcha-erro', 'cadastro-enviado', 'cadastro-fechado'] },
+  { name: 'Esqueci a senha', ids: ['esqueci'] },
+  { name: 'Nova senha', ids: ['redefinir', 'redefinir-invalido'] },
+  { name: 'Sua conta', ids: ['conta', 'conta-visitante'] },
+  { name: 'Estatísticas', ids: ['estatisticas', 'estatisticas-visitante'] },
+  { name: 'Meus x1', ids: ['x1', 'x1-visitante'] },
+  { name: 'Novo x1', ids: ['x1-novo', 'x1-criado', 'x1-criado-visitante'] },
+  { name: 'Duelo x1', ids: ['x1-convite', 'x1-convite-erro', 'x1-convite-recusado', 'x1-esperando', 'x1-aceito', 'x1-jogando', 'x1-aguardando', 'x1-resultado', 'x1-resultado-derrota', 'x1-resultado-empate', 'x1-encerrado', 'x1-indisponivel', 'x1-tentativas', 'x1-nao-aberto', 'x1-nao-abriu'] },
+  { name: 'Jogo', ids: ['jogo', 'jogo-ajudas', 'jogo-pausa', 'jogo-leitura', 'jogo-sessao', 'jogo-celular', 'configuracoes'] },
+  { name: 'Diálogos', ids: ['dlg-conclusao', 'dlg-recorde', 'dlg-compartilhar', 'dlg-atalhos', 'dlg-dicas', 'dlg-importar', 'dlg-importar-erro', 'dlg-importar-descartar', 'dlg-importar-feito', 'dlg-relogin', 'dlg-sair', 'dlg-excluir', 'dlg-x1-regras', 'dlg-x1-desistir', 'dlg-x1-cancelar'] },
+  { name: 'Avisos', ids: ['aviso-offline', 'aviso-descarte'] },
+  { name: 'Cabeçalho no celular', ids: ['cab-celular', 'cab-celular-menu'] },
+  { name: 'Administração', ids: ['admin', 'admin-editando', 'admin-arrastando', 'admin-salvo', 'admin-erro'] },
+  { name: 'Espera', ids: ['carregando', 'carregando-acordando'] },
+  { name: 'Status', ids: ['status', 'status-verificando', 'status-falha', 'status-banco', 'status-offline'] },
+  { name: 'Página não encontrada', ids: ['erro-404'] },
+  { name: 'Erro', ids: ['erro-generico', 'erro-offline', 'erro-servidor', 'erro'] },
+];
+const BYID = Object.fromEntries(SCREENS.map(x => [x.id, x]));
+console.assert(GROUPS.flatMap(g => g.ids).length === SCREENS.length, 'tela fora de grupo');
+$('toc').innerHTML = GROUPS.map(g => '<a href="#tela-' + g.ids[0] + '">' + g.name + (g.ids.length > 1 ? ' <span class="cnt">' + g.ids.length + '</span>' : '') + '</a>').join('');
+$('screens').innerHTML = GROUPS.flatMap(g => g.ids).map(id => BYID[id]).map(x =>
+  '<div id="tela-' + x.id + '"><p class="shot-cap"><b>' + x.name + '</b><code>' + x.route + '</code>' + (x.old ? '<span class="badge-old">sem mudanças</span>' : '<span class="badge-new">componentes novos</span>') + (x.note ? '<span>' + x.note + '</span>' : '') + '</p>' +
+  '<div class="frame"' + (x.vw ? ' style="max-width:' + x.vw + 'px;margin-inline:auto"' : '') + '>' + (x.bar === false ? '' : head(x.bar, x.route)) + '<div class="frame-b' + (x.flush ? ' flush' : '') + '">' + x.html + '</div>' + '</div></div>').join('');
+
+$('w1').innerHTML = waitHtml('CRUZADA', 'Preparando as palavras…', false, 0);
+$('w2').innerHTML = waitHtml('CRUZADA', 'Preparando as palavras…', true, 12);
+$('w3').innerHTML = WAITS.map(w => '<div class="wrow"><b>' + w[0] + '</b><div><div class="wcells" style="gap:3px">' + [...w[1]].map(l => '<span>' + l + '</span>').join('') + '</div><span class="alt" style="font-size:13px">' + w[2] + '</span></div></div>').join('');
+
+$('icons').innerHTML = Object.entries({clock: 'Relógio', pause: 'Pausa', cal: 'Calendário', kbd: 'Teclado', print: 'Imprimir', eye: 'Ver', sun: 'Tema', check: 'Marca', prev: 'Anterior', next: 'Próxima'}).map(([k, n]) => '<span style="display:grid;justify-items:center;gap:6px;font:500 11px var(--mono);color:var(--mute)">' + gi(k) + n + '</span>').join('');
+const capd = t => '<p class="cap">' + t + '</p>';
+$('hd').innerHTML = capd('Visitante') + '<div class="frame">' + head('guest', '/calendario') + '</div>' + capd('Conta, com 2 x1 aguardando') + '<div class="frame">' + head('user', '/x1') + '</div>' + capd('Celular, até 560 px: os links vão para o menu') + '<div class="frame" style="max-width:390px">' + head('guest', '/calendario') + '</div><div class="frame" style="max-width:390px;margin-top:10px">' + head('user', '/x1') + '</div>' + capd('Peças soltas') + '<div class="row"><button class="btn quiet" type="button">Instalar</button><span class="avatar">AN</span><span class="avatar big">AN</span></div>' + '<ul class="spec"><li><b>altura</b> 60 px, contorno inferior de 2px</li><li><b>links</b> botões discretos; o da tela atual fica amarelo</li><li><b>círculo</b> 38 px, iniciais do e-mail em Fraunces; leva a Sua conta</li><li><b>Instalar</b> só aparece quando o navegador permite</li><li><b>até 560 px</b> Calendário, Estatísticas e x1 viram um botão de menu ao lado da marca, que abre uma folha embaixo</li><li><b>contador do x1</b> reserva o espaço mesmo vazio</li></ul>';
+$('dlgs').innerHTML = [['Cruzada concluída', D.conclusao], ['Sair da conta', dlg('Sair da conta?', 'Seu progresso salvo neste aparelho será apagado. Ele continua guardado na sua conta.', '', Bt('Cancelar', 'quiet') + Bt('Sair', 'primary'))], ['Compartilhar resultado', D.compartilhar], ['Atalhos de teclado', D.atalhos], ['Dicas (folha no celular)', D.dicas], ['Importar progresso', D.importar], ['Descartar progresso', D.descartar], ['Entrar de novo', D.relogin], ['Sair agora?', D.sair], ['Excluir a conta', D.excluir], ['Regras do x1', D.regras], ['Desistir do x1', D.desistir], ['Cancelar o x1', D.cancelar]].map(([n, h]) => '<figure><figcaption>' + n + '</figcaption>' + h + '</figure>').join('');
+$('avs').innerHTML = capd('Aviso: informação, alerta e erro') + '<div style="display:grid;gap:10px">' + nt('info', 'Sem conexão. O que já está guardado neste aparelho continua disponível.') + nt('warn', 'Sua sessão expirou. Entre de novo para salvar.', 'Entrar de novo') + nt('bad', 'Não foi possível importar agora. Seu progresso continua neste aparelho.') + nt('info', 'O progresso não enviado da conta anterior foi descartado.', '', true) + '</div>' +
+  capd('Mensagem curta do jogo (mesmo balão)') + '<div class="row"><span class="tip static below msg" role="status" style="margin:0">Dica copiada</span><span class="tip static below msg" role="status" style="margin:0">Não foi possível copiar</span></div>' +
+  capd('Estado de salvamento (só aparece com problema)') + '<div class="row">' + ['Sem conexão, tentando de novo', 'Sessão expirada', 'Concluída em outro aparelho', 'Não salvo: vale só nesta aba', 'Progresso só neste aparelho'].map(t => '<span class="status warn">' + t + '</span>').join('') + '</div>' +
+  capd('Verificação de segurança') + '<div class="row" style="align-items:flex-start"><div class="captchabox"><span class="ck2"></span>Confirme que você é uma pessoa</div><div style="flex:1;min-width:260px">' + nt('bad', 'Não foi possível carregar a verificação de segurança.', 'Tentar de novo') + '</div></div>' +
+  '<ul class="spec"><li><b>informação</b> contorno e ícone na cor do destaque</li><li><b>alerta e erro</b> amarelo e vermelho, com ícone e texto, nunca só cor</li><li><b>ação</b> um botão no fim da linha; Fechar quando dá para dispensar</li><li><b>não bloqueia</b> nunca cobre o tabuleiro nem tira o foco</li></ul>';
+$('jg').innerHTML = capd('Jogo pausado') + '<div style="max-width:260px"><div class="cover"><p>Jogo pausado</p><button class="btn primary" type="button">Continuar</button></div></div>' +
+  capd('Modo leitura') + '<div class="frame">' + readBar + '</div>' +
+  capd('Teclado na tela') + '<div class="frame" style="max-width:460px">' + oskHtml + '</div>' +
+  capd('Legenda do tabuleiro (botão ? aberto)') + '<div class="row" style="align-items:flex-end"><div class="legpanel" role="group" aria-label="Legenda do tabuleiro"><span><i></i>Vazia</span><span><i style="background:var(--word)"></i>Palavra ativa</span><span><i style="background:var(--sel)"></i>Selecionada</span><span><i style="background:var(--cell);color:var(--help)"></i>Com ajuda</span><span><i style="border-color:var(--bad)"></i>Errada na verificação</span></div><button class="btn primary" type="button" aria-label="Legenda do tabuleiro" style="width:44px;padding:0;border-radius:50%">?</button></div>' +
+  capd('Tamanho do tabuleiro') + '<div class="row"><button class="btn secondary small" type="button">Tamanho padrão</button><button class="btn secondary small" type="button" disabled>Tamanho padrão</button><span class="grip" aria-hidden="true"></span><span class="alt">alça de redimensionar: 30 a 110 px por casa</span></div>' +
+  '<ul class="spec"><li><b>tabuleiro</b> não muda</li><li><b>capa</b> do mesmo tamanho do tabuleiro, só texto e um botão</li><li><b>teclado</b> teclas de 46 px de altura, contorno de 2px</li></ul>';
+
+// telas
+let sTab = 0, sFlt = 'Todas';
+function sTabs() { if (!$('s-tabs') || $('s-tabs').children.length) return; $('s-tabs').innerHTML = ''; sources.forEach(([n], i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tab'; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i === sTab); b.textContent = n; b.onclick = () => { sTab = i; sTabs(); }; $('s-tabs').appendChild(b); }); }
+function sChips() { $('s-chips').innerHTML = ''; [['Todas','Todas (3)'],['Não iniciadas','Não iniciadas (1)'],['Em andamento','Em andamento (1)'],['Concluídas','Concluídas (1)']].forEach(([f, t]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', f === sFlt); b.textContent = t; b.onclick = () => { sFlt = f; sChips(); sCal(); }; $('s-chips').appendChild(b); }); }
+function sCal() {
+  const c = $('s-cal'); c.innerHTML = '';
+  ['dom','seg','ter','qua','qui','sex','sáb'].forEach(d => { const e = document.createElement('div'); e.className = 'dow'; e.textContent = d; c.appendChild(e); });
+  for (let d = 1; d <= 30; d++) {
+    const st = d > 3 ? 'plain' : d === 3 ? 'prog' : d % 2 ? 'done' : '';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'day' + (st ? ' ' + st : '') + (d === 3 ? ' today' : '');
+    if (sFlt === 'Em andamento' && st !== 'prog') b.className += ' off';
+    if (sFlt === 'Concluídas' && st !== 'done') b.className += ' off';
+    b.innerHTML = '<span>' + d + '</span><small>' + stTxt(st) + '</small>';
+    c.appendChild(b);
+  }
+}
+sTabs(); sChips(); sCal();
+
+// ---------- páginas (abas) ----------
+const PAGES = [['Fundamentos', ['Cores','Tipografia','Forma e tamanho','Sombra e movimento','Ícones','Pontos de quebra','Não muda']], ['Componentes', ['Botão','Link','Aba de fonte','Filtro','Cartão e status','Campos','Dia do calendário','Aviso','Interruptor, caixa e opção','Contador','Menu','Balão','Tela de espera','Tabela','Resumo numérico','Lista de itens','Código e link','Cabeçalho','Diálogos','Avisos do site','Peças do jogo']], ['Telas', ['Telas com os componentes']]];
+document.querySelectorAll('.wrap > section').forEach(sec => { const t = sec.querySelector('h2').textContent; const i = PAGES.findIndex(p => p[1].includes(t)); sec.dataset.page = i; });
+const cnav = document.createElement('nav'); cnav.className = 'cindex'; cnav.setAttribute('aria-label', 'Componentes'); cnav.hidden = true;
+const csecs = [...document.querySelectorAll('.wrap > section[data-page="1"]')];
+csecs.forEach((s, n) => { s.id = 'c-' + n; });
+cnav.innerHTML = '<p class="cap">Componentes</p>' + csecs.map((s, n) => '<a href="#c-' + n + '">' + s.querySelector('h2').textContent + '</a>').join('');
+document.querySelector('.wrap').prepend(cnav);
+cnav.addEventListener('click', e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); document.getElementById(a.getAttribute('href').slice(1)).scrollIntoView({behavior: 'smooth', block: 'start'}); });
+const spy = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { cnav.querySelectorAll('a').forEach(a => a.removeAttribute('aria-current')); cnav.querySelector('a[href="#' + en.target.id + '"]').setAttribute('aria-current', 'true'); } }), {rootMargin: '-80px 0px -70% 0px'});
+csecs.forEach(s => spy.observe(s));
+const shots = document.createElement('div'); shots.className = 'shots';
+const telas = document.querySelector('.wrap > section[data-page="2"]');
+shots.append($('toc'), $('screens')); telas.append(shots);
+$('screens').style.marginTop = '0';
+const vp = document.createElement('div'); vp.className = 'vp'; vp.setAttribute('role', 'group'); vp.setAttribute('aria-label', 'Largura da tela');
+vp.innerHTML = [['Computador', ''], ['Tablet · 768', '768'], ['Celular · 390', '390']].map(([t, w], i) => '<button class="chip" type="button" aria-pressed="' + (i === 0) + '" data-w="' + w + '">' + t + '</button>').join('');
+vp.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; vp.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); $('screens').style.setProperty('--vw', b.dataset.w ? b.dataset.w + 'px' : 'none'); });
+$('screens').prepend(vp);
+function showScreen(id) {
+  const g = GROUPS.find(g => g.ids.includes(id)) || GROUPS[0];
+  SCREENS.forEach(x => { $('tela-' + x.id).hidden = !g.ids.includes(x.id); });
+  $('toc').querySelectorAll('a').forEach(a => { if (a.getAttribute('href') === '#tela-' + g.ids[0]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+}
+$('toc').addEventListener('click', e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); const id = a.getAttribute('href').slice(6); history.replaceState(null, '', '#tela-' + id); showScreen(id); scrollTo(0, 0); });
+function showPage(i) {
+  document.querySelectorAll('.wrap > section').forEach(sec => { sec.hidden = sec.dataset.page != i; });
+  document.querySelector('.intro').hidden = i != 0;
+  cnav.hidden = i != 1; document.querySelector('.wrap').classList.toggle('idx', i == 1);
+  $('ptabs').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-selected', j == i));
+  history.replaceState(null, '', i == 2 ? '#tela-' + (location.hash.startsWith('#tela-') ? location.hash.slice(6) : SCREENS[0].id) : '#' + PAGES[i][0].toLowerCase());
+  scrollTo(0, 0);
+}
+$('ptabs').innerHTML = PAGES.map((p, i) => '<button type="button" role="tab">' + p[0] + '</button>').join('');
+$('ptabs').querySelectorAll('button').forEach((b, i) => b.onclick = () => showPage(i));
+const h = location.hash.slice(1);
+showScreen(h.startsWith('tela-') ? h.slice(5) : SCREENS[0].id);
+showPage(h.startsWith('tela-') ? 2 : Math.max(0, PAGES.findIndex(p => p[0].toLowerCase() === h)));
+
+document.addEventListener('click', e => { const t = e.target.closest('.tgl'); if (t && !t.disabled) t.setAttribute('aria-checked', t.getAttribute('aria-checked') !== 'true'); const m = e.target.closest('.menu .mi[role="menuitemcheckbox"]'); if (m) m.setAttribute('aria-checked', m.getAttribute('aria-checked') !== 'true'); });
+
+// balão: mouse (300 ms) e foco, em todo botão que tem só ícone
+(function () {
+  const tip = document.createElement('div'); tip.className = 'tip above'; tip.setAttribute('role', 'tooltip'); tip.id = 'tipbox'; tip.hidden = true; document.body.appendChild(tip);
+  let timer, cur = null;
+  const iconOnly = b => b && b.matches('button[aria-label]:not([role="switch"])') && !b.closest('.menu') && b.textContent.replace(/\s/g, '').length <= 2;
+  function show(b) {
+    cur = b; tip.textContent = b.getAttribute('aria-label') === 'Alternar tema' ? 'Mudar para ' + (document.getElementById('ds').dataset.mode === 'dark' ? 'claro' : 'escuro') : b.getAttribute('aria-label');
+    tip.hidden = false; tip.style.left = '0px'; tip.style.top = '0px';
+    const r = b.getBoundingClientRect(), t = tip.getBoundingClientRect();
+    const above = r.top - t.height - 10 > 0;
+    tip.className = 'tip ' + (above ? 'above' : 'below');
+    let x = r.left + r.width / 2 - t.width / 2; const max = innerWidth - t.width - 8; const nx = Math.max(8, Math.min(x, max));
+    tip.style.left = nx + 'px'; tip.style.top = (above ? r.top - t.height - 8 : r.bottom + 8) + 'px'; tip.style.setProperty('--ax', (r.left + r.width / 2 - nx) + 'px');
+    b.setAttribute('aria-describedby', 'tipbox');
+  }
+  function hide() { clearTimeout(timer); tip.hidden = true; if (cur) cur.removeAttribute('aria-describedby'); cur = null; }
+  document.addEventListener('mouseover', e => { const b = e.target.closest('button[aria-label]'); if (iconOnly(b)) { clearTimeout(timer); timer = setTimeout(() => show(b), 300); } });
+  document.addEventListener('mouseout', e => { if (e.target.closest('button[aria-label]')) hide(); });
+  document.addEventListener('focusin', e => { if (iconOnly(e.target)) show(e.target); });
+  document.addEventListener('focusout', hide);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  document.addEventListener('scroll', hide, true);
+})();
+</script>
+</body>
+</html>

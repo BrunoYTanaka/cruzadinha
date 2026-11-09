@@ -3,15 +3,22 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
 }
 
+/* O contorno e o símbolo levam a cor do estado; o texto fica na cor do conteúdo. */
 .info {
-  border-color: var(--line);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.ok {
+  border-color: var(--ok);
+  background: var(--ok-tint);
 }
 
 .warning {
@@ -21,6 +28,34 @@
 
 .error {
   border-color: var(--bad);
+  background: color-mix(in srgb, var(--bad) 10%, var(--surface));
+}
+
+.symbol {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font: 800 13px/1 var(--font);
+}
+
+.info .symbol {
+  color: var(--accent);
+}
+
+.ok .symbol {
+  color: var(--ok);
+}
+
+.warning .symbol {
+  color: var(--warn);
+}
+
+.error .symbol {
+  color: var(--bad);
 }
 
 .text {
@@ -28,6 +63,7 @@
   min-width: 0;
   margin: 0;
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .action {

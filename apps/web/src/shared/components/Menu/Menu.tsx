@@ -171,10 +171,13 @@ export function MenuGroup({ label, children }: { label: string; children: ReactN
 // Desabilitado fica `aria-disabled` (continua focável, o leitor de tela explica) e não age.
 export function MenuItem({
   disabled = false,
+  current = false,
   onSelect,
   children,
 }: {
   disabled?: boolean
+  // A tela atual fica em amarelo (feature 062).
+  current?: boolean
   onSelect: () => void
   children: ReactNode
 }) {
@@ -185,7 +188,8 @@ export function MenuItem({
       role="menuitem"
       tabIndex={-1}
       aria-disabled={disabled || undefined}
-      className={styles.item}
+      aria-current={current ? 'page' : undefined}
+      className={`${styles.item} ${current ? styles.current : ''}`}
       onClick={() => {
         if (disabled) return
         onSelect()

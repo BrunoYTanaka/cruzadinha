@@ -1,12 +1,15 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import { register, resendVerification } from '../../../../shared/services/api/auth/auth'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
+import { Notice } from '../../../../shared/components/Notice/Notice'
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
+import { AuthLayout } from '../../../../shared/components/AuthLayout/AuthLayout'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import {
   authMessages,
@@ -100,18 +103,20 @@ export function RegisterForm() {
 
   if (sentTo) {
     return (
-      <div className={styles.page}>
+      <AuthLayout
+        headline="Confira o seu e-mail."
+        lead="O link para ativar a conta já foi."
+        rows={['CONFIRA', 'O', 'email']}
+      >
         <div className={styles.card}>
           <h1 className={styles.title} ref={sentHeading} tabIndex={-1}>
-            Confira seu e-mail
+            Criar conta
           </h1>
-          <div className={styles.sent}>
-            <p className={styles.lead}>
-              Enviamos um link para <span className={styles.email}>{sentTo}</span>. Abra-o para
-              escolher a senha e ativar a conta.
-            </p>
-            <p className={styles.lead}>Não chegou? Veja a caixa de spam ou peça outro link.</p>
-          </div>
+          <Notice variant="ok">
+            Enviamos um link para <span className={styles.email}>{sentTo}</span>. Abra-o para
+            escolher a senha e ativar a conta.
+          </Notice>
+          <p className={styles.lead}>Não chegou? Veja a caixa de spam ou peça outro link.</p>
           {error ? (
             <div role="alert" className={styles.alert}>
               {error}
@@ -126,15 +131,19 @@ export function RegisterForm() {
           />
           <CaptchaField captcha={resendCaptcha} action="resend" />
           <p className={styles.alt}>
-            Já confirmou? <Link to="/login">Entrar</Link>
+            Já tem conta? <Link to="/login">Entrar</Link>
           </p>
         </div>
-      </div>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Crie sua conta."
+      lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
+      rows={['CRIE', 'SUA', 'conta']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
         <p className={styles.lead}>
@@ -174,13 +183,17 @@ export function RegisterForm() {
           Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }
 
 function RegistrationClosed() {
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Crie sua conta."
+      lead="Crie uma conta para guardar o progresso e continuar em qualquer aparelho."
+      rows={['CRIE', 'SUA', 'conta']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Criar conta</h1>
         <p role="status" className={styles.lead}>
@@ -193,6 +206,6 @@ function RegistrationClosed() {
           <Link to="/">Jogar sem entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

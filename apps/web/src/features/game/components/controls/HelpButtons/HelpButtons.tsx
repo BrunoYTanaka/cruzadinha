@@ -1,4 +1,4 @@
-import { Pill } from '../../../../../shared/components/Pill/Pill'
+import { buttonClass } from '../../../../../shared/components/Button/Button'
 import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import type { GameLimits, HelpResult } from '../../../../../domain/game/state'
 import styles from './HelpButtons.module.css'
@@ -51,8 +51,9 @@ export function HelpButtons({
   const wordsOut = limits.words !== null && usage.words >= limits.words
   return (
     <>
-      <Pill
-        className={styles.help}
+      <button
+        type="button"
+        className={`${buttonClass({ size: 'small' })} ${styles.help}`}
         aria-disabled={disabled || lettersOut || undefined}
         aria-label={
           limits.letters === null
@@ -66,9 +67,10 @@ export function HelpButtons({
         <span aria-hidden="true">
           {usage.letters}/{limits.letters ?? '∞'} Letra
         </span>
-      </Pill>
-      <Pill
-        className={styles.help}
+      </button>
+      <button
+        type="button"
+        className={`${buttonClass({ size: 'small' })} ${styles.help}`}
         aria-disabled={disabled || wordsOut || undefined}
         aria-label={
           limits.words === null
@@ -82,7 +84,7 @@ export function HelpButtons({
         <span aria-hidden="true">
           {usage.words}/{limits.words ?? '∞'} Palavra
         </span>
-      </Pill>
+      </button>
       <VisuallyHidden role="status" aria-live="polite">
         {/* O número da ajuda muda o texto vivo mesmo quando a frase se repete. */}
         {announcement(lastHelp)}

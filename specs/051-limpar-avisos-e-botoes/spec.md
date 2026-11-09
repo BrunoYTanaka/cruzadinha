@@ -28,7 +28,7 @@ Hoje o visitante que deixou progresso esperando uma conta neste aparelho vê, em
 
 ### User Story 2 - Botão "Ajudas" sem espaço sobrando (Priority: P2)
 
-Na barra de ajudas do jogo, "Ajudas" tinha um espaço vazio ao lado do texto (reservado para o ponto da verificação automática), e o texto parecia fora do centro do botão, diferente de "Letra" e "Palavra". Passa a ter o texto centrado, como os botões vizinhos, que mantêm forma de pílula, altura e peso de letra iguais.
+Na barra de ajudas do jogo, "Ajudas" tinha um espaço vazio ao lado do texto (reservado para o ponto da verificação automática), e o texto parecia fora do centro do botão, diferente de "Letra" e "Palavra". Passa a ter o texto centrado, como os botões vizinhos, que mantêm forma de pílula, altura e peso de letra iguais. _Nota (feature 062): Letra e Palavra viraram botões pequenos (36 px, cantos de 6 px) e "Ajudas" ganhou o contorno forte e a seta do design system; o texto centrado e o ponto no canto continuam._
 
 **Why this priority**: Acabamento visual; não muda o que a pessoa consegue fazer.
 
@@ -70,7 +70,7 @@ O cabeçalho "Hoje" do calendário tinha o botão "Baixar as cruzadas de hoje" e
 - **FR-001**: O site MUST NOT mostrar ao visitante aviso nem botão sobre progresso de uma conta esperando para ser enviado.
 - **FR-002**: O progresso que espera uma conta MUST continuar guardado e ser enviado na entrada, exatamente como antes.
 - **FR-003**: Quem está numa conta MUST continuar vendo uma vez o aviso de progresso descartado, com botão "Fechar".
-- **FR-004**: O botão "Ajudas" MUST ter o mesmo formato, altura e peso de letra dos botões "Letra" e "Palavra" e MUST NOT ter espaço vazio ao lado do texto.
+- **FR-004**: O botão "Ajudas" MUST ter o mesmo formato, altura e peso de letra dos botões "Letra" e "Palavra" e MUST NOT ter espaço vazio ao lado do texto. _Nota (feature 062): a altura (36 px) continua igual nos três; o formato de "Ajudas" difere (contorno de 2 px e seta), como no artefato da 062._
 - **FR-005**: O indicador de verificação automática ligada MUST ficar no canto do botão "Ajudas" sem mudar a largura do botão nem a posição dos vizinhos.
 - **FR-006**: O calendário MUST NOT oferecer o botão "Baixar as cruzadas de hoje" nem o resumo "Guardadas".
 - **FR-007**: Cruzadas já abertas ou guardadas MUST continuar abrindo sem rede, e os cartões MUST continuar marcando "Disponível sem rede".
@@ -86,7 +86,7 @@ O cabeçalho "Hoje" do calendário tinha o botão "Baixar as cruzadas de hoje" e
 
 - **SC-001**: Em 100% das telas, o visitante com progresso esperando não vê faixa de aviso.
 - **SC-002**: Nenhum progresso guardado é perdido: após a entrada na conta, 100% do que esperava é enviado.
-- **SC-003**: Os três botões da barra de ajudas têm a mesma altura e o mesmo formato, e o texto de "Ajudas" fica centrado no botão.
+- **SC-003**: Os três botões da barra de ajudas têm a mesma altura e o mesmo formato, e o texto de "Ajudas" fica centrado no botão. _Nota (feature 062): continuam com a mesma altura; o formato de "Ajudas" passou a ser o do artefato da 062._
 - **SC-004**: Ligar e desligar a verificação automática move a barra de ajudas em 0 pixels.
 - **SC-005**: Uma cruzada aberta com rede abre sem rede em 100% das tentativas.
 

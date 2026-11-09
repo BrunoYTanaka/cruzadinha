@@ -1,0 +1,34 @@
+.handle {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  padding: 0;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-md);
+  background-color: var(--control);
+  color: var(--ink);
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+@media (hover: hover) {
+  .handle:hover {
+    background-image: linear-gradient(var(--hover-overlay), var(--hover-overlay));
+  }
+}
+
+.handle[aria-pressed='true'] {
+  border-color: var(--edge);
+  color: var(--ink);
+}
+
+.handle svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}

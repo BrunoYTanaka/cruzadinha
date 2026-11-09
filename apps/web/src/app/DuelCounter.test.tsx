@@ -54,9 +54,9 @@ describe('contador do x1 no menu (feature 058)', () => {
     expect(await screen.findByRole('link', { name: 'x1' })).toBeVisible()
   })
 
-  it('o selo fica fora do fluxo, então o cabeçalho não pula quando o número aparece', () => {
+  it('sem x1 esperando o selo some e o botão fica do tamanho do texto', () => {
     const css = readCss('AppLayout.module.css')
-    expect(css).toMatch(/\.count\s*{[^}]*position:\s*absolute/)
-    expect(css).toMatch(/\.duelLink\s*{[^}]*position:\s*relative/)
+    expect(css).toMatch(/\.count\s*{[^}]*display:\s*inline-block/)
+    expect(css).toMatch(/\.count\[data-empty='true'\]\s*{[^}]*display:\s*none/)
   })
 })

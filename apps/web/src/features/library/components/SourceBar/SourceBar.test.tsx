@@ -50,8 +50,11 @@ describe('SourceBar (feature 061)', () => {
     expect(screen.getByLabelText('Data')).toBeInTheDocument()
   })
 
-  it('a borda de baixo é da linha, não das abas', () => {
-    expect(readCss('SourceBar.module.css')).toMatch(/\.bar\s*{[^}]*border-bottom/)
+  it('as abas encostam no painel do calendário e não têm borda de baixo (feature 062)', () => {
+    expect(readCss('SourceBar.module.css')).not.toMatch(/\.bar\s*{[^}]*border-bottom/)
+    expect(readCss('SourceBar.module.css')).toMatch(
+      /margin-bottom:\s*calc\(-1 \* var\(--bar-attach/,
+    )
     expect(readCss('SourceTabs.module.css')).not.toMatch(/\.tabs\s*{[^}]*border-bottom/)
   })
 

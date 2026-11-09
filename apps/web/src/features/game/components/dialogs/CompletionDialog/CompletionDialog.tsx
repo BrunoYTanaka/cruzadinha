@@ -148,7 +148,7 @@ export function CompletionDialog({
               <dt>Seu tempo</dt>
               <dd>{formatElapsed(elapsedMs)}</dd>
             </div>
-            <div className={`${styles.stat} ${isRecord ? styles.record : ''}`}>
+            <div className={styles.stat}>
               <dt>Melhor tempo</dt>
               <dd>
                 {confirmed && bestMs !== null ? formatElapsed(bestMs) : '—'}

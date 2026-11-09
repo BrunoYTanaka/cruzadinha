@@ -97,3 +97,24 @@ for (const kind of ['visitante', 'conta'] as const) {
     await expectHelpsReset(page)
   })
 }
+
+test('concluída no computador: a faixa fica acima das ferramentas e as dicas não cobrem o tabuleiro', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto('/calendario')
+  await openGlobo(page)
+  await fillSolution(page, await todaySolution(page.request))
+  await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
+
+  const banner = await page
+    .getByText(/^Concluída em \d/)
+    .first()
+    .boundingBox()
+  const toolbarDate = await page.locator('h1').boundingBox()
+  expect(banner?.y ?? 0).toBeLessThan(toolbarDate?.y ?? 0)
+
+  const grid = await page.getByRole('grid').boundingBox()
+  const clues = await page.getByRole('complementary', { name: 'Dicas' }).boundingBox()
+  expect((grid?.x ?? 0) + (grid?.width ?? 0)).toBeLessThanOrEqual(clues?.x ?? 0)
+})

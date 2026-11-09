@@ -1,0 +1,34 @@
+/* Sublinhado por `background-size`: não causa reflow e acompanha texto que quebra de linha. */
+.link {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  padding-bottom: 2px;
+  background: linear-gradient(var(--sel), var(--sel)) 0 100% / 0% 3px no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 280ms ease;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    background-size: 100% 3px;
+  }
+}
+
+.link:active {
+  background-size: 100% 5px;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

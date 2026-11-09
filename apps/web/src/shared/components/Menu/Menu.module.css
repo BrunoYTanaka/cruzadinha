@@ -18,10 +18,10 @@
   display: grid;
   gap: 4px;
   padding: 8px;
-  border: 1px solid var(--line);
+  border: 2px solid var(--edge);
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 8px 28px rgb(0 0 0 / 0.25);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--ink) 22%, transparent);
 }
 
 /* --menu-shift: deslocamento horizontal que o Menu.tsx mede para o painel caber na janela. */
@@ -110,35 +110,51 @@
 .track {
   position: relative;
   flex: none;
-  width: 36px;
+  width: 20px;
   height: 20px;
-  border: 1px solid var(--control-line);
-  border-radius: 999px;
-  background-color: var(--control);
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  background-color: var(--surface);
 }
 
 .knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: var(--ink);
+  display: none;
 }
 
 [aria-checked='true'] > .track {
-  border-color: var(--accent);
-  background-color: var(--accent);
+  background-color: var(--sel);
 }
 
-[aria-checked='true'] > .track > .knob {
-  left: 18px;
-  background-color: var(--accent-ink);
+/* Caixa marcada (feature 062): a marca é desenhada com bordas, sem imagem. */
+[aria-checked='true'] > .track::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 5px;
+  width: 4px;
+  height: 9px;
+  border: solid var(--sel-ink);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .knob {
-    transition: left 120ms;
-  }
+.item.current {
+  background-color: var(--sel);
+  color: var(--sel-ink);
+  font-weight: 700;
+}
+
+/* Menu com caixas de marcar (feature 062, como no artefato): a caixa vem antes do texto e os outros
+   itens recuam para o texto continuar alinhado. */
+.item[role='menuitemcheckbox'] {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.item[role='menuitemcheckbox'] > .track {
+  order: -1;
+}
+
+.panel:has([role='menuitemcheckbox']) .item:not([role='menuitemcheckbox']) {
+  padding-left: 38px;
 }

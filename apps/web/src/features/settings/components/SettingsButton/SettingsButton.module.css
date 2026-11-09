@@ -1,7 +1,8 @@
-/* Botão de ícone (feature 023): cores e estados vêm do tipo. */
+/* Engrenagem do cabeçalho (feature 062): quadrado de 44 px com contorno, como no artefato. */
 .button {
   width: var(--tap);
   height: var(--tap);
+  padding: 0;
 }
 
 .button svg {

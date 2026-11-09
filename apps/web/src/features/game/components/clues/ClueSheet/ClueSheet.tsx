@@ -26,7 +26,14 @@ export function ClueSheet({
   onSelect,
 }: ClueSheetProps) {
   return (
-    <Dialog open={open} onClose={onClose} title="Dicas" align="bottom" closeOnBackdrop>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Dicas"
+      align="bottom"
+      closeOnBackdrop
+      closeButton={false}
+    >
       <div className={styles.body}>
         <ClueList
           puzzle={puzzle}
@@ -39,7 +46,9 @@ export function ClueSheet({
           }}
         />
       </div>
-      <Button onClick={onClose}>Fechar</Button>
+      <Button variant="primary" size="small" className={styles.close} onClick={onClose}>
+        Fechar
+      </Button>
     </Dialog>
   )
 }

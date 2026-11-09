@@ -24,7 +24,7 @@ export function PendingOwnerNotice({ guest }: PendingOwnerNoticeProps) {
     return (
       <div className={styles.wrap}>
         <Notice
-          variant="warning"
+          variant="info"
           onDismiss={() => {
             dismissDiscardedNotice()
             setDiscarded(false)

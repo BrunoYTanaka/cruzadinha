@@ -24,7 +24,6 @@ describe('SaveStatus', () => {
 
   it.each<[SaveState, string, boolean]>([
     ['offline', 'Sem conexão, tentando de novo', true],
-    ['session-expired', 'Sessão expirada', false],
     ['completed-elsewhere', 'Concluída em outro aparelho', false],
     ['local-only', 'Não salvo: vale só nesta aba', true],
   ])('mostra o aviso de "%s" por texto visível', (state, text, warn) => {
@@ -34,6 +33,11 @@ describe('SaveStatus', () => {
     expect(visible.closest('[aria-live]')).toBeNull()
     if (warn) expect(visible.className).toMatch(/warn/)
     else expect(visible.className).not.toMatch(/warn/)
+  })
+
+  it('não repete a sessão expirada: a faixa de aviso já diz', () => {
+    render(<SaveStatus state="session-expired" />)
+    expect(screen.queryByText('Sessão expirada')).toBeNull()
   })
 
   it('tem uma única região viva', () => {

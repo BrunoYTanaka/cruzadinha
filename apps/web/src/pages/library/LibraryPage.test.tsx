@@ -64,6 +64,13 @@ afterEach(() => {
   resetSessionHandlers()
 })
 
+// O estado do dia tem o símbolo e o texto em elementos separados (feature 062): compara o conjunto.
+const isStatus = (text: string) => (_: string, element: Element | null) =>
+  element?.tagName === 'SMALL' && element.textContent === text
+const statusText = (text: string) => screen.getByText(isStatus(text))
+const queryStatusText = (text: string) => screen.queryByText(isStatus(text))
+const findStatusText = (text: string) => screen.findByText(isStatus(text))
+
 describe('LibraryPage', () => {
   it('abre na aba da fonte do jogo de onde a pessoa voltou e só nesta montagem (feature 031)', async () => {
     library()
@@ -96,7 +103,6 @@ describe('LibraryPage', () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
     const { calls } = mockApi({})
     renderRoutes(routes, ['/'], withAccount())
-    expect(await screen.findByText(/Sem conexão: mostrando só as cruzadas guardadas/)).toBeVisible()
     expect(calls.some((call) => call.key.startsWith('GET /api/library'))).toBe(false)
     expect(
       await screen.findByRole('link', { name: '13 de outubro, não iniciado, disponível sem rede' }),
@@ -110,8 +116,8 @@ describe('LibraryPage', () => {
     expect(
       screen.getByRole('link', { name: '13 de outubro, concluído em 6 minutos e 52 segundos' }),
     ).toHaveAttribute('href', '/jogo/00000000-0000-4000-8000-000020261013')
-    expect(screen.getByText('✓ 06:52')).toBeInTheDocument()
-    expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
+    expect(statusText('✓ 06:52')).toBeInTheDocument()
+    expect(statusText('◐ Em jogo')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
     expect(within(screen.getByRole('table')).getByText('Hoje')).toBeInTheDocument()
     expect(
@@ -348,7 +354,7 @@ describe('abas de fonte (features 014 e 015)', () => {
     expect(getSettings().defaultSource).toBe('oglobo')
 
     await user.click(screen.getByRole('button', { name: 'Próximo mês' }))
-    expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
+    expect(statusText('◐ Em jogo')).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: '13 de outubro, concluído em 6 minutos e 52 segundos' }),
     ).not.toBeInTheDocument()
@@ -389,7 +395,7 @@ describe('abas de fonte (features 014 e 015)', () => {
     library()
     renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(screen.queryByText('◐ Em jogo')).not.toBeInTheDocument()
+    expect(queryStatusText('◐ Em jogo')).not.toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: '13 de outubro, não guardado, abre para buscar na fonte' }),
     ).toBeInTheDocument()
@@ -570,7 +576,7 @@ describe('biblioteca do visitante (feature 013)', () => {
         name: '13 de outubro, concluído em 6 minutos e 52 segundos',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByText('◐ Em jogo')).toBeInTheDocument()
+    expect(statusText('◐ Em jogo')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '11 de outubro, não iniciado' })).toBeInTheDocument()
   })
 
@@ -610,7 +616,7 @@ describe('biblioteca do visitante (feature 013)', () => {
         }),
     })
     renderRoutes(guestRoutes, ['/'], asGuest())
-    expect(await screen.findByText('◐ Em jogo')).toBeInTheDocument()
+    expect(await findStatusText('◐ Em jogo')).toBeInTheDocument()
   })
 
   it('as abas contam as concluídas do visitante a partir do navegador', async () => {

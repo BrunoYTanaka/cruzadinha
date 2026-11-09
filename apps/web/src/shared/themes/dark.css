@@ -8,6 +8,9 @@
     --ink: #eceef2;
     --mute: #a4abb6;
     --line: #33373f;
+    --edge: #868d99;
+    --chip-on: var(--word);
+    --chip-on-ink: var(--ink);
 
     --accent: #8db4ff;
     --accent-ink: #0a1a33;
@@ -46,6 +49,9 @@
   --ink: #eceef2;
   --mute: #a4abb6;
   --line: #33373f;
+  --edge: #868d99;
+  --chip-on: var(--word);
+  --chip-on-ink: var(--ink);
 
   --accent: #8db4ff;
   --accent-ink: #0a1a33;

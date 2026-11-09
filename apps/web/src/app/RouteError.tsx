@@ -14,6 +14,7 @@ export function RouteError() {
     return (
       <ErrorState
         level={1}
+        word="ZZZ"
         title="Não foi possível falar com o servidor."
         message="O servidor não respondeu em 90 segundos."
         onRetry={() => void revalidator.revalidate()}
@@ -24,6 +25,7 @@ export function RouteError() {
   return (
     <ErrorState
       level={1}
+      word={offline ? 'OFFLINE' : undefined}
       title={offline ? 'Sem conexão' : 'Algo deu errado'}
       message={
         offline

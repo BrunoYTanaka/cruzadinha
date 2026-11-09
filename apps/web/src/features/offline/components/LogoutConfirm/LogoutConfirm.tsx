@@ -14,10 +14,12 @@ export function LogoutConfirm({ open, onConfirm, onCancel }: LogoutConfirmProps)
       description="Há progresso ainda não enviado. Sair agora descarta esse progresso."
     >
       <div className={styles.actions}>
-        <Button variant="secondary" onClick={onCancel} data-autofocus>
+        <Button size="small" variant="secondary" onClick={onCancel} data-autofocus>
           Cancelar
         </Button>
-        <Button onClick={onConfirm}>Sair mesmo assim</Button>
+        <Button variant="primary" size="small" onClick={onConfirm}>
+          Sair mesmo assim
+        </Button>
       </div>
     </Dialog>
   )

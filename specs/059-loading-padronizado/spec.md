@@ -56,7 +56,7 @@ Nos formulários de conta (entrar, cadastrar, recuperar senha e os demais), o bo
 **Acceptance Scenarios**:
 
 1. **Given** um formulário de conta, **When** a pessoa envia, **Then** o botão mostra o indicador de espera e o texto de ação em andamento ("Entrando…" no login), fica desabilitado e mantém a mesma largura.
-2. **Given** a espera passou de 2 s, **When** a pessoa olha o formulário, **Then** a mensagem da soneca aparece abaixo do botão, num espaço reservado, sem mover os campos.
+2. **Given** a espera passou de 2 s, **When** a pessoa olha o formulário, **Then** a mensagem da soneca aparece abaixo do botão, sem mover os campos (a feature 062 tirou o espaço reservado).
 3. **Given** o envio terminou com sucesso ou com erro, **When** a resposta chega, **Then** o botão volta ao normal e a mensagem some.
 
 ---

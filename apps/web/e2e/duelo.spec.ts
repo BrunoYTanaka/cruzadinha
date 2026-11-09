@@ -41,10 +41,9 @@ async function begin(page: Page) {
 
 async function accept(page: Page, invite: string, nickname = 'Beto') {
   await page.goto(invite)
-  const dialog = page.getByRole('dialog', { name: /desafiou você/ })
-  await expect(dialog).toBeVisible()
-  await dialog.getByLabel('Seu apelido').fill(nickname)
-  await dialog.getByRole('button', { name: 'Começar' }).click()
+  await expect(page.getByText(/desafiou você/)).toBeVisible()
+  await page.getByLabel('Seu apelido').fill(nickname)
+  await page.getByRole('button', { name: 'Começar', exact: true }).click()
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
@@ -58,18 +57,14 @@ test('dois jogadores: criar, aceitar, terminar em ordens diferentes e ver o resu
   await ana.page.getByRole('link', { name: 'Abrir o meu x1' }).click()
   await begin(ana.page)
 
-  // O convite abre uma janela que não fecha por Esc nem por clique fora.
+  // O convite é a própria página, com as regras e os dois botões.
   await beto.page.goto(invite)
-  const dialog = beto.page.getByRole('dialog', { name: /desafiou você/ })
-  await expect(dialog).toBeVisible()
-  await beto.page.keyboard.press('Escape')
-  await beto.page.mouse.click(5, 5)
-  await expect(dialog).toBeVisible()
+  await expect(beto.page.getByText(/desafiou você/)).toBeVisible()
   expect(
     (await new AxeBuilder({ page: beto.page }).exclude('[role="grid"]').analyze()).violations,
   ).toEqual([])
-  await dialog.getByLabel('Seu apelido').fill('Beto')
-  await dialog.getByRole('button', { name: 'Começar' }).click()
+  await beto.page.getByLabel('Seu apelido').fill('Beto')
+  await beto.page.getByRole('button', { name: 'Começar', exact: true }).click()
   await expect(beto.page.getByRole('grid')).toBeVisible()
 
   const solution = await todaySolution(request)
@@ -148,12 +143,11 @@ test('entrar por código e "Meus x1": voltar pelo aparelho e pelo link de retorn
   const beto = await person(browser)
   const { code, back } = await createDuel(ana.page)
 
-  // Código digitado em "Meus x1" abre a janela de regras; nada muda até clicar em "Começar".
+  // Código digitado em "Meus x1" abre o convite; nada muda até clicar em "Começar".
   await beto.page.goto('/x1')
   await beto.page.getByLabel('Código ou link do x1').fill(code.toLowerCase())
   await beto.page.getByRole('button', { name: 'Entrar' }).click()
-  await expect(beto.page.getByRole('dialog', { name: /desafiou você/ })).toBeVisible()
-  await beto.page.getByRole('button', { name: 'Agora não' }).click()
+  await expect(beto.page.getByText(/desafiou você/)).toBeVisible()
 
   // Código inexistente: a mesma mensagem.
   await beto.page.goto('/x1')
@@ -177,7 +171,9 @@ test('entrar por código e "Meus x1": voltar pelo aparelho e pelo link de retorn
   await beto.context.close()
 })
 
-test('o contador do menu não faz o cabeçalho pular', async ({ browser }) => {
+test('o contador do menu só aparece com x1 esperando e não move os outros links', async ({
+  browser,
+}) => {
   const ana = await person(browser)
   const beto = await person(browser)
   const { invite } = await createDuel(ana.page)
@@ -185,14 +181,17 @@ test('o contador do menu não faz o cabeçalho pular', async ({ browser }) => {
   const link = ana.page.getByRole('link', { name: /^x1/ })
   await expect(link).toBeVisible()
   const before = await link.boundingBox()
+  const calendar = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
 
   await accept(beto.page, invite)
-  // Agora há um x1 em andamento que pede atenção: o número aparece, o link não muda de tamanho.
+  // Agora há um x1 que pede atenção: o número aparece e só o link do x1 cresce, para a direita.
   await ana.page.reload()
   await expect(ana.page.getByRole('link', { name: 'x1, 1 aguardando' })).toBeVisible()
   const after = await ana.page.getByRole('link', { name: /^x1/ }).boundingBox()
-  expect(Math.abs((after?.width ?? 0) - (before?.width ?? 0))).toBeLessThan(0.5)
+  expect(after?.width ?? 0).toBeGreaterThan(before?.width ?? 0)
   expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(0.5)
+  const calendarAfter = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
+  expect(Math.abs((calendarAfter?.x ?? 0) - (calendar?.x ?? 0))).toBeLessThan(0.5)
   await ana.context.close()
   await beto.context.close()
 })

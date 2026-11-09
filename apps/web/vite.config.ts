@@ -65,6 +65,8 @@ export default defineConfig({
               test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/,
               priority: 20,
             },
+            // Só a Administração usa (feature 062): fora do pacote principal.
+            { name: 'dnd', test: /node_modules[\\/]@dnd-kit[\\/]/, priority: 15 },
             { name: 'vendor', test: /node_modules/, priority: 10 },
           ],
         },

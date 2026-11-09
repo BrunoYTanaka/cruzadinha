@@ -1,5 +1,5 @@
 .help {
-  min-height: var(--tap);
+  font-variant-numeric: tabular-nums;
 }
 
 .help[aria-disabled='true'] {

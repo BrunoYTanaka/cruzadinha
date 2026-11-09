@@ -1,0 +1,16 @@
+.page {
+  display: grid;
+  gap: 12px;
+  max-width: calc(420px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 30px var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font: 800 28px/1.1 var(--font-title);
+}
+
+.link {
+  margin: 0;
+}

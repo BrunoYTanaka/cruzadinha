@@ -1,12 +1,15 @@
 .panel {
   display: grid;
   gap: 16px;
+  padding: 20px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
 
 .headline {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font: 800 28px/1.1 var(--font-title);
 }
 
 .reason {
@@ -17,12 +20,15 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   font-variant-numeric: tabular-nums;
 }
 
 .table th,
 .table td {
-  padding: 8px 6px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   font-size: 15px;
@@ -32,8 +38,41 @@
   font-weight: 700;
 }
 
+.table :is(td, thead th:not(:first-child)) {
+  text-align: right;
+}
+
+/* Tempo de quem venceu: verde e em negrito (nunca só a cor). */
+.table .won {
+  color: var(--ok);
+  font-weight: 800;
+}
+
+.table thead th {
+  background: var(--control);
+  color: var(--mute);
+  font-size: 13px;
+}
+
+.table tr:last-child > * {
+  border-bottom: 0;
+}
+
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* Celular: o cartão e a tabela de cinco colunas têm de caber em 320 px. */
+@media (max-width: 480px) {
+  .panel {
+    padding: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
 }

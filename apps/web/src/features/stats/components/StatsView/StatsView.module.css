@@ -14,9 +14,9 @@
 .card {
   display: grid;
   gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  padding: 14px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
@@ -27,26 +27,30 @@
 
 .card dd {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font:
+    800 26px 'Fraunces Variable',
+    Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
 }
 
 .heading {
   margin: 8px 0 0;
-  font-size: 17px;
-  font-weight: 700;
+  font: 800 19px/1.2 var(--font-title);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   font-variant-numeric: tabular-nums;
 }
 
 .table th,
 .table td {
-  padding: 10px 8px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   text-align: right;
 }
@@ -57,6 +61,19 @@
 
 .table thead th {
   color: var(--mute);
+  background: var(--control);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.table tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* 320 px: células mais justas para a tabela caber sem rolagem lateral. */
+@media (max-width: 400px) {
+  .table th,
+  .table td {
+    padding: 10px 6px;
+  }
 }

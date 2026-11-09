@@ -86,7 +86,9 @@
 }
 
 .active {
-  background-color: var(--word);
+  background-color: var(--sel);
+  color: var(--sel-ink);
+  font-weight: 700;
 }
 
 /* Resolvida: riscada de novo (feature 019), com o fundo e o visto da 017 e o texto em --ink, sem
@@ -98,10 +100,10 @@
   text-decoration-thickness: 1px;
 }
 
-/* Ativa e resolvida: mantém o fundo da palavra ativa, como qualquer dica ativa; o visto continua
+/* Ativa e resolvida: mantém o fundo da dica ativa, como qualquer dica ativa; o visto continua
    marcando que ela está resolvida. */
 .active.done {
-  background-color: var(--word);
+  background-color: var(--sel);
 }
 
 /* Mouse por cima só na dica sem destaque, para não se confundir com a ativa nem com a resolvida;

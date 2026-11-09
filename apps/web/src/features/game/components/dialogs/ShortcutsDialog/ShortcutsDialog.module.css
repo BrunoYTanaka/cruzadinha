@@ -4,9 +4,11 @@
 
 .heading {
   margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted, inherit);
+  color: var(--mute);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .list {
@@ -15,9 +17,9 @@
 
 .row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
-  padding: 6px 0;
+  padding: 10px 0;
   border-top: 1px solid var(--line);
 }
 
@@ -26,21 +28,24 @@
   flex: none;
   flex-wrap: wrap;
   gap: 4px;
-  width: 130px;
+  order: 2;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .key {
   min-width: 26px;
-  padding: 2px 6px;
-  border: 1px solid var(--line);
+  padding: 2px 8px;
+  border: 2px solid var(--edge);
   border-radius: 6px;
   background: var(--surface);
-  font: inherit;
-  font-size: 13px;
+  font: 700 13px var(--font-mono);
   text-align: center;
 }
 
 .description {
+  flex: 1;
+  order: 1;
   margin: 0;
   min-width: 0;
   overflow-wrap: anywhere;

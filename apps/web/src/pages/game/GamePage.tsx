@@ -1,5 +1,6 @@
 import { puzzleSourceNames } from '@cruzadinha/shared'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
@@ -39,6 +40,7 @@ export function GamePage() {
     return (
       <ErrorState
         level={1}
+        word={offline ? 'OFFLINE' : undefined}
         title={offline ? 'Sem conexão' : 'Não foi possível abrir a cruzada'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={retry}

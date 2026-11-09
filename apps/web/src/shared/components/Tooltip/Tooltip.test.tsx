@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../../test/axe'
-import { Tooltip } from './Tooltip'
+import { Tooltip, TOOLTIP_DELAY_MS } from './Tooltip'
 
 function setup() {
   return render(
@@ -19,6 +19,10 @@ function setup() {
 const tip = () => screen.queryByText('Configurações', { selector: '[data-tooltip]' })
 
 describe('Tooltip', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('aparece no foco do alvo e some ao sair', async () => {
     const user = userEvent.setup()
     setup()
@@ -29,12 +33,25 @@ describe('Tooltip', () => {
     expect(tip()).toBeNull()
   })
 
-  it('aparece com o mouse e some ao sair', () => {
+  it('aparece com o mouse só depois do atraso e some ao sair', () => {
+    vi.useFakeTimers()
     setup()
     const target = screen.getByRole('button')
     fireEvent.pointerEnter(target.parentElement!, { pointerType: 'mouse' })
+    expect(tip()).toBeNull()
+    act(() => vi.advanceTimersByTime(TOOLTIP_DELAY_MS))
     expect(tip()).toBeInTheDocument()
     fireEvent.pointerLeave(target.parentElement!, { pointerType: 'mouse' })
+    expect(tip()).toBeNull()
+  })
+
+  it('sair antes do atraso cancela o balão', () => {
+    vi.useFakeTimers()
+    setup()
+    const wrap = screen.getByRole('button').parentElement!
+    fireEvent.pointerEnter(wrap, { pointerType: 'mouse' })
+    fireEvent.pointerLeave(wrap, { pointerType: 'mouse' })
+    act(() => vi.advanceTimersByTime(TOOLTIP_DELAY_MS * 2))
     expect(tip()).toBeNull()
   })
 

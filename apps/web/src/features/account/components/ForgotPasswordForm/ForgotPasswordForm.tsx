@@ -1,12 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import { forgotPassword } from '../../../../shared/services/api/auth/auth'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
+import { AuthLayout } from '../../../../shared/components/AuthLayout/AuthLayout'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { authMessages, emailRequestErrorMessage, invalidFields } from '../../../session'
 import { CaptchaField } from '../CaptchaField/CaptchaField'
@@ -58,7 +59,11 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Sem pânico. A gente resolve."
+      lead="Informe o e-mail da conta e enviaremos um link para escolher uma senha nova."
+      rows={['ESQUECI', 'A', 'senha']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Esqueci a senha</h1>
         {sent ? (
@@ -117,6 +122,6 @@ export function ForgotPasswordForm() {
           <Link to="/login">Voltar para entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

@@ -22,20 +22,38 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  min-height: 60px;
   padding: 8px max(var(--gutter), env(safe-area-inset-right, 0px)) 8px
     max(var(--gutter), env(safe-area-inset-left, 0px));
-  border-bottom: 1px solid var(--line);
+  border-bottom: 2px solid var(--edge);
   background: var(--surface);
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 18px;
   color: var(--ink);
-  font-size: 18px;
-  font-weight: 700;
+  font: 800 22px var(--font-title);
   letter-spacing: -0.01em;
   text-decoration: none;
   transition: color 120ms;
+}
+
+/* Quadrado amarelo da marca (feature 062). */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--edge);
+  border-radius: 4px;
+  background: var(--sel);
+  box-shadow: 2px 2px 0 var(--edge);
+  color: var(--sel-ink);
+  font: 800 17px var(--font-title);
 }
 
 @media (hover: hover) {
@@ -52,13 +70,28 @@
 
 .spacer {
   flex: 1;
+  order: 1;
 }
 
+/* Os filhos de `.actions` entram direto na linha do cabeçalho: os links ficam junto da marca e o
+   resto (`.tail`) vai para a direita, depois do espaçador. */
 .actions {
+  display: contents;
+}
+
+.tail {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  order: 2;
+}
+
+/* Página atual: amarelo, como no artefato (feature 062). */
+.current {
+  background-color: var(--sel);
+  border-color: var(--edge);
+  color: var(--sel-ink);
 }
 
 .main {
@@ -70,14 +103,13 @@
   outline: none;
 }
 
+/* "Visitante" só para leitor de tela (como no artefato): "Entrar" já mostra que não há conta. */
 .who {
-  min-width: 0;
-  max-width: 24ch;
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  color: var(--mute);
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 /* "Entrar" do visitante: link com aparência de botão discreto, como o "Sair" (feature 023). */
@@ -96,10 +128,9 @@
 }
 
 .count {
-  position: absolute;
-  top: 2px;
-  right: 2px;
+  display: inline-block;
   min-width: 16px;
+  margin-left: 6px;
   padding: 0 4px;
   border-radius: 8px;
   background: var(--accent);
@@ -116,11 +147,92 @@
   display: none;
 }
 
-/* No celular o e-mail não cabe ao lado do tema e de "Sair"; "Visitante" é curto e fica sempre. */
+/* Círculo da conta (feature 062): 38 px com as iniciais do e-mail; leva a "Sua conta". */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--edge);
+  border-radius: 50%;
+  background: var(--sel);
+  color: var(--sel-ink);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.avatar:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Botão de menu: só no celular, no lugar dos links (feature 062). */
+.menu {
+  display: none;
+}
+
+.menu .menuButton {
+  min-width: var(--tap);
+  padding: 0 10px;
+  border-color: transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+
+.menuIcon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* Até 560 px os links viram o botão de menu. */
 @media (max-width: 560px) {
-  .email,
+  .calendar,
   .statsLink,
   .duelLink {
     display: none;
+  }
+
+  .menu {
+    display: block;
+  }
+
+  /* 390 px: marca, Calendário, menu, configurações e Entrar têm de caber numa linha. */
+  .header {
+    gap: 8px;
+  }
+
+  .tail {
+    gap: 4px;
+  }
+
+  .brand {
+    margin-right: 0;
+    font-size: 18px;
+  }
+}
+
+/* Telas bem estreitas: sem o quadrado da marca, para a linha caber em 320 px. */
+@media (max-width: 370px) {
+  .mark {
+    display: none;
+  }
+
+  .header {
+    gap: 4px;
+  }
+
+  .brand {
+    font-size: 17px;
+  }
+
+  .login {
+    padding: 0 10px;
   }
 }

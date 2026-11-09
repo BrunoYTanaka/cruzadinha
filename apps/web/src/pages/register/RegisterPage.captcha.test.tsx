@@ -54,9 +54,7 @@ describe('cadastro com captcha (feature 049)', () => {
     expect(submitButton()).toBeEnabled()
     await user.click(submitButton())
 
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' }),
-    ).toBeVisible()
+    expect(await screen.findByText(/Enviamos um link para/)).toBeVisible()
     expect(calls.find((call) => call.key === 'POST /api/auth/register')?.body).toEqual({
       email: aUser.email,
       captchaToken: 'prova-1',
@@ -106,7 +104,7 @@ describe('cadastro com captcha (feature 049)', () => {
       await vi.waitFor(() => expect(fake.api.render).toHaveBeenCalled())
       fake.solve('prova-1')
       await user.click(submitButton())
-      await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' })
+      await screen.findByText(/Enviamos um link para/)
 
       await vi.waitFor(() => expect(fake.last()?.action).toBe('resend'))
       fake.solve('prova-resend')
@@ -139,7 +137,7 @@ describe('cadastro com captcha (feature 049)', () => {
       await vi.waitFor(() => expect(fake.api.render).toHaveBeenCalled())
       fake.solve('prova-1')
       await user.click(submitButton())
-      await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' })
+      await screen.findByText(/Enviamos um link para/)
       await vi.waitFor(() => expect(fake.last()?.action).toBe('resend'))
       await act(async () => {
         await vi.advanceTimersByTimeAsync(31_000)
@@ -195,7 +193,7 @@ describe('cadastro com captcha (feature 049)', () => {
     await user.type(await screen.findByLabelText('E-mail'), aUser.email)
     expect(submitButton()).toBeEnabled()
     await user.click(submitButton())
-    await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' })
+    await screen.findByText(/Enviamos um link para/)
     expect(document.head.querySelector('script[src*="challenges.cloudflare.com"]')).toBeNull()
     expect(calls.find((call) => call.key === 'POST /api/auth/register')?.body).toEqual({
       email: aUser.email,
@@ -234,7 +232,7 @@ describe('envio duplo (feature 049)', () => {
       form.requestSubmit()
     })
 
-    await screen.findByRole('heading', { level: 1, name: 'Confira seu e-mail' })
+    await screen.findByText(/Enviamos um link para/)
     expect(calls.filter((call) => call.key === 'POST /api/auth/register')).toHaveLength(1)
   })
 })

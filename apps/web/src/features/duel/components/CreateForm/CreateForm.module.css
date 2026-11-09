@@ -1,10 +1,13 @@
 .form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 
 .group {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -13,8 +16,7 @@
 
 .legend {
   padding: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font: 800 17px var(--font-title);
 }
 
 .options {
@@ -29,12 +31,6 @@
   gap: 8px;
   min-height: 44px;
   font-size: 15px;
-}
-
-.option input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--accent);
 }
 
 .picked {

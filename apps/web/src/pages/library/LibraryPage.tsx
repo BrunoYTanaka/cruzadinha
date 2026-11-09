@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { ErrorState } from '../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
@@ -13,7 +13,6 @@ import { addMonths, todayInBrasilia } from '../../shared/helpers/dates/dates'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { useViewer } from '../../features/session'
 import { VisuallyHidden } from '../../shared/components/VisuallyHidden/VisuallyHidden'
-import { useOnline } from '../../shared/hooks/useOnline/useOnline'
 import { useVisibleSources } from '../../shared/hooks/useVisibleSources/useVisibleSources'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery/useMediaQuery'
 import {
@@ -81,7 +80,6 @@ function LibraryContent() {
     )
     return buildMonth(month, today, items, readNoPuzzleDates(source, monthDates))
   }, [month, today, items, source])
-  const online = useOnline()
   const wide = useMediaQuery(LIBRARY_DESKTOP_QUERY)
   const pageRef = useRef<HTMLDivElement>(null)
   const size = useLibraryWidth(pageRef, { enabled: wide, ready: library.isSuccess })
@@ -123,6 +121,7 @@ function LibraryContent() {
     calendarArea = (
       <ErrorState
         level={2}
+        word={offline ? 'OFFLINE' : undefined}
         title={offline ? 'Sem conexão' : 'Não foi possível carregar a biblioteca'}
         message={offline ? 'Confira a conexão e tente de novo.' : 'Tente de novo em instantes.'}
         onRetry={() => void library.refetch()}
@@ -131,7 +130,6 @@ function LibraryContent() {
   } else {
     calendarArea = (
       <>
-        {online ? null : <Notice>Sem conexão: mostrando só as cruzadas guardadas.</Notice>}
         {isSourceDown(source) ? (
           <Notice variant="warning">
             Novas cruzadas não podem ser buscadas agora. As que já estão guardadas continuam
@@ -152,19 +150,13 @@ function LibraryContent() {
           resizeHandle={size ? <CalendarHandles size={size} /> : null}
         />
         <LibraryLegend />
-        <p className={styles.stats}>
-          <Link to="/estatisticas">Ver estatísticas</Link>
-          {' · '}
-          {/* No celular o cabeçalho não tem espaço para o x1 (feature 058). */}
-          <Link to="/x1">Meus x1</Link>
-        </p>
       </>
     )
   }
 
   return (
     <div ref={pageRef} className={styles.page} style={size?.style}>
-      <h1>
+      <h1 className={styles.heading}>
         <VisuallyHidden>Escolha um dia</VisuallyHidden>
       </h1>
       {directPlay && !directPlayClosed ? (

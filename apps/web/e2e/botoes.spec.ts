@@ -51,13 +51,16 @@ async function expectControlBorder(page: Page, locator: Locator) {
 
 // Botões e links visíveis com o fundo do principal dentro de um formulário ou modal (FR-002).
 async function primaryCount(page: Page, container: Locator) {
+  // Principal: amarelo (feature 062) ou, nos diálogos do tabuleiro, o azul de antes.
   const accent = await tokenBackground(page, '--accent')
+  const sel = await tokenBackground(page, '--sel')
   return container
     .locator('button:visible, a:visible')
     .evaluateAll(
-      (elements, color) =>
-        elements.filter((element) => getComputedStyle(element).backgroundColor === color).length,
-      accent,
+      (elements, colors) =>
+        elements.filter((element) => colors.includes(getComputedStyle(element).backgroundColor))
+          .length,
+      [accent, sel],
     )
 }
 
@@ -86,11 +89,15 @@ test.describe('023 US1: botões reconhecíveis à primeira vista', () => {
       await openToday(page)
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar letra/ }))
       await expectControlBorder(page, page.getByRole('button', { name: /^Revelar palavra/ }))
-      await expectControlBorder(page, page.getByRole('button', { name: /^Ajudas/ }))
+      // O botão Ajudas tem o contorno forte do artefato (feature 062).
+      expect(await css(page.getByRole('button', { name: /^Ajudas/ }), 'border-top-width')).toBe(
+        '2px',
+      )
 
-      // Cabeçalho com conta: "Sair".
+      // Conta: "Sair" fica dentro de "Sua conta" (feature 062).
       await login(page)
-      await expectControlBorder(page, page.getByRole('button', { name: 'Sair' }))
+      await page.goto('/conta')
+      await expectControlBorder(page, page.getByRole('button', { name: 'Sair', exact: true }))
     })
   }
 
@@ -335,18 +342,16 @@ async function expectButtonsAreNotLinks(page: Page) {
   }
 }
 
-// Link de texto: sublinhado, sem fundo; com o mouse, o sublinhado engrossa (FR-014).
+// Link de texto (feature 062): negrito, sublinhado amarelo de 3 px que corre da esquerda para a
+// direita com o mouse (`background-size` de 0% a 100%), sem sublinhado nativo.
 async function expectTextLink(page: Page, link: Locator) {
   await expect(link).toBeVisible()
   await page.mouse.move(0, 0)
-  expect(await css(link, 'text-decoration-line')).toBe('underline')
-  expect(await backgroundImage(link)).toBe('none')
-  const rest = parseFloat(await css(link, 'text-decoration-thickness')) || 1
+  expect(await css(link, 'font-weight')).toBe('700')
+  expect(await backgroundImage(link)).toContain('linear-gradient')
+  expect(await css(link, 'background-size')).toBe('0% 3px')
   await link.hover()
-  await expect
-    .poll(async () => parseFloat(await css(link, 'text-decoration-thickness')))
-    .toBeGreaterThan(rest)
-  expect(await backgroundImage(link)).toBe('none')
+  await expect.poll(() => css(link, 'background-size')).toBe('100% 3px')
 }
 
 function yesterday() {
@@ -416,9 +421,10 @@ test.describe('023 US3: link e botão distinguíveis', () => {
     await page.goto('/calendario')
     const accent = await tokenColor(page, '--accent')
 
-    // "Entrar" do visitante: link com aparência de botão discreto.
+    // "Entrar" do visitante: botão primário amarelo (feature 062).
     const enter = page.getByRole('banner').getByRole('link', { name: 'Entrar' })
-    await expectControlBorder(page, enter)
+    await expect(enter).toBeVisible()
+    expect(await css(enter, 'background-color')).toBe(await tokenBackground(page, '--sel'))
     expect(await css(enter, 'text-decoration-line')).toBe('none')
     await enter.hover()
     await expect.poll(() => backgroundImage(enter)).not.toBe('none')
@@ -487,7 +493,7 @@ test.describe('023 US4: consistência entre telas e temas', () => {
     // 030) é uma lista de rádios, sem o destaque de segmento (coberto em SettingsDialog.test.tsx).
     const toggle = dialog.getByRole('switch', { name: 'Riscar a dica só quando acerta' })
     if ((await toggle.getAttribute('aria-checked')) !== 'true') await toggle.click()
-    expect(await css(toggle, 'background-color')).toBe(await tokenBackground(page, '--accent'))
+    expect(await css(toggle, 'background-color')).toBe(await tokenBackground(page, '--sel'))
     await expectSelectedKept(page, toggle)
   })
 

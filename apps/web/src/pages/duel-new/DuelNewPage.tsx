@@ -12,7 +12,7 @@ export function DuelNewPage() {
   const [created, setCreated] = useState<CreateDuelResponse | null>(null)
   return (
     <RequiresConnection>
-      <div className={styles.page}>
+      <div className={`${styles.page} ${created ? styles.narrow : ''}`}>
         {created ? (
           <>
             <h1 className={styles.title}>x1 criado</h1>
@@ -25,7 +25,10 @@ export function DuelNewPage() {
               code={created.code}
               participantToken={created.participantToken}
             />
-            <Link to={`/x1/${created.linkToken}`} className={buttonClass({ variant: 'primary' })}>
+            <Link
+              to={`/x1/${created.linkToken}`}
+              className={`${buttonClass({ variant: 'primary' })} ${styles.open}`}
+            >
               Abrir o meu x1
             </Link>
           </>

@@ -1,6 +1,18 @@
 .tabs {
   display: flex;
   gap: 4px;
+  /* Uma linha só que rola para o lado, sem barra; a última aba cortada é o sinal de que há mais
+     (feature 062). */
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* A aba escolhida desce 2 px sobre a borda do painel; o preenchimento deixa espaço dentro da
+     área que corta a rolagem. */
+  padding-bottom: 2px;
+  margin-bottom: -2px;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -9,9 +21,10 @@
   align-items: flex-start;
   justify-content: center;
   min-height: var(--tap);
-  margin-bottom: -1px;
-  padding: 6px 18px;
-  border: 1px solid var(--line);
+  margin-top: 4px;
+  padding: 4px 18px 0;
+  border: 2px solid var(--edge);
+  border-bottom: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   background-color: var(--pill);
   color: var(--ink);
@@ -38,9 +51,12 @@
 /* A aba escolhida se liga ao calendário: mesma superfície, sem a borda de baixo e com a marca da
    cor de ação no topo. */
 .selected {
-  border-bottom-color: var(--surface);
+  min-height: 48px;
+  margin-top: 0;
+  margin-bottom: -2px;
+  padding-bottom: 2px;
   background-color: var(--surface);
-  box-shadow: inset 0 3px 0 var(--accent);
+  box-shadow: inset 0 4px 0 var(--sel);
 }
 
 .name {
@@ -52,17 +68,12 @@
   font-size: 13px;
 }
 
-/* Celular: as abas (até 3) dividem a largura numa linha (FR-016). */
+/* Celular: cada aba tem a largura do próprio texto; passou da largura, a linha rola (feature 062). */
 @media (max-width: 599px) {
-  .tabs {
-    display: grid;
-    grid-auto-columns: minmax(0, 1fr);
-    grid-auto-flow: column;
-  }
-
   .tab {
+    flex: none;
     align-items: center;
-    padding: 6px 8px;
+    padding: 6px 14px;
     text-align: center;
   }
 }

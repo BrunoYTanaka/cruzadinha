@@ -142,12 +142,6 @@ function cluesAside(page: Page) {
   return page.getByRole('complementary', { name: 'Dicas' })
 }
 
-// O primeiro item da coluna do tabuleiro: a barra da dica ou, na cruzada concluída, a faixa de modo
-// leitura (feature 018).
-function boardHead(page: Page) {
-  return page.getByRole('region', { name: 'Tabuleiro' }).locator(':scope > :first-child')
-}
-
 type Box = { x: number; y: number; width: number; height: number }
 
 // Mesma posição horizontal e mesma largura, com a tolerância de `expectNear`.
@@ -298,15 +292,15 @@ for (const theme of ['light', 'dark'] as const) {
     // que ele usa o token --ok (FR-012).
     expect(await css(check, 'stroke')).toBe(await probe(page, 'stroke', 'var(--ok)'))
 
-    // Ativa e resolvida: o fundo da palavra ativa, com o visto.
+    // Ativa e resolvida: o fundo da dica ativa (amarelo, como no artefato), com o visto.
     await cell(page, firstWord).click()
     await expect(first).toHaveAttribute('aria-current', 'true')
     expect(await css(first, 'background-color')).toBe(
-      await probe(page, 'background-color', 'var(--word)'),
+      await probe(page, 'background-color', 'var(--sel)'),
     )
     await expect(check).toBeVisible()
     expect(await css(first, 'text-decoration-line')).toBe('line-through')
-    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--ink)'))
+    expect(await css(first, 'color')).toBe(await probe(page, 'color', 'var(--sel-ink)'))
     // A barra da dica acima do tabuleiro nunca fica riscada (FR-014).
     expect(await css(clueBar(page), 'text-decoration-line')).toBe('none')
 
@@ -379,24 +373,24 @@ test.describe('018 US2: a barra acompanha o tamanho do tabuleiro', () => {
     await settled()
   })
 
-  test('a faixa de modo leitura segue a mesma regra', async ({ page }) => {
+  test('a faixa de modo leitura ocupa a largura toda e não muda com o tabuleiro', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await openToday(page)
     const { solution } = await todayPuzzle(page.request)
     await fillSolution(page, solution.cells)
     await page.getByRole('button', { name: 'Ver o tabuleiro' }).click()
-    expectSameSpan(await box(boardHead(page)), await box(page.getByRole('grid')))
+    const banner = page
+      .getByText(/^Concluída em \d/)
+      .first()
+      .locator('xpath=ancestor::div[1]')
+    expectNear((await box(banner)).width, 1280)
 
     await setCellSize(page, 'Home')
-    const banner = await box(boardHead(page))
-    expectNear(banner.width, CLUE_BAR_MIN)
-    // A faixa não alarga a coluna além do mínimo: as dicas começam um `column-gap` depois dela.
-    const gap = await page
-      .getByRole('region', { name: 'Tabuleiro' })
-      .evaluate((section) =>
-        Number.parseFloat(getComputedStyle(section.parentElement ?? section).columnGap),
-      )
-    expectNear((await box(cluesAside(page))).x, banner.x + banner.width + gap)
+    expectNear((await box(banner)).width, 1280)
+    const grid = await box(page.getByRole('grid'))
+    expect(grid.x + grid.width).toBeLessThanOrEqual((await box(cluesAside(page))).x)
   })
 })
 
@@ -727,4 +721,71 @@ test('calendário: escolher uma data no painel leva o foco ao dia', async ({ pag
   await page.getByRole('button', { name: 'Ir para uma data' }).click()
   await page.getByLabel('Data', { exact: true }).fill(brasiliaToday())
   await expect(todayLink(page)).toBeFocused()
+})
+
+// Cabeçalho da feature 062: visitante, conta e menu do celular.
+test.describe('cabeçalho (feature 062)', () => {
+  test('visitante tem Entrar e nenhum círculo; a conta tem o círculo e não tem Entrar', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto('/calendario')
+    const header = page.getByRole('banner')
+    await expect(header.getByText('Visitante')).toBeVisible()
+    await expect(header.getByRole('link', { name: 'Entrar' })).toBeVisible()
+    await expect(header.getByRole('link', { name: /^Sua conta/ })).toHaveCount(0)
+    const brandLink = header.getByRole('link', { name: 'Cruzadinha' }).first()
+    const guest = { header: await box(header), brand: await box(brandLink) }
+
+    await login(page)
+    await page.goto('/calendario')
+    const circle = header.getByRole('link', { name: /^Sua conta/ })
+    await expect(circle).toBeVisible()
+    await expect(header.getByRole('link', { name: 'Entrar' })).toHaveCount(0)
+    const circleBox = await box(circle)
+    expectNear(circleBox.width, 38)
+    expectNear(circleBox.height, 38)
+    // Entrar na conta não move a marca nem muda a altura do cabeçalho.
+    expectNear((await box(header)).height, guest.header.height)
+    expectNear((await box(brandLink)).x, guest.brand.x)
+
+    await circle.click()
+    await expect(page).toHaveURL(/\/conta$/)
+    await expect(page.getByRole('button', { name: 'Sair', exact: true })).toBeVisible()
+  })
+
+  test('até 560 px os links viram o menu: folha com Calendário, Estatísticas e x1', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 800 })
+    await page.goto('/calendario')
+    const header = page.getByRole('banner')
+    await expect(header.getByRole('link', { name: 'Estatísticas' })).toBeHidden()
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true)
+
+    const menu = header.getByRole('button', { name: 'Menu' })
+    expect((await box(menu)).height).toBeGreaterThanOrEqual(44)
+    await menu.click()
+    for (const name of ['Calendário', 'Estatísticas', 'x1']) {
+      await expect(page.getByRole('menuitem', { name })).toBeVisible()
+    }
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('menuitem', { name: 'Estatísticas' })).toHaveCount(0)
+    await expect(menu).toBeFocused()
+
+    await menu.click()
+    await page.getByRole('menuitem', { name: 'Estatísticas' }).click()
+    await expect(page).toHaveURL(/\/estatisticas$/)
+  })
+
+  test('acima de 560 px não há botão de menu e os links ficam na barra', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 800 })
+    await page.goto('/calendario')
+    const header = page.getByRole('banner')
+    await expect(header.getByRole('button', { name: 'Menu' })).toBeHidden()
+    await expect(header.getByRole('link', { name: 'Estatísticas' })).toBeVisible()
+    await expect(header.getByRole('link', { name: 'x1' })).toBeVisible()
+  })
 })

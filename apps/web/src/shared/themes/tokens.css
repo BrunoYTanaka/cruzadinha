@@ -1,6 +1,6 @@
 /* Tokens que não mudam com o tema. Os nomes de cor (iguais nos dois temas) estão em light.css e
    dark.css e seguem contracts/ui-contracts.md:
-   superfícies e texto: --bg --surface --ink --mute --line
+   superfícies e texto: --bg --surface --ink --mute --line --edge (contorno dos controles)
    ação:                --accent --accent-ink --focus
    tabuleiro:           --block --cell --cell-line --bar --word --sel --sel-ink
    ajuda:               --help --bad
@@ -9,6 +9,8 @@
    Componentes só leem tokens: nada de cor ou medida fixa. */
 :root {
   --font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Títulos das telas (feature 062): a mesma Fraunces da landing. */
+  --font-title: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-sm: 6px;

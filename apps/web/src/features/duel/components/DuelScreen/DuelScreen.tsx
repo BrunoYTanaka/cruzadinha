@@ -1,8 +1,8 @@
 import { puzzleSourceNames, type DuelStateResponse, type DuelView } from '@cruzadinha/shared'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { Button, buttonClass } from '../../../../shared/components/Button/Button'
+import { Link as TextLink } from '../../../../shared/components/Link/Link'
+import { Button } from '../../../../shared/components/Button/Button'
 import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
@@ -25,7 +25,7 @@ import { duelTokens } from '../../services/duel-tokens'
 import { DuelBoard } from '../DuelBoard/DuelBoard'
 import { ForfeitConfirm } from '../ForfeitConfirm/ForfeitConfirm'
 import { ResultPanel } from '../ResultPanel/ResultPanel'
-import { RulesDialog } from '../RulesDialog/RulesDialog'
+import { RulesPanel } from '../RulesPanel/RulesPanel'
 import { ShareLinkPanel } from '../ShareLinkPanel/ShareLinkPanel'
 import styles from './DuelScreen.module.css'
 
@@ -47,14 +47,13 @@ function startErrorText(error: unknown): string {
 
 const Unavailable = () => (
   <ErrorState level={1} title="O x1 não está disponível agora" message="Tente de novo mais tarde.">
-    <Link to="/calendario">Voltar ao calendário</Link>
+    <TextLink to="/calendario">Voltar ao calendário</TextLink>
   </ErrorState>
 )
 
 // Quem abre o link sem ser participante: vê as regras e decide (feature 058). Abrir não muda nada;
 // só "Começar" e "Recusar desafio" agem.
 function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => void }) {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const lookup = useQuery({
     queryKey: ['duel-lookup', linkToken],
@@ -81,12 +80,8 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
       )
     }
     return (
-      <ErrorState
-        level={1}
-        title="Este x1 não está aberto"
-        message="Ele pode ter sido aceito, cancelado ou ter vencido."
-      >
-        <Link to="/x1">Meus x1</Link>
+      <ErrorState level={1} title="Este x1 não está aberto" message="O link não vale mais.">
+        <TextLink to="/x1">Meus x1</TextLink>
       </ErrorState>
     )
   }
@@ -95,9 +90,6 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
       <div className={styles.page}>
         <h1 className={styles.title}>Desafio recusado</h1>
         <p className={styles.lead}>O criador vê que você recusou.</p>
-        <Link to="/calendario" className={buttonClass({ variant: 'primary' })}>
-          Voltar ao calendário
-        </Link>
       </div>
     )
   }
@@ -140,17 +132,15 @@ function Invite({ linkToken, onJoined }: { linkToken: string; onJoined: () => vo
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.invite}`}>
       <h1 className={styles.title}>Convite de x1</h1>
-      <p className={styles.lead}>Leia as regras e escolha como responder ao desafio.</p>
-      <RulesDialog
+      <RulesPanel
         duel={lookup.data}
         nickname={nickname}
         onNicknameChange={setNickname}
         busy={busy}
         error={error}
         onStart={() => void onStart()}
-        onLater={() => void navigate('/calendario')}
         onDecline={() => void onDecline()}
       />
     </div>
@@ -331,9 +321,8 @@ export function DuelScreen({ linkToken }: { linkToken: string }) {
             ? 'Sem conexão. Confira a rede e tente de novo.'
             : 'Tente de novo em instantes.'
         }
-        onRetry={() => void state.refetch()}
       >
-        <Link to="/x1">Meus x1</Link>
+        <TextLink to="/x1">Meus x1</TextLink>
       </ErrorState>
     )
   }

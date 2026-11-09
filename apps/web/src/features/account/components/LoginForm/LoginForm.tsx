@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link } from '../../../../shared/components/Link/Link'
 import {
   clearExpired,
   authMessages,
@@ -13,6 +14,7 @@ import { Button } from '../../../../shared/components/Button/Button'
 import { Field } from '../../../../shared/components/Field/Field'
 import { useDocumentTitle } from '../../../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import { SlowSubmitNotice } from '../SlowSubmitNotice/SlowSubmitNotice'
+import { AuthLayout } from '../../../../shared/components/AuthLayout/AuthLayout'
 import styles from '../../../../shared/components/AuthPage.module.css'
 import { useRegistration } from '../../hooks/useRegistration'
 
@@ -52,7 +54,11 @@ export function LoginForm() {
   }
 
   return (
-    <div className={styles.page}>
+    <AuthLayout
+      headline="Sua cruzada espera por você."
+      lead="Entre para guardar o progresso e continuar em qualquer aparelho."
+      rows={['ENTRE', 'NA', 'SUA', 'cruzada']}
+    >
       <div className={styles.card}>
         <h1 className={styles.title}>Entrar</h1>
         <p className={styles.lead}>Continue de onde parou, em qualquer aparelho.</p>
@@ -102,6 +108,6 @@ export function LoginForm() {
           <Link to="/">Jogar sem entrar</Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

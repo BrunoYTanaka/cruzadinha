@@ -1,0 +1,65 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  justify-items: start;
+  max-width: 420px;
+  margin: 30px auto;
+  padding: 0 var(--gutter);
+}
+
+.title {
+  margin: 0;
+  font: 800 28px/1.1 var(--font-title);
+}
+
+.panel {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px 18px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.row:first-child {
+  padding-top: 0;
+}
+
+.row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* Selo de estado: cor, símbolo e contorno, nunca só a cor. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mute);
+}
+
+.chip[data-state='ok'] {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+.chip[data-state='bad'] {
+  background: color-mix(in srgb, var(--bad) 10%, var(--surface));
+  color: var(--bad);
+}

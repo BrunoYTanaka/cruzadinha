@@ -1,7 +1,8 @@
 import { puzzleSourceIdSchema, type PuzzleSourceId } from '@cruzadinha/shared'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import { ApiRequestError } from '../../shared/services/api/client/client'
 import { listStoredPuzzles, readPuzzle, savePuzzle } from '../../features/offline'
 import { getPuzzleByDate } from '../../shared/services/api/puzzles/puzzles'
@@ -158,6 +159,7 @@ function FetchDay({ date, source }: { date: string; source: PuzzleSourceId }) {
         return (
           <ErrorState
             level={1}
+            word="OFFLINE"
             title="Sem conexão"
             message="Confira a conexão e tente de novo."
             onRetry={() => void query.refetch()}

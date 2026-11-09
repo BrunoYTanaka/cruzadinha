@@ -46,3 +46,16 @@
   border-color: transparent;
   background: var(--line);
 }
+
+/* Os mesmos símbolos das células estreitas (feature 062). */
+.glyph {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Os símbolos acompanham a célula: só aparecem onde ela mostra apenas "✓" ou "◐" (como no artefato). */
+@media (min-width: 481px) {
+  .glyph {
+    display: none;
+  }
+}

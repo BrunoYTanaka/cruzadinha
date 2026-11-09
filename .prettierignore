@@ -15,3 +15,5 @@ test-results/
 apps/api/src/sources/cruzadasbrasil/fixtures/
 # Fixtures da fonte clube imitam páginas e scripts reais; o formatador as reescreveria.
 apps/api/src/sources/clube/fixtures/
+# Artefato do design system (feature 062): guardado como foi entregue
+docs/mockups/design-system.html

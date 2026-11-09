@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from '../../shared/components/Link/Link'
 import {
   ChangeEmailForm,
   ChangePasswordForm,
@@ -9,6 +9,8 @@ import {
 import { clearAccountData } from '../../features/offline'
 import { useSessionQuery } from '../../features/session'
 import { Button } from '../../shared/components/Button/Button'
+import { initials } from '../../shared/helpers/initials/initials'
+import { LogoutButton } from './LogoutButton/LogoutButton'
 import { RequiresConnection } from '../../shared/components/RequiresConnection/RequiresConnection'
 import { useDocumentTitle } from '../../shared/hooks/useDocumentTitle/useDocumentTitle'
 import styles from './AccountPage.module.css'
@@ -33,7 +35,18 @@ function AccountContent() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Sua conta</h1>
-      <p className={styles.email}>{user.email}</p>
+      <section className={styles.identity}>
+        <div className={styles.idrow}>
+          <span className={styles.avatar} aria-hidden="true">
+            {initials(user.email)}
+          </span>
+          <span className={styles.who}>
+            <b className={styles.email}>{user.email}</b>
+            <small>Conectada neste aparelho</small>
+          </span>
+        </div>
+        <LogoutButton userId={user.id} />
+      </section>
       {user.isAdmin ? <Link to="/admin">Administração</Link> : null}
       <ChangePasswordForm />
       <LogoutOthersButton />

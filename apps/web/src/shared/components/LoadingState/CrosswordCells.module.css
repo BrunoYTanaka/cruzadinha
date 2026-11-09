@@ -11,10 +11,10 @@
   place-items: center;
   width: 44px;
   height: 52px;
-  border: 2px solid var(--cell-line);
+  border: 2px solid var(--edge);
   border-radius: 6px;
   background-color: var(--surface);
-  box-shadow: 0 3px 0 var(--cell-line);
+  box-shadow: 2px 3px 0 var(--edge);
   color: var(--ink);
   font:
     700 26px/1 'Fraunces Variable',
@@ -53,6 +53,11 @@
     height: 40px;
     font-size: 20px;
   }
+}
+
+/* Telas de erro (feature 062): as mesmas casas, paradas. */
+.still .cell {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
