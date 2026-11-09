@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.18.1...web-v0.19.0) (2026-11-09)
+
+
+### Features
+
+* **web:** add the split layout with the decorative crossword to the access screens ([edc9084](https://github.com/BrunoYTanaka/cruzadinha/commit/edc90845843acef243de777390b3964f6ba0991e))
+* **web:** apply the design system to the site ([30a8335](https://github.com/BrunoYTanaka/cruzadinha/commit/30a8335efcb25526f887ef3164d044c3e292fc43))
+* **web:** wait 500 ms of mouse rest before showing a tooltip ([9eb4612](https://github.com/BrunoYTanaka/cruzadinha/commit/9eb46121a42c4c585e5611cce8cb55643548fc51))
+
+
+### Bug Fixes
+
+* **web:** show the server timeout error instead of waiting forever ([29a9373](https://github.com/BrunoYTanaka/cruzadinha/commit/29a93739884935976e241028cca2d956b23e9c17))
+
 ## [0.18.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.18.0...web-v0.18.1) (2026-11-04)
 
 
