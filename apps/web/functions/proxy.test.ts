@@ -115,6 +115,57 @@ describe('proxyRequest', () => {
     )
   })
 
+  describe('upstream diagnostics log', () => {
+    it('logs status and content type of an HTML answer, without the body', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { fetchImpl } = capture(
+        new Response('<html>segredo</html>', {
+          status: 503,
+          headers: { 'content-type': 'text/html' },
+        }),
+      )
+      await proxyRequest(browserRequest('/api/health'), env, fetchImpl)
+      expect(warn).toHaveBeenCalledWith('repasse: resposta do servidor', {
+        status: 503,
+        contentType: 'text/html',
+      })
+      expect(JSON.stringify(warn.mock.calls)).not.toContain('segredo')
+      warn.mockRestore()
+    })
+
+    it('logs the error name of a connection failure, without the message', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const fetchImpl = vi.fn(async () => {
+        throw new TypeError('connection refused to https://api.example')
+      })
+      await proxyRequest(browserRequest('/api/health'), env, fetchImpl as unknown as typeof fetch)
+      expect(warn).toHaveBeenCalledWith('repasse: falha de conexão', { error: 'TypeError' })
+      expect(JSON.stringify(warn.mock.calls)).not.toContain('api.example')
+      warn.mockRestore()
+    })
+
+    it.each([429, 502, 503])('logs a passed-through %i', async (status) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { fetchImpl } = capture(
+        new Response('Too Many Requests', { status, headers: { 'content-type': 'text/plain' } }),
+      )
+      await proxyRequest(browserRequest('/api/health'), env, fetchImpl)
+      expect(warn).toHaveBeenCalledWith('repasse: resposta do servidor', {
+        status,
+        contentType: 'text/plain',
+      })
+      warn.mockRestore()
+    })
+
+    it('does not log normal answers', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { fetchImpl } = capture(new Response('{}', { status: 401 }))
+      await proxyRequest(browserRequest('/api/auth/me'), env, fetchImpl)
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+  })
+
   it.each([
     {},
     { API_ORIGIN: 'https://api.example' },

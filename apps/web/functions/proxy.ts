@@ -62,10 +62,20 @@ export async function proxyRequest(
       // Sem limite, um servidor travado prende o pedido até o limite da plataforma.
       signal: AbortSignal.timeout(PROXY_TIMEOUT_MS),
     })
-  } catch {
+  } catch (error) {
+    // Só o nome do erro: a mensagem pode trazer o endereço da API.
+    console.warn('repasse: falha de conexão', {
+      error: error instanceof Error ? error.name : 'unknown',
+    })
     return wakingResponse()
   }
 
-  if (response.headers.get('content-type')?.includes('text/html')) return wakingResponse()
+  const contentType = response.headers.get('content-type')
+  const isHtml = contentType?.includes('text/html') === true
+  // Diagnóstico de "API não acorda": status e tipo, nunca o corpo.
+  if (isHtml || response.status === 429 || response.status >= 500) {
+    console.warn('repasse: resposta do servidor', { status: response.status, contentType })
+  }
+  if (isHtml) return wakingResponse()
   return response
 }
