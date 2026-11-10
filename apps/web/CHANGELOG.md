@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.19.0...web-v0.19.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **web:** log status and content type when the proxy gets no useful API answer ([314ad11](https://github.com/BrunoYTanaka/cruzadinha/commit/314ad11058130674003a16d1a62b5e3f4ee575b3))
+* **web:** log status and content type when the proxy gets no useful API answer ([d890e92](https://github.com/BrunoYTanaka/cruzadinha/commit/d890e92aa6e106522f4f1e286c494168ecdbec21))
+
 ## [0.19.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.18.1...web-v0.19.0) (2026-11-09)
 
 
