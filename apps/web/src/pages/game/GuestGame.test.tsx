@@ -110,26 +110,25 @@ describe('jogo do visitante (feature 013, US1)', () => {
     await waitFor(async () => expect((await stored())?.help?.marks['0,0']).toBe('wrong'))
   })
 
-  it('mostra que o progresso fica só neste aparelho, o link para entrar e a fonte', async () => {
+  // Feature 063: o visitante não vê mais o aviso de progresso só neste aparelho nem o link para entrar.
+  it('não mostra o aviso do visitante nem o link para entrar; mostra a fonte', async () => {
     const { container } = openGuestGame()
     await screen.findByRole('grid')
-    expect(screen.getByText('Progresso só neste aparelho')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Entrar para salvar na sua conta' })).toHaveAttribute(
-      'href',
-      `/login?next=${encodeURIComponent(`/jogo/${PUZZLE_ID}`)}`,
-    )
+    expect(screen.queryByText('Progresso só neste aparelho')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Entrar para salvar na sua conta' })).toBeNull()
+    expect(screen.queryByText('Seu progresso fica salvo só neste aparelho.')).toBeNull()
     expect(screen.getAllByText(/Fonte: O Globo/).length).toBeGreaterThan(0)
     await expectNoA11yViolations(container)
   })
 
-  it('o texto do visitante não muda ao salvar (feature 017)', async () => {
+  it('salvar não mostra texto de salvamento (feature 017)', async () => {
     const user = setup()
     openGuestGame()
     await screen.findByRole('grid')
     await user.click(screen.getByRole('grid'))
     await user.keyboard('X')
     await waitFor(async () => expect((await stored())?.cells[0]?.[0]).toBe('X'))
-    expect(screen.getByText('Progresso só neste aparelho')).toBeInTheDocument()
+    expect(screen.queryByText('Progresso só neste aparelho')).toBeNull()
     expect(screen.queryByText('Salvo neste aparelho')).toBeNull()
   })
 

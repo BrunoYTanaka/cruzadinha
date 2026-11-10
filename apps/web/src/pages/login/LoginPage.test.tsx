@@ -130,6 +130,18 @@ describe('LoginPage', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
   })
 
+  // Feature 063: o "Entrar" da landing abre `/login` sem `next`; depois de entrar, o calendário.
+  it('vindo da landing (sem next), vai ao calendário', async () => {
+    mockApi({
+      'GET /api/auth/me': noSession,
+      'POST /api/auth/login': () => jsonResponse(200, { user: aUser }),
+    })
+    const user = userEvent.setup()
+    const { router } = renderRoutes(routes, ['/login'])
+    await fillAndSubmit(user)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
+  })
+
   it('com sessão já válida redireciona sem mostrar o formulário', async () => {
     mockApi({})
     const queryClient = makeQueryClient()

@@ -8,7 +8,7 @@ import {
   useSettings,
 } from '../../../../shared/services/settings-store/settings-store'
 import { todayInBrasilia } from '../../../../shared/helpers/dates/dates'
-import { buildLoginPath, SessionExpiredNotice } from '../../../session'
+import { SessionExpiredNotice } from '../../../session'
 import { guestStore } from '../../../guest'
 import { useSettingsOpen } from '../../../settings'
 import {
@@ -249,12 +249,7 @@ export function GameScreen({ response, owner }: { response: PuzzleResponse; owne
         canPause={!readOnly && !duel}
         onPause={clock.pause}
         onResume={clock.resume}
-        saveStatus={
-          <SaveStatus
-            state={saveState}
-            guest={guest ? { loginTo: buildLoginPath(`/jogo/${response.puzzleId}`) } : undefined}
-          />
-        }
+        saveStatus={<SaveStatus state={saveState} />}
         shortcuts={
           onScreenKeyboard ? null : <ShortcutsButton onOpen={() => setShortcutsOpen(true)} />
         }

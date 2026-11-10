@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetServerWake } from '../shared/services/api/server-wake/server-wake'
+import { resetServerWake, waitForServer } from '../shared/services/api/server-wake/server-wake'
 import { jsonResponse, mockApi } from '../test/http'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../test/render'
 import { makePuzzleResponse, TINY, PUZZLE_ID } from '../test/fixtures'
@@ -19,9 +20,9 @@ const withSession = () => jsonResponse(200, { user: aUser })
 
 const rendered: Array<{ dispose: () => void }> = []
 
-function renderApp(path: string) {
+function renderApp(path: string, before: string[] = []) {
   const queryClient = makeQueryClient()
-  const result = renderRoutes(createAppRoutes(queryClient), [path], queryClient)
+  const result = renderRoutes(createAppRoutes(queryClient), [...before, path], queryClient)
   rendered.push(result.router)
   return result
 }
@@ -185,7 +186,8 @@ describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
         screen.getByRole('heading', { level: 1, name: /Palavras cruzadas todo dia/ }),
       ).toBeInTheDocument(),
     )
-    expect(screen.getByRole('link', { name: 'Calendário' })).toHaveAttribute('href', '/calendario')
+    // Cabeçalho da landing só com a marca (feature 063).
+    expect(screen.queryByRole('link', { name: 'Calendário' })).not.toBeInTheDocument()
     expect(calls.some((call) => call.key === 'GET /api/auth/me')).toBe(false)
   })
 
@@ -238,5 +240,89 @@ describe('landing em / e "Ir direto ao jogo" (feature 048)', () => {
     const { router } = renderApp('/jogar')
     await waitFor(() => expect(router.state.location.pathname).toBe(`/dia/${todayInBrasilia()}`))
     expect(router.state.location.search).toBe('?fonte=cruzadaonline')
+  })
+})
+
+// Feature 063: com o servidor dormindo, sair da landing mostra a tela de espera no lugar dela e segue
+// ao destino quando o servidor acorda; acordado, segue sem tela de espera.
+describe('espera ao sair da landing (feature 063)', () => {
+  const landingTitle = () =>
+    screen.queryByRole('heading', { level: 1, name: /Palavras cruzadas todo dia/ })
+  const waitTitle = () =>
+    screen.queryByRole('heading', { level: 1, name: 'Preparando as palavras…' })
+
+  function sleepingServer() {
+    let wake = () => {}
+    const awake = new Promise<void>((resolve) => {
+      wake = resolve
+    })
+    mockApi({
+      // Cada pedido recebe a própria resposta: o corpo só pode ser lido uma vez.
+      'GET /api/health': () => awake.then(healthUp),
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+      'GET /api/sources': () => jsonResponse(200, { sources: ['oglobo'] }),
+    })
+    return { wake: () => wake() }
+  }
+
+  for (const [name, path] of [
+    ['Jogar a cruzada de hoje', `/dia/${todayInBrasilia()}`],
+    ['Ver o calendário', '/calendario'],
+    ['Entrar', '/login'],
+  ] as const) {
+    it(`"${name}" mostra a tela de espera e chega ao destino quando o servidor acorda`, async () => {
+      const server = sleepingServer()
+      const { router } = renderApp('/')
+      // O clique só navega depois que o roteador termina de hidratar a landing.
+      await waitFor(() => expect(router.state.initialized).toBe(true), { timeout: 4_000 })
+      await waitFor(() => expect(landingTitle()).toBeInTheDocument(), { timeout: 4_000 })
+      await userEvent.click(screen.getAllByRole('link', { name })[0]!)
+      await waitFor(() => expect(waitTitle()).toBeInTheDocument(), { timeout: 4_000 })
+      expect(landingTitle()).not.toBeInTheDocument()
+      expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+      server.wake()
+      await waitFor(() => expect(router.state.location.pathname).toBe(path), { timeout: 4_000 })
+      expect(waitTitle()).not.toBeInTheDocument()
+    })
+  }
+
+  it('com o servidor acordado, segue sem tela de espera', async () => {
+    mockApi({
+      'GET /api/health': healthUp,
+      'GET /api/auth/me': () => jsonResponse(401, { error: 'unauthenticated', message: 'x' }),
+      'GET /api/library': () => jsonResponse(200, { items: [] }),
+    })
+    await waitForServer()
+    const { router } = renderApp('/')
+    // O clique só navega depois que o roteador termina de hidratar a landing.
+    await waitFor(() => expect(router.state.initialized).toBe(true), { timeout: 4_000 })
+    await waitFor(() => expect(landingTitle()).toBeInTheDocument(), { timeout: 4_000 })
+    await userEvent.click(screen.getByRole('link', { name: 'Ver o calendário' }))
+    expect(waitTitle()).not.toBeInTheDocument()
+    await waitFor(() => expect(router.state.location.pathname).toBe('/calendario'))
+  })
+
+  it('o botão da landing não vira mais "Abrindo…"', async () => {
+    sleepingServer()
+    const { router } = renderApp('/')
+    // O clique só navega depois que o roteador termina de hidratar a landing.
+    await waitFor(() => expect(router.state.initialized).toBe(true), { timeout: 4_000 })
+    await waitFor(() => expect(landingTitle()).toBeInTheDocument(), { timeout: 4_000 })
+    await userEvent.click(screen.getByRole('link', { name: 'Ver o calendário' }))
+    expect(screen.queryByText('Abrindo…')).not.toBeInTheDocument()
+  })
+
+  it('voltar durante a espera cancela a navegação sem erro', async () => {
+    sleepingServer()
+    // A página anterior no histórico é a de status, que não espera o servidor.
+    const { router } = renderApp('/', ['/status'])
+    await waitFor(() => expect(router.state.initialized).toBe(true), { timeout: 4_000 })
+    await userEvent.click(await screen.findByRole('link', { name: 'Entrar' }))
+    await waitFor(() => expect(waitTitle()).toBeInTheDocument(), { timeout: 4_000 })
+    await router.navigate(-1)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/status'))
+    expect(router.state.navigation.state).toBe('idle')
+    expect(waitTitle()).not.toBeInTheDocument()
   })
 })

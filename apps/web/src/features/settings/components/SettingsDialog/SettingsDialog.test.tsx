@@ -19,7 +19,8 @@ const routes = [
   {
     element: <AppLayout />,
     children: [
-      { path: '/', element: <p>Calendário</p> },
+      // Fora da landing: em `/` não há engrenagem (feature 063).
+      { path: '/calendario', element: <p>Calendário</p> },
       { path: '/login', element: <p>Tela de login</p> },
     ],
   },
@@ -28,7 +29,7 @@ const routes = [
 function asGuest() {
   const queryClient = makeQueryClient()
   queryClient.setQueryData(queryKeys.session, null)
-  return renderRoutes(routes, ['/'], queryClient)
+  return renderRoutes(routes, ['/calendario'], queryClient)
 }
 
 async function openSettings() {
@@ -183,7 +184,10 @@ describe('modal de configurações', () => {
   it('o visitante vê que fica só neste aparelho, com link para entrar', async () => {
     const { dialog } = await openSettings()
     expect(within(dialog).getByText(/ficam só neste aparelho/)).toBeInTheDocument()
-    expect(within(dialog).getByRole('link', { name: 'Entre' })).toHaveAttribute('href', '/login')
+    expect(within(dialog).getByRole('link', { name: 'Entre' })).toHaveAttribute(
+      'href',
+      '/login?next=%2Fcalendario',
+    )
   })
 
   it('não tem violações de acessibilidade nos dois temas', async () => {
@@ -330,7 +334,7 @@ describe('com conta (US3)', () => {
     })
     const queryClient = makeQueryClient()
     queryClient.setQueryData(queryKeys.session, { user: aUser })
-    renderRoutes(routes, ['/'], queryClient)
+    renderRoutes(routes, ['/calendario'], queryClient)
     return api
   }
 

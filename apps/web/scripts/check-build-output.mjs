@@ -32,6 +32,10 @@ for (const text of [
 ]) {
   check(rootHtml.includes(text), `index.html sem "${text}"`)
 }
+// Cabeçalho da landing só com a marca (feature 063): nada de "Calendário" no HTML pré-gerado.
+const header = rootHtml.match(/<header[^>]*>([\s\S]*?)<\/header>/)?.[1] ?? ''
+check(header.includes('Cruzadinha'), 'index.html sem a marca no cabeçalho')
+check(!header.includes('Calendário'), 'o cabeçalho da landing não pode ter "Calendário"')
 const h1 = rootHtml.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? ''
 check(h1.includes('Palavras cruzadas'), 'o <h1> deve trazer a frase de destaque')
 

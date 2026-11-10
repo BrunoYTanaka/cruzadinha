@@ -41,7 +41,8 @@ test('visitante abre a Cruzada Online pelo cartão, joga e o progresso não apar
   await expect(page.getByRole('gridcell', { name: /^Linha 3, coluna 3, letra Ç/ })).toBeVisible()
   await (await helpsItem(page, 'Verificar')).click()
   await expect(page.getByText('Verificado: nenhuma letra errada')).toBeAttached()
-  await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
+  // Feature 063: o visitante não tem mais o aviso de progresso só neste aparelho.
+  await expect(page.getByText('Progresso só neste aparelho')).toHaveCount(0)
 
   await page.goto('/calendario')
   await expect(todayCell(page, 'não iniciado')).toBeVisible()

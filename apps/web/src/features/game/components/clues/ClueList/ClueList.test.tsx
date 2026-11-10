@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../../../../test/axe'
 import { makePuzzleResponse, LAYOUT5 } from '../../../../../test/fixtures'
+import { readCss } from '../../../../../test/css-file'
 import { ClueList } from './ClueList'
 
 const { puzzle } = makePuzzleResponse(LAYOUT5)
@@ -142,5 +143,30 @@ describe('ClueList', () => {
     vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(rect(140, 180))
     rerender(<ClueList puzzle={puzzle} activeWord={last} struck={new Set()} onSelect={() => {}} />)
     expect(group.scrollTop).toBe(0)
+  })
+})
+
+// Feature 063: as dicas que rolam por baixo do título somem num esmaecido, sem linha cortada nítida.
+describe('esmaecido sob os títulos das dicas (feature 063)', () => {
+  const css = readCss('ClueList.module.css')
+  const rule = (selector: string) =>
+    css.match(new RegExp(`\\.${selector}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
+
+  it('o título continua fixo no topo e acima da lista', () => {
+    const heading = rule('heading')
+    expect(heading).toMatch(/position:\s*sticky/)
+    expect(heading).toMatch(/z-index:\s*\d+/)
+    expect(heading).toMatch(/background:\s*var\(--clue-heading-bg,\s*var\(--bg\)\)/)
+  })
+
+  it('o esmaecido vai da cor do fundo ao transparente, sem ocupar espaço nem receber cliques', () => {
+    const after = rule('heading::after')
+    expect(after).toMatch(
+      /linear-gradient\(var\(--clue-heading-bg,\s*var\(--bg\)\),\s*transparent\)/,
+    )
+    expect(after).toMatch(/position:\s*absolute/)
+    expect(after).toMatch(/top:\s*100%/)
+    expect(after).toMatch(/height:\s*12px/)
+    expect(after).toMatch(/pointer-events:\s*none/)
   })
 })

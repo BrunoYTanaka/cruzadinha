@@ -109,15 +109,16 @@ test.describe('US1: a faixa de ferramentas não pula ao salvar', () => {
     await expect(page.getByRole('gridcell', { name: /letra A$/ }).first()).toBeVisible()
   })
 
-  test('visitante: o texto fixo fica igual e nada se move', async ({ page }) => {
+  // Feature 063: o visitante não tem mais o texto fixo nem o link para entrar na faixa.
+  test('visitante: sem aviso na faixa e nada se move', async ({ page }) => {
     await openToday(page)
-    await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
+    await expect(page.getByText('Progresso só neste aparelho')).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Entrar para salvar na sua conta' })).toHaveCount(0)
     const before = await toolbarAndBoardBoxes(page)
     await type20Letters(page)
     // O salvamento do visitante tem a mesma espera; dá tempo a ele terminar antes de medir.
     await page.waitForTimeout(2_000)
     await noSaveText(page)
-    await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
     expect(await toolbarAndBoardBoxes(page)).toEqual(before)
   })
 })

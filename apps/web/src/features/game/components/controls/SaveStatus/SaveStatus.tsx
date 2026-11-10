@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { VisuallyHidden } from '../../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import type { SaveState } from '../../../services/save-queue'
 import styles from './SaveStatus.module.css'
@@ -13,25 +12,13 @@ const WARNING: Partial<Record<SaveState, string>> = {
   'local-only': 'Não salvo: vale só nesta aba',
 }
 
-// Visitante (feature 013): o progresso fica só no navegador, e há um caminho para entrar. O texto é
-// fixo, sem acompanhar os salvamentos.
-const GUEST_TEXT = 'Progresso só neste aparelho'
-const GUEST_ANNOUNCEMENT = 'Seu progresso fica salvo só neste aparelho.'
-
 // O texto visível não é uma região viva: um anúncio por mudança encheria o leitor de tela de ruído.
-// Só a queda para "sem conexão" e a volta são anunciadas.
-export function SaveStatus({
-  state,
-  guest,
-}: {
-  state: SaveState
-  // Com `guest`, o texto diz que é só neste aparelho e há o link para entrar.
-  guest?: { loginTo: string }
-}) {
+// Só a queda para "sem conexão" e a volta são anunciadas. O visitante não tem aviso próprio: o
+// "Entrar" do cabeçalho já é o caminho para a conta (feature 063).
+export function SaveStatus({ state }: { state: SaveState }) {
   const [previous, setPrevious] = useState<SaveState>(state)
   const [wasOffline, setWasOffline] = useState(false)
-  // O visitante ouve uma vez, ao abrir, que o progresso fica só neste aparelho.
-  const [announcement, setAnnouncement] = useState(guest ? GUEST_ANNOUNCEMENT : '')
+  const [announcement, setAnnouncement] = useState('')
   if (state !== previous) {
     setPrevious(state)
     if (state === 'offline') {
@@ -46,15 +33,11 @@ export function SaveStatus({
     }
   }
   const warning = WARNING[state]
-  const text = warning ?? (guest ? GUEST_TEXT : undefined)
   const warn = state === 'offline' || state === 'local-only'
   return (
     <>
-      {text ? <span className={`${styles.status} ${warn ? styles.warn : ''}`}>{text}</span> : null}
-      {guest ? (
-        <Link to={guest.loginTo} className={styles.login}>
-          Entrar para salvar na sua conta
-        </Link>
+      {warning ? (
+        <span className={`${styles.status} ${warn ? styles.warn : ''}`}>{warning}</span>
       ) : null}
       <VisuallyHidden role="status" aria-live="polite">
         {announcement}

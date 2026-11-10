@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { login, resetAndSeed } from './support'
 
@@ -61,4 +62,54 @@ test('sem resposta em 90 s, mostra o erro e "Tentar de novo" volta a esperar', a
   ).toBeVisible()
   await page.getByRole('button', { name: 'Tentar de novo' }).click()
   await expect(page.getByText(WAKE_TEXT)).toBeVisible()
+})
+
+// Feature 063: com o servidor dormindo, os botões da landing mostram a tela de espera no lugar dela e
+// seguem ao destino quando ele acorda.
+for (const [name, url] of [
+  ['Jogar a cruzada de hoje', /\/(dia|jogo)\//],
+  ['Ver o calendário', /\/calendario$/],
+  ['Entrar', /\/login$/],
+] as const) {
+  test(`na landing, "${name}" mostra a tela de espera e chega ao destino`, async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: /Palavras cruzadas/ })).toBeVisible()
+    await delayHealth(page, 4_000)
+    await page.getByRole('link', { name }).first().click()
+    await expect(page.getByText(WAKE_TEXT)).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
+    await expect(page).toHaveURL(url, { timeout: 15_000 })
+  })
+}
+
+test('a tela de espera aberta pela landing não tem violações de acessibilidade', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1, name: /Palavras cruzadas/ })).toBeVisible()
+  await delayHealth(page, 8_000)
+  await page.getByRole('link', { name: 'Ver o calendário' }).click()
+  await expect(page.getByText(WAKE_TEXT)).toBeVisible()
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
+})
+
+test('na landing, o servidor que não acorda em 90 s mostra o erro de conexão', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1, name: /Palavras cruzadas/ })).toBeVisible()
+  await page.clock.install()
+  await page.route('**/api/health', (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'service-unavailable', message: 'x' }),
+    }),
+  )
+  await page.getByRole('link', { name: 'Ver o calendário' }).click()
+  for (let elapsed = 0; elapsed <= 92_000; elapsed += 2_000) {
+    await page.clock.fastForward(2_000)
+    await page.waitForTimeout(20)
+  }
+  await expect(
+    page.getByRole('heading', { name: 'Não foi possível falar com o servidor.' }),
+  ).toBeVisible()
 })

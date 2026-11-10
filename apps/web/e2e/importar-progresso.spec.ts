@@ -20,7 +20,8 @@ async function playOneLetterAsGuest(page: import('@playwright/test').Page) {
   const solution = await todaySolution(page.request)
   const first = (solution[0] ?? []).filter((letter): letter is string => Boolean(letter))
   await page.keyboard.press(typedLetter(first[0] ?? 'A'))
-  await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
+  // Feature 063: o visitante não tem mais o aviso de progresso só neste aparelho.
+  await expect(page.getByText('Progresso só neste aparelho')).toHaveCount(0)
 }
 
 test('importa o progresso de visitante ao entrar e esvazia o aparelho', async ({ page }) => {

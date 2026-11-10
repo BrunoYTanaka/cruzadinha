@@ -23,7 +23,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 60px;
+  /* Um controle de toque (44 px) mais o respiro e a borda: o cabeçalho pré-gerado da landing, só com a
+     marca, já nasce na altura que terá com "Entrar" (feature 063). */
+  min-height: calc(var(--tap) + 18px);
   padding: 8px max(var(--gutter), env(safe-area-inset-right, 0px)) 8px
     max(var(--gutter), env(safe-area-inset-left, 0px));
   border-bottom: 2px solid var(--edge);
@@ -73,8 +75,8 @@
   order: 1;
 }
 
-/* Os filhos de `.actions` entram direto na linha do cabeçalho: os links ficam junto da marca e o
-   resto (`.tail`) vai para a direita, depois do espaçador. */
+/* Os filhos de `.actions` entram direto na linha do cabeçalho, todos depois do espaçador: Estatísticas,
+   x1 e o menu ficam à direita, junto de `.tail` (feature 063). A ordem da tela é a do DOM. */
 .actions {
   display: contents;
 }
@@ -123,8 +125,13 @@
 
 /* Contador do x1 (feature 058): um selo no canto do link, fora do fluxo, então aparecer ou sumir
    nunca muda a largura do cabeçalho. */
+.statsLink {
+  order: 2;
+}
+
 .duelLink {
   position: relative;
+  order: 2;
 }
 
 .count {
@@ -172,6 +179,7 @@
 /* Botão de menu: só no celular, no lugar dos links (feature 062). */
 .menu {
   display: none;
+  order: 2;
 }
 
 .menu .menuButton {
@@ -203,7 +211,7 @@
     display: block;
   }
 
-  /* 390 px: marca, Calendário, menu, configurações e Entrar têm de caber numa linha. */
+  /* 390 px: marca, menu, configurações e Entrar têm de caber numa linha. */
   .header {
     gap: 8px;
   }

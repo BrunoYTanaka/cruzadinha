@@ -28,8 +28,15 @@ function render(duels: unknown[]) {
   queryClient.setQueryData(queryKeys.session, { user: aUser })
   mockApi({ 'POST /api/duels/mine': () => jsonResponse(200, { duels }) })
   renderRoutes(
-    [{ path: '/', element: <AppLayout />, children: [{ index: true, element: <p>Início</p> }] }],
-    ['/'],
+    // Fora da landing: em `/` o cabeçalho não tem o x1 (feature 063).
+    [
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [{ path: 'calendario', element: <p>Dias</p> }],
+      },
+    ],
+    ['/calendario'],
     queryClient,
   )
 }

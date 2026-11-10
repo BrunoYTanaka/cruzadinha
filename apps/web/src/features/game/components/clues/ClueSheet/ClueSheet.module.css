@@ -1,4 +1,6 @@
 .body {
+  /* Fundo do painel para o título fixo e o esmaecido da lista (feature 063). */
+  --clue-heading-bg: var(--surface);
   max-height: 55vh;
   overflow-y: auto;
 }

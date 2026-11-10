@@ -42,7 +42,7 @@ const HOVER_MEDIA = '@media (hover: hover)'
 type Check = 'hover' | 'disabled'
 
 // Controles que têm estados próprios. Os que usam `buttonClass` herdam os de `.button` e ficam fora:
-// ícones, pílulas, tema, legenda, passos e "Tamanho padrão".
+// ícones (entre eles "Tamanho padrão"), pílulas, tema, legenda e passos.
 const CONTROLS: [file: string, selector: string][] = [
   ['Button.module.css', '.button'],
   ['SettingsDialog.module.css', '.segmentButton'],

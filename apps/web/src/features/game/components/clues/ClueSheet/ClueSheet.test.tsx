@@ -6,6 +6,7 @@ import { expectNoA11yViolations } from '../../../../../test/axe'
 import { LAYOUT5, makePuzzle } from '../../../../../test/fixtures'
 import type { StrikeMode } from '../../../../../domain/game/clue-strike'
 import { ClueSheet } from './ClueSheet'
+import { readCss } from '../../../../../test/css-file'
 
 const puzzle = makePuzzle(LAYOUT5)
 
@@ -99,4 +100,11 @@ describe('ClueSheet', () => {
     await user.click(screen.getByRole('button', { name: 'Fechar' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
+})
+
+// Feature 063: na folha de dicas o fundo é o do painel; o título e o esmaecido usam a mesma cor.
+it('a folha de dicas troca a cor do título e do esmaecido pela do painel', () => {
+  expect(readCss('ClueSheet.module.css')).toMatch(
+    /\.body\s*\{[^}]*--clue-heading-bg:\s*var\(--surface\)/,
+  )
 })

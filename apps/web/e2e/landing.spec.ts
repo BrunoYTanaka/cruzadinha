@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
-import { resetAndSeed } from './support'
+import { resetAndSeed, SEED_EMAIL, SEED_PASSWORD } from './support'
 
 test.beforeEach(async () => {
   await resetAndSeed()
@@ -30,17 +30,53 @@ test.describe('US1: landing em / (feature 048)', () => {
     await expect(page.getByRole('grid')).toBeVisible()
   })
 
-  test('o calendário fica a um clique, pelo cabeçalho e pela faixa final', async ({ page }) => {
-    // O clique pode cair enquanto o React troca o HTML pré-gerado e se perder: tenta de novo.
-    await expect(async () => {
-      await page.goto('/')
-      await page.getByRole('banner').getByRole('link', { name: 'Calendário' }).click()
-      await expect(page).toHaveURL(/\/calendario$/, { timeout: 2_000 })
-    }).toPass()
-    await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
+  test('o calendário fica a um clique, pela faixa final', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('link', { name: 'Ver o calendário' }).click()
     await expect(page).toHaveURL(/\/calendario$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
+  })
+
+  // Feature 063: o cabeçalho da landing tem só a marca e "Entrar"; os atalhos ficam nas telas de dentro.
+  for (const width of [1280, 390]) {
+    test(`em ${width} px o cabeçalho da landing tem só a marca e "Entrar"`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto('/')
+      const header = page.getByRole('banner')
+      await expect(header.getByRole('link', { name: 'Entrar' })).toBeVisible()
+      await expect(header.getByRole('link', { name: 'Cruzadinha' })).toBeVisible()
+      for (const name of ['Calendário', 'Estatísticas', 'x1']) {
+        await expect(header.getByRole('link', { name })).toHaveCount(0)
+      }
+      await expect(header.getByRole('button', { name: 'Menu' })).toHaveCount(0)
+      await expect(header.getByRole('button', { name: 'Configurações' })).toHaveCount(0)
+    })
+  }
+
+  // Feature 063 (US5): da landing, "Entrar" e o login terminam no calendário.
+  test('"Entrar" na landing leva ao login e, depois de entrar, ao calendário', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('banner').getByRole('link', { name: 'Entrar' }).click()
+    await expect(page).toHaveURL(/\/login$/, { timeout: 15_000 })
+    await page.getByLabel('E-mail').fill(SEED_EMAIL)
+    await page.getByLabel('Senha').fill(SEED_PASSWORD)
+    await page.getByRole('button', { name: 'Entrar' }).click()
+    await expect(page).toHaveURL(/\/calendario$/)
+  })
+
+  test('o conteúdo não se move quando o React troca o HTML pré-gerado', async ({ page }) => {
+    await page.route('**/assets/*.js', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      await route.continue()
+    })
+    await page.goto('/', { waitUntil: 'commit' })
+    // Mede a posição de layout do `main` (a entrada da landing anima com transform, que não conta).
+    const main = page.locator('main#conteudo')
+    await expect(main).toBeVisible()
+    const top = () => main.evaluate((element) => (element as HTMLElement).offsetTop)
+    const before = await top()
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Entrar' })).toBeVisible()
+    expect(await top()).toBe(before)
   })
 
   test('com "Ir direto ao jogo" ligado, / leva ao jogo e o logo também, sem mostrar a landing', async ({
