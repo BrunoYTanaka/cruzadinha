@@ -62,7 +62,7 @@ Prerequisites: Node.js 24 (`nvm use`) and Docker with Compose. Run from the repo
 - Env: `.env.example` → `.env`, `docker compose up -d`; health `curl localhost:3000/api/health`. `REGISTRATION_ENABLED`, `CAPTCHA_ENABLED`, `RESEND_API_KEY`/`MAIL_FROM`/`APP_BASE_URL`, `TURNSTILE_SECRET_KEY` are set only in the Render dashboard; names, ranges and defaults in `docs/deploy.md`. `VITE_HELP_LETTER_LIMIT`/`VITE_HELP_WORD_LIMIT` are build-time. `docker-compose.yml` sets `ALLOW_MISSING_PROXY_SECRET`; never set it on Render.
 - Deploy is automatic after a release; manual: `gh workflow run deploy.yml -f api=<version|ultima|atual> -f web=<version|ultima|atual>`; Pages commands use `npx wrangler@4.151.1`.
 
-Hooks: pre-commit `lint-staged`; pre-push `check:branch`, `check:ids:remote`, `check:deps`, `typecheck`, unit tests. CI runs a `branch-name` job on PRs, then `npm ci`, `check:ids`, `format:check`, `lint`, `typecheck`, `test`, `build`, plus `test:int`, e2e and the API Docker build.
+Hooks: pre-commit `lint-staged`; pre-push `check:branch`, `check:ids:remote`, `check:deps`, `typecheck`, unit tests. CI runs a `branch-name` job on PRs, then `npm ci`, `check:ids`, `format:check`, `lint`, `typecheck`, `test`, `build`, plus `test:int`, e2e and the API Docker build. Those three run only on PRs (a push to `main` runs only `quality`); e2e is skipped when a PR changes only documentation (`*.md`, `docs/`, `specs/`, `.specify/`, `.claude/`), and the required check is `e2e-ok`, never the matrix names. The `main` ruleset requires the PR to be up to date with `main`.
 
 ## Architecture
 
