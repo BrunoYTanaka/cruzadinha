@@ -124,7 +124,8 @@
 }
 
 /* Contador do x1 (feature 058): um selo no canto do link, fora do fluxo, então aparecer ou sumir
-   nunca muda a largura do cabeçalho. */
+   nunca muda a largura do cabeçalho nem move Estatísticas, que fica logo antes no grupo da direita
+   (feature 063). */
 .statsLink {
   order: 2;
 }
@@ -135,9 +136,11 @@
 }
 
 .count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
   display: inline-block;
   min-width: 16px;
-  margin-left: 6px;
   padding: 0 4px;
   border-radius: 8px;
   background: var(--accent);
