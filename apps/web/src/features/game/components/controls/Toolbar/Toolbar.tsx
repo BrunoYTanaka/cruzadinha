@@ -13,7 +13,7 @@ type ToolbarProps = {
   onResume: () => void
   saveStatus?: ReactNode
   helps?: ReactNode
-  // Computador: "Tamanho padrão" do tabuleiro.
+  // Computador: botão de ícone "Tamanho padrão" do tabuleiro (feature 063).
   sizeReset?: ReactNode
   // Teclado físico: botão que abre a lista de atalhos (feature 046).
   shortcuts?: ReactNode

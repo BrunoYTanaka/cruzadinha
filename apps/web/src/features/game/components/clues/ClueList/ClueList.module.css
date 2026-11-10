@@ -29,17 +29,31 @@
   padding-right: 4px;
 }
 
+/* Título fixo no topo do grupo. As dicas que rolam por baixo somem num esmaecido de 12 px logo abaixo
+   dele, fora do fluxo (feature 063). `--clue-heading-bg` é o fundo de quem rola a lista. */
 .heading {
   position: sticky;
   top: 0;
+  z-index: 1;
   margin: 0 0 8px;
   padding: 2px 0 4px;
-  background: var(--bg);
+  background: var(--clue-heading-bg, var(--bg));
   color: var(--ink);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.heading::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 12px;
+  background: linear-gradient(var(--clue-heading-bg, var(--bg)), transparent);
+  pointer-events: none;
 }
 
 .list {

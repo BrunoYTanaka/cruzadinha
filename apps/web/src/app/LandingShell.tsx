@@ -12,7 +12,7 @@ export function LandingShell() {
         Pular para o conteúdo
       </a>
       <header className={styles.header}>
-        <HeaderStart />
+        <HeaderStart landing />
       </header>
       <main id="conteudo" className={styles.main} tabIndex={-1}>
         <LandingContent />

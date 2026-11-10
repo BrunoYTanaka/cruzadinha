@@ -83,6 +83,59 @@ describe('Tooltip', () => {
     await expectNoA11yViolations(container)
   })
 
+  // Feature 063: foco por clique ou devolvido por um diálogo não abre o balão; só o de teclado.
+  // O jsdom não decide `:focus-visible` como o navegador, então o seletor é simulado.
+  describe('só foco de teclado abre (feature 063)', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    function mockFocusVisible(visible: boolean) {
+      const original = Element.prototype.matches
+      vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+        this: Element,
+        selector: string,
+      ) {
+        return selector === ':focus-visible' ? visible : original.call(this, selector)
+      })
+    }
+
+    it('foco por clique não abre o balão', () => {
+      mockFocusVisible(false)
+      setup()
+      fireEvent.focus(screen.getByRole('button'))
+      expect(tip()).toBeNull()
+    })
+
+    it('foco devolvido ao botão (ao fechar um diálogo) não abre o balão', () => {
+      mockFocusVisible(false)
+      setup()
+      act(() => screen.getByRole('button').focus())
+      expect(tip()).toBeNull()
+    })
+
+    it('foco de teclado abre na hora', () => {
+      mockFocusVisible(true)
+      setup()
+      fireEvent.focus(screen.getByRole('button'))
+      expect(tip()).toBeInTheDocument()
+    })
+
+    it('navegador sem :focus-visible mantém o comportamento antigo', () => {
+      const original = Element.prototype.matches
+      vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+        this: Element,
+        selector: string,
+      ) {
+        if (selector === ':focus-visible') throw new SyntaxError('unknown pseudo-class')
+        return original.call(this, selector)
+      })
+      setup()
+      fireEvent.focus(screen.getByRole('button'))
+      expect(tip()).toBeInTheDocument()
+    })
+  })
+
   describe('posição dentro da janela (feature 024)', () => {
     const clientWidth = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth')
 

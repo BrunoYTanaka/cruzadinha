@@ -16,7 +16,8 @@ describe('LandingShell', () => {
       '#conteudo',
     )
     expect(screen.getByRole('link', { name: 'Cruzadinha' })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: 'Calendário' })).toHaveAttribute('href', '/calendario')
+    // Feature 063: o cabeçalho da landing tem só a marca; "Entrar" ou a conta entram ao montar.
+    expect(screen.queryByRole('link', { name: 'Calendário' })).not.toBeInTheDocument()
     expect(screen.getByRole('main')).toHaveAttribute('id', 'conteudo')
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
     await expectNoA11yViolations(container)

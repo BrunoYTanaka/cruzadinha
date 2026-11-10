@@ -28,7 +28,8 @@ test('visitante: calendário direto, jogar, recarregar, concluir e jogar de novo
 
   await todayLink(page).click()
   await expect(page.getByRole('grid')).toBeVisible()
-  await expect(page.getByText('Progresso só neste aparelho')).toBeVisible()
+  // Feature 063: o visitante não tem mais o aviso de progresso só neste aparelho.
+  await expect(page.getByText('Progresso só neste aparelho')).toHaveCount(0)
 
   const solution = await todaySolution(page.request)
   const first = (solution[0] ?? []).filter((letter): letter is string => Boolean(letter))

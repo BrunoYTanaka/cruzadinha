@@ -181,17 +181,18 @@ test('o contador do menu só aparece com x1 esperando e não move os outros link
   const link = ana.page.getByRole('link', { name: /^x1/ })
   await expect(link).toBeVisible()
   const before = await link.boundingBox()
-  const calendar = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
+  const stats = await ana.page.getByRole('link', { name: 'Estatísticas' }).boundingBox()
 
   await accept(beto.page, invite)
-  // Agora há um x1 que pede atenção: o número aparece e só o link do x1 cresce, para a direita.
+  // Agora há um x1 que pede atenção: o número aparece no canto do link, fora do fluxo (feature 063:
+  // o x1 fica no grupo da direita, e crescer empurraria Estatísticas).
   await ana.page.reload()
   await expect(ana.page.getByRole('link', { name: 'x1, 1 aguardando' })).toBeVisible()
   const after = await ana.page.getByRole('link', { name: /^x1/ }).boundingBox()
-  expect(after?.width ?? 0).toBeGreaterThan(before?.width ?? 0)
+  expect(Math.abs((after?.width ?? 0) - (before?.width ?? 0))).toBeLessThan(0.5)
   expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(0.5)
-  const calendarAfter = await ana.page.getByRole('link', { name: 'Calendário' }).boundingBox()
-  expect(Math.abs((calendarAfter?.x ?? 0) - (calendar?.x ?? 0))).toBeLessThan(0.5)
+  const statsAfter = await ana.page.getByRole('link', { name: 'Estatísticas' }).boundingBox()
+  expect(Math.abs((statsAfter?.x ?? 0) - (stats?.x ?? 0))).toBeLessThan(0.5)
   await ana.context.close()
   await beto.context.close()
 })

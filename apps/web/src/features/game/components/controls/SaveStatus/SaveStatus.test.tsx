@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import type { SaveState } from '../../../services/save-queue'
 import { SaveStatus } from './SaveStatus'
@@ -74,59 +73,5 @@ describe('SaveStatus', () => {
     expect(announcement(container)).toBe('')
     rerender(<SaveStatus state="completed-elsewhere" />)
     expect(announcement(container)).toBe('')
-  })
-})
-
-describe('SaveStatus do visitante (features 013 e 017)', () => {
-  const loginTo = '/login?next=%2Fjogo%2Fabc'
-
-  function renderGuest(state: SaveState) {
-    return render(
-      <MemoryRouter>
-        <SaveStatus state={state} guest={{ loginTo }} />
-      </MemoryRouter>,
-    )
-  }
-
-  it.each<SaveState>(['saved', 'saving'])(
-    'em "%s" diz que o progresso fica só neste aparelho e oferece entrar',
-    (state) => {
-      const { container } = renderGuest(state)
-      expect(screen.getByText('Progresso só neste aparelho')).toBeVisible()
-      expect(screen.queryByText('Salvo neste aparelho')).toBeNull()
-      expect(screen.queryByText('Salvando…')).toBeNull()
-      expect(screen.getByRole('link', { name: 'Entrar para salvar na sua conta' })).toHaveAttribute(
-        'href',
-        loginTo,
-      )
-      expect(announcement(container)).toBe('Seu progresso fica salvo só neste aparelho.')
-    },
-  )
-
-  it('o texto fixo não muda entre salvamentos', () => {
-    const { rerender } = renderGuest('saved')
-    for (const state of ['saving', 'saved'] as const) {
-      rerender(
-        <MemoryRouter>
-          <SaveStatus state={state} guest={{ loginTo }} />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('Progresso só neste aparelho')).toBeVisible()
-    }
-  })
-
-  it('sem armazenamento, o aviso ocupa o lugar do texto fixo e o link continua', () => {
-    const { container, rerender } = renderGuest('saved')
-    rerender(
-      <MemoryRouter>
-        <SaveStatus state="local-only" guest={{ loginTo }} />
-      </MemoryRouter>,
-    )
-    expect(
-      screen.getByText('Não salvo: vale só nesta aba', { selector: 'span:not([aria-live])' }),
-    ).toBeVisible()
-    expect(screen.queryByText('Progresso só neste aparelho')).toBeNull()
-    expect(screen.getByRole('link', { name: 'Entrar para salvar na sua conta' })).toBeVisible()
-    expect(announcement(container)).toBe('Não salvo: vale só nesta aba')
   })
 })

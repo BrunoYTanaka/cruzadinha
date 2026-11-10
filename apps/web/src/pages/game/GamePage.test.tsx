@@ -407,6 +407,18 @@ describe('GamePage', () => {
       expect(reset()).toBeDisabled()
     })
 
+    // Feature 063: "Tamanho padrão" é um botão de ícone, sem texto visível, com o nome no balão.
+    it('"Tamanho padrão" é um botão de ícone com o nome acessível', async () => {
+      mockMatchMedia(desktop)
+      openGame()
+      await screen.findByRole('grid')
+      expect(reset()).toHaveAttribute('aria-label', 'Tamanho padrão')
+      expect(reset().textContent?.trim()).toBe('')
+      expect(reset().querySelector('svg[aria-hidden="true"]')).not.toBeNull()
+      // A faixa de ferramentas em volta do botão (a tela solta, sem o layout, não tem landmarks).
+      await expectNoA11yViolations(reset().closest('[role="toolbar"]') ?? reset().parentElement!)
+    })
+
     it('as setas mudam e guardam o tamanho; "Tamanho padrão" apaga', async () => {
       const user = setup()
       mockMatchMedia(desktop)

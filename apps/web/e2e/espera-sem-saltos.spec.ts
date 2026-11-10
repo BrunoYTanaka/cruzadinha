@@ -2,8 +2,8 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { box, SEED_EMAIL, resetAndSeed } from './support'
 
-// Feature 059: a explicação da soneca entra sem mover nada, na tela de espera, nos botões da landing e
-// no botão de enviar do login.
+// Feature 059: a explicação da soneca entra sem mover nada, na tela de espera e no botão de enviar do
+// login. Os botões da landing passaram a abrir a tela de espera (feature 063, `espera-servidor.spec.ts`).
 const SOON = 'O servidor tirou uma soneca.'
 
 test.beforeEach(async () => {
@@ -50,32 +50,6 @@ test('a tela de espera acrescenta a explicação sem mover o título nem as casa
   const before = await boxesOf(targets)
   await expect(page.getByText(SOON)).toBeVisible({ timeout: 5_000 })
   expectSameBoxes(before, await boxesOf(targets))
-})
-
-test('o clique num botão da landing mostra "Abrindo…" e o balão não move a página', async ({
-  page,
-}) => {
-  await page.goto('/')
-  await slowHealth(page, 8_000)
-  const play = page.getByRole('link', { name: 'Jogar a cruzada de hoje' }).first()
-  const around = [
-    page.getByRole('heading', { level: 1 }),
-    page.getByRole('link', { name: 'Experimentar aqui' }),
-  ]
-  const before = await boxesOf([play, ...around])
-  const scrollBefore = await page.evaluate(() => document.documentElement.scrollHeight)
-  await play.click()
-  await expect(page.getByRole('link', { name: 'Abrindo…' }).first()).toHaveAttribute(
-    'aria-busy',
-    'true',
-  )
-  await expect(page.getByText(SOON)).toBeVisible({ timeout: 5_000 })
-  // O botão sobe um pouco com o mouse por cima (transform); isso não é salto de layout.
-  await page.mouse.move(0, 0)
-  await page.waitForTimeout(400)
-  const after = await boxesOf([page.getByRole('link', { name: 'Abrindo…' }).first(), ...around])
-  expectSameBoxes(before, after)
-  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(scrollBefore)
 })
 
 test('o botão de entrar mantém a largura e os campos não se mexem enquanto espera', async ({

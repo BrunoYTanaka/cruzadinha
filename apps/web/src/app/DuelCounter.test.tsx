@@ -28,8 +28,15 @@ function render(duels: unknown[]) {
   queryClient.setQueryData(queryKeys.session, { user: aUser })
   mockApi({ 'POST /api/duels/mine': () => jsonResponse(200, { duels }) })
   renderRoutes(
-    [{ path: '/', element: <AppLayout />, children: [{ index: true, element: <p>Início</p> }] }],
-    ['/'],
+    // Fora da landing: em `/` o cabeçalho não tem o x1 (feature 063).
+    [
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [{ path: 'calendario', element: <p>Dias</p> }],
+      },
+    ],
+    ['/calendario'],
     queryClient,
   )
 }
@@ -58,5 +65,12 @@ describe('contador do x1 no menu (feature 058)', () => {
     const css = readCss('AppLayout.module.css')
     expect(css).toMatch(/\.count\s*{[^}]*display:\s*inline-block/)
     expect(css).toMatch(/\.count\[data-empty='true'\]\s*{[^}]*display:\s*none/)
+  })
+
+  // Feature 063: o x1 fica no grupo da direita; o selo no canto, fora do fluxo, não move os vizinhos.
+  it('o selo fica no canto do link, fora do fluxo', () => {
+    const css = readCss('AppLayout.module.css')
+    expect(css).toMatch(/\.duelLink\s*{[^}]*position:\s*relative/)
+    expect(css).toMatch(/\.count\s*{[^}]*position:\s*absolute/)
   })
 })

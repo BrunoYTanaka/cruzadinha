@@ -1,14 +1,17 @@
-import { useEffect } from 'react'
-import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation, useMatch, useNavigate, useNavigation } from 'react-router'
 import { buttonClass } from '../shared/components/Button/Button'
 import { Menu, MenuItem } from '../shared/components/Menu/Menu'
 import { initials } from '../shared/helpers/initials/initials'
 import { Notice } from '../shared/components/Notice/Notice'
+import { LoadingState } from '../shared/components/LoadingState/LoadingState'
+import { isServerReady } from '../shared/services/api/server-wake/server-wake'
 import {
   buildLoginPath,
   useSessionQuery,
   clearAccountDeleted,
   clearEnded,
+  readLastUser,
   useAccountDeleted,
   useSessionEnded,
 } from '../features/session'
@@ -41,6 +44,20 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const onAuthPage = location.pathname === '/login' || location.pathname === '/cadastro'
+  // Landing (feature 063): cabeçalho só com a marca, "Instalar" e "Entrar" ou a conta.
+  const isLanding = location.pathname === '/'
+  // A landing não acorda o servidor, então a sessão fica desconhecida até alguém sair dela: vale o
+  // último usuário deste aparelho e, sem ele, "Entrar" (feature 063).
+  const user =
+    session.data?.user ??
+    (isLanding && session.data === undefined ? (readLastUser() ?? undefined) : undefined)
+  const guest = session.data === null || (isLanding && session.data === undefined && !user)
+  // Sair da landing com o servidor dormindo mostra a tela de espera no lugar dela até o destino abrir
+  // (feature 063). Fica ligada até a navegação terminar, mesmo que o servidor acorde no meio.
+  const navigation = useNavigation()
+  const [waking, setWaking] = useState(false)
+  if (!waking && isLanding && navigation.state !== 'idle' && !isServerReady()) setWaking(true)
+  if (waking && navigation.state === 'idle') setWaking(false)
   // Quem sai do jogo para entrar, cadastrar-se ou recuperar a senha volta ao calendário na cruzada
   // padrão (feature 031).
   const onAccountPage = onAuthPage || ACCOUNT_PATHS.has(location.pathname)
@@ -66,73 +83,77 @@ export function AppLayout() {
         Pular para o conteúdo
       </a>
       <header className={styles.header}>
-        <HeaderStart />
+        <HeaderStart landing={isLanding} />
         <div className={styles.actions}>
-          <Link
-            to="/estatisticas"
-            className={`${buttonClass({ variant: 'quiet' })} ${styles.statsLink} ${location.pathname.startsWith('/estatisticas') ? styles.current : ''}`}
-            aria-current={location.pathname.startsWith('/estatisticas') ? 'page' : undefined}
-          >
-            Estatísticas
-          </Link>
-          <Link
-            to="/x1"
-            className={`${buttonClass({ variant: 'quiet' })} ${styles.duelLink} ${location.pathname.startsWith('/x1') ? styles.current : ''}`}
-            aria-current={location.pathname.startsWith('/x1') ? 'page' : undefined}
-            aria-label={attention > 0 ? `x1, ${attention} aguardando` : 'x1'}
-          >
-            x1
-            <span className={styles.count} data-empty={attention === 0} aria-hidden="true">
-              {attention > 0 ? attention : ''}
-            </span>
-          </Link>
-          <div className={styles.menu}>
-            <Menu
-              label="Menu"
-              buttonContent={
-                <>
-                  <svg className={styles.menuIcon} viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 7h16M4 12h16M4 17h16" />
-                  </svg>
-                </>
-              }
-              placement="sheet"
-              buttonClassName={styles.menuButton}
-            >
-              <MenuItem
-                current={location.pathname.startsWith('/calendario')}
-                onSelect={() => void navigate('/calendario')}
-              >
-                Calendário
-              </MenuItem>
-              <MenuItem
-                current={location.pathname.startsWith('/estatisticas')}
-                onSelect={() => void navigate('/estatisticas')}
+          {isLanding ? null : (
+            <>
+              <Link
+                to="/estatisticas"
+                className={`${buttonClass({ variant: 'quiet' })} ${styles.statsLink} ${location.pathname.startsWith('/estatisticas') ? styles.current : ''}`}
+                aria-current={location.pathname.startsWith('/estatisticas') ? 'page' : undefined}
               >
                 Estatísticas
-              </MenuItem>
-              <MenuItem
-                current={location.pathname.startsWith('/x1')}
-                onSelect={() => void navigate('/x1')}
+              </Link>
+              <Link
+                to="/x1"
+                className={`${buttonClass({ variant: 'quiet' })} ${styles.duelLink} ${location.pathname.startsWith('/x1') ? styles.current : ''}`}
+                aria-current={location.pathname.startsWith('/x1') ? 'page' : undefined}
+                aria-label={attention > 0 ? `x1, ${attention} aguardando` : 'x1'}
               >
-                {attention > 0 ? `x1 (${attention} aguardando)` : 'x1'}
-              </MenuItem>
-            </Menu>
-          </div>
+                x1
+                <span className={styles.count} data-empty={attention === 0} aria-hidden="true">
+                  {attention > 0 ? attention : ''}
+                </span>
+              </Link>
+              <div className={styles.menu}>
+                <Menu
+                  label="Menu"
+                  buttonContent={
+                    <>
+                      <svg className={styles.menuIcon} viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                      </svg>
+                    </>
+                  }
+                  placement="sheet"
+                  buttonClassName={styles.menuButton}
+                >
+                  <MenuItem
+                    current={location.pathname.startsWith('/calendario')}
+                    onSelect={() => void navigate('/calendario')}
+                  >
+                    Calendário
+                  </MenuItem>
+                  <MenuItem
+                    current={location.pathname.startsWith('/estatisticas')}
+                    onSelect={() => void navigate('/estatisticas')}
+                  >
+                    Estatísticas
+                  </MenuItem>
+                  <MenuItem
+                    current={location.pathname.startsWith('/x1')}
+                    onSelect={() => void navigate('/x1')}
+                  >
+                    {attention > 0 ? `x1 (${attention} aguardando)` : 'x1'}
+                  </MenuItem>
+                </Menu>
+              </div>
+            </>
+          )}
           <div className={styles.tail}>
             <InstallButton />
-            <SettingsButton />
-            {session.data ? (
+            {isLanding ? null : <SettingsButton />}
+            {user ? (
               <>
                 <Link
                   to="/conta"
                   className={styles.avatar}
-                  aria-label={`Sua conta (${session.data.user.email})`}
+                  aria-label={`Sua conta (${user.email})`}
                 >
-                  {initials(session.data.user.email)}
+                  {initials(user.email)}
                 </Link>
               </>
-            ) : session.data === null ? (
+            ) : guest ? (
               // Visitante (feature 013): dito ao leitor de tela, com um caminho para entrar.
               <>
                 <span className={styles.who}>Visitante</span>
@@ -174,9 +195,9 @@ export function AppLayout() {
         </div>
       ) : null}
       <main id="conteudo" className={styles.main} tabIndex={-1}>
-        <Outlet />
+        {waking ? <LoadingState level={1} /> : <Outlet />}
       </main>
-      <SettingsDialog />
+      {isLanding ? null : <SettingsDialog />}
     </div>
   )
 }

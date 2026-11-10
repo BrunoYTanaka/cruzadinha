@@ -68,8 +68,10 @@ test.describe('US1: balão da engrenagem dentro da janela', () => {
     const theme = dialog.getByRole('button', { name: /^Tema:/ })
     await theme.hover()
     await page.mouse.move(0, 0)
-    // O foco inicial do diálogo já pode estar no botão de tema: sai e volta para disparar o foco.
+    // O foco inicial do diálogo já pode estar no botão de tema: sai e volta para disparar o foco. O
+    // balão só abre com foco de teclado (feature 063): uma tecla antes faz o foco seguinte contar como tal.
     await theme.blur()
+    await page.keyboard.press('Shift')
     await theme.focus()
     const tip = page.locator('[data-tooltip]', { hasText: /^Mudar para/ })
     await expect(tip).toBeVisible()

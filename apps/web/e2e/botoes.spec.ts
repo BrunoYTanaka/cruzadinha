@@ -404,11 +404,12 @@ test.describe('023 US3: link e botão distinguíveis', () => {
     await expectButtonsAreNotLinks(page)
   })
 
-  test('"Tamanho padrão" é um botão com a cor do texto, contorno e estados', async ({ page }) => {
+  // Feature 063: "Tamanho padrão" virou botão de ícone, sem texto visível, com o nome no balão.
+  test('"Tamanho padrão" é um botão de ícone com a cor do texto e estados', async ({ page }) => {
     await openToday(page)
     const reset = page.getByRole('button', { name: 'Tamanho padrão' })
     expect(await css(reset, 'color')).toBe(await tokenColor(page, '--ink'))
-    await expectControlBorder(page, reset)
+    await expect(reset).toHaveText('')
     const handle = page.getByRole('slider', { name: 'Tamanho do tabuleiro' })
     await handle.focus()
     await page.keyboard.press('Home')
