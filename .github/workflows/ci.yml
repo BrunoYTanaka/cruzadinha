@@ -2,7 +2,8 @@ name: CI
 
 on:
   # Branches com PR rodam só pelo `pull_request`; o `push` fica para a main (o deploy.yml espera
-  # o CI de um push na main).
+  # o CI de um push na main). Na main roda só o `quality`: integração, e2e e imagem já rodaram no
+  # PR, e a regra da main exige o PR atualizado com ela antes do merge.
   push:
     branches: [main]
   pull_request:
@@ -48,6 +49,7 @@ jobs:
           SITE_URL: https://exemplo.pages.dev
 
   integration:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -60,8 +62,31 @@ jobs:
       # Testes com Postgres real em container (Testcontainers usa o Docker do runner).
       - run: npm run test:int
 
+  # Diz se o PR muda algo além de documentação (o e2e não roda quando muda só documentação).
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      # O checkout do PR é o merge com a main; o primeiro pai é a main, então o diff é só o PR.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      # Sem `grep -q`: sair cedo cortaria o `git diff` (SIGPIPE) e, com pipefail, daria `false`.
+      - id: diff
+        run: |
+          if git diff --name-only HEAD^1 HEAD | grep -vE '(\.md$|^docs/|^specs/|^\.specify/|^\.claude/)' > /dev/null; then
+            echo code=true >> "$GITHUB_OUTPUT"
+          else
+            echo code=false >> "$GITHUB_OUTPUT"
+          fi
+
   e2e:
     name: e2e (${{ matrix.shard }}/3)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Imagem oficial do Playwright: navegador e bibliotecas já vêm nela, sem `apt-get` (que chegou a
@@ -125,7 +150,20 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
+  # Check obrigatório do e2e: um job de matriz pulado não informa os nomes `e2e (N/3)`, então a
+  # regra da main exige este, que passa com o e2e aprovado ou pulado (PR só de documentação).
+  e2e-ok:
+    if: always() && github.event_name == 'pull_request'
+    needs: [changes, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - if: needs.changes.result != 'success' || contains(fromJSON('["failure", "cancelled"]'), needs.e2e.result)
+        run: exit 1
+      - run: echo ok
+
   image:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
