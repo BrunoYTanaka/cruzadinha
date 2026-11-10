@@ -19,6 +19,14 @@ type TooltipProps = {
   children: ReactNode
 }
 
+function isKeyboardFocus(target: EventTarget): boolean {
+  try {
+    return (target as Element).matches(':focus-visible')
+  } catch {
+    return true // shortcut: navegador sem :focus-visible mantém o comportamento antigo
+  }
+}
+
 // Balão curto sobre um botão de ícone (feature 021): aparece com o mouse parado em cima (após `TOOLTIP_DELAY_MS`) ou com o
 // foco do teclado, nunca com toque, e fecha com Esc. Não muda o layout (posição absoluta). Fica
 // centrado no alvo e só se desloca na horizontal o que precisar para caber na janela (feature 024).
@@ -77,8 +85,10 @@ export function Tooltip({ label, placement = 'below', children }: TooltipProps) 
       className={styles.wrap}
       onPointerEnter={onPointerEnter}
       onPointerLeave={close}
-      onFocus={() => {
+      onFocus={(event) => {
         stopTimer()
+        // Só foco de teclado: foco por clique ou devolvido ao botão (ao fechar um diálogo) não abre o balão.
+        if (!isKeyboardFocus(event.target)) return
         setOpen(true)
       }}
       onBlur={close}
