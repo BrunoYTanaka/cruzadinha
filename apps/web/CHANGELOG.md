@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.20.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.19.1...web-v0.20.0) (2026-11-10)
+
+
+### Features
+
+* **web:** refine landing header, wake screen and game controls ([e670566](https://github.com/BrunoYTanaka/cruzadinha/commit/e670566cb3f591d669b01fa1bdb56ab12ef27717))
+* **web:** refine landing header, wake screen and game controls ([8330d36](https://github.com/BrunoYTanaka/cruzadinha/commit/8330d36af80d899a4170aaf2ea1ba0f22f24517c))
+
+
+### Bug Fixes
+
+* **web:** keep the x1 counter out of the header flow ([89f9860](https://github.com/BrunoYTanaka/cruzadinha/commit/89f9860b784699901218420254a6461683985f26))
+* **web:** open tooltips only on keyboard focus ([b0cc04f](https://github.com/BrunoYTanaka/cruzadinha/commit/b0cc04f19863d06a934a9045fe467b8d78ddf7ac))
+
 ## [0.19.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.19.0...web-v0.19.1) (2026-11-10)
 
 
