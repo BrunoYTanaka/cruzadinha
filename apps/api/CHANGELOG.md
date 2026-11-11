@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.4](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.3...api-v0.13.4) (2026-11-11)
+
+
+### Bug Fixes
+
+* **api:** add liveness route without database ([d467eae](https://github.com/BrunoYTanaka/cruzadinha/commit/d467eaecf98d17563507519ccee567c463039294))
+* **api:** add liveness route without database ([dfa7361](https://github.com/BrunoYTanaka/cruzadinha/commit/dfa73611c0c6c49b72eabbd4d30be2807c522db5))
+
 ## [0.13.3](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.2...api-v0.13.3) (2026-11-04)
 
 
