@@ -12,7 +12,7 @@ services:
     region: virginia
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
-    healthCheckPath: /api/health
+    healthCheckPath: /api/live
     autoDeployTrigger: off
     envVars:
       - key: NODE_ENV
