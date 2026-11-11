@@ -205,7 +205,12 @@ describe('LibraryPage', () => {
     window.localStorage.setItem(SOURCE_DOWN_KEY, String(Date.now() - 60_000))
     const first = renderRoutes(routes, ['/'], withAccount())
     await screen.findByRole('heading', { name: 'outubro de 2026' })
-    expect(screen.getByText(/Novas cruzadas não podem ser buscadas agora/)).toBeInTheDocument()
+    const notice = screen.getByText(/Novas cruzadas não podem ser buscadas agora/)
+    // O aviso fica acima das abas, que seguem coladas ao calendário.
+    expect(
+      notice.compareDocumentPosition(screen.getByRole('tablist')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(
       screen.getByRole('link', { name: '13 de outubro, concluído em 6 minutos e 52 segundos' }),
     ).toBeInTheDocument()

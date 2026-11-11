@@ -130,12 +130,6 @@ function LibraryContent() {
   } else {
     calendarArea = (
       <>
-        {isSourceDown(source) ? (
-          <Notice variant="warning">
-            Novas cruzadas não podem ser buscadas agora. As que já estão guardadas continuam
-            disponíveis.
-          </Notice>
-        ) : null}
         <Calendar
           view={view}
           source={source}
@@ -161,6 +155,13 @@ function LibraryContent() {
       </h1>
       {directPlay && !directPlayClosed ? (
         <Notice onDismiss={() => setDirectPlayClosed(true)}>{directPlayMessage(directPlay)}</Notice>
+      ) : null}
+      {/* Acima das abas: entre elas e o calendário quebraria a aba colada ao mês. */}
+      {library.isSuccess && isSourceDown(source) ? (
+        <Notice variant="warning">
+          Novas cruzadas não podem ser buscadas agora. As que já estão guardadas continuam
+          disponíveis.
+        </Notice>
       ) : null}
       <SourceBar
         value={source}
