@@ -28,6 +28,7 @@ Documentação consultada via Context7 em 2026-10-12: Zod 4.6 (`/colinhacks/zod/
 - **Decision**: o conversor respeita os campos `block` (padrão `#`) e `empty` (padrão `0`) do próprio ipuz; a amostra da 001 usa `:` como vazio. Viram `unsupported`: célula da grade como objeto (estilos, círculos), célula ausente ou `null` (grade não retangular), célula da solução com mais de um caractere (rebus), dica em formato diferente do par `[número, texto]` e `kind` diferente de crossword.
 - **Rationale**: FR-010 separa "formato inesperado" (algo quebrou) de "não suportado" (válido, mas o jogo ainda não sabe mostrar). Recusar é melhor que entregar um puzzle errado (edge cases da spec).
 - **Alternatives considered**: ignorar estilos e aceitar a célula (círculos costumam carregar significado no puzzle).
+- **Atualização (2026-11-11)**: o puzzle de 2026-11-11 trouxe `{ "cell": ..., "style": { "barred": "T" } }` (barra na borda da casa). Uma célula cujo único estilo é `barred` (bordas `T`, `R`, `B`, `L`) é aceita quando nenhuma barra separa duas casas brancas: a barra fica num bloco, na borda da grade ou ao lado de um bloco, então não muda nenhuma palavra. Barra entre duas casas brancas e qualquer outro estilo continuam `unsupported`.
 
 ### 6. Texto das dicas e letras
 - **Decision**: a dica é copiada exatamente como veio, sem decodificar entidades nem remover tags (clarificação de 2026-10-12); só se recusa dica vazia ou só com espaços. As letras da solução passam por `toLocaleUpperCase('pt-BR')`, mantendo acentos.

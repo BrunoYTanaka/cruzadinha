@@ -32,8 +32,8 @@ navegador ──▶ Cloudflare Pages (<projeto>.pages.dev)
 GitHub Actions ──▶ coleta diária (direto no Neon), lançamento de versões e publicação
 ```
 
-- O navegador só fala com o endereço do site. A Function repassa `/api/*` à API com um **segredo do repasse** e o IP real de quem acessa; a API recusa (`403`) qualquer pedido sem esse segredo, exceto `/api/health`.
-- A API dorme depois de 15 minutos sem uso e leva até cerca de 1 minuto para acordar; o site mostra "Acordando o servidor" enquanto isso.
+- O navegador só fala com o endereço do site. A Function repassa `/api/*` à API com um **segredo do repasse** e o IP real de quem acessa; a API recusa (`403`) qualquer pedido sem esse segredo, exceto `/api/health` e `/api/live`.
+- No plano free a API dorme depois de 15 minutos sem pedido, e o repasse não consegue acordá-la (veja [Servidor dormindo](#servidor-dormindo)). Um ping externo em `/api/live` a cada 5 minutos a mantém acordada.
 
 Onde fica cada valor:
 
@@ -57,6 +57,7 @@ Crie contas gratuitas, entrando com o GitHub, sem cadastrar cartão:
 - Cloudflare: <https://dash.cloudflare.com>
 - Render: <https://render.com>
 - Neon: <https://neon.tech>
+- UptimeRobot: <https://uptimerobot.com> (ping que mantém a API acordada; veja [Servidor dormindo](#servidor-dormindo))
 
 Se algum provedor passar a exigir cartão, pare e reavalie antes de seguir.
 
@@ -80,7 +81,7 @@ openssl rand -base64 48 | tr '+/' '-_' | tr -d '='
 
 1. **New → Blueprint**, escolha este repositório e a branch `main`. O Render lê o `render.yaml` da raiz (serviço `cruzadinha-api`, plano free, região Virgínia, Docker).
 2. Preencha os valores pedidos: `DATABASE_URL` (string do Neon) e `PROXY_SECRET` (segredo do passo 4).
-3. Ao criar, o Render publica a `main`. A API aplica as migrações ao subir; o deploy só termina quando `/api/health` responde.
+3. Ao criar, o Render publica a `main`. A API aplica as migrações ao subir; o deploy só termina quando o health check (`healthCheckPath: /api/live`, que não consulta o banco) responde.
 4. Anote a URL do serviço (`https://<serviço>.onrender.com`).
 5. Em **Settings → Deploy Hook**, copie a URL do hook (contém uma chave: trate como segredo).
 
@@ -340,17 +341,25 @@ Um segredo exposto (colado num commit, numa issue, num log, numa conversa) é co
 
 Consultados em 2026-10; confira os painéis se algo parar.
 
-| Provedor                         | Limite                                                                                                       | Ao estourar                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| Render (API)                     | 750 horas de instância e 5 GB de banda de saída por mês; dorme após 15 min sem uso; acorda em cerca de 1 min | o serviço fica suspenso até o mês virar; o consumo aparece em **Billing** |
-| Neon (banco)                     | 0,5 GB de dados e 100 horas de computação por mês; suspende após 5 min sem uso                               | consultas falham até o mês virar; acompanhe em **Usage**                  |
-| Cloudflare (Function do repasse) | 100 mil pedidos por dia                                                                                      | `/api/*` falha até o dia virar                                            |
-| GitHub Actions                   | ilimitado em repositório público                                                                             | —                                                                         |
+| Provedor                         | Limite                                                                                                                                                                                                         | Ao estourar                                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Render (API)                     | 750 horas de instância por workspace e 5 GB de banda de saída por mês; dorme após 15 min sem uso; acorda em cerca de 1 min. Com o ping, a API fica ligada ~744 h por mês: só cabe um serviço free no workspace | o serviço fica suspenso até o mês virar; o consumo aparece em **Billing** |
+| Neon (banco)                     | 0,5 GB de dados e 100 horas de computação por mês; suspende após 5 min sem uso. Por isso o health check do Render e o ping usam `/api/live`, e não `/api/health` (que roda `select 1`)                         | consultas falham até o mês virar; acompanhe em **Usage**                  |
+| Cloudflare (Function do repasse) | 100 mil pedidos por dia                                                                                                                                                                                        | `/api/*` falha até o dia virar                                            |
+| GitHub Actions                   | ilimitado em repositório público                                                                                                                                                                               | —                                                                         |
 
 Backup: o plano gratuito do Neon guarda um histórico curto para restauração (**Branches → Restore**); confira a janela atual no painel.
 
 ## Servidor dormindo
 
-> Seção a completar depois da primeira implantação (tarefa T060), com o que foi observado na seção 4 de [`specs/012-implantacao/quickstart.md`](../specs/012-implantacao/quickstart.md): como o Render respondeu ao repasse enquanto acordava, o tempo de uma busca longa na fonte e os tempos do health e da sessão em "Fast 4G" com a API acordada.
+O site espera a API acordar, mostra "Acordando o servidor" depois de 2 s e desiste com "Tentar de novo" aos 90 s. O repasse transforma qualquer página HTML do provedor (a de "acordando" e o desafio, que chega com `429`) e falhas de conexão num `503`, que o site trata como espera; um `429` em texto puro passa como está. Em todos esses casos, e em qualquer 5xx, registra no log da Function (`repasse: ...`) o status e o `content-type` recebidos.
 
-O que já se sabe: o site espera a API acordar, mostra "Acordando o servidor" depois de 2 s e desiste com "Tentar de novo" aos 90 s. O repasse transforma a página de "acordando" do provedor e falhas de conexão num `503`, que o site trata como espera.
+**O repasse não acorda a API (observado em 2026-11-10 e 2026-11-11).** Com a instância free dormindo, o edge do Render (Cloudflare na frente de `*.onrender.com`) só acorda o serviço para um navegador. Pedidos sem navegador (a Function, `curl`, monitores) recebem `429`: em 2026-11-10 em `text/plain`; em 2026-11-11 com `cf-mitigated: challenge` e a página "Just a moment...". O pedido nunca chega à API, e os logs do Render ficam vazios. Com a API acordada, todos esses pedidos recebem `200`. Isso não aparece no changelog do Render; a documentação dele ainda diz que qualquer pedido HTTP acorda o serviço.
+
+**Como a API fica acordada:**
+
+- `GET /api/live` responde `200 { "status": "ok" }` sem tocar o banco e passa sem o segredo do repasse. `/api/health` continua checando o banco para o Deploy e para `/status`.
+- O health check do Render usa `/api/live` (`render.yaml` e **`cruzadinha-api` → Settings → Health Check Path**; o arquivo só vale na sincronização do Blueprint, então mude os dois).
+- Um monitor do [UptimeRobot](https://uptimerobot.com) (plano free; tipo `HTTP(s)`, alerta por e-mail, sem página de status pública) chama `https://<serviço>.onrender.com/api/live` a cada 5 minutos e avisa por e-mail quando falha. Não use 10 minutos: um ping perdido deixaria a API dormir.
+
+**Se a API dormir mesmo assim** (e-mail de "Down" do UptimeRobot, ou o site preso em "Acordando o servidor"): abra `https://<serviço>.onrender.com/api/health` num navegador e espere o JSON. O ping não consegue acordá-la sozinho.

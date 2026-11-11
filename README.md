@@ -34,7 +34,7 @@ Monorepo em npm workspaces, tudo em TypeScript (modo estrito):
 
 ## Infraestrutura
 
-![Infraestrutura do Cruzadinha: site no Cloudflare Pages, API no Render, Postgres no Neon, serviços externos e automações no GitHub Actions](docs/images/infraestrutura.png)
+![Infraestrutura do Cruzadinha: site no Cloudflare Pages, API no Render, Postgres no Neon, serviços externos, automações no GitHub Actions e o ping do UptimeRobot que mantém a API acordada](docs/images/infraestrutura.png)
 
 O detalhe de cada peça está em [`docs/deploy.md`](docs/deploy.md).
 

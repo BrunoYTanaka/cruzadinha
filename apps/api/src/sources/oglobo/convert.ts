@@ -38,12 +38,38 @@ function checkShape(rows: unknown[][], { width, height }: Ipuz['dimensions'], fi
   }
 }
 
+const BAR_STEPS: Record<string, [number, number]> = { T: [-1, 0], B: [1, 0], L: [0, -1], R: [0, 1] }
+
+// Só a barra (`barred`) é aceita, e só quando não separa duas casas brancas: aí ela não muda
+// nenhuma palavra. Qualquer outro estilo (círculo, cor) continua não suportado.
+function barredEdges(value: object, path: string): { cell: unknown; edges: string[] } {
+  const { cell, style, ...rest } = value as Record<string, unknown>
+  const { barred, ...otherStyle } = (
+    typeof style === 'object' && style !== null ? style : {}
+  ) as Record<string, unknown>
+  const edges = typeof barred === 'string' ? Array.from(barred) : []
+  const isBarOnly =
+    Object.keys(rest).length === 0 &&
+    Object.keys(otherStyle).length === 0 &&
+    edges.length > 0 &&
+    edges.every((edge) => edge in BAR_STEPS)
+  if (!isBarOnly) throw unsupported(`${path}: célula com estilo`)
+  return { cell, edges }
+}
+
 function toCells(ipuz: Ipuz): Cell[][] {
   const block = ipuz.block ?? '#'
   const empty = ipuz.empty ?? 0
-  return ipuz.puzzle.map((row, r) =>
-    row.map((value, c): Cell => {
+  const bars: { r: number; c: number; edges: string[] }[] = []
+  const cells = ipuz.puzzle.map((row, r) =>
+    row.map((raw, c): Cell => {
       const path = `ipuzData.puzzle.${r}.${c}`
+      let value = raw
+      if (typeof raw === 'object' && raw !== null) {
+        const barredCell = barredEdges(raw, path)
+        value = barredCell.cell
+        bars.push({ r, c, edges: barredCell.edges })
+      }
       if (value === null || value === undefined) throw unsupported(`${path}: célula ausente`)
       if (typeof value === 'object') throw unsupported(`${path}: célula com estilo`)
       if (value === block) return { kind: 'block' }
@@ -54,6 +80,16 @@ function toCells(ipuz: Ipuz): Cell[][] {
       throw unexpected(`${path}: valor de célula desconhecido`)
     }),
   )
+  for (const { r, c, edges } of bars) {
+    if (cells[r]![c]!.kind !== 'open') continue
+    for (const edge of edges) {
+      const [dr, dc] = BAR_STEPS[edge]!
+      if (cells[r + dr]?.[c + dc]?.kind === 'open') {
+        throw unsupported(`ipuzData.puzzle.${r}.${c}: barra entre casas brancas`)
+      }
+    }
+  }
+  return cells
 }
 
 type Placement = Omit<Word, 'clue'>
