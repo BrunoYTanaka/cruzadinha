@@ -98,6 +98,7 @@ const catalog = [
   'GET /api/auth/registration',
   'GET /api/health',
   'GET /api/library',
+  'GET /api/live',
   'GET /api/progress/{puzzleId}',
   'GET /api/puzzles',
   'GET /api/puzzles/{id}',
