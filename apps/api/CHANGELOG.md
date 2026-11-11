@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.5](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.4...api-v0.13.5) (2026-11-11)
+
+
+### Bug Fixes
+
+* **api:** accept o globo cells whose only style is a redundant bar ([d4b15f2](https://github.com/BrunoYTanaka/cruzadinha/commit/d4b15f21d739430117461d8202bdcd5fd8ff28db))
+* **api:** accept o globo cells whose only style is a redundant bar ([82bc99e](https://github.com/BrunoYTanaka/cruzadinha/commit/82bc99e53219ade02c9a3b7541774a0397dffcbb))
+
 ## [0.13.4](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.3...api-v0.13.4) (2026-11-11)
 
 
