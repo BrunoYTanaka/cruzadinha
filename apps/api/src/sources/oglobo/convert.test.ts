@@ -137,6 +137,29 @@ describe('convertAgilmenteResponse recusa', () => {
     expect(convert(parse(unsupportedRebus))).toMatchObject({ ok: false, reason: 'unsupported' })
   })
 
+  // Grade da fixture: linha 2 é "4 : : : :", e (1,1) é bloco.
+  it.each<[string, number, number, unknown]>([
+    ['barra entre duas casas brancas', 2, 1, { cell: ':', style: { barred: 'L' } }],
+    ['barra com outro estilo', 0, 4, { cell: '#', style: { barred: 'T', shapebg: 'circle' } }],
+    ['borda de barra desconhecida', 0, 4, { cell: '#', style: { barred: 'X' } }],
+  ])('%s', (_, r, c, value) => {
+    const body = valid()
+    body.ipuzData.puzzle[r]![c] = value
+    expect(convert(body)).toMatchObject({ ok: false, reason: 'unsupported' })
+  })
+})
+
+describe('convertAgilmenteResponse aceita barra redundante', () => {
+  it.each<[string, number, number, unknown]>([
+    ['em bloco', 0, 4, { cell: '#', style: { barred: 'TR' } }],
+    ['na borda da grade', 0, 0, { cell: 1, style: { barred: 'TL' } }],
+    ['ao lado de bloco', 1, 2, { cell: ':', style: { barred: 'LR' } }],
+  ])('%s', (_, r, c, value) => {
+    const body = valid()
+    body.ipuzData.puzzle[r]![c] = value
+    expect(convert(body)).toEqual(convert(valid()))
+  })
+
   it('resposta com campo renomeado não passa no schema (SC-005)', () => {
     expect(agilmenteResponseSchema.safeParse(changedShape).success).toBe(false)
   })
