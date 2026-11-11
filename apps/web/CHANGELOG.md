@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.20.0...web-v0.20.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **web:** show the source-down notice above the calendar tabs ([cef0e9c](https://github.com/BrunoYTanaka/cruzadinha/commit/cef0e9c9d9e3ccd8b93bdfd29a6be9bdb97d3262))
+* **web:** show the source-down notice above the calendar tabs ([5010302](https://github.com/BrunoYTanaka/cruzadinha/commit/501030274051ec24760846460f6de0df4cb6cfa6))
+
 ## [0.20.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.19.1...web-v0.20.0) (2026-11-10)
 
 
