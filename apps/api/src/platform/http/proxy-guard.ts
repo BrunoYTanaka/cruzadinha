@@ -58,6 +58,9 @@ export function limitKey(ip: string): string {
 // Com PROXY_SECRET, a API só atende pedidos que passaram pelo repasse do site, e o endereço real
 // vem do cabeçalho que só o repasse consegue definir (feature 012, research R3). O health check
 // do provedor fica liberado. Sem PROXY_SECRET (desenvolvimento, testes), nada muda.
+// `/api/live` também: o ping externo que mantém a instância acordada chega direto, sem o segredo.
+const OPEN_PATHS = new Set(['/api/health', '/api/live'])
+
 const guard: FastifyPluginAsync<ProxyGuardOptions> = async (app, { proxySecret }) => {
   app.decorateRequest('clientAddress', '')
 
@@ -71,7 +74,7 @@ const guard: FastifyPluginAsync<ProxyGuardOptions> = async (app, { proxySecret }
   const expected = digest(proxySecret)
   app.addHook('onRequest', async (request, reply) => {
     request.clientAddress = request.ip
-    if (request.method === 'GET' && request.url.split('?')[0] === '/api/health') return
+    if (request.method === 'GET' && OPEN_PATHS.has(request.url.split('?')[0] ?? '')) return
 
     const received = request.headers[SECRET_HEADER]
     const ok = typeof received === 'string' && timingSafeEqual(digest(received), expected)

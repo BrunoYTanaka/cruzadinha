@@ -18,15 +18,16 @@ function buildGuarded(proxySecret: string | undefined) {
   app.register(proxyGuard, { proxySecret })
   app.register(async (scoped) => {
     scoped.get('/api/health', (request) => ({ address: request.clientAddress }))
+    scoped.get('/api/live', () => ({ status: 'ok' }))
     scoped.get('/api/eco', (request) => ({ address: request.clientAddress }))
   })
   return { app, lines }
 }
 
 describe('proxyGuard with PROXY_SECRET', () => {
-  it('lets the health check through without the header', async () => {
+  it.each(['/api/health', '/api/live'])('lets %s through without the header', async (url) => {
     const { app } = buildGuarded(SECRET)
-    const response = await app.inject({ url: '/api/health' })
+    const response = await app.inject({ url })
     expect(response.statusCode).toBe(200)
   })
 

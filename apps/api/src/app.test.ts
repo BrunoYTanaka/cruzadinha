@@ -47,6 +47,17 @@ describe('GET /api/health', () => {
     expect(response.body).not.toContain('SEGREDO')
   })
 
+  it('responds 200 on /api/live without touching the database', async () => {
+    let checks = 0
+    const counting: DatabaseProbe = { check: async () => (checks++, true), close: async () => {} }
+    app = buildApp({ config, probe: counting, database: testDatabase.db })
+    const response = await app.inject({ method: 'GET', url: '/api/live' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toEqual({ status: 'ok' })
+    expect(checks).toBe(0)
+  })
+
   it('responds 404 on other routes', async () => {
     app = buildApp({ config, probe: probe(true), database: testDatabase.db })
     const response = await app.inject({ method: 'GET', url: '/api/outra' })
