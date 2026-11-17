@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.14.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.14.0...api-v0.14.1) (2026-11-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.40.0 to 0.40.1
+
 ## [0.14.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.6...api-v0.14.0) (2026-11-17)
 
 
