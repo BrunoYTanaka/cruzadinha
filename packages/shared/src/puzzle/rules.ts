@@ -56,6 +56,7 @@ export function checkPuzzleRules(puzzle: { grid: RuleGrid; words: RuleWord[] }):
     for (const cell of cells) coveredBy.add(`${word.direction}:${cell.row}:${cell.col}`)
   }
   const seenCells = new Set<string>()
+  const hasBlocks = grid.cells.some((line) => line.some((cell) => cell.kind === 'block'))
 
   words.forEach((word, i) => {
     const label = `palavra ${word.number} ${directionName[word.direction]}`
@@ -84,14 +85,18 @@ export function checkPuzzleRules(puzzle: { grid: RuleGrid; words: RuleWord[] }):
     const dir = word.direction
     // A célula ao lado do fim (ou do começo) da palavra: bloco/borda, o início (fim) de uma
     // palavra vizinha colada, ou uma corrida de uma letra entre barras, que só vale entre duas
-    // palavras (palavra | letra | palavra), como nas cruzadas clássicas (feature 030).
+    // palavras (palavra | letra | palavra), como nas cruzadas clássicas (feature 030). Numa grade
+    // sem blocos (só essas têm barras) vale também entre a palavra e a borda (palavra | letra |
+    // borda; Cruzadas Clube de 2026-10-26 e 2026-11-09). Com blocos, a letra a mais antes da borda
+    // é uma palavra curta demais.
     const beyond = (position: CellPosition, sign: 1 | -1, joins: Set<string>): boolean => {
       if (!isOpen(grid, position)) return true
       const key = `${dir}:${position.row}:${position.col}`
       if (joins.has(key)) return true
       if (coveredBy.has(key)) return false
       const outer = { row: position.row + sign * step.row, col: position.col + sign * step.col }
-      return joins.has(`${dir}:${outer.row}:${outer.col}`)
+      if (joins.has(`${dir}:${outer.row}:${outer.col}`)) return true
+      return !hasBlocks && cellAt(grid, outer) === undefined
     }
     if (!beyond(before, -1, wordEnds) || !beyond(after, 1, wordStarts)) {
       issues.push({ path, message: `${label} não ocupa a sequência inteira de células abertas` })
