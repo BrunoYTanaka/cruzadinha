@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { resolveVisibleSources, updateSourcesRequestSchema } from './schema'
+import {
+  adminSourcesResponseSchema,
+  resolveVisibleSources,
+  sourcesResponseSchema,
+  updateSourcesRequestSchema,
+} from './schema'
 
 const ALL = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube']
 
@@ -50,5 +55,31 @@ describe('updateSourcesRequestSchema', () => {
     const unknown = [...full.slice(0, 3), { id: 'x', visible: true }]
     expect(updateSourcesRequestSchema.safeParse({ sources: unknown }).success).toBe(false)
     expect(updateSourcesRequestSchema.safeParse({ sources: full, extra: 1 }).success).toBe(false)
+  })
+})
+
+describe('response schemas with a source this site does not know', () => {
+  it('drops an unknown id from the public list and keeps the order', () => {
+    const parsed = sourcesResponseSchema.parse({ sources: ['clube', 'nova', 'oglobo'] })
+    expect(parsed.sources).toEqual(['clube', 'oglobo'])
+  })
+
+  it('still refuses a public list with only unknown ids', () => {
+    expect(sourcesResponseSchema.safeParse({ sources: ['nova'] }).success).toBe(false)
+  })
+
+  it('drops an unknown id from the admin list', () => {
+    const parsed = adminSourcesResponseSchema.parse({
+      sources: [
+        { id: 'nova', visible: false, position: 0 },
+        { id: 'oglobo', visible: true, position: 1 },
+      ],
+    })
+    expect(parsed.sources).toEqual([{ id: 'oglobo', visible: true, position: 1 }])
+  })
+
+  it('keeps the update request strict', () => {
+    const sources = [...ALL, 'nova'].map((id) => ({ id, visible: true }))
+    expect(updateSourcesRequestSchema.safeParse({ sources }).success).toBe(false)
   })
 })

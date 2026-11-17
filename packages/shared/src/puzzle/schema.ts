@@ -17,6 +17,21 @@ export const levelSchema = z.enum(['daily'], { error: 'deve ser daily' })
 
 export const puzzleSourceIdSchema = z.enum(['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'])
 
+// Respostas: item de uma fonte que este site não conhece sai da lista em vez de recusar a resposta
+// inteira, para este site aceitar uma API com fonte nova (feature 064, release A).
+export function withKnownSources<T extends z.ZodArray>(
+  list: T,
+  sourceOf: (item: unknown) => unknown,
+) {
+  return z.preprocess(
+    (value) =>
+      Array.isArray(value)
+        ? value.filter((item) => puzzleSourceIdSchema.safeParse(sourceOf(item)).success)
+        : value,
+    list,
+  )
+}
+
 // Fonte não informada vale oglobo, para o site anterior (feature 014).
 export const puzzleSourceQuerySchema = puzzleSourceIdSchema.default('oglobo')
 
