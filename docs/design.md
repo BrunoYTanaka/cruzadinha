@@ -144,14 +144,15 @@ Próximo do ipuz, mas só com o que o jogo usa:
 
 As colunas, os valores permitidos e os relacionamentos de cada tabela estão nas data definitions, com um diagrama por data definition em `entity-relationship-diagrams/`.
 
-| Tabela                | Para que serve                                                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `users`               | Contas ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                                                                    |
-| `sessions`            | Sessões abertas no login, guardadas só como hash ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                          |
-| `rate_limit_attempts` | Tentativas sujeitas a limite: login, cadastro, busca na fonte e gravação de configurações ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md)) |
-| `puzzles`             | Um puzzle por fonte, nível e data, com a parte pública e a solução separadas ([DDE-002](data-definitions/DDE-002-coleta-puzzles.md))                   |
-| `progress`            | Progresso de cada conta em cada puzzle ([DDE-003](data-definitions/DDE-003-progresso-usuario-puzzle.md))                                               |
-| `user_settings`       | Configurações da conta ([DDE-004](data-definitions/DDE-004-configuracoes-usuario.md))                                                                  |
+| Tabela                      | Para que serve                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`                     | Contas ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                                                                                         |
+| `sessions`                  | Sessões abertas no login, guardadas só como hash ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md))                                                               |
+| `rate_limit_attempts`       | Tentativas sujeitas a limite: login, cadastro, busca na fonte, gravação de configurações e chamadas de geração ([DDE-001](data-definitions/DDE-001-banco-auth-convites.md)) |
+| `puzzles`                   | Um puzzle por fonte, nível e data, com a parte pública e a solução separadas ([DDE-002](data-definitions/DDE-002-coleta-puzzles.md))                                        |
+| `progress`                  | Progresso de cada conta em cada puzzle ([DDE-003](data-definitions/DDE-003-progresso-usuario-puzzle.md))                                                                    |
+| `user_settings`             | Configurações da conta ([DDE-004](data-definitions/DDE-004-configuracoes-usuario.md))                                                                                       |
+| `generated_source_settings` | Tamanho da grade e dificuldade de cada fonte gerada ([DDE-009](data-definitions/DDE-009-configuracao-fontes-geradas.md))                                                    |
 
 As configurações (tema, limites de ajuda, modo de riscar, cruzada padrão, ir direto ao jogo, tamanho do tabuleiro e largura do calendário) ficam no aparelho (`localStorage`, chave `cruzadinha:settings`) para todos e, para quem tem conta, também em `user_settings` (feature 021).
 

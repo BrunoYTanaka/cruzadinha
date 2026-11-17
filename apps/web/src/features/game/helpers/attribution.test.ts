@@ -40,3 +40,11 @@ describe('attributionLine', () => {
     ).toBe('Fonte: Cruzadas Clube · Cruzadas clássicas 901 · Autora de Exemplo')
   })
 })
+
+describe('attributionLine da Casa (feature 064)', () => {
+  it('mostra só o nome e a dificuldade, sem citar IA nem modelo', () => {
+    const line = attributionLine(attribution({ sourceName: 'Casa', title: 'Dificuldade: Médio' }))
+    expect(line).toBe('Fonte: Casa · Dificuldade: Médio')
+    expect(line).not.toMatch(/\bIA\b|DeepSeek|gerad|intelig/i)
+  })
+})

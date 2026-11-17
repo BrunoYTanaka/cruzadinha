@@ -1,4 +1,4 @@
-import { SourcesAdmin } from '../../features/admin'
+import { GeneratedSourcesAdmin, SourcesAdmin } from '../../features/admin'
 import { useSessionQuery } from '../../features/session'
 import { LoadingState } from '../../shared/components/LoadingState/LoadingState'
 import { NotFoundPage } from '../../shared/components/NotFoundPage/NotFoundPage'
@@ -17,6 +17,8 @@ function AdminContent() {
       <h1 className={styles.title}>Administração</h1>
       <h2 className={styles.subtitle}>Fontes de cruzadas</h2>
       <SourcesAdmin />
+      <h2 className={styles.subtitle}>Fontes geradas</h2>
+      <GeneratedSourcesAdmin />
     </div>
   )
 }

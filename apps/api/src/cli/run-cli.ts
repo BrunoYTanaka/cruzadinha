@@ -153,6 +153,8 @@ async function collectPuzzles(args: string[], deps: CliDeps): Promise<number> {
         `${report.unavailable.length} indisponíveis, ${report.failed.length} falhas.\n`,
     )
     if (report.saved.length > 0) deps.stdout(`Gravados: ${report.saved.join(', ')}\n`)
+    // Pulo de propósito (ex.: sem créditos): stdout e nunca "Falhou em", que abre issue (064).
+    for (const note of report.notes) deps.stdout(`[${name}] Pulado em ${note}\n`)
     for (const { date, reason } of report.failed) {
       deps.stderr(`[${name}] Falhou em ${date}: ${reason}\n`)
     }

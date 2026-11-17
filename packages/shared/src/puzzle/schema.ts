@@ -15,10 +15,16 @@ const dimension = z
 // A fonte só publica o nível diário; novos níveis entram aqui quando houver fonte para eles.
 export const levelSchema = z.enum(['daily'], { error: 'deve ser daily' })
 
-export const puzzleSourceIdSchema = z.enum(['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'])
+export const puzzleSourceIdSchema = z.enum([
+  'oglobo',
+  'cruzadaonline',
+  'cruzadasbrasil',
+  'clube',
+  'casa',
+])
 
 // Respostas: item de uma fonte que este site não conhece sai da lista em vez de recusar a resposta
-// inteira, para este site aceitar uma API com fonte nova (feature 064, release A).
+// inteira, para o site anterior aceitar uma API com fonte nova (feature 064).
 export function withKnownSources<T extends z.ZodArray>(
   list: T,
   sourceOf: (item: unknown) => unknown,
@@ -41,11 +47,12 @@ export const puzzleSourceNames = {
   cruzadaonline: 'Cruzada Online',
   cruzadasbrasil: 'Cruzadas Brasil',
   clube: 'Cruzadas Clube',
+  casa: 'Casa',
 } as const satisfies Record<PuzzleSourceId, string>
 
 // Fontes sem busca por data: o dia só existe se a coleta o salvou (feature 030). O site mostra
 // "sem cruzada" e a API responde só com o que está salvo.
-export const puzzleSourcesWithoutFetch: readonly PuzzleSourceId[] = ['clube']
+export const puzzleSourcesWithoutFetch: readonly PuzzleSourceId[] = ['clube', 'casa']
 
 export const isoDateSchema = z.iso.date({ error: 'deve ser uma data AAAA-MM-DD válida' })
 

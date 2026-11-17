@@ -310,13 +310,26 @@ Migrações não são desfeitas. Toda migração segue a regra de compatibilidad
 
 ## Coleta diária
 
-O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzle do dia de cada fonte (O Globo, Cruzada Online e Cruzadas Clube) direto no Neon, às 00:01 e às 08:00 de Brasília, sem depender da API acordada.
+O workflow **Coleta de puzzles** (`.github/workflows/collect.yml`) grava o puzzle do dia de cada fonte (O Globo, Cruzada Online, Cruzadas Brasil, Cruzadas Clube e a Casa, gerada) direto no Neon, às 00:01 e às 08:00 de Brasília, sem depender da API acordada.
 
 Quando uma fonte falha, o workflow abre uma issue com o rótulo `fonte-quebrada` e o título `[Fonte] <nome> parou de coletar` (uma por fonte, sem repetir enquanto estiver aberta). Feche a issue depois de corrigir a fonte. Limite de uso da fonte, banco fora do ar e segredo ausente não abrem issue; o workflow só fica vermelho.
 
 1. Cadastre o secret `DATABASE_URL` (em **Repository secrets**) com a string do Neon, a mesma do Render. Sem ele, cada execução agendada termina em segundos com "coleta ignorada".
 2. Rode à mão uma vez: `gh workflow run collect.yml` e confira o dia de hoje no calendário publicado.
 3. Opcional: a variable `COLLECT_HISTORY_DAYS` (0 a 365, padrão 31) define quantos dias passados a coleta busca.
+
+### Cruzada Casa (feature 064)
+
+A coleta também gera a cruzada do dia da fonte **Casa** com o modelo da DeepSeek. O jogador vê só "Casa" e a dificuldade; o modelo aparece apenas no `/admin` e no log da coleta.
+
+1. Cadastre o secret `DEEPSEEK_API_KEY` (em **Repository secrets**). Sem ele, a coleta escreve `[Casa] Pulado em <dia>: sem chave` e segue normalmente. A chave **nunca** vai para o Render: a API não gera.
+2. Opcional: a variable `DEEPSEEK_MODEL` (padrão `deepseek-chat`) troca o modelo sem mudar código.
+3. O passo da coleta já define `GENERATION_ENABLED: 'true'`. Fora do workflow o padrão é desligado (só `NODE_ENV=production` liga), para uma chave num `.env` local não gastar crédito.
+4. Rode `gh workflow run collect.yml`, confira em `/admin` → **Fontes geradas** as respostas e dicas de hoje e, se estiverem boas, ligue a **Casa** no painel de fontes. Ela nasce escondida.
+
+No máximo 3 chamadas ao modelo por dia, somando as duas execuções e qualquer descarte. Créditos esgotados (`402`), chave ausente ou limite do dia gastam nada e não abrem issue: o log mostra `Pulado em ... : sem créditos` (ou `sem chave`, `limite do dia`). Chave recusada (`401`) ou três respostas ruins contam como falha da fonte e abrem a issue `fonte-quebrada`. Para **parar de gastar**, apague o secret `DEEPSEEK_API_KEY`; esconder a Casa no painel não para a geração.
+
+Em `/admin` → **Fontes geradas** também se escolhe o tamanho da grade (9 a 15) e a dificuldade, que valem a partir da próxima geração, e se descarta a cruzada de hoje enquanto nenhuma conta nem x1 a usa; a coleta seguinte gera outra.
 
 Depois da coleta, o mesmo workflow roda `auth cleanup` (feature 035), que apaga pendências de cadastro, tokens de recuperação e pedidos de troca de e-mail vencidos e as contagens de tentativas com mais de 2 dias, ver [E-mail](#e-mail-confirmação-do-cadastro-e-recuperação-de-senha). Esse passo roda mesmo se a coleta falhar.
 
@@ -336,6 +349,7 @@ Um segredo exposto (colado num commit, numa issue, num log, numa conversa) é co
 - **`CLOUDFLARE_API_TOKEN`**: em **My Profile → API Tokens**, revogue e crie outro com a mesma permissão.
 - **`RENDER_DEPLOY_HOOK_URL`**: em **Settings → Deploy Hook**, regenere e atualize o secret.
 - **`RELEASE_APP_PRIVATE_KEY`**: na página do GitHub App, gere uma chave nova, atualize o secret e apague a antiga.
+- **`DEEPSEEK_API_KEY`**: no painel da DeepSeek, **API keys**, apague a chave e crie outra; atualize o secret do GitHub.
 
 ## Limites do plano gratuito
 

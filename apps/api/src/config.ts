@@ -89,6 +89,20 @@ const envSchema = z.object({
     emptyAsUndefined,
     z.enum(['true', 'false'], { error: 'deve ser true ou false' }).optional(),
   ),
+  // Geração da fonte casa pela coleta (feature 064). Mesma regra do captcha: ausente vale `true`
+  // em produção e `false` fora dela, para uma chave no .env local não gastar crédito sem querer.
+  GENERATION_ENABLED: z.preprocess(
+    emptyAsUndefined,
+    z.enum(['true', 'false'], { error: 'deve ser true ou false' }).optional(),
+  ),
+  DEEPSEEK_API_KEY: z.preprocess(
+    emptyAsUndefined,
+    z.string({ error: 'deve ser um texto' }).min(1).max(512).optional(),
+  ),
+  DEEPSEEK_MODEL: z.preprocess(
+    emptyAsUndefined,
+    z.string({ error: 'deve ser um texto' }).min(1).max(100).default('deepseek-chat'),
+  ),
   TURNSTILE_SECRET_KEY: z.preprocess(
     emptyAsUndefined,
     z.string({ error: 'deve ser um texto' }).min(1).max(512).optional(),
@@ -153,6 +167,13 @@ export type EmailConfig = Readonly<{
   recoveryReserve: number
 }>
 
+// Feature 064: só a coleta usa; a API nunca gera.
+export type GenerationConfig = Readonly<{
+  enabled: boolean
+  deepseekApiKey: string | undefined
+  deepseekModel: string
+}>
+
 export type ServerConfig = Readonly<{
   nodeEnv: 'development' | 'test' | 'production'
   host: string
@@ -167,6 +188,7 @@ export type ServerConfig = Readonly<{
   registrationEnabled: boolean
   captcha: CaptchaConfig
   email: EmailConfig
+  generation: GenerationConfig
 }>
 
 export type LoadConfigOptions = {
@@ -216,6 +238,9 @@ export function loadConfig(
     EMAIL_DAILY_CEILING,
     EMAIL_RECOVERY_RESERVE,
     ALLOW_MISSING_PROXY_SECRET,
+    GENERATION_ENABLED,
+    DEEPSEEK_API_KEY,
+    DEEPSEEK_MODEL,
   } = result.data
   // Só o desenvolvimento e os testes têm um endereço padrão, para o link do log funcionar.
   const baseUrl = APP_BASE_URL ?? (NODE_ENV === 'production' ? undefined : 'http://localhost:5173')
@@ -253,6 +278,11 @@ export function loadConfig(
       perAddressDailyMax: EMAIL_PER_ADDRESS_DAILY_MAX,
       dailyCeiling: EMAIL_DAILY_CEILING,
       recoveryReserve: EMAIL_RECOVERY_RESERVE,
+    }),
+    generation: Object.freeze({
+      enabled: (GENERATION_ENABLED ?? String(NODE_ENV === 'production')) === 'true',
+      deepseekApiKey: DEEPSEEK_API_KEY,
+      deepseekModel: DEEPSEEK_MODEL,
     }),
   })
 }

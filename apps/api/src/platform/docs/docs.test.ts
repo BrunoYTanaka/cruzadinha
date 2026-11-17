@@ -93,6 +93,7 @@ function propertyNames(value: unknown): string[] {
 }
 
 const catalog = [
+  'GET /api/admin/generated',
   'GET /api/admin/sources',
   'GET /api/auth/me',
   'GET /api/auth/registration',
@@ -105,6 +106,7 @@ const catalog = [
   'GET /api/settings',
   'GET /api/sources',
   'GET /api/stats',
+  'POST /api/admin/generated/discard',
   'POST /api/auth/change-email',
   'POST /api/auth/change-password',
   'POST /api/auth/confirm-email-change',
@@ -128,6 +130,7 @@ const catalog = [
   'POST /api/duels/state',
   'POST /api/progress/import',
   'POST /api/progress/{puzzleId}/reset',
+  'PUT /api/admin/generated/settings',
   'PUT /api/admin/sources',
   'PUT /api/progress/{puzzleId}',
   'PUT /api/settings',
@@ -314,7 +317,13 @@ describe('sessão', () => {
     'GET /api/stats',
     'PUT /api/settings',
   ]
-  const adminOperations = ['GET /api/admin/sources', 'PUT /api/admin/sources']
+  const adminOperations = [
+    'GET /api/admin/sources',
+    'PUT /api/admin/sources',
+    'GET /api/admin/generated',
+    'PUT /api/admin/generated/settings',
+    'POST /api/admin/generated/discard',
+  ]
   // Abertas a visitantes (feature 013): a sessão é opcional.
   const optionalSessionOperations = [
     'GET /api/puzzles',

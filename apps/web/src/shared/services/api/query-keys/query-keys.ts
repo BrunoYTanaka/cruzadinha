@@ -6,6 +6,8 @@ export const queryKeys = {
   // Fontes visíveis e administração das fontes (feature 060).
   sources: ['sources'] as const,
   adminSources: ['admin-sources'] as const,
+  // Fontes geradas no painel (feature 064).
+  generatedSources: ['generated-sources'] as const,
   // Por quem está usando: visitante (`'guest'`) ou o id da conta, para não misturar os dois.
   library: (viewer: string, source: PuzzleSourceId) => ['library', viewer, source] as const,
   libraryAll: ['library'] as const,

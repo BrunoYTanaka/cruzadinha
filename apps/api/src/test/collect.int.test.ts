@@ -47,6 +47,16 @@ function serviceWith(
 }
 
 describe('collect (só o dia de hoje)', () => {
+  it('anota um dia pulado de propósito sem contar como falha (feature 064)', async () => {
+    const { service } = serviceWith(
+      new Map([[today(), { ok: false, reason: 'unavailable', detail: 'sem créditos' }]]),
+    )
+    const report = only(await service.collect())
+    expect(report.unavailable).toEqual([today()])
+    expect(report.failed).toEqual([])
+    expect(report.notes).toEqual([`${today()}: sem créditos`])
+  })
+
   it('grava o puzzle de hoje', async () => {
     const { service, source } = serviceWith(new Map([[today(), okResult(today())]]))
     const report = only(await service.collect())
@@ -57,6 +67,7 @@ describe('collect (só o dia de hoje)', () => {
       unavailable: [],
       failed: [],
       pending: [],
+      notes: [],
     })
     expect(source.calls).toEqual([today()])
     expect(await db.select().from(puzzles)).toHaveLength(1)

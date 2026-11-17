@@ -1,10 +1,11 @@
 import { puzzleSourceIdSchema, puzzleSourceNames } from '@cruzadinha/shared'
 import { loadConfig, loadSeedConfig } from '../config'
 import { hashPassword } from '../platform/lib/password'
-import { insertIfEmailFree } from '../modules/identity'
+import { insertIfEmailFree, setAdminByEmail } from '../modules/identity'
 import { systemClock, type Clock } from '../platform/lib/clock'
 import { todayInSaoPaulo } from '../platform/lib/dates'
 import { insertPuzzleIfAbsent } from '../modules/puzzles'
+import { showSourceForDevelopment } from '../modules/sources'
 import type { DatabaseHandle } from '../platform/db/client'
 import { buildSamplePuzzle } from './seed-puzzle'
 
@@ -17,7 +18,8 @@ export type SeedDeps = {
 
 // Seed de desenvolvimento (FR-033): cria a conta de teste sem convite e nunca mexe numa existente.
 // Também deixa um puzzle de exemplo de cada fonte na data de hoje, sem rede e sem substituir um
-// puzzle guardado.
+// puzzle guardado. A conta de teste nova vira admin e a Casa, que nasce escondida, fica visível, para o
+// painel e a fonte gerada poderem ser vistos localmente (feature 064, FR-028).
 export async function runSeed(
   env: Record<string, string | undefined>,
   deps: SeedDeps,
@@ -47,6 +49,9 @@ export async function runSeed(
         ? `Usuário de teste criado: ${seed.email}\n`
         : `Usuário de teste já existe: ${seed.email}\n`,
     )
+    // Só a conta recém-criada: uma existente nunca é alterada (use `users set-admin`).
+    if (created) await setAdminByEmail(database.db, seed.email, true)
+    await showSourceForDevelopment(database.db, 'casa')
 
     const date = todayInSaoPaulo(deps.clock ?? systemClock)
     for (const source of puzzleSourceIdSchema.options) {

@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { buildTestApp, signUpForTest } from './app'
 import { openTestDatabase, testClock, truncateAll } from './database'
 import { fakeSource } from './fake-source'
-import { ALL, body, getSources, putSources, storePuzzle } from './admin-sources.support'
+import { body, getSources, PUBLIC, putSources, storePuzzle } from './admin-sources.support'
 
 const handle = openTestDatabase()
 const { db } = handle
@@ -36,7 +36,7 @@ describe('esconder uma fonte', () => {
     const response = await getSources(app)
     expect(response.statusCode).toBe(200)
     expect(response.headers['cache-control']).toBe('no-cache')
-    expect(response.json()).toEqual({ sources: ALL })
+    expect(response.json()).toEqual({ sources: PUBLIC })
   })
 
   it('some das listas e das buscas por fonte; o acesso por id segue; reativar restaura', async () => {
@@ -45,7 +45,7 @@ describe('esconder uma fonte', () => {
     const saved = await putSources(app, body({ cruzadaonline: false }), admin)
     expect(saved.statusCode).toBe(200)
     expect((await getSources(app)).json()).toEqual({
-      sources: ALL.filter((id) => id !== 'cruzadaonline'),
+      sources: PUBLIC.filter((id) => id !== 'cruzadaonline'),
     })
 
     const library = await app.inject({ method: 'GET', url: '/api/library?source=cruzadaonline' })
@@ -65,7 +65,7 @@ describe('esconder uma fonte', () => {
     await putSources(app, body(), admin)
     const back = await app.inject({ method: 'GET', url: '/api/library?source=cruzadaonline' })
     expect(back.statusCode).toBe(200)
-    expect((await getSources(app)).json()).toEqual({ sources: ALL })
+    expect((await getSources(app)).json()).toEqual({ sources: PUBLIC })
   })
 
   it('recusa esconder todas e nada muda', async () => {
@@ -90,7 +90,9 @@ describe('esconder uma fonte', () => {
   it('dois salvamentos seguidos: vale o último e o registro tem duas linhas', async () => {
     await putSources(app, body({ clube: false }), admin)
     await putSources(app, body({ oglobo: false }), admin)
-    expect((await getSources(app)).json()).toEqual({ sources: ALL.filter((id) => id !== 'oglobo') })
+    expect((await getSources(app)).json()).toEqual({
+      sources: PUBLIC.filter((id) => id !== 'oglobo'),
+    })
     expect(await changes()).toBe(2)
   })
 

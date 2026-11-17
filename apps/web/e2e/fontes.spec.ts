@@ -161,7 +161,8 @@ test('quatro fontes (features 029 e 030): o cartão da Cruzadas Brasil abre o jo
   page,
 }) => {
   await page.goto('/calendario')
-  await expect(page.getByRole('tab')).toHaveCount(4)
+  // O seed mostra a Casa (feature 064) depois das outras quatro.
+  await expect(page.getByRole('tab')).toHaveCount(5)
   await expect(page.getByRole('tab').nth(2)).toHaveAccessibleName(/^Cruzadas Brasil/)
 
   // SC-008: um toque no cartão de hoje leva ao jogo.

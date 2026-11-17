@@ -1,4 +1,4 @@
-import { puzzleSourceIdSchema } from '@cruzadinha/shared'
+import { ALL_SOURCES } from '../../shared/services/api/visible-sources/visible-sources'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -651,9 +651,7 @@ describe('biblioteca do visitante (feature 013)', () => {
     )
     // Um pedido por fonte e nenhuma nova tentativa.
     expect(calls.filter((call) => call.url === '/api/library?source=oglobo')).toHaveLength(1)
-    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(
-      puzzleSourceIdSchema.options.length,
-    )
+    expect(calls.filter((call) => call.key === 'GET /api/library')).toHaveLength(ALL_SOURCES.length)
   })
 })
 

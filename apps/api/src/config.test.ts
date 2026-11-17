@@ -114,6 +114,7 @@ describe('loadConfig', () => {
         dailyCeiling: 90,
         recoveryReserve: 20,
       },
+      generation: { enabled: false, deepseekApiKey: undefined, deepseekModel: 'deepseek-chat' },
     })
   })
 
@@ -148,6 +149,7 @@ describe('loadConfig', () => {
         dailyCeiling: 90,
         recoveryReserve: 20,
       },
+      generation: { enabled: true, deepseekApiKey: undefined, deepseekModel: 'deepseek-chat' },
     })
   })
 
@@ -442,5 +444,30 @@ describe('loadConfig CAPTCHA_ENABLED e TURNSTILE_SECRET_KEY', () => {
     expect(errorMessage({ ...base, CAPTCHA_ENABLED: value })).toContain(
       'CAPTCHA_ENABLED: deve ser true ou false',
     )
+  })
+})
+
+describe('loadConfig geração da fonte casa (feature 064)', () => {
+  const base = { DATABASE_URL: databaseUrl }
+
+  it('fica desligada fora de produção e ligada em produção, salvo valor explícito', () => {
+    expect(loadConfig(base).generation.enabled).toBe(false)
+    expect(loadConfig({ ...base, GENERATION_ENABLED: 'true' }).generation.enabled).toBe(true)
+    expect(loadConfig({ ...base, NODE_ENV: 'production' }).generation.enabled).toBe(true)
+    expect(
+      loadConfig({ ...base, NODE_ENV: 'production', GENERATION_ENABLED: 'false' }).generation
+        .enabled,
+    ).toBe(false)
+  })
+
+  it('trata chave vazia como ausente e usa deepseek-chat como modelo padrão', () => {
+    const { generation } = loadConfig({ ...base, DEEPSEEK_API_KEY: '' })
+    expect(generation.deepseekApiKey).toBeUndefined()
+    expect(generation.deepseekModel).toBe('deepseek-chat')
+    expect(loadConfig({ ...base, DEEPSEEK_MODEL: 'outro' }).generation.deepseekModel).toBe('outro')
+  })
+
+  it('recusa um interruptor que não é true nem false', () => {
+    expect(() => loadConfig({ ...base, GENERATION_ENABLED: 'sim' })).toThrow('GENERATION_ENABLED')
   })
 })

@@ -50,6 +50,8 @@ export type CollectReport = {
   stoppedBy?: 'rate-limited'
   /** Datas não obtidas por causa da interrupção; a próxima execução as tenta de novo. */
   pending: string[]
+  /** "<data>: <motivo>" de uma data pulada de propósito (ex.: sem créditos); não é falha (064). */
+  notes: string[]
 }
 
 /** Uma execução da coleta: o relatório de cada fonte, na ordem em que foram coletadas. */
@@ -155,6 +157,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       unavailable: [],
       failed: [],
       pending: [],
+      notes: [],
     }
     // A edição em andamento, para a falha apontar a data certa.
     let current = today
@@ -181,8 +184,10 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
         }
         const fetched = await listing.loadPuzzle()
         if (!fetched.ok) {
-          if (fetched.reason === 'unavailable') report.unavailable.push(date)
-          else if (fetched.reason === 'rate-limited') {
+          if (fetched.reason === 'unavailable') {
+            report.unavailable.push(date)
+            if (fetched.detail) report.notes.push(`${date}: ${fetched.detail}`)
+          } else if (fetched.reason === 'rate-limited') {
             report.stoppedBy = 'rate-limited'
             report.pending = [date]
             break
@@ -218,6 +223,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       unavailable: [],
       failed: [],
       pending: [],
+      notes: [],
     }
     const missing = candidates.filter((date) => !stored.has(date))
 
@@ -236,6 +242,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
       if (!fetched.ok) {
         if (fetched.reason === 'unavailable') {
           report.unavailable.push(date)
+          if (fetched.detail) report.notes.push(`${date}: ${fetched.detail}`)
         } else if (fetched.reason === 'rate-limited') {
           report.stoppedBy = 'rate-limited'
           report.pending = missing.slice(index)

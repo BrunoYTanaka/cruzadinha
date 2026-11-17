@@ -42,6 +42,7 @@ import { statsRoutes } from './modules/stats/stats.routes'
 import { createStatsService } from './modules/stats/stats.service'
 import { settingsRoutes } from './modules/settings/settings.routes'
 import { createSettingsService } from './modules/settings/settings.service'
+import { createGeneratedSources } from './generated-sources'
 import { createClubeSource } from './sources/clube/clube'
 import { createCruzadaOnlineSource } from './sources/cruzadaonline/cruzadaonline'
 import { createCruzadasBrasilSource } from './sources/cruzadasbrasil/cruzadasbrasil'
@@ -83,6 +84,12 @@ export function buildApp({
     createCruzadaOnlineSource(),
     createCruzadasBrasilSource(),
     createClubeSource(),
+    // A API só entrega o que a coleta gerou: nunca gera (feature 064, FR-005).
+    ...createGeneratedSources({
+      db: database,
+      generation: { ...config.generation, enabled: false },
+      clock,
+    }),
   ],
   emailSender,
   captchaVerifier,
@@ -163,7 +170,7 @@ export function buildApp({
   const requireSession = createRequireSession(auth, config, clock)
   const optionalSession = createOptionalSession(auth, config, clock)
   const requireAdmin = createRequireAdmin(auth, config, clock)
-  const sourcesService = createSourcesService({ db: database })
+  const sourcesService = createSourcesService({ db: database, clock })
   app.register(sourcesRoutes, { sources: sourcesService, requireAdmin })
 
   app.register(identityRoutes, {

@@ -20,22 +20,24 @@ afterAll(() => handle.close())
 
 describe('ordem das fontes', () => {
   it('reflete a nova ordem, inclusive trocar duas fontes de lugar', async () => {
-    const swapped = ['cruzadaonline', 'oglobo', 'cruzadasbrasil', 'clube'] as typeof ALL
+    const swapped = ['cruzadaonline', 'oglobo', 'cruzadasbrasil', 'clube', 'casa'] as typeof ALL
     expect((await putSources(app, body({}, swapped), admin)).statusCode).toBe(200)
-    expect((await getSources(app)).json()).toEqual({ sources: swapped })
+    expect((await getSources(app)).json()).toEqual({ sources: swapped.slice(0, 4) })
     const admins = (await getSources(app, '/api/admin/sources', admin)).json()
     expect(admins.sources.map((s: { id: string }) => s.id)).toEqual(swapped)
-    expect(admins.sources.map((s: { position: number }) => s.position)).toEqual([0, 1, 2, 3])
+    expect(admins.sources.map((s: { position: number }) => s.position)).toEqual([0, 1, 2, 3, 4])
 
     const reversed = [...ALL].reverse()
     expect((await putSources(app, body({}, reversed), admin)).statusCode).toBe(200)
-    expect((await getSources(app)).json()).toEqual({ sources: reversed })
+    expect((await getSources(app)).json()).toEqual({
+      sources: reversed.filter((id) => id !== 'casa'),
+    })
   })
 
   it('o admin vê as escondidas na ordem; o público não', async () => {
     await putSources(
       app,
-      body({ oglobo: false }, ['clube', 'oglobo', 'cruzadaonline', 'cruzadasbrasil']),
+      body({ oglobo: false }, ['clube', 'oglobo', 'cruzadaonline', 'cruzadasbrasil', 'casa']),
       admin,
     )
     const admins = (await getSources(app, '/api/admin/sources', admin)).json()

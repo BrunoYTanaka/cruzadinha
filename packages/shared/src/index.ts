@@ -126,6 +126,29 @@ export {
   type SourcesResponse,
   type UpdateSourcesRequest,
 } from './sources/schema'
+export {
+  difficultyLabels,
+  difficultySchema,
+  discardGeneratedRequestSchema,
+  discardGeneratedResponseSchema,
+  GENERATED_GRID_SIZE_MAX,
+  GENERATED_GRID_SIZE_MIN,
+  GENERATED_SETTINGS_DEFAULT,
+  generatedSettingsRequestSchema,
+  generatedSourceIds,
+  generatedSourceIdSchema,
+  generatedSourcesResponseSchema,
+  generatedSourceViewSchema,
+  GENERATION_DAILY_CALLS,
+  isGeneratedSource,
+  type DiscardGeneratedRequest,
+  type Difficulty,
+  type GeneratedSettings,
+  type GeneratedSettingsRequest,
+  type GeneratedSourceId,
+  type GeneratedSourcesResponse,
+  type GeneratedSourceView,
+} from './sources/generated-settings'
 export { statsSchema, type Stats } from './stats/schema'
 export { computeStats, type StatsRow } from './stats/compute-stats'
 export {

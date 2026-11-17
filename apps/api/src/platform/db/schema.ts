@@ -67,6 +67,7 @@ export const rateLimitActions = [
   'DUEL_CREATE',
   'DUEL_LOOKUP',
   'DUEL_MINE',
+  'PUZZLE_GENERATE',
 ] as const
 export const rateLimitKeyTypes = ['EMAIL', 'NETWORK_ADDRESS', 'GLOBAL', 'USER'] as const
 
@@ -89,7 +90,7 @@ export const rateLimitAttempts = pgTable(
     index('rate_limit_attempts_created_at_idx').on(table.createdAt),
     check(
       'rate_limit_attempts_action_check',
-      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE', 'PASSWORD_CONFIRM', 'CHANGE_EMAIL', 'DUEL_CREATE', 'DUEL_LOOKUP', 'DUEL_MINE')`,
+      sql`${table.action} IN ('LOGIN', 'REGISTER', 'PUZZLE_FETCH', 'SETTINGS_SAVE', 'FORGOT_PASSWORD', 'RESEND_VERIFICATION', 'VERIFY_TOKEN', 'EMAIL_SENT', 'RESET_PASSWORD', 'PROGRESS_SAVE', 'PASSWORD_CONFIRM', 'CHANGE_EMAIL', 'DUEL_CREATE', 'DUEL_LOOKUP', 'DUEL_MINE', 'PUZZLE_GENERATE')`,
     ),
     check(
       'rate_limit_attempts_key_type_check',
@@ -98,7 +99,7 @@ export const rateLimitAttempts = pgTable(
   ],
 )
 
-export const puzzleSources = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube'] as const
+export const puzzleSources = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube', 'casa'] as const
 export const puzzleLevels = ['daily'] as const
 
 // Cache compartilhado de puzzles: um por fonte, nível e data. `data` é a parte pública e
@@ -118,7 +119,7 @@ export const puzzles = pgTable(
     uniqueIndex('puzzles_source_level_date_unique').on(table.source, table.level, table.date),
     check(
       'puzzles_source_check',
-      sql`${table.source} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube')`,
+      sql`${table.source} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube', 'casa')`,
     ),
     check('puzzles_level_check', sql`${table.level} IN ('daily')`),
   ],
@@ -361,7 +362,7 @@ export const sourceSettings = pgTable(
     uniqueIndex('source_settings_position_unique').on(table.position),
     check(
       'source_settings_source_check',
-      sql`${table.sourceId} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube')`,
+      sql`${table.sourceId} IN ('oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube', 'casa')`,
     ),
     check('source_settings_position_check', sql`${table.position} >= 0`),
   ],
@@ -375,3 +376,26 @@ export const sourceSettingChanges = pgTable('source_setting_changes', {
   after: jsonb('after').$type<SourceSettingSnapshot>().notNull(),
   ...timestamps,
 })
+
+// Feature 064: tamanho da grade e dificuldade de cada fonte gerada (sem linha = padrão 11, medium).
+export const generatedSourceSettings = pgTable(
+  'generated_source_settings',
+  {
+    generatedSourceSettingId: uuid('generated_source_setting_id').primaryKey().defaultRandom(),
+    sourceId: text('source_id').notNull(),
+    gridSize: smallint('grid_size').notNull().default(11),
+    difficulty: text('difficulty', { enum: ['easy', 'medium', 'hard'] })
+      .notNull()
+      .default('medium'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('generated_source_settings_source_unique').on(table.sourceId),
+    check('generated_source_settings_source_check', sql`${table.sourceId} IN ('casa')`),
+    check('generated_source_settings_grid_size_check', sql`${table.gridSize} BETWEEN 9 AND 15`),
+    check(
+      'generated_source_settings_difficulty_check',
+      sql`${table.difficulty} IN ('easy', 'medium', 'hard')`,
+    ),
+  ],
+)

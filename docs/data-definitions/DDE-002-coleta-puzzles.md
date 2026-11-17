@@ -2,13 +2,14 @@
 
 ## Changelog
 
-| Version | Date       | Changes                                                                                                                              |
-| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `0.0.5` | 2026-10-23 | - Fonte clube, Cruzadas Clube (030).                                                                                                 |
-| `0.0.4` | 2026-10-23 | - Fonte cruzadasbrasil (029).                                                                                                        |
-| `0.0.3` | 2026-10-20 | - Fonte cruzadaonline (014). - Puzzle e solução entregues também ao visitante (013). - Relacionamento com Progress da DDE-003 (008). |
-| `0.0.2` | 2026-10-13 | - `solution` passa a ser entregue ao navegador junto de `data`, só para sessão válida (spec 007, constituição 3.0.0).                |
-| `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 006 (com a clarificação do seed)                                                                   |
+| Version | Date       | Changes                                                                                                                                                       |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.0.6` | 2026-11-17 | - Fonte casa, cruzada gerada pela coleta, sem busca sob demanda; a cruzada do dia de uma fonte gerada pode ser apagada pelo admin sem progresso nem x1 (064). |
+| `0.0.5` | 2026-10-23 | - Fonte clube, Cruzadas Clube (030).                                                                                                                          |
+| `0.0.4` | 2026-10-23 | - Fonte cruzadasbrasil (029).                                                                                                                                 |
+| `0.0.3` | 2026-10-20 | - Fonte cruzadaonline (014). - Puzzle e solução entregues também ao visitante (013). - Relacionamento com Progress da DDE-003 (008).                          |
+| `0.0.2` | 2026-10-13 | - `solution` passa a ser entregue ao navegador junto de `data`, só para sessão válida (spec 007, constituição 3.0.0).                                         |
+| `0.0.1` | 2026-10-13 | - Versão inicial derivada da spec 006 (com a clarificação do seed)                                                                                            |
 
 ## Scope
 
@@ -27,6 +28,7 @@ Cobre o modelo de dados do cache compartilhado de puzzles do Cruzadinha. Suporta
 | [specs/014-adaptador-publico/spec.md](../../specs/014-adaptador-publico/spec.md) (FR-002)                         | Spec | Fonte `cruzadaonline`                                                            |
 | [specs/029-adaptador-cruzadas-brasil/spec.md](../../specs/029-adaptador-cruzadas-brasil/spec.md) (FR-002, FR-015) | Spec | Fonte `cruzadasbrasil`; migração só alarga a restrição de `source`               |
 | [specs/030-clube-terceira-fonte/spec.md](../../specs/030-clube-terceira-fonte/spec.md) (FR-002, FR-013)           | Spec | Fonte `clube`; uma edição por data, sem busca sob demanda                        |
+| [specs/064-cruzada-gerada-ia/spec.md](../../specs/064-cruzada-gerada-ia/spec.md) (FR-001, FR-004, FR-025)         | Spec | Fonte `casa` gerada pela coleta; descarte da cruzada do dia pelo admin           |
 
 ## Entity Summary
 
@@ -39,16 +41,22 @@ Cobre o modelo de dados do cache compartilhado de puzzles do Cruzadinha. Suporta
 
 ### Puzzle
 
-| Field      | Description                                                         | Data Type | Mandatory | Notes                                                                                                                                                                                                                            |
-| ---------- | ------------------------------------------------------------------- | --------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| puzzle_id  | Identificador único do puzzle guardado                              | UUID      | Yes       | PK; usado pelo front-end para pedir o puzzle e referenciado pelo progresso (DDE-003)                                                                                                                                             |
-| source     | Fonte de onde veio o puzzle                                         | Text      | Yes       | Valores permitidos: oglobo, cruzadaonline (014, FR-002), cruzadasbrasil (029, FR-002, FR-015), clube (030, FR-002 e FR-013); único junto com level e date (FR-003); o mesmo dia em fontes diferentes são registros diferentes    |
-| level      | Nível do puzzle                                                     | Text      | Yes       | Valores permitidos: daily; único junto com source e date                                                                                                                                                                         |
-| date       | Dia do puzzle, no formato AAAA-MM-DD, sem hora nem fuso             | Date      | Yes       | Único junto com source e level; no fuso de Brasília, nunca no futuro quando buscado da fonte                                                                                                                                     |
-| data       | Parte pública do puzzle: grade, dicas e atribuição à fonte (FR-017) | Text      | Yes       | Documento JSON no formato interno; consistente com a solução (FR-006); sem nenhuma letra de resposta (FR-002 da 006); nunca a resposta bruta da fonte (FR-007); entregue a quem tem sessão e ao visitante (013, FR-002)          |
-| solution   | Letras de resposta de cada célula                                   | Text      | Yes       | Documento JSON no formato interno; entregue ao navegador junto de data a quem tem sessão e ao visitante (013, FR-002), nunca em erro nem log (007, FR-001, FR-004 a FR-006); validada contra a grade antes de sair (007, FR-003) |
-| created_at | Data e hora em que o puzzle foi guardado                            | Date      | Yes       | Preenchido pelo banco; UTC                                                                                                                                                                                                       |
-| updated_at | Data e hora da última alteração                                     | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC; o puzzle guardado não é reescrito pelo sistema                                                                                                                           |
+| Field      | Description                                                         | Data Type | Mandatory | Notes                                                                                                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| puzzle_id  | Identificador único do puzzle guardado                              | UUID      | Yes       | PK; usado pelo front-end para pedir o puzzle e referenciado pelo progresso (DDE-003)                                                                                                                                                              |
+| source     | Fonte de onde veio o puzzle                                         | Text      | Yes       | Valores permitidos: oglobo, cruzadaonline (014, FR-002), cruzadasbrasil (029, FR-002, FR-015), clube (030, FR-002 e FR-013), casa (064, FR-001); único junto com level e date (FR-003); o mesmo dia em fontes diferentes são registros diferentes |
+| level      | Nível do puzzle                                                     | Text      | Yes       | Valores permitidos: daily; único junto com source e date                                                                                                                                                                                          |
+| date       | Dia do puzzle, no formato AAAA-MM-DD, sem hora nem fuso             | Date      | Yes       | Único junto com source e level; no fuso de Brasília, nunca no futuro quando buscado da fonte                                                                                                                                                      |
+| data       | Parte pública do puzzle: grade, dicas e atribuição à fonte (FR-017) | Text      | Yes       | Documento JSON no formato interno; consistente com a solução (FR-006); sem nenhuma letra de resposta (FR-002 da 006); nunca a resposta bruta da fonte (FR-007); entregue a quem tem sessão e ao visitante (013, FR-002)                           |
+| solution   | Letras de resposta de cada célula                                   | Text      | Yes       | Documento JSON no formato interno; entregue ao navegador junto de data a quem tem sessão e ao visitante (013, FR-002), nunca em erro nem log (007, FR-001, FR-004 a FR-006); validada contra a grade antes de sair (007, FR-003)                  |
+| created_at | Data e hora em que o puzzle foi guardado                            | Date      | Yes       | Preenchido pelo banco; UTC                                                                                                                                                                                                                        |
+| updated_at | Data e hora da última alteração                                     | Date      | Yes       | Preenchido e avançado pelo banco a cada alteração; UTC; o puzzle guardado não é reescrito pelo sistema                                                                                                                                            |
+
+Regras (064):
+
+- Numa fonte gerada (`casa`), o puzzle é criado só pela coleta, para o dia corrente; dias passados nunca são gerados (FR-004, FR-005).
+- A atribuição em `data` traz só o nome da fonte e a dificuldade (`title`); nunca IA, modelo ou provedor (FR-012).
+- O admin pode apagar o puzzle do dia corrente de uma fonte gerada; `progress` e `duels` com `ON DELETE RESTRICT` impedem a exclusão de um puzzle em uso (FR-025). Puzzles das fontes externas nunca são apagados.
 
 ### Progress
 
@@ -63,7 +71,7 @@ Cobre o modelo de dados do cache compartilhado de puzzles do Cruzadinha. Suporta
 | ----------------- | ----------- | --------------------- | ------------------------------------------------------------------------------------------------ |
 | [Puzzle](#puzzle) | one-to-many | [Progress](#progress) | Um puzzle pode ter o progresso de vários usuários; um puzzle com progresso não pode ser removido |
 
-O limite de buscas sob demanda usa `RateLimitAttempt` da DDE-001 sem chave estrangeira.
+O limite de buscas sob demanda e o de chamadas de geração (064, ação `PUZZLE_GENERATE`) usam `RateLimitAttempt` da DDE-001 sem chave estrangeira. A configuração de geração das fontes geradas fica na [DDE-009](./DDE-009-configuracao-fontes-geradas.md).
 
 ## Entity Relationship Diagrams
 

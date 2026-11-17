@@ -6,10 +6,12 @@ import {
   type Puzzle,
   type PuzzleSourceId,
   type Solution,
+  wordCells,
 } from '@cruzadinha/shared'
-import { and, eq, inArray, sql } from 'drizzle-orm'
+import { and, eq, gte, inArray, lt, sql } from 'drizzle-orm'
 import type { Executor } from '../../platform/db/client'
-import { puzzles } from '../../platform/db/schema'
+import { addDaysToIsoDate } from '../../platform/lib/dates'
+import { duels, progress, puzzles } from '../../platform/db/schema'
 
 export type StoredPuzzle = { puzzleId: string; puzzle: Puzzle; solution: Solution }
 
@@ -109,4 +111,88 @@ export async function existingDates(
       ),
     )
   return new Set(rows.map((row) => row.date))
+}
+
+// Resposta de cada palavra, lida da solução pelas casas da palavra (feature 064).
+export function answersOf({ puzzle, solution }: { puzzle: Puzzle; solution: Solution }): string[] {
+  return puzzle.words.map((word) =>
+    wordCells(word)
+      .map(({ row, col }) => solution.cells[row]?.[col] ?? '')
+      .join(''),
+  )
+}
+
+// Feature 064 (FR-022): respostas das cruzadas da fonte nos `days` dias antes de `today`.
+export async function recentAnswers(
+  db: Executor,
+  options: { source: PuzzleSourceId; today: string; days: number },
+): Promise<string[]> {
+  const rows = await db
+    .select()
+    .from(puzzles)
+    .where(
+      and(
+        eq(puzzles.source, options.source),
+        gte(puzzles.date, addDaysToIsoDate(options.today, -options.days)),
+        lt(puzzles.date, options.today),
+      ),
+    )
+  return rows.flatMap((row) => answersOf(toStored(row)))
+}
+
+export type TodayPuzzle = StoredPuzzle & { blockedBy: 'progress' | 'duel' | null }
+
+// Feature 064 (FR-024): a cruzada do dia de uma fonte e se alguma conta ou x1 já a usa.
+export async function findToday(
+  db: Executor,
+  options: { source: PuzzleSourceId; date: string },
+): Promise<TodayPuzzle | undefined> {
+  const stored = await findPuzzle(db, { ...options, level: 'daily' })
+  if (!stored) return undefined
+  const [played] = await db
+    .select({ id: progress.puzzleId })
+    .from(progress)
+    .where(eq(progress.puzzleId, stored.puzzleId))
+    .limit(1)
+  const [dueled] = played
+    ? []
+    : await db
+        .select({ id: duels.puzzleId })
+        .from(duels)
+        .where(eq(duels.puzzleId, stored.puzzleId))
+        .limit(1)
+  return { ...stored, blockedBy: played ? 'progress' : dueled ? 'duel' : null }
+}
+
+// Feature 064 (FR-025): apaga a cruzada do dia de uma fonte. `progress` e `duels` têm FK
+// `ON DELETE RESTRICT`, então uma cruzada em uso nunca sai, mesmo numa corrida.
+export async function deleteTodayIfUnused(
+  db: Executor,
+  options: { source: PuzzleSourceId; date: string; puzzleId: string },
+): Promise<'deleted' | 'not-found' | 'in-use'> {
+  try {
+    const rows = await db
+      .delete(puzzles)
+      .where(
+        and(
+          eq(puzzles.puzzleId, options.puzzleId),
+          eq(puzzles.source, options.source),
+          eq(puzzles.date, options.date),
+        ),
+      )
+      .returning({ id: puzzles.puzzleId })
+    return rows.length > 0 ? 'deleted' : 'not-found'
+  } catch (error) {
+    if (isForeignKeyViolation(error)) return 'in-use'
+    throw error
+  }
+}
+
+// 23503: violação de chave estrangeira (o erro do driver pode vir embrulhado pelo Drizzle).
+function isForeignKeyViolation(error: unknown): boolean {
+  for (let current: unknown = error; current;) {
+    if (typeof current === 'object' && 'code' in current && current.code === '23503') return true
+    current = typeof current === 'object' && 'cause' in current ? current.cause : undefined
+  }
+  return false
 }

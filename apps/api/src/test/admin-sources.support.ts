@@ -4,10 +4,14 @@ import type { Database } from '../platform/db/client'
 import { puzzles } from '../platform/db/schema'
 import { okResult } from './fake-source'
 
-export const ALL: PuzzleSourceId[] = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube']
+export const ALL: PuzzleSourceId[] = ['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube', 'casa']
+
+// Fontes que o público vê sem configuração: todas menos a gerada.
+export const PUBLIC = ALL.filter((id) => id !== 'casa')
 
 export const body = (visible: Partial<Record<PuzzleSourceId, boolean>> = {}, order = ALL) => ({
-  sources: order.map((id) => ({ id, visible: visible[id] ?? true })),
+  // A Casa (fonte gerada, feature 064) nasce escondida; as demais, visíveis.
+  sources: order.map((id) => ({ id, visible: visible[id] ?? id !== 'casa' })),
 })
 
 export function putSources(app: FastifyInstance, payload: unknown, sid?: string) {

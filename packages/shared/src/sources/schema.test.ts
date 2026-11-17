@@ -39,10 +39,18 @@ describe('resolveVisibleSources', () => {
   it('ignores a row of an unknown source', () => {
     expect(resolveVisibleSources([{ id: 'x', visible: true, position: 0 }])).toEqual(ALL)
   })
+
+  it('keeps a generated source hidden until it has a visible row (feature 064)', () => {
+    expect(resolveVisibleSources([])).not.toContain('casa')
+    expect(resolveVisibleSources([{ id: 'casa', visible: true, position: 0 }])).toEqual([
+      'casa',
+      ...ALL,
+    ])
+  })
 })
 
 describe('updateSourcesRequestSchema', () => {
-  const full = ALL.map((id) => ({ id, visible: true }))
+  const full = [...ALL, 'casa'].map((id) => ({ id, visible: true }))
 
   it('accepts every source once', () => {
     expect(updateSourcesRequestSchema.safeParse({ sources: full }).success).toBe(true)
@@ -79,7 +87,7 @@ describe('response schemas with a source this site does not know', () => {
   })
 
   it('keeps the update request strict', () => {
-    const sources = [...ALL, 'nova'].map((id) => ({ id, visible: true }))
+    const sources = [...ALL, 'casa', 'nova'].map((id) => ({ id, visible: true }))
     expect(updateSourcesRequestSchema.safeParse({ sources }).success).toBe(false)
   })
 })

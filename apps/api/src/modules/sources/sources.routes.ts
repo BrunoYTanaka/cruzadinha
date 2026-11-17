@@ -1,12 +1,22 @@
 import {
+  discardGeneratedRequestSchema,
+  generatedSettingsRequestSchema,
   updateSourcesRequestSchema,
   type AdminSourcesResponse,
+  type GeneratedSourcesResponse,
   type SourcesResponse,
 } from '@cruzadinha/shared'
 import type { FastifyPluginAsync } from 'fastify'
 import { sendError } from '../../platform/http/errors'
 import type { RequireAdmin } from '../identity'
-import { getAdminSourcesSchema, getSourcesSchema, putAdminSourcesSchema } from './sources.schemas'
+import {
+  getAdminSourcesSchema,
+  getGeneratedSourcesSchema,
+  getSourcesSchema,
+  postDiscardGeneratedSchema,
+  putAdminSourcesSchema,
+  putGeneratedSettingsSchema,
+} from './sources.schemas'
 import type { SourcesService } from './sources.service'
 
 export type SourcesRoutesOptions = {
@@ -51,6 +61,39 @@ export const sourcesRoutes: FastifyPluginAsync<SourcesRoutesOptions> = async (
       }
       const body: AdminSourcesResponse = { sources: result.sources }
       return body
+    },
+  )
+
+  // Feature 064: fontes geradas (contracts/admin-generated-sources.md). Id no corpo, nunca na URL.
+  app.get(
+    '/api/admin/generated',
+    { schema: getGeneratedSourcesSchema, onRequest: requireAdmin },
+    async () => {
+      const body: GeneratedSourcesResponse = { sources: await sources.listGenerated() }
+      return body
+    },
+  )
+
+  app.put(
+    '/api/admin/generated/settings',
+    { schema: putGeneratedSettingsSchema, onRequest: requireAdmin },
+    async (request, reply) => {
+      const parsed = generatedSettingsRequestSchema.safeParse(request.body)
+      if (!parsed.success) return sendError(reply, 400, 'invalid-input')
+      return sources.saveGenerated(parsed.data)
+    },
+  )
+
+  app.post(
+    '/api/admin/generated/discard',
+    { schema: postDiscardGeneratedSchema, onRequest: requireAdmin },
+    async (request, reply) => {
+      const parsed = discardGeneratedRequestSchema.safeParse(request.body)
+      if (!parsed.success) return sendError(reply, 400, 'invalid-input')
+      const result = await sources.discardGenerated(parsed.data)
+      if (result === 'not-found') return sendError(reply, 404, 'puzzle-unavailable')
+      if (result === 'in-use') return sendError(reply, 409, 'in-use')
+      return { discarded: true }
     },
   )
 }

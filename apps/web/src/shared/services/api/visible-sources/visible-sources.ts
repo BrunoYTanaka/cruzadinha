@@ -1,4 +1,4 @@
-import { puzzleSourceIdSchema, type PuzzleSourceId } from '@cruzadinha/shared'
+import { isGeneratedSource, puzzleSourceIdSchema, type PuzzleSourceId } from '@cruzadinha/shared'
 import type { QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../query-keys/query-keys'
 import { fetchSources } from '../sources/sources'
@@ -6,8 +6,11 @@ import { fetchSources } from '../sources/sources'
 // A alteração da administração chega ao público em até 1 minuto (feature 060, FR-015).
 export const VISIBLE_SOURCES_STALE_MS = 30_000
 
-// Erro ou 404 (API anterior): todas as fontes na ordem padrão, nunca um erro para o site.
-export const ALL_SOURCES: readonly PuzzleSourceId[] = puzzleSourceIdSchema.options
+// Erro ou 404 (API anterior): todas as fontes na ordem padrão, nunca um erro para o site. Fonte
+// gerada fica de fora: nasce escondida e a API anterior não a conhece (feature 064).
+export const ALL_SOURCES: readonly PuzzleSourceId[] = puzzleSourceIdSchema.options.filter(
+  (source) => !isGeneratedSource(source),
+)
 
 // `fetchQuery` respeita o `staleTime`: lista fresca vem do cache, vencida é pedida de novo.
 // Mesma chave, mesmo `staleTime` e mesmo fallback para o hook e para os loaders (sem hook).
