@@ -11,7 +11,7 @@ erDiagram
 
     SOURCE_SETTING {
         uuid source_setting_id PK
-        string source_id UK "oglobo, cruzadaonline, cruzadasbrasil ou clube"
+        string source_id UK "oglobo, cruzadaonline, cruzadasbrasil, clube ou casa"
         boolean visible "padrão verdadeiro"
         int position UK "a partir de 0"
         datetime created_at

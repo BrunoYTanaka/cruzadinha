@@ -17,7 +17,8 @@
     "source:check": "tsx src/sources/oglobo/check.ts",
     "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts",
     "source:check:cruzadasbrasil": "tsx src/sources/cruzadasbrasil/check.ts",
-    "source:check:clube": "tsx src/sources/clube/check.ts"
+    "source:check:clube": "tsx src/sources/clube/check.ts",
+    "source:check:generated": "tsx src/sources/generated/check.ts"
   },
   "dependencies": {
     "@cruzadinha/shared": "0.39.1",

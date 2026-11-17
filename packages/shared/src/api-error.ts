@@ -33,6 +33,8 @@ export const apiErrorCodeSchema = z.enum([
   'not-open',
   // Administração das fontes (feature 060): nenhuma fonte ficaria visível.
   'no-visible-source',
+  // Descarte da cruzada gerada de hoje (feature 064): uma conta ou um x1 já a usa.
+  'in-use',
 ])
 
 export type ApiErrorCode = z.infer<typeof apiErrorCodeSchema>

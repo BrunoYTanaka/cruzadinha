@@ -106,8 +106,8 @@ describe('puzzleSourceIdSchema', () => {
     expect(puzzleSourceNames.clube).toBe('Cruzadas Clube')
   })
 
-  it('só o clube não tem busca por data', () => {
-    expect(puzzleSourcesWithoutFetch).toEqual(['clube'])
+  it('clube e a fonte gerada casa não têm busca por data', () => {
+    expect(puzzleSourcesWithoutFetch).toEqual(['clube', 'casa'])
   })
 })
 

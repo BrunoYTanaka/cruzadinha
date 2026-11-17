@@ -15,6 +15,8 @@ import { readPageData } from '../sources/cruzadasbrasil/page-data'
 import { agilmenteResponseSchema } from '../sources/oglobo/agilmente-schema'
 import { convertAgilmenteResponse } from '../sources/oglobo/convert'
 import dailyValid from '../sources/oglobo/fixtures/daily-valid.json'
+import { SAMPLE_WORDS } from '../sources/generated/fixtures'
+import { layout, seedFrom, toPuzzle } from '../sources/generated/layout'
 
 const SAMPLE_LABEL = 'Exemplo de desenvolvimento (seed)'
 
@@ -39,6 +41,13 @@ function convertSample(source: PuzzleSourceId, date: string) {
       const read = readXml(readClubeFixture('game-valid.xml'))
       if (!read.ok) throw new Error('a fixture do puzzle de exemplo deveria ser XML válido')
       return convertClube(read.doc, 'daily', date)
+    }
+    case 'casa': {
+      // Montada pelas mesmas funções da geração, com palavras inventadas e sem chamar o modelo.
+      const placed = layout(SAMPLE_WORDS, 11, seedFrom(date))
+      const built = placed && toPuzzle(placed, { source, date, size: 11, difficulty: 'medium' })
+      if (!built) throw new Error('as palavras de exemplo deveriam montar uma grade')
+      return { ok: true as const, ...built }
     }
   }
 }

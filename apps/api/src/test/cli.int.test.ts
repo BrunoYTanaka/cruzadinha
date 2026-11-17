@@ -176,6 +176,14 @@ describe('puzzles collect', () => {
     expect(source.calls).toEqual([])
   })
 
+  it('escreve um pulo de propósito no stdout e sai com 0 (feature 064)', async () => {
+    withSource(new Map([[today(), { ok: false, reason: 'unavailable', detail: 'sem créditos' }]]))
+
+    expect(await cli('puzzles', 'collect')).toBe(0)
+    expect(out).toContain(`[O Globo] Pulado em ${today()}: sem créditos`)
+    expect(err).not.toContain('Falhou em')
+  })
+
   it('sai com 1 e escreve a falha no stderr quando a fonte cai', async () => {
     withSource(new Map([[today(), { ok: false, reason: 'source-down', detail: 'corpo-bruto' }]]))
 

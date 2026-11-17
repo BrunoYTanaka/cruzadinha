@@ -61,7 +61,7 @@ describe('computeStats', () => {
     const s = computeStats([], NOW)
     expect(s.streak).toEqual({ current: 0, longest: 0 })
     expect(s.averageMs).toBeNull()
-    expect(s.bySource).toHaveLength(4)
+    expect(s.bySource).toHaveLength(5)
     expect(s.bySource.every((x) => x.total === 0 && x.bestMs === null)).toBe(true)
   })
 })

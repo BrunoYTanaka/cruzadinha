@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { afterAll, beforeEach, describe, expect, inject, it } from 'vitest'
-import { puzzles, users } from '../platform/db/schema'
+import { puzzles, sourceSettings, users } from '../platform/db/schema'
 import { createDatabase } from '../platform/db/client'
 import { runSeed } from '../seed/seed-user'
 import {
@@ -110,6 +110,14 @@ describe('db:seed', () => {
 })
 
 describe('db:seed (puzzle de exemplo)', () => {
+  it('torna a conta de teste admin e mostra a Casa (feature 064)', async () => {
+    expect(await seed(DEV)).toBe(0)
+    const [user] = await db.select().from(users)
+    expect(user?.isAdmin).toBe(true)
+    const [casa] = await db.select().from(sourceSettings).where(eq(sourceSettings.sourceId, 'casa'))
+    expect(casa?.visible).toBe(true)
+  })
+
   const today = () => todayInSaoPaulo(clock.now)
 
   it('grava um exemplo de cada fonte na data de hoje, com atribuição própria e sem rede', async () => {
@@ -118,15 +126,18 @@ describe('db:seed (puzzle de exemplo)', () => {
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzada Online)`)
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzadas Brasil)`)
     expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Cruzadas Clube)`)
+    expect(out).toContain(`Puzzle de exemplo gravado: ${today()} (Casa)`)
 
     const rows = await db.select().from(puzzles).orderBy(puzzles.source)
     expect(rows.map((row) => [row.source, row.date])).toEqual([
+      ['casa', today()],
       ['clube', today()],
       ['cruzadaonline', today()],
       ['cruzadasbrasil', today()],
       ['oglobo', today()],
     ])
-    const [clube, cruzada, brasil, globo] = rows.map((row) => puzzleSchema.parse(row.data))
+    const [casa, clube, cruzada, brasil, globo] = rows.map((row) => puzzleSchema.parse(row.data))
+    expect(casa?.grid.width).toBe(11)
     expect(clube?.source).toBe('clube')
     expect(clube?.grid.cells.flat().every((cell) => cell.kind === 'open')).toBe(true)
     expect(globo?.attribution).toEqual({
@@ -189,7 +200,7 @@ describe('db:seed (puzzle de exemplo)', () => {
     expect(out).toContain(`Já existe puzzle em ${today()} (Cruzadas Brasil); exemplo não gravado.`)
     expect(out).toContain(`Já existe puzzle em ${today()} (Cruzadas Clube); exemplo não gravado.`)
     const rows = await db.select().from(puzzles).orderBy(puzzles.source)
-    expect(rows).toHaveLength(4)
+    expect(rows).toHaveLength(5)
     expect(rows.map((row) => row.puzzleId)).toEqual(before.map((row) => row.puzzleId))
     expect(rows.map((row) => row.updatedAt.getTime())).toEqual(
       before.map((row) => row.updatedAt.getTime()),

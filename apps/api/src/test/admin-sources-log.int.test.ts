@@ -28,7 +28,8 @@ describe('registro de alterações', () => {
     const rows = await db.select().from(sourceSettingChanges)
     expect(rows).toHaveLength(1)
     expect(rows[0]?.userId).toBe(adminRow?.userId)
-    expect(rows[0]?.before.every((row) => row.visible)).toBe(true)
+    // Antes: todas visíveis, menos a Casa, que nasce escondida (feature 064).
+    expect(rows[0]?.before.every((row) => row.visible === (row.sourceId !== 'casa'))).toBe(true)
     expect(rows[0]?.after.find((row) => row.sourceId === 'clube')?.visible).toBe(false)
   })
 
@@ -46,7 +47,7 @@ describe('registro de alterações', () => {
     const settings = await db.execute<{ total: number }>(
       sql`SELECT count(*)::int AS total FROM ${sourceSettings}`,
     )
-    expect(settings[0]?.total).toBe(4)
+    expect(settings[0]?.total).toBe(5)
     expect(await db.select().from(sourceSettingChanges)).toHaveLength(1)
   })
 })

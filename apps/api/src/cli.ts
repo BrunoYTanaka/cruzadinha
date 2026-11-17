@@ -2,7 +2,8 @@ import { createInterface } from 'node:readline/promises'
 import { Writable } from 'node:stream'
 import { text } from 'node:stream/consumers'
 import { runCli } from './cli/run-cli'
-import { loadConfig } from './config'
+import { loadConfig, type GenerationConfig } from './config'
+import { createGeneratedSources } from './generated-sources'
 import { createDatabase } from './platform/db/client'
 import { describeError } from './platform/db/errors'
 import { loadDotEnvIfPresent } from './env-file'
@@ -46,10 +47,12 @@ function createSecretReader(): (prompt: string) => Promise<string> {
 
 let databaseUrl: string
 let historyDays: number
+let generation: GenerationConfig
 try {
   const config = loadConfig(process.env)
   databaseUrl = config.databaseUrl
   historyDays = config.collectHistoryDays
+  generation = config.generation
 } catch (error) {
   process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`)
   process.exit(1)
@@ -66,6 +69,7 @@ try {
       createCruzadaOnlineSource(),
       createCruzadasBrasilSource(),
       createClubeSource(),
+      ...createGeneratedSources({ db: database.db, generation, clock: systemClock }),
     ],
     historyDays,
     readSecret: createSecretReader(),

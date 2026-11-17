@@ -17,6 +17,7 @@ describe('schema', () => {
       'duels',
       'email_change_requests',
       'email_send_block',
+      'generated_source_settings',
       'password_reset_tokens',
       'pending_registrations',
       'progress',
@@ -104,6 +105,6 @@ describe('migrations', () => {
     const before = await count()
     await runMigrations(inject('databaseUrl'))
     expect(await count()).toBe(before)
-    expect(before).toBe(14)
+    expect(before).toBe(15)
   })
 })

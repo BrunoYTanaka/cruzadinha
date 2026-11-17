@@ -4,6 +4,7 @@
 
 | Version | Date       | Changes                                                                                                                               |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.0.3` | 2026-11-17 | - Fonte `casa` (064); a migração cria a linha de `casa` escondida, no fim da ordem.                                                   |
 | `0.0.2` | 2026-11-03 | - `before` e `after` como documento JSON (`jsonb`); `isAdmin` na resposta de `/api/auth/me` só para a própria conta; link do ERD-008. |
 | `0.0.1` | 2026-11-03 | - Versão inicial derivada da spec 060 (papel de admin, fontes, registro).                                                             |
 
@@ -38,20 +39,21 @@ Cobre o papel de admin na conta, a configuração global de cada fonte de cruzad
 
 ### SourceSetting
 
-| Field             | Description                              | Data Type | Mandatory | Notes                                                                                                                                         |
-| ----------------- | ---------------------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| source_setting_id | Identificador único da configuração      | UUID      | Yes       | PK; gerado pelo banco                                                                                                                         |
-| source_id         | Fonte configurada                        | Text      | Yes       | Único; identificador de fonte do `shared` (`oglobo`, `cruzadaonline`, `cruzadasbrasil`, `clube`); valor desconhecido não é aceito na gravação |
-| visible           | A fonte aparece para o público           | Boolean   | Yes       | Padrão verdadeiro; pelo menos uma linha visível sempre (FR-004)                                                                               |
-| position          | Posição na ordem das abas e de "Hoje"    | Number    | Yes       | Inteiro a partir de 0; a de menor posição entre as visíveis é a padrão (FR-006); sem posições repetidas                                       |
-| created_at        | Data e hora em que o registro foi criado | Date      | Yes       | Preenchido pelo banco; UTC                                                                                                                    |
-| updated_at        | Data e hora da última alteração          | Date      | Yes       | Preenchido e avançado pelo banco; UTC                                                                                                         |
+| Field             | Description                              | Data Type | Mandatory | Notes                                                                                                                                                 |
+| ----------------- | ---------------------------------------- | --------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| source_setting_id | Identificador único da configuração      | UUID      | Yes       | PK; gerado pelo banco                                                                                                                                 |
+| source_id         | Fonte configurada                        | Text      | Yes       | Único; identificador de fonte do `shared` (`oglobo`, `cruzadaonline`, `cruzadasbrasil`, `clube`, `casa`); valor desconhecido não é aceito na gravação |
+| visible           | A fonte aparece para o público           | Boolean   | Yes       | Padrão verdadeiro; pelo menos uma linha visível sempre (FR-004)                                                                                       |
+| position          | Posição na ordem das abas e de "Hoje"    | Number    | Yes       | Inteiro a partir de 0; a de menor posição entre as visíveis é a padrão (FR-006); sem posições repetidas                                               |
+| created_at        | Data e hora em que o registro foi criado | Date      | Yes       | Preenchido pelo banco; UTC                                                                                                                            |
+| updated_at        | Data e hora da última alteração          | Date      | Yes       | Preenchido e avançado pelo banco; UTC                                                                                                                 |
 
 Regras:
 
 - Sem linhas, vale o padrão de hoje: todas as fontes visíveis na ordem padrão (FR-007). Fonte do código sem linha conta como visível, no fim da ordem.
 - A mudança vale para todas as pessoas e aparece ao público em até 1 minuto (FR-015).
 - Esconder não apaga nada em `Puzzle`, `Progress` nem `Duel` (FR-013).
+- A linha de `casa` (064) nasce com `visible` falso, na maior posição + 1; o admin a liga depois da primeira cruzada gerada. As demais configurações das fontes geradas ficam na [DDE-009](./DDE-009-configuracao-fontes-geradas.md).
 
 ### SourceSettingChange
 

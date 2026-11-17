@@ -33,6 +33,14 @@ function visit(user: (typeof aUser & { isAdmin: boolean }) | null) {
       user ? jsonResponse(200, { user }) : apiError(401, 'unauthenticated'),
     'GET /api/admin/sources': () =>
       user?.isAdmin ? jsonResponse(200, { sources }) : apiError(404, 'not-found'),
+    'GET /api/admin/generated': () =>
+      user?.isAdmin
+        ? jsonResponse(200, {
+            sources: [
+              { source: 'casa', gridSize: 11, difficulty: 'medium', callsLeft: 3, today: null },
+            ],
+          })
+        : apiError(404, 'not-found'),
   })
   return renderRoutes(routes, ['/admin'], queryClient)
 }
@@ -49,6 +57,8 @@ describe('AdminPage', () => {
     const view = visit({ ...aUser, isAdmin: true })
     expect(await screen.findByRole('heading', { level: 1, name: 'Administração' })).toBeVisible()
     expect(await screen.findByRole('checkbox', { name: /O Globo/ })).toBeVisible()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Fontes geradas' })).toBeVisible()
+    expect(await screen.findByRole('spinbutton', { name: /Tamanho da grade/ })).toHaveValue(11)
     await expectNoA11yViolations(view.container)
   })
 

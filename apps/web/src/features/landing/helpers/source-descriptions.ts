@@ -8,4 +8,5 @@ export const SOURCE_DESCRIPTIONS: Record<PuzzleSourceId, string> = {
   cruzadaonline: 'A cruzada publicada pelo jornal Público, de Portugal, em português europeu.',
   cruzadasbrasil: 'As cruzadas diárias do site Cruzadas Brasil.',
   clube: 'As edições do Cruzadas Clube, disponíveis a partir dos dias que o Cruzadinha já guardou.',
+  casa: 'A cruzada da casa: uma por dia, de conhecimentos gerais, feita para o Cruzadinha.',
 }

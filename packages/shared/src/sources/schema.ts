@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { puzzleSourceIdSchema, withKnownSources, type PuzzleSourceId } from '../puzzle/schema'
+import { isGeneratedSource } from './generated-settings'
 
 // Resposta pública: só as fontes visíveis, em ordem. Tolerante a chaves novas (site mais antigo).
 export const sourcesResponseSchema = z.object({
@@ -43,13 +44,15 @@ export type SourceRow = { id: string; visible: boolean; position: number }
 
 const KNOWN: readonly string[] = puzzleSourceIdSchema.options
 
-// Ids visíveis por `position`. Fonte do código sem linha entra visível no fim, na ordem padrão;
-// linha de fonte que o código não conhece é ignorada.
+// Ids visíveis por `position`. Fonte do código sem linha entra visível no fim, na ordem padrão,
+// exceto fonte gerada, que nasce escondida (feature 064); linha de fonte desconhecida é ignorada.
 export function resolveVisibleSources(rows: readonly SourceRow[]): PuzzleSourceId[] {
   const known = rows.filter((row) => KNOWN.includes(row.id))
   const saved = new Set(known.map((row) => row.id))
   const ordered = [...known].sort((a, b) => a.position - b.position)
-  const missing = puzzleSourceIdSchema.options.filter((id) => !saved.has(id))
+  const missing = puzzleSourceIdSchema.options.filter(
+    (id) => !saved.has(id) && !isGeneratedSource(id),
+  )
   return [
     ...ordered.filter((row) => row.visible).map((row) => puzzleSourceIdSchema.parse(row.id)),
     ...missing,

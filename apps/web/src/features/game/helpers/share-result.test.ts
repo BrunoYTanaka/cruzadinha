@@ -21,3 +21,11 @@ describe('buildShareText', () => {
     expect(text).not.toContain('@')
   })
 })
+
+describe('buildShareText da Casa (feature 064)', () => {
+  it('não cita IA, modelo nem geração automática', () => {
+    const text = buildShareText({ source: 'casa', date: '2026-11-17', elapsedMs: 60_000 })
+    expect(text).toContain('Casa')
+    expect(text).not.toMatch(/\bIA\b|DeepSeek|gerad|intelig/i)
+  })
+})

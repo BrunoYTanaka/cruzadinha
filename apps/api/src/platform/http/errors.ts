@@ -27,6 +27,7 @@ export const errorMessages: Record<ApiErrorCode, string> = {
   'not-running': 'Este x1 não está em andamento.',
   'not-open': 'Este x1 não está mais aberto.',
   'no-visible-source': 'Pelo menos uma fonte precisa ficar visível.',
+  'in-use': 'A cruzada já está em uso por uma conta ou um x1.',
 }
 
 export function apiError(code: ApiErrorCode, fields?: string[], retryAfter?: number): ApiError {

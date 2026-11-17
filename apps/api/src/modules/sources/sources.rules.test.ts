@@ -6,6 +6,8 @@ const request = (visible: boolean[]): SourceRequestItem[] => [
   { id: 'cruzadaonline', visible: visible[1] ?? true },
   { id: 'cruzadasbrasil', visible: visible[2] ?? true },
   { id: 'clube', visible: visible[3] ?? true },
+  // Fonte gerada (feature 064): nasce escondida.
+  { id: 'casa', visible: visible[4] ?? false },
 ]
 const current: SourceSetting[] = request([]).map((item, position) => ({ ...item, position }))
 
