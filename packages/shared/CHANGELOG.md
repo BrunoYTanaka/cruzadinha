@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.40.1](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.40.0...shared-v0.40.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **shared:** accept a lone letter between a word and the grid edge ([bcd5d2e](https://github.com/BrunoYTanaka/cruzadinha/commit/bcd5d2ed6877f57f930455530cfec3ad5b54c768))
+* **shared:** accept a lone letter between a word and the grid edge ([904971b](https://github.com/BrunoYTanaka/cruzadinha/commit/904971b74cfc324623a6319c9eaa9650ad084770))
+
 ## [0.40.0](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.39.1...shared-v0.40.0) (2026-11-17)
 
 
