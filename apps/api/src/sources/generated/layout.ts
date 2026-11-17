@@ -104,28 +104,29 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
   return copy
 }
 
+// Melhor primeiro: a cada passo põe, entre todas as palavras que faltam, a posição com mais
+// cruzamentos (desempate pela palavra mais curta e por ruído). Com palavras reais isso põe bem mais
+// palavras que encaixar uma por uma na ordem sorteada (T032: 17 contra 14 no 11 x 11).
 function layoutOnce(words: readonly ValidWord[], size: number, random: () => number): Placement[] {
-  // Ordem aleatória, mas palavras longas primeiro (com ruído), que abrem mais cruzamentos.
-  const order = shuffle(words, random).sort(
-    (a, b) => [...b.answer].length - [...a.answer].length + (random() - 0.5) * 3,
+  // Primeira palavra: das mais longas (com ruído), em linha e coluna sorteadas.
+  const [first, ...rest] = shuffle(words, random).sort(
+    (a, b) => [...b.answer].length - [...a.answer].length + (random() - 0.5) * 6,
   )
   const board = emptyBoard(size)
   const placed: Placement[] = []
-  const [first, ...rest] = order
   if (!first) return placed
   const firstLetters = [...first.answer]
-  const firstRow = Math.floor(size / 2)
-  const firstCol = Math.floor((size - firstLetters.length) / 2)
+  const firstRow = Math.floor(random() * size)
+  const firstCol = Math.floor(random() * (size - firstLetters.length + 1))
   put(board, firstLetters, firstRow, firstCol, 'across')
   placed.push({ ...first, row: firstRow, col: firstCol, direction: 'across' })
 
   let pending = rest
-  // Duas voltas: uma palavra recusada na primeira pode caber depois que outras abrirem espaço.
-  for (let pass = 0; pass < 2 && pending.length > 0; pass++) {
-    const skipped: ValidWord[] = []
+  for (;;) {
+    let best: { word: ValidWord; row: number; col: number; dir: Direction; score: number } | null =
+      null
     for (const word of pending) {
       const letters = [...word.answer]
-      let best: { row: number; col: number; dir: Direction; score: number } | null = null
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const existing = board.letters[r]![c]
@@ -137,22 +138,19 @@ function layoutOnce(words: readonly ValidWord[], size: number, random: () => num
               const col = dir === 'across' ? c - i : c
               const count = crossings(board, letters, row, col, dir)
               if (count < 1) continue
-              const score = count + random() * 0.5
-              if (!best || score > best.score) best = { row, col, dir, score }
+              const score = count * 2 - letters.length * 0.1 + random()
+              if (!best || score > best.score) best = { word, row, col, dir, score }
             }
           }
         }
       }
-      if (best) {
-        put(board, letters, best.row, best.col, best.dir)
-        placed.push({ ...word, row: best.row, col: best.col, direction: best.dir })
-      } else {
-        skipped.push(word)
-      }
     }
-    pending = skipped
+    if (!best) return placed
+    const chosen = best
+    put(board, [...chosen.word.answer], chosen.row, chosen.col, chosen.dir)
+    placed.push({ ...chosen.word, row: chosen.row, col: chosen.col, direction: chosen.dir })
+    pending = pending.filter((word) => word !== chosen.word)
   }
-  return placed
 }
 
 /**

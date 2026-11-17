@@ -22,7 +22,7 @@
 - [X] T001 [P] Teste em `packages/shared/src/sources/schema.test.ts`: `sourcesResponseSchema` e `adminSourcesResponseSchema` aceitam uma resposta com um id desconhecido (`'nova'`) e o descartam, mantendo os conhecidos na ordem; resposta só com ids desconhecidos continua inválida (`min(1)` em `sources`)
 - [X] T002 [P] Teste em `packages/shared/src/stats/schema.test.ts`: `statsSchema` aceita `bySource` com um item de fonte desconhecida e o descarta
 - [X] T003 Fazer os três esquemas descartarem ids desconhecidos em `packages/shared/src/sources/schema.ts` e `packages/shared/src/stats/schema.ts` (filtrar por `puzzleSourceIdSchema.safeParse` antes de validar o item; pedidos continuam estritos)
-- [ ] T004 Rodar `npm run typecheck && npm test`; abrir o PR da release A e esperar o `web-v*` novo no ar antes de mergear a release B
+- [X] T004 Rodar `npm run typecheck && npm test`; abrir o PR da release A e esperar o `web-v*` novo no ar antes de mergear a release B
 
 **Checkpoint**: site no ar ignora fonte desconhecida em `/api/sources`, `/api/admin/sources` e `/api/stats`.
 
@@ -83,7 +83,7 @@
 - [X] T029 [US2] Em `apps/api/src/cli.ts`: registrar `createGeneratedSource` para `casa` com `provider = { baseUrl: 'https://api.deepseek.com', model: config.DEEPSEEK_MODEL, apiKey: config.DEEPSEEK_API_KEY }`, `enabled: config.GENERATION_ENABLED`, `readSettings` = `readGeneratedSettings` de T014, `reserveCall` via `rateLimiter.reserve` (ação `PUZZLE_GENERATE`, `keyType: 'GLOBAL'`, `keyValue: 'casa:<data>'`, limite 3, janela 1440 min) e `recentAnswers` de T028; em `apps/api/src/app.ts` registrar a mesma fonte sem chave e com `enabled: false` (a API nunca gera)
 - [X] T030 [US2] Teste em `apps/api/src/test/collect.int.test.ts`: coleta com a fonte `casa` e `fetch` falso grava a cruzada de hoje; segunda coleta no mesmo dia não chama o modelo (`skipped`); duas coletas que falham somam no máximo 3 chamadas no dia (limite persistido); outras fontes seguem coletando se a Casa falhar; com `casa` escondida em `source_settings` a coleta gera do mesmo jeito (FR-027); duas coletas simultâneas no mesmo dia salvam uma só cruzada e somam no máximo 3 chamadas
 - [X] T031 [P] [US2] Criar `apps/api/src/sources/generated/check.ts` e o script `"source:check:generated": "tsx src/sources/generated/check.ts"` em `apps/api/package.json`: pedido real à DeepSeek com a configuração padrão, imprime nº de palavras postas e tentativas, `--save` grava em `apps/api/.source-samples/`; ignora `GENERATION_ENABLED`; nunca imprime a chave
-- [ ] T032 [US2] Teste de contrato (constituição IV, research R8b): rodar uma vez `DEEPSEEK_API_KEY=... npm run source:check:generated -w @cruzadinha/api -- --save`, reduzir a resposta a ~20 itens, remover `id` e `usage`, conferir que não há segredo e salvar em `apps/api/src/sources/generated/fixtures/deepseek-response.json`; criar `apps/api/src/sources/generated/contract.test.ts` que passa essa resposta pelo esquema HTTP, `cleanWords` e `layout` (tamanho 9) e espera uma cruzada válida
+- [X] T032 [US2] Teste de contrato (constituição IV, research R8b): rodar uma vez `DEEPSEEK_API_KEY=... npm run source:check:generated -w @cruzadinha/api -- --save`, reduzir a resposta a ~20 itens, remover `id` e `usage`, conferir que não há segredo e salvar em `apps/api/src/sources/generated/fixtures/deepseek-response.json`; criar `apps/api/src/sources/generated/contract.test.ts` que passa essa resposta pelo esquema HTTP, `cleanWords` e `layout` (tamanho 9) e espera uma cruzada válida
 - [X] T033 [US2] Em `.github/workflows/collect.yml`, passo Coletar: `DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}`, `DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}` e `GENERATION_ENABLED: 'true'`
 
 **Checkpoint**: coleta local com `GENERATION_ENABLED=true` gera uma cruzada válida; US1 joga a cruzada gerada.
@@ -141,7 +141,7 @@
 - [X] T047 [P] Em `docs/deploy.md`: segredo `DEEPSEEK_API_KEY` e variável `DEEPSEEK_MODEL` do GitHub Actions, `GENERATION_ENABLED` só no `collect.yml`, ligar a Casa em `/admin` depois da primeira cruzada, como pausar o gasto (tirar o segredo)
 - [X] T048 [P] Atualizar `CLAUDE.md` (seção API/Site): fonte gerada `casa`, `sources/generated/`, sem menção a IA para o jogador, limite `PUZZLE_GENERATE`, `GENERATION_ENABLED`, rotas `/api/admin/generated*`
 - [X] T049 Rodar `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:int` e o roteiro de `specs/064-cruzada-gerada-ia/quickstart.md` (seções 1, 2b, 3 e 4; a 2 só com crédito)
-- [ ] T050 Rodar `source:check:generated` com chave real nos tamanhos 9 e 15 (o 11 já roda na T032; no máximo 2 chamadas extras); se 15 x 15 não chegar a 19 palavras na maioria das tentativas, ajustar o mínimo em `layout.ts` e registrar em `research.md` R2
+- [X] T050 Rodar `source:check:generated` com chave real nos tamanhos 9 e 15 (o 11 já roda na T032; no máximo 2 chamadas extras); se 15 x 15 não chegar a 19 palavras na maioria das tentativas, ajustar o mínimo em `layout.ts` e registrar em `research.md` R2. Feito com a lista real da T032 nos tamanhos 9 a 15, sem chamada extra; a montagem passou a "melhor primeiro" (R2)
 
 ---
 
