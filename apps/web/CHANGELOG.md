@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.21.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.20.2...web-v0.21.0) (2026-11-17)
+
+
+### Features
+
+* add the generated daily crossword source casa ([4d01147](https://github.com/BrunoYTanaka/cruzadinha/commit/4d01147eae395acaa3d8c6379dc2ef1295b68f1c))
+* add the generated daily crossword source casa ([ab60b10](https://github.com/BrunoYTanaka/cruzadinha/commit/ab60b10fab65f7d40230fb599babe2ee2e93494c))
+
+
+### Bug Fixes
+
+* **web:** adapt admin and e2e to the casa source ([a931841](https://github.com/BrunoYTanaka/cruzadinha/commit/a931841874c8c4deaaf713b3699298b56aa61378))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.39.1 to 0.40.0
+
 ## [0.20.2](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.20.1...web-v0.20.2) (2026-11-17)
 
 
