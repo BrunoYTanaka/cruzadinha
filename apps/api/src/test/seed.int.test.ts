@@ -8,6 +8,7 @@ import {
   validatePuzzleWithSolution,
   puzzleResponseSchema,
   puzzleSchema,
+  resolveVisibleSources,
   solutionSchema,
 } from '@cruzadinha/shared'
 import { todayInSaoPaulo } from '../platform/lib/dates'
@@ -116,6 +117,16 @@ describe('db:seed (puzzle de exemplo)', () => {
     expect(user?.isAdmin).toBe(true)
     const [casa] = await db.select().from(sourceSettings).where(eq(sourceSettings.sourceId, 'casa'))
     expect(casa?.visible).toBe(true)
+  })
+
+  it('mostra a Casa depois das outras fontes, sem mudar a fonte padrão', async () => {
+    await db.delete(sourceSettings)
+    expect(await seed(DEV)).toBe(0)
+    const rows = await db.select().from(sourceSettings)
+    const visible = resolveVisibleSources(
+      rows.map((row) => ({ id: row.sourceId, visible: row.visible, position: row.position })),
+    )
+    expect(visible).toEqual(['oglobo', 'cruzadaonline', 'cruzadasbrasil', 'clube', 'casa'])
   })
 
   const today = () => todayInSaoPaulo(clock.now)
