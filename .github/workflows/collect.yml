@@ -86,8 +86,9 @@ jobs:
           gh label create fonte-quebrada --color B60205 --description "Fonte de puzzles parou de coletar" --force
           grep -oP '^\[\K[^\]]+(?=\] Falhou em)' collect.log | sort -u | while IFS= read -r fonte; do
             title="[Fonte] $fonte parou de coletar"
+            # O `--jq` do gh não aceita `--arg`: o título vai para o jq do runner.
             open=$(gh issue list --label fonte-quebrada --state open --json title \
-              --jq --arg t "$title" '[.[] | select(.title == $t)] | length')
+              | jq --arg t "$title" '[.[] | select(.title == $t)] | length')
             if [ "$open" != "0" ]; then
               echo "issue já aberta para $fonte"
               continue
