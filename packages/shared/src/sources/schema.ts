@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { puzzleSourceIdSchema, type PuzzleSourceId } from '../puzzle/schema'
+import { puzzleSourceIdSchema, withKnownSources, type PuzzleSourceId } from '../puzzle/schema'
 
 // Resposta pública: só as fontes visíveis, em ordem. Tolerante a chaves novas (site mais antigo).
 export const sourcesResponseSchema = z.object({
-  sources: z.array(puzzleSourceIdSchema).min(1),
+  sources: withKnownSources(z.array(puzzleSourceIdSchema).min(1), (id) => id),
 })
 
 export type SourcesResponse = z.infer<typeof sourcesResponseSchema>
@@ -16,8 +16,11 @@ export const adminSourceSchema = z.object({
 
 export type AdminSource = z.infer<typeof adminSourceSchema>
 
+const sourceIdOf = (item: unknown) =>
+  typeof item === 'object' && item !== null && 'id' in item ? item.id : undefined
+
 export const adminSourcesResponseSchema = z.object({
-  sources: z.array(adminSourceSchema),
+  sources: withKnownSources(z.array(adminSourceSchema), sourceIdOf),
 })
 
 export type AdminSourcesResponse = z.infer<typeof adminSourcesResponseSchema>
