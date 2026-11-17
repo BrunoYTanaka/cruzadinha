@@ -18,6 +18,8 @@ export default defineConfig(
       '.claude/**',
       // Scripts de fixture imitam o arquivo do jogo de terceiros (rodam só na sandbox, nos testes).
       'apps/api/src/sources/clube/fixtures/**',
+      // Respostas reais salvas com `source:check* --save` (fora do git).
+      'apps/api/.source-samples/**',
     ],
   },
   {

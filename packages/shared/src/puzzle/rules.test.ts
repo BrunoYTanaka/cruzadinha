@@ -262,6 +262,77 @@ describe('corrida de uma letra entre barras', () => {
     puzzle.grid.cells[0]![3] = open(5)
     expect(issuePaths(puzzle)).toContainEqual(['words', 0])
   })
+
+  // Cruzadas Clube de 2026-10-26 e 2026-11-09: a letra solta fica na borda da grade.
+  // 1 . | 2        horizontais: 1 (AB), 3 (DEF); vertical: 2 (CF)
+  // 3 . .
+  function edgeCell(): Puzzle {
+    return {
+      ...neighbours(),
+      grid: {
+        width: 3,
+        height: 2,
+        cells: [
+          [open(1), open(), open(2)],
+          [open(3), open(), open()],
+        ],
+      },
+      words: [
+        { number: 1, direction: 'across', row: 0, col: 0, length: 2, clue: 'a' },
+        { number: 3, direction: 'across', row: 1, col: 0, length: 3, clue: 'b' },
+        { number: 2, direction: 'down', row: 0, col: 2, length: 2, clue: 'c' },
+      ],
+    }
+  }
+
+  it('aceita a letra solta entre a palavra e a borda (palavra | letra | borda)', () => {
+    expect(puzzleSchema.safeParse(edgeCell()).success).toBe(true)
+  })
+
+  it('aceita a letra solta entre a borda e a palavra (borda | letra | palavra)', () => {
+    // 1 | 2 .        horizontais: 2 (BC), 3 (DEF); vertical: 1 (AD)
+    // 3 . .
+    const puzzle: Puzzle = {
+      ...edgeCell(),
+      grid: {
+        width: 3,
+        height: 2,
+        cells: [
+          [open(1), open(2), open()],
+          [open(3), open(), open()],
+        ],
+      },
+      words: [
+        { number: 2, direction: 'across', row: 0, col: 1, length: 2, clue: 'a' },
+        { number: 3, direction: 'across', row: 1, col: 0, length: 3, clue: 'b' },
+        { number: 1, direction: 'down', row: 0, col: 0, length: 2, clue: 'c' },
+      ],
+    }
+    expect(puzzleSchema.safeParse(puzzle).success).toBe(true)
+  })
+
+  it('recusa duas letras soltas entre a palavra e a borda', () => {
+    // 1 . | 2 3      horizontais: 1 (AB), 4 (EFGH); verticais: 2 (CG), 3 (DH)
+    // 4 . . .
+    const puzzle: Puzzle = {
+      ...edgeCell(),
+      grid: {
+        width: 4,
+        height: 2,
+        cells: [
+          [open(1), open(), open(2), open(3)],
+          [open(4), open(), open(), open()],
+        ],
+      },
+      words: [
+        { number: 1, direction: 'across', row: 0, col: 0, length: 2, clue: 'a' },
+        { number: 4, direction: 'across', row: 1, col: 0, length: 4, clue: 'b' },
+        { number: 2, direction: 'down', row: 0, col: 2, length: 2, clue: 'c' },
+        { number: 3, direction: 'down', row: 0, col: 3, length: 2, clue: 'd' },
+      ],
+    }
+    expect(issuePaths(puzzle)).toContainEqual(['words', 0])
+  })
 })
 
 describe('wordBoundaries', () => {
