@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.14.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.6...api-v0.14.0) (2026-11-17)
+
+
+### Features
+
+* add the generated daily crossword source casa ([4d01147](https://github.com/BrunoYTanaka/cruzadinha/commit/4d01147eae395acaa3d8c6379dc2ef1295b68f1c))
+* add the generated daily crossword source casa ([ab60b10](https://github.com/BrunoYTanaka/cruzadinha/commit/ab60b10fab65f7d40230fb599babe2ee2e93494c))
+
+
+### Bug Fixes
+
+* **api:** keep the seeded casa source after the other sources ([6947615](https://github.com/BrunoYTanaka/cruzadinha/commit/6947615553ea61443c74573b54c6618eba2faa05))
+* **api:** place more real words in the generated grid ([03194cd](https://github.com/BrunoYTanaka/cruzadinha/commit/03194cd2e28c2e91e741b72e252e63dc21b4b7a6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.39.1 to 0.40.0
+
 ## [0.13.6](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.13.5...api-v0.13.6) (2026-11-17)
 
 

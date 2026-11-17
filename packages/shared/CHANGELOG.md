@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.40.0](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.39.1...shared-v0.40.0) (2026-11-17)
+
+
+### Features
+
+* add the generated daily crossword source casa ([4d01147](https://github.com/BrunoYTanaka/cruzadinha/commit/4d01147eae395acaa3d8c6379dc2ef1295b68f1c))
+* add the generated daily crossword source casa ([ab60b10](https://github.com/BrunoYTanaka/cruzadinha/commit/ab60b10fab65f7d40230fb599babe2ee2e93494c))
+
 ## [0.39.1](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.39.0...shared-v0.39.1) (2026-11-17)
 
 
