@@ -135,6 +135,8 @@ function SourceBlock({ view }: { view: GeneratedSourceView }) {
           <Button
             type="submit"
             variant="primary"
+            // Nome próprio por fonte: o painel de fontes acima também tem um "Salvar" (WCAG 2.5.3).
+            aria-label={`Salvar ${name}`}
             pending={save.isPending}
             disabled={!dirty || !validSize}
           >

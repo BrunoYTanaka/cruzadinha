@@ -56,7 +56,7 @@ describe('GeneratedSourcesAdmin (feature 064)', () => {
     expect(screen.getByText('Chamadas restantes hoje: 2')).toBeInTheDocument()
     expect(screen.getByText(/SOL/).closest('li')).toHaveTextContent('1. SOL — Estrela do dia')
     expect(screen.getByRole('heading', { name: 'Verticais' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Salvar Casa' })).toBeDisabled()
     await expectNoA11yViolations(container)
   })
 
@@ -70,7 +70,7 @@ describe('GeneratedSourcesAdmin (feature 064)', () => {
     await user.clear(size)
     await user.type(size, '13')
     await user.click(screen.getByRole('radio', { name: 'Difícil' }))
-    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+    await user.click(screen.getByRole('button', { name: 'Salvar Casa' }))
     expect(await screen.findByText(/Vale a partir da próxima cruzada/)).toBeInTheDocument()
     expect(calls.find((call) => call.key === 'PUT /api/admin/generated/settings')?.body).toEqual({
       source: 'casa',
@@ -85,7 +85,7 @@ describe('GeneratedSourcesAdmin (feature 064)', () => {
     const size = await screen.findByRole('spinbutton', { name: /Tamanho da grade/ })
     await user.clear(size)
     await user.type(size, '16')
-    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Salvar Casa' })).toBeDisabled()
   })
 
   it('descarta depois de confirmar e mostra como gerar de novo', async () => {

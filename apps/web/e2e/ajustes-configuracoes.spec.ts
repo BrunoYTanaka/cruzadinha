@@ -165,7 +165,7 @@ test.describe('US3: modal alinhada em qualquer tela', () => {
         // Seletor: com mais de 3 fontes (feature 030) é uma lista de rádios, uma opção por fonte.
         await expect(
           dialog.getByRole('group', { name: 'Cruzada padrão' }).getByRole('radio'),
-        ).toHaveCount(4)
+        ).toHaveCount(5)
 
         // Sem rolagem lateral na modal.
         const overflow = await dialog.evaluate(

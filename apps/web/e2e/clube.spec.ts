@@ -36,10 +36,12 @@ async function openClube(page: Page) {
   await expect(page.getByRole('grid')).toBeVisible()
 }
 
-test('quatro abas; abre a Cruzadas Clube pelo dia de hoje', async ({ page }) => {
+test('cinco abas com a Casa (feature 064); abre a Cruzadas Clube pelo dia de hoje', async ({
+  page,
+}) => {
   await page.goto('/calendario')
   await expect(page.getByRole('heading', { level: 1, name: 'Escolha um dia' })).toBeAttached()
-  await expect(page.getByRole('tab')).toHaveCount(4)
+  await expect(page.getByRole('tab')).toHaveCount(5)
   await expect(page.getByRole('tab', { name: /^Cruzadas Clube/ })).toBeVisible()
   expect((await axe(page).analyze()).violations).toEqual([])
 
