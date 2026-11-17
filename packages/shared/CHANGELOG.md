@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.39.1](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.39.0...shared-v0.39.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **shared:** drop unknown source ids from response schemas ([07f5907](https://github.com/BrunoYTanaka/cruzadinha/commit/07f590774d11b0e6cc7ff957394d55c311fae42c))
+* **shared:** drop unknown source ids from response schemas ([aff95c7](https://github.com/BrunoYTanaka/cruzadinha/commit/aff95c7682912da09c81b2cdd7e96b089166b69f))
+
 ## [0.39.0](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.38.0...shared-v0.39.0) (2026-11-04)
 
 
