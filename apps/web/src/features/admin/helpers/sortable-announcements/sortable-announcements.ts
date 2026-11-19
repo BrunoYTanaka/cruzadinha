@@ -1,8 +1,7 @@
 // Textos da ordenação das fontes em português (feature 062). Puros, para o teste e para o leitor
 // de tela: a posição é sempre "N de M".
 export const SORT_INSTRUCTIONS =
-  'Para mudar a ordem sem arrastar: Espaço pega a fonte, as setas para cima e para baixo a movem, ' +
-  'Espaço solta e Esc cancela.'
+  'Arraste pela alça. No teclado: Espaço pega, setas movem, Espaço solta, Esc cancela.'
 
 const where = (position: number, total: number) => `posição ${position} de ${total}`
 

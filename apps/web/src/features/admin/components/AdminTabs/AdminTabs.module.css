@@ -1,0 +1,26 @@
+.tabs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* Painel colado às abas (mockup "tabs-attached"): sem o canto de cima à esquerda, onde a primeira
+   aba encosta. */
+.panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 2px solid var(--edge);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
+  background: var(--surface);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .panel {
+    padding: 14px;
+  }
+}

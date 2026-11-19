@@ -27,6 +27,9 @@ test('o admin esconde uma fonte, o público não a vê, e ao reativar ela volta'
   await admin.goto('/conta')
   await admin.getByRole('link', { name: 'Administração' }).click()
   await expect(admin.getByRole('heading', { level: 1, name: 'Administração' })).toBeVisible()
+  // Feature 066: abas coladas no painel, "Fontes" aberta por padrão.
+  await expect(admin.getByRole('tablist', { name: 'Seções da administração' })).toBeVisible()
+  await expect(admin.getByRole('tab', { name: /^Fontes/ })).toHaveAttribute('aria-selected', 'true')
   expect((await new AxeBuilder({ page: admin }).analyze()).violations).toEqual([])
 
   const save = admin.getByRole('button', { name: 'Salvar', exact: true })
@@ -75,6 +78,24 @@ test('o admin reordena e o calendário abre na primeira fonte visível', async (
   const tabs = visitor.getByRole('tab')
   await expect(tabs.first()).toContainText('Cruzadas Clube')
   await expect(tabs.first()).toHaveAttribute('aria-selected', 'true')
+})
+
+test('a aba da fonte gerada fica no endereço e não perde o rascunho (feature 066)', async ({
+  page,
+}) => {
+  await login(page, ADMIN_EMAIL, ADMIN_PASSWORD)
+  await page.goto('/admin')
+  await page.getByRole('checkbox', { name: /Cruzada Online/ }).uncheck()
+  await page.getByRole('tab', { name: /^Casa/ }).click()
+  await expect(page).toHaveURL(/\/admin\?aba=casa$/)
+  await expect(page.getByRole('heading', { level: 2, name: 'Casa' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Tamanho da grade' })).toBeVisible()
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
+  await page.getByRole('tab', { name: /^Fontes/ }).click()
+  await expect(page.getByRole('checkbox', { name: /Cruzada Online/ })).not.toBeChecked()
+
+  await page.goto('/admin?aba=casa')
+  await expect(page.getByRole('tab', { name: /^Casa/ })).toHaveAttribute('aria-selected', 'true')
 })
 
 test('conta comum e visitante veem a página não encontrada em /admin e não têm o link', async ({
