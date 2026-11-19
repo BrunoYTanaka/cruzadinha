@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.21.1...web-v0.22.0) (2026-11-19)
+
+
+### Features
+
+* **web:** rebuild the admin page with tabs ([f9ed269](https://github.com/BrunoYTanaka/cruzadinha/commit/f9ed26948e36386026229e62e37fdde72e740fc9))
+* **web:** rebuild the admin page with tabs following the design system ([4de02f0](https://github.com/BrunoYTanaka/cruzadinha/commit/4de02f068a38be08cfd1b77c7f70675c65a22444))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.40.1 to 0.41.0
+
 ## [0.21.1](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.21.0...web-v0.21.1) (2026-11-17)
 
 

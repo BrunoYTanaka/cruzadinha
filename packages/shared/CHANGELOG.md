@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.41.0](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.40.1...shared-v0.41.0) (2026-11-19)
+
+
+### Features
+
+* **api:** send the difficulty of today's generated puzzle to the admin ([6735d69](https://github.com/BrunoYTanaka/cruzadinha/commit/6735d69a4e57548059fe6aeddbbce48aefe4525f))
+* **web:** rebuild the admin page with tabs ([f9ed269](https://github.com/BrunoYTanaka/cruzadinha/commit/f9ed26948e36386026229e62e37fdde72e740fc9))
+
 ## [0.40.1](https://github.com/BrunoYTanaka/cruzadinha/compare/shared-v0.40.0...shared-v0.40.1) (2026-11-17)
 
 

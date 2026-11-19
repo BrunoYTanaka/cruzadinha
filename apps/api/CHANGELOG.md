@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.16.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.15.0...api-v0.16.0) (2026-11-19)
+
+
+### Features
+
+* **api:** send the difficulty of today's generated puzzle to the admin ([6735d69](https://github.com/BrunoYTanaka/cruzadinha/commit/6735d69a4e57548059fe6aeddbbce48aefe4525f))
+* **web:** rebuild the admin page with tabs ([f9ed269](https://github.com/BrunoYTanaka/cruzadinha/commit/f9ed26948e36386026229e62e37fdde72e740fc9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cruzadinha/shared bumped from 0.40.1 to 0.41.0
+
 ## [0.15.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.14.1...api-v0.15.0) (2026-11-19)
 
 
