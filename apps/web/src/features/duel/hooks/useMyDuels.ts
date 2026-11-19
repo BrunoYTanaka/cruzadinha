@@ -6,9 +6,10 @@ import { duelTokens } from '../services/duel-tokens'
 const POLL_MS = 15_000
 
 // "Meus x1": a conta lista pelo servidor; o visitante, pelos tokens deste aparelho, enviados no corpo.
-// Só pergunta depois de a sessão ser conhecida (o servidor já acordou) e atualiza a cada 15 s com a
-// aba visível. Sem tokens, o visitante nem pergunta.
-export function useMyDuels() {
+// Só pergunta depois de a sessão ser conhecida (o servidor já acordou). Com `poll` (a página "Meus x1")
+// atualiza a cada 15 s com a aba visível; o contador do cabeçalho não repete, só consulta no
+// carregamento, no foco e quando uma ação do x1 invalida a lista. Sem tokens, o visitante nem pergunta.
+export function useMyDuels({ poll = false }: { poll?: boolean } = {}) {
   const viewer = useViewer()
   const who = viewer ? viewerKey(viewer) : null
   const tokens = useQuery({
@@ -23,7 +24,7 @@ export function useMyDuels() {
     queryKey: ['my-duels', who, viewer?.kind === 'guest' ? tokens.data : null],
     queryFn: () => getMyDuels(viewer?.kind === 'guest' ? (tokens.data ?? []) : []),
     enabled,
-    refetchInterval: POLL_MS,
+    refetchInterval: poll ? POLL_MS : false,
     refetchIntervalInBackground: false,
     retry: false,
   })

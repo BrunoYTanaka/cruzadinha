@@ -9,7 +9,7 @@ import styles from './DuelsPage.module.css'
 
 export function DuelsPage() {
   useDocumentTitle('Meus x1')
-  const { viewer, query, duels, guestWithoutTokens } = useMyDuels()
+  const { viewer, query, duels, guestWithoutTokens } = useMyDuels({ poll: true })
   const guest = viewer?.kind === 'guest'
   let list
   if (!viewer || (query.isPending && !guestWithoutTokens && query.fetchStatus !== 'idle')) {

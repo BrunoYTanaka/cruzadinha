@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectNoA11yViolations } from '../../test/axe'
 import { LINK } from '../../test/duel-fixtures'
 import { apiError, jsonResponse, mockApi } from '../../test/http'
@@ -51,7 +51,19 @@ function open(handlers: Parameters<typeof mockApi>[0], session: 'guest' | 'user'
   return { ...api, ...renderRoutes(routes, ['/x1'], queryClient) }
 }
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('Meus x1', () => {
+  it('atualiza a lista a cada 15 s', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const { calls } = open({ [MINE]: () => jsonResponse(200, { duels: [summary()] }) })
+    await screen.findByRole('link', { name: /O Globo, 14\/10\/2026/ })
+    await vi.advanceTimersByTimeAsync(15_000)
+    await waitFor(() => expect(calls.filter((call) => call.key === MINE)).toHaveLength(2))
+  })
+
   it('conta: lista os duelos ativos vindos do servidor, sem mandar tokens', async () => {
     const { container, calls } = open({
       [MINE]: () => jsonResponse(200, { duels: [summary()] }),
