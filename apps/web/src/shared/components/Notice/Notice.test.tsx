@@ -45,3 +45,16 @@ describe('Notice', () => {
     await expectNoA11yViolations(container)
   })
 })
+
+describe('Notice com ação em espera', () => {
+  it('pending desativa a ação, marca aria-busy e não chama onClick', async () => {
+    const user = userEvent.setup()
+    const onClick = vi.fn()
+    render(<Notice action={{ label: 'Atualizando…', onClick, pending: true }}>x</Notice>)
+    const button = screen.getByRole('button', { name: 'Atualizando…' })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    await user.click(button)
+    expect(onClick).not.toHaveBeenCalled()
+  })
+})
