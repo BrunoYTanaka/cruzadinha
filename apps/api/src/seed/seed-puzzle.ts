@@ -15,8 +15,7 @@ import { readPageData } from '../sources/cruzadasbrasil/page-data'
 import { agilmenteResponseSchema } from '../sources/oglobo/agilmente-schema'
 import { convertAgilmenteResponse } from '../sources/oglobo/convert'
 import dailyValid from '../sources/oglobo/fixtures/daily-valid.json'
-import { SAMPLE_WORDS } from '../sources/generated/fixtures'
-import { layout, seedFrom, toPuzzle } from '../sources/generated/layout'
+import { buildCasaSample } from '../sources/generated/fixtures'
 
 const SAMPLE_LABEL = 'Exemplo de desenvolvimento (seed)'
 
@@ -43,11 +42,9 @@ function convertSample(source: PuzzleSourceId, date: string) {
       return convertClube(read.doc, 'daily', date)
     }
     case 'casa': {
-      // Montada pelas mesmas funções da geração, com palavras inventadas e sem chamar o modelo.
-      const placed = layout(SAMPLE_WORDS, 11, seedFrom(date))
-      const built = placed && toPuzzle(placed, { source, date, size: 11, difficulty: 'medium' })
-      if (!built) throw new Error('as palavras de exemplo deveriam montar uma grade')
-      return { ok: true as const, ...built }
+      // Montada pelas mesmas funções da geração, com a lista de palavras, dicas inventadas e sem chamar o modelo.
+      const { puzzle, solution } = buildCasaSample({ source, date, size: 11, difficulty: 'medium' })
+      return { ok: true as const, puzzle, solution }
     }
   }
 }

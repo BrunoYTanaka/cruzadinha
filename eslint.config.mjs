@@ -20,6 +20,8 @@ export default defineConfig(
       'apps/api/src/sources/clube/fixtures/**',
       // Respostas reais salvas com `source:check* --save` (fora do git).
       'apps/api/.source-samples/**',
+      // Lista de palavras gerada por words:build (feature 065).
+      'apps/api/src/sources/generated/words/word-list.data.ts',
     ],
   },
   {

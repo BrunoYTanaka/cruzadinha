@@ -1,68 +1,27 @@
-// Feature 064: palavras e dicas inventadas para os testes e o seed (nunca uma resposta real do
-// modelo; a resposta real reduzida do teste de contrato fica em fixtures/deepseek-response.json).
+import type { Difficulty, PuzzleSourceId } from '@cruzadinha/shared'
+import { generateGrid } from './fill'
+import { seededRandom, seedFrom, toPuzzle } from './layout'
+import type { Template } from './template'
+import { WORD_LIST } from './words/word-list.data'
+import { parseWordList, type WordEntry } from './words/word-list'
 
-export const SAMPLE_WORDS: readonly { answer: string; clue: string }[] = [
-  { answer: 'ABACAXI', clue: 'Fruta com coroa de folhas' },
-  { answer: 'AMIGO', clue: 'Companheiro de todas as horas' },
-  { answer: 'ARARA', clue: 'Ave colorida que repete sons' },
-  { answer: 'AREIA', clue: 'Grãos finos da praia' },
-  { answer: 'ÁRVORE', clue: 'Tem tronco, galhos e folhas' },
-  { answer: 'BALEIA', clue: 'Grande mamífero do mar' },
-  { answer: 'BANANA', clue: 'Fruta amarela em cacho' },
-  { answer: 'BARCO', clue: 'Leva gente pela água' },
-  { answer: 'BOLA', clue: 'Redonda, rola no campo' },
-  { answer: 'CADEIRA', clue: 'Móvel para sentar' },
-  { answer: 'CAMELO', clue: 'Animal do deserto com corcovas' },
-  { answer: 'CANETA', clue: 'Escreve com tinta' },
-  { answer: 'CARTA', clue: 'Mensagem enviada em envelope' },
-  { answer: 'CASTELO', clue: 'Morada de reis com torres' },
-  { answer: 'CEREJA', clue: 'Fruta pequena e vermelha do bolo' },
-  { answer: 'CHAVE', clue: 'Abre a fechadura' },
-  { answer: 'CIDADE', clue: 'Lugar com ruas, prédios e muita gente' },
-  { answer: 'CORAÇÃO', clue: 'Órgão que bate no peito' },
-  { answer: 'DADO', clue: 'Cubo de seis faces dos jogos' },
-  { answer: 'ESCOLA', clue: 'Lugar onde se aprende a ler' },
-  { answer: 'ESTRELA', clue: 'Brilha no céu à noite' },
-  { answer: 'FARINHA', clue: 'Pó usado para fazer pão' },
-  { answer: 'FLORESTA', clue: 'Mata grande e fechada' },
-  { answer: 'GATO', clue: 'Bicho que mia' },
-  { answer: 'GIRASSOL', clue: 'Flor amarela que segue a luz' },
-  { answer: 'IGREJA', clue: 'Templo com sino' },
-  { answer: 'ILHA', clue: 'Terra cercada de água' },
-  { answer: 'JANELA', clue: 'Abertura na parede para ver lá fora' },
-  { answer: 'LARANJA', clue: 'Fruta cítrica de suco matinal' },
-  { answer: 'LEÃO', clue: 'Rei dos animais na savana' },
-  { answer: 'LIVRO', clue: 'Páginas encadernadas para ler' },
-  { answer: 'LUA', clue: 'Satélite que ilumina a noite' },
-  { answer: 'MALA', clue: 'Leva roupas na viagem' },
-  { answer: 'MAPA', clue: 'Desenho que mostra caminhos e lugares' },
-  { answer: 'MAR', clue: 'Água salgada sem fim à vista' },
-  { answer: 'MESA', clue: 'Móvel onde se come' },
-  { answer: 'MONTANHA', clue: 'Elevação alta do terreno' },
-  { answer: 'NAVIO', clue: 'Embarcação grande' },
-  { answer: 'NUVEM', clue: 'Branca, no céu, traz chuva' },
-  { answer: 'OCEANO', clue: 'Grande extensão de água salgada' },
-  { answer: 'OVO', clue: 'Posto pela galinha' },
-  { answer: 'PALAVRA', clue: 'Junta letras com sentido' },
-  { answer: 'PANELA', clue: 'Usada para cozinhar no fogão' },
-  { answer: 'PÁSSARO', clue: 'Animal que voa e canta' },
-  { answer: 'PEIXE', clue: 'Vive na água e tem escamas' },
-  { answer: 'PIANO', clue: 'Instrumento de teclas pretas e brancas' },
-  { answer: 'PONTE', clue: 'Liga as margens do rio' },
-  { answer: 'PRAIA', clue: 'Areia à beira-mar' },
-  { answer: 'RELÓGIO', clue: 'Marca as horas' },
-  { answer: 'RIO', clue: 'Corre até o mar' },
-  { answer: 'SAPATO', clue: 'Calçado para os pés' },
-  { answer: 'SOL', clue: 'Estrela do nosso sistema' },
-  { answer: 'TELHADO', clue: 'Cobre a casa' },
-  { answer: 'TERRA', clue: 'Planeta onde vivemos' },
-  { answer: 'TIGRE', clue: 'Felino listrado' },
-  { answer: 'TOMATE', clue: 'Fruto vermelho do molho' },
-  { answer: 'UVA', clue: 'Fruta em cacho que vira suco' },
-  { answer: 'VACA', clue: 'Dá leite no pasto' },
-  { answer: 'VENTO', clue: 'Ar em movimento' },
-  { answer: 'VIOLÃO', clue: 'Instrumento de seis cordas' },
+// Feature 065: dados inventados para os testes e o seed. Nunca uma resposta real do modelo (a
+// resposta real reduzida do teste de contrato fica em fixtures/deepseek-response.json).
+
+// Lista pequena que fecha o desenho 3 x 3 abaixo (MAR/ALI/LUA nas linhas, MAL/ALU/RIA nas colunas).
+const entry = (plain: string, band: 1 | 2 | 3 = 1): WordEntry => ({
+  plain,
+  form: plain.toLowerCase(),
+  band,
+})
+export const SAMPLE_LIST: readonly WordEntry[] = [
+  ...['MAR', 'ALI', 'LUA', 'MAL', 'ALU', 'RIA'].map((w) => entry(w)),
+  ...['SOL', 'RIO', 'ASA', 'ARA'].map((w) => entry(w)),
 ]
+export const SAMPLE_TEMPLATE: Template = {
+  size: 3,
+  black: Array.from({ length: 3 }, () => Array<boolean>(3).fill(false)),
+}
 
 // Resposta HTTP no formato de `POST /chat/completions` (contrato), com o conteúdo dado.
 export function chatCompletion(content: string, finishReason = 'stop') {
@@ -76,4 +35,33 @@ export function chatCompletion(content: string, finishReason = 'stop') {
   }
 }
 
-export const sampleContent = (words = SAMPLE_WORDS) => JSON.stringify({ words })
+/** Conteúdo do modelo com uma dica inventada por número, de 1 a `count`. */
+export const sampleClues = (count = 2) =>
+  JSON.stringify({
+    clues: Array.from({ length: count }, (_, i) => ({
+      n: i + 1,
+      clue: `Dica de exemplo ${i + 1}`,
+    })),
+  })
+
+/** Puzzle denso de exemplo: preenche com a lista real e semente fixa; dicas inventadas. */
+export function buildCasaSample(options: {
+  source: PuzzleSourceId
+  date: string
+  size: number
+  difficulty: Difficulty
+  seed?: string
+}) {
+  const grid = generateGrid({
+    size: options.size,
+    words: parseWordList(WORD_LIST),
+    maxBand: 3,
+    random: seededRandom(seedFrom(options.seed ?? options.date)),
+    clock: () => new Date(),
+  })
+  if (!grid) throw new Error('grade de exemplo não fechou')
+  const clues = grid.words.map((_, i) => `Dica de exemplo ${i + 1}`)
+  const built = toPuzzle(grid, clues, options)
+  if (!built) throw new Error('puzzle de exemplo inválido')
+  return { ...built, grid }
+}

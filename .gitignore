@@ -23,6 +23,8 @@ Thumbs.db
 
 # Respostas brutas da fonte (verificação sob demanda)
 apps/api/.source-samples/
+# Fontes baixadas para montar a lista de palavras (feature 065)
+apps/api/.word-sources/
 
 # Testes ponta a ponta e ferramentas de navegador
 playwright-report/

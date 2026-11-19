@@ -2,11 +2,15 @@
 
 ## R1. Quem monta a grade: o modelo ou o código
 
+> **Substituído pela 065** (`specs/065-cruzada-densa/`): a grade densa é preenchida pelo código com uma lista de palavras e o modelo só escreve as dicas.
+
 - **Decision**: o modelo só devolve uma lista de palavras com dicas (JSON); a grade N x N é montada por código puro e determinístico (`sources/generated/layout.ts`), no estilo "palavras cruzadas livres": cada palavra entra cruzando outra já posta, sem encostar em nenhuma letra fora do cruzamento, e as casas que não são de nenhuma palavra viram blocos.
 - **Rationale**: modelos de linguagem erram muito ao preencher uma grade com cruzamentos coerentes; pedir a grade pronta gastaria as 3 tentativas (FR-008) à toa. Montando a grade no código, a coerência dos cruzamentos (FR-006) vale por construção, a montagem não gasta crédito e pode ser repetida com outras ordens das palavras até achar um bom resultado. O formato interno já aceita grade com blocos livres (regras em `packages/shared/src/puzzle/rules.ts`: toda sequência de casas abertas é uma palavra; nenhuma casa aberta fora de palavra).
 - **Alternatives considered**: (a) o modelo devolve a grade inteira: alto índice de cruzamentos errados e palavras inventadas nas sequências acidentais; (b) grade americana densa preenchida por código com dicionário: precisaria de uma lista grande de palavras em português e licença; o modelo ainda teria de escrever as dicas depois (2 chamadas); (c) o modelo valida a grade: gasto extra sem garantia.
 
 ## R2. Algoritmo de montagem
+
+> **Substituído pela 065** (`specs/065-cruzada-densa/`): a grade densa é preenchida pelo código com uma lista de palavras e o modelo só escreve as dicas.
 
 - **Decision**: gerador com semente (PRNG simples, semente derivada da data) para grade quadrada `N x N` (N de 9 a 15, da configuração, R9), que tenta até 200 ordens das palavras. Em cada ordem: a primeira palavra (das mais longas, com ruído) entra na horizontal em linha e coluna sorteadas; depois, a cada passo, entre todas as palavras que faltam, entra a posição que mais cruza uma palavra já posta numa letra idêntica (acento incluído), com desempate pela palavra mais curta e por ruído ("melhor primeiro"); posição inválida se sai da grade, se a casa antes ou depois da palavra está aberta ou se uma casa nova encosta lateralmente em letra existente. Fica a montagem com mais palavras; aceita se tiver ao menos `minWords(N) = round(1.25 * N)` palavras (9 → 11, 11 → 14, 13 → 16, 15 → 19) e todas ligadas entre si. Depois: numeração em ordem de leitura e construção de `Puzzle` e `Solution`, conferidos com `puzzleSchema` e `validatePuzzleWithSolution` (os mesmos da coleta).
 - **Rationale**: é o algoritmo clássico de gerador de cruzadas livres; puro, testável com lista inventada e semente fixa (constituição V e VII). 14 palavras numa 11 x 11 (19 numa 15 x 15) é um jogo de tamanho parecido com as fontes menores. Tudo em memória, milissegundos.
@@ -14,6 +18,8 @@
 - **Ajuste com a resposta real (T032, T050)**: com as 64 palavras reais (fixture do contrato), a primeira versão (uma palavra por vez na ordem sorteada, primeira palavra no meio) chegou a no máximo 10 palavras no 9 x 9 e 14 no 11 x 11, mesmo com 2000 ordens; a coleta falharia quase todo dia. Com "melhor primeiro" e 200 ordens, 10 datas por tamanho montaram todas, com no mínimo 12 (9 x 9), 16 (11 x 11), 21 (13 x 13) e 27 (15 x 15) palavras, até ~2,3 s por grade. O mínimo `minWords` ficou como estava. O 9 x 9 tem a menor folga (12 a 14 contra 11).
 
 ## R3. Pedido ao modelo
+
+> **Substituído pela 065** (`specs/065-cruzada-densa/`): a grade densa é preenchida pelo código com uma lista de palavras e o modelo só escreve as dicas.
 
 - **Decision**: `POST https://api.deepseek.com/chat/completions`, `Authorization: Bearer <DEEPSEEK_API_KEY>`, `response_format: { type: 'json_object' }`, `temperature` alta (1.3) para variedade, `max_tokens` 6000 (cobre 15 x 15), sem streaming, `AbortSignal.timeout(180_000)`. Modelo em `DEEPSEEK_MODEL` (padrão `deepseek-chat`, conferir o nome atual na doc ao implementar). O prompt (em `sources/generated/prompt.ts`, função pura `buildPrompt({ size, difficulty, date })`) pede `4 * N + 20` palavras (R14) de conhecimentos gerais em português do Brasil, de 3 a `N` letras, no nível de dificuldade configurado (texto por nível em R10), uma palavra só (sem espaço, hífen ou número), com dica curta que não contém a resposta, e traz um exemplo do JSON. A data entra no prompt só como semente de variedade. `fetch` injetado, como nos outros adaptadores.
 - **Rationale**: a API é compatível com a da OpenAI; JSON Output garante JSON válido, mas a doc avisa que o conteúdo pode vir vazio (só espaços) ou cortado (`finish_reason: 'length'`): os dois casos são tentativa falha. Sem dependência nova (o SDK da OpenAI não é necessário para um `fetch`).
@@ -99,6 +105,8 @@
 - **Alternatives considered**: API de moderação (mais uma chamada paga e mais um provedor); lista de terceiros (licença e tamanho).
 
 ## R14. Sem repetição em 30 dias
+
+> **Substituído pela 065** (`specs/065-cruzada-densa/`): a grade densa é preenchida pelo código com uma lista de palavras e o modelo só escreve as dicas.
 
 - **Decision**: `recentAnswers(sourceId, today)` injetada por `cli.ts`: lê as cruzadas da fonte nos últimos 30 dias no repositório de puzzles (só a coluna `solution`, não a parte pública) e extrai as respostas pelas palavras do puzzle (`word-cells.ts` de `shared`). A lista vai no prompt ("não use: …") e a validação descarta as que vierem mesmo assim (sem acento). O pedido passa a pedir `4 * N + 20` palavras para compensar os descartes.
 - **Rationale**: FR-022. Até ~30 x 30 = 900 respostas no prompt: alguns milhares de tokens, custo baixo. A extração reaproveita o código que já liga palavras a casas.

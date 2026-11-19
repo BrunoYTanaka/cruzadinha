@@ -1,5 +1,5 @@
 import type { ChatMessage } from './prompt'
-import { chatCompletionSchema, modelOutputSchema } from './schema'
+import { chatCompletionSchema, clueOutputSchema } from './schema'
 
 // Feature 064: pedido compatível com `POST /chat/completions` (DeepSeek, OpenAI, OpenRouter...).
 // Nenhuma mensagem leva o corpo da resposta, o pedido nem a chave (FR-014, FR-015): só o status
@@ -7,19 +7,19 @@ import { chatCompletionSchema, modelOutputSchema } from './schema'
 
 export type Provider = { baseUrl: string; model: string; apiKey: string | undefined }
 
-export type WordsResult =
-  | { ok: true; items: { answer: unknown; clue: unknown }[] }
+export type CluesResult =
+  | { ok: true; items: { n: unknown; clue: unknown }[] }
   | { ok: false; kind: 'no-credits' | 'refused' | 'bad-content' | 'down'; detail: string }
 
 const TIMEOUT_MS = 180_000
 const MAX_BYTES = 1_048_576
 
-export async function requestWords(options: {
+export async function requestClues(options: {
   provider: Provider & { apiKey: string }
   messages: ChatMessage[]
   fetch: typeof globalThis.fetch
   timeoutMs?: number
-}): Promise<WordsResult> {
+}): Promise<CluesResult> {
   const { provider } = options
   let response: Response
   try {
@@ -33,7 +33,7 @@ export async function requestWords(options: {
         model: provider.model,
         messages: options.messages,
         response_format: { type: 'json_object' },
-        temperature: 1.3,
+        temperature: 1.0,
         max_tokens: 6000,
         stream: false,
       }),
@@ -76,7 +76,7 @@ export async function requestWords(options: {
   } catch {
     return { ok: false, kind: 'bad-content', detail: 'conteúdo não é JSON' }
   }
-  const parsed = modelOutputSchema.safeParse(output)
-  if (!parsed.success) return { ok: false, kind: 'bad-content', detail: 'lista inválida' }
-  return { ok: true, items: parsed.data.words }
+  const parsed = clueOutputSchema.safeParse(output)
+  if (!parsed.success) return { ok: false, kind: 'bad-content', detail: 'dicas inválidas' }
+  return { ok: true, items: parsed.data.clues }
 }

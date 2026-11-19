@@ -1,39 +1,41 @@
 import { describe, expect, it } from 'vitest'
-import { buildPrompt, wordCount } from './prompt'
+import { buildCluePrompt } from './prompt'
 
-describe('buildPrompt', () => {
-  it('manda as regras fixas e o pedido do dia', () => {
-    const [system, user] = buildPrompt({
-      size: 11,
-      difficulty: 'medium',
-      date: '2026-11-18',
-      avoid: ['SOL', 'MARTE'],
-    })
+const answers = [
+  { n: 1, form: 'água' },
+  { n: 2, form: 'sol' },
+]
+
+describe('buildCluePrompt', () => {
+  it('manda as regras fixas e as palavras numeradas', () => {
+    const [system, user] = buildCluePrompt({ answers, difficulty: 'medium' })
     expect(system?.role).toBe('system')
     expect(system?.content).toContain('Responda só com JSON')
     expect(system?.content).toContain('Evite política partidária')
+    expect(system?.content).toContain('nem outra forma dela')
     expect(user).toEqual({
       role: 'user',
       content: [
-        'Data: 2026-11-18.',
         'Dificuldade: Médio — vocabulário geral e conhecimentos comuns, dicas claras.',
-        'Gere 64 palavras com 3 a 11 letras, variando os tamanhos.',
-        'Não use estas respostas: SOL, MARTE.',
+        'Palavras:',
+        '1. água',
+        '2. sol',
       ].join('\n'),
     })
   })
 
-  it('muda o texto pela dificuldade e omite "Não use" sem lista', () => {
-    const user = buildPrompt({ size: 15, difficulty: 'hard', date: '2026-11-18', avoid: [] })[1]!
+  it('muda o texto pela dificuldade e não leva data nem respostas recentes', () => {
+    const user = buildCluePrompt({ answers, difficulty: 'hard' })[1]!
     expect(user.content).toContain('Dificuldade: Difícil')
-    expect(user.content).toContain('Gere 80 palavras com 3 a 15 letras')
-    expect(user.content).not.toContain('Não use')
-    expect(
-      buildPrompt({ size: 9, difficulty: 'easy', date: 'x', avoid: [] })[1]!.content,
-    ).toContain('Fácil — palavras comuns do dia a dia')
+    expect(user.content).not.toMatch(/Data|Não use/)
+    expect(buildCluePrompt({ answers, difficulty: 'easy' })[1]!.content).toContain(
+      'Fácil — palavras comuns do dia a dia',
+    )
   })
 
-  it('pede 4 x N + 20 palavras', () => {
-    expect([9, 11, 13, 15].map(wordCount)).toEqual([56, 64, 72, 80])
+  it('no reparo avisa que a dica anterior foi recusada e por quê', () => {
+    const user = buildCluePrompt({ answers, difficulty: 'easy', repair: true })[1]!
+    expect(user.content).toContain('foi recusada porque continha a própria palavra')
+    expect(buildCluePrompt({ answers, difficulty: 'easy' })[1]!.content).not.toContain('recusada')
   })
 })

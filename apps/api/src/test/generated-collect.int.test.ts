@@ -5,28 +5,38 @@ import { loadConfig } from '../config'
 import { createGeneratedSources } from '../generated-sources'
 import { puzzles, rateLimitAttempts, sourceSettings } from '../platform/db/schema'
 import { todayInSaoPaulo } from '../platform/lib/dates'
-import { chatCompletion, sampleContent } from '../sources/generated/fixtures'
+import { chatCompletion } from '../sources/generated/fixtures'
 import { buildTestApp } from './app'
 import { fakeSource } from './fake-source'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
-// Feature 064: a fonte casa de ponta a ponta com o banco real e o modelo simulado.
+// Features 064 e 065: a fonte casa de ponta a ponta com o banco real e o modelo simulado.
 
 const handle = openTestDatabase()
 const { db } = handle
 let clock: TestClock
-let replies: { status: number; body: unknown }[]
+let replies: ({ status: number; body: unknown } | 'good')[]
 let modelCalls: number
 let out: string
 let err: string
 
 const today = () => todayInSaoPaulo(clock.now)
-const good = () => ({ status: 200, body: chatCompletion(sampleContent()) })
+const good = () => 'good' as const
 const badList = () => ({ status: 200, body: chatCompletion(JSON.stringify({ words: [] })) })
 
-const fakeModel = (async () => {
+// 'good' responde com uma dica inventada para cada palavra numerada do pedido.
+const fakeModel = (async (_url: string, init: RequestInit) => {
   modelCalls++
   const reply = replies.shift() ?? badList()
+  if (reply === 'good') {
+    const prompt = (JSON.parse(String(init.body)) as { messages: { content: string }[] })
+      .messages[1]!.content
+    const clues = [...prompt.matchAll(/^(\d+)\. /gm)].map((m) => ({
+      n: Number(m[1]),
+      clue: `Dica de exemplo ${m[1]}`,
+    }))
+    return new Response(JSON.stringify(chatCompletion(JSON.stringify({ clues }))), { status: 200 })
+  }
   return new Response(JSON.stringify(reply.body), { status: reply.status })
 }) as unknown as typeof globalThis.fetch
 

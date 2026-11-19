@@ -69,7 +69,12 @@ try {
       createCruzadaOnlineSource(),
       createCruzadasBrasilSource(),
       createClubeSource(),
-      ...createGeneratedSources({ db: database.db, generation, clock: systemClock }),
+      ...createGeneratedSources({
+        db: database.db,
+        generation,
+        clock: systemClock,
+        log: (line) => process.stdout.write(`${line}\n`),
+      }),
     ],
     historyDays,
     readSecret: createSecretReader(),
