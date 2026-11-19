@@ -6,7 +6,7 @@ import { RouterProvider } from 'react-router'
 import { ApiRequestError } from './shared/services/api/client/client'
 import { installReloadAfterDeploy } from './app/reload-after-deploy'
 import { createAppRouter } from './app/router'
-import { captureInstallPrompt } from './features/offline'
+import { captureInstallPrompt, installAppUpdate } from './features/offline'
 import { installThemeSync } from './shared/themes/theme/theme'
 import './shared/themes/fonts.css'
 import './shared/themes/tokens.css'
@@ -29,8 +29,8 @@ const queryClient = new QueryClient({
 })
 
 installReloadAfterDeploy(window)
-// Sem onNeedRefresh: a versão nova espera todas as abas fecharem (feature 041, FR-007).
-registerSW({ immediate: true })
+// A versão nova só vale com todas as abas fechadas, ou pelo "Atualizar" do calendário (041 FR-007, 067).
+installAppUpdate(registerSW)
 installThemeSync()
 captureInstallPrompt()
 

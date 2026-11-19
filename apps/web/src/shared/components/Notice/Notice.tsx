@@ -5,7 +5,7 @@ import styles from './Notice.module.css'
 type NoticeProps = {
   variant?: 'info' | 'ok' | 'warning' | 'error'
   children: ReactNode
-  action?: { label: string; onClick: () => void }
+  action?: { label: string; onClick: () => void; pending?: boolean }
   // Botão "Fechar" opcional, para avisos que a pessoa pode dispensar.
   onDismiss?: () => void
 }
@@ -26,7 +26,7 @@ export function Notice({ variant = 'info', children, action, onDismiss }: Notice
       </span>
       <p className={styles.text}>{children}</p>
       {action ? (
-        <Button onClick={action.onClick} className={styles.action}>
+        <Button onClick={action.onClick} pending={action.pending} className={styles.action}>
           {action.label}
         </Button>
       ) : null}

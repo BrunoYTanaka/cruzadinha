@@ -1,3 +1,4 @@
+import { UpdateNotice } from '../../features/offline'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from '../../shared/components/Link/Link'
 import { ApiRequestError } from '../../shared/services/api/client/client'
@@ -153,6 +154,7 @@ function LibraryContent() {
       <h1 className={styles.heading}>
         <VisuallyHidden>Escolha um dia</VisuallyHidden>
       </h1>
+      <UpdateNotice />
       {directPlay && !directPlayClosed ? (
         <Notice onDismiss={() => setDirectPlayClosed(true)}>{directPlayMessage(directPlay)}</Notice>
       ) : null}

@@ -10,7 +10,7 @@ import { queryKeys } from '../../shared/services/api/query-keys/query-keys'
 import { aUser, makeQueryClient, renderRoutes, resetSessionHandlers } from '../../test/render'
 import { AppLayout } from '../../app/AppLayout'
 import { guestStore } from '../../features/guest/services/guest-store'
-import { savePuzzle } from '../../features/offline'
+import { installAppUpdate, savePuzzle } from '../../features/offline'
 import { LibraryPage } from './LibraryPage'
 import { clearDirectPlayStay, peekDirectPlayStay, rememberDirectPlayStay } from './direct-play'
 import { rememberGameSource, saveSourceChoice } from '../../features/library/services/source-choice'
@@ -843,5 +843,28 @@ describe('fontes escondidas e ordem da administração (feature 060)', () => {
       'aria-selected',
       'true',
     )
+  })
+
+  it('mostra o aviso de versão nova acima das abas só quando há versão esperando (feature 067)', async () => {
+    library()
+    let refresh: (() => void) | undefined
+    const stop = installAppUpdate(
+      ((options?: { onNeedRefresh?: () => void }) => {
+        refresh = options?.onNeedRefresh
+        return () => Promise.resolve()
+      }) as never,
+      window,
+    )
+    try {
+      renderRoutes(routes, ['/'], withAccount())
+      await screen.findAllByRole('tab')
+      expect(screen.queryByText('Saiu uma versão nova do Cruzadinha.')).toBeNull()
+      act(() => refresh?.())
+      const notice = screen.getByText('Saiu uma versão nova do Cruzadinha.')
+      const tabs = screen.getAllByRole('tab')[0]!
+      expect(notice.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    } finally {
+      stop()
+    }
   })
 })
