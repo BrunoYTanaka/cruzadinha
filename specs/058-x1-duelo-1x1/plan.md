@@ -22,7 +22,7 @@ Duelo assíncrono 1x1 sobre uma cruzada já salva. Novo módulo `duels` na API (
 
 **Project Type**: web (API + site + `shared`).
 
-**Performance Goals**: "Meus x1" por consulta periódica a cada 15 s com a aba visível (pausa oculta); estado do duelo a cada 5 s só enquanto se espera o oponente.
+**Performance Goals**: "Meus x1" por consulta periódica a cada 15 s com a aba visível (pausa oculta), só na página `/x1`; o contador do cabeçalho consulta no carregamento, no foco da aba e após as ações do x1, sem repetir (15 s em toda página passava do limite de 60/h do visitante e mantinha o servidor acordado); estado do duelo a cada 5 s só enquanto se espera o oponente.
 
 **Constraints**: nada de token/código em URL de consulta; resposta idêntica para código inexistente e não aberto; site novo funciona com API antiga (mostra "indisponível") e API nova com site antigo (rotas só adicionadas); depois do "Começar" nada bloqueia o jogador.
 

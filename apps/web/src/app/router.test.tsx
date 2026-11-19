@@ -283,7 +283,8 @@ describe('espera ao sair da landing (feature 063)', () => {
       expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
       server.wake()
       await waitFor(() => expect(router.state.location.pathname).toBe(path), { timeout: 4_000 })
-      expect(waitTitle()).not.toBeInTheDocument()
+      // O roteador muda `location` um render antes de a tela de espera sair da árvore.
+      await waitFor(() => expect(waitTitle()).not.toBeInTheDocument())
     })
   }
 
@@ -323,6 +324,6 @@ describe('espera ao sair da landing (feature 063)', () => {
     await router.navigate(-1)
     await waitFor(() => expect(router.state.location.pathname).toBe('/status'))
     expect(router.state.navigation.state).toBe('idle')
-    expect(waitTitle()).not.toBeInTheDocument()
+    await waitFor(() => expect(waitTitle()).not.toBeInTheDocument())
   })
 })

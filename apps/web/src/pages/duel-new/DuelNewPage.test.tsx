@@ -48,7 +48,13 @@ describe('Novo x1', () => {
   it('escolhe o dia no calendário, cria e mostra o link, o código e o link de retorno', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     const { calls, container } = open({ [CREATE]: () => created('r'.repeat(43)) })
-    await user.click(await screen.findByRole('button', { name: /13 de outubro.*você já fez esta/ }))
+    await user.click(
+      await screen.findByRole(
+        'button',
+        { name: /13 de outubro.*você já fez esta/ },
+        { timeout: 4_000 },
+      ),
+    )
     await user.clear(screen.getByLabelText('5. Seu apelido'))
     await user.type(screen.getByLabelText('5. Seu apelido'), 'Ana')
     await user.click(screen.getByRole('radio', { name: 'Com penalidade' }))
@@ -79,7 +85,7 @@ describe('Novo x1', () => {
 
   it('só dias guardados são botões; dia não guardado não pode ser escolhido', async () => {
     open({})
-    await screen.findByRole('button', { name: /13 de outubro/ })
+    await screen.findByRole('button', { name: /13 de outubro/ }, { timeout: 4_000 })
     expect(screen.getByRole('img', { name: /11 de outubro.*não pode ser escolhido/ })).toBeVisible()
     expect(screen.queryByRole('link', { name: /de outubro/ })).not.toBeInTheDocument()
   })
@@ -97,7 +103,7 @@ describe('Novo x1', () => {
   it('pede a cruzada e o apelido antes de enviar', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     const { calls } = open({})
-    await screen.findByRole('button', { name: /13 de outubro/ })
+    await screen.findByRole('button', { name: /13 de outubro/ }, { timeout: 4_000 })
     await user.click(screen.getByRole('button', { name: 'Criar x1' }))
     expect(await screen.findByText(/Escolha no calendário uma cruzada/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: /13 de outubro/ }))

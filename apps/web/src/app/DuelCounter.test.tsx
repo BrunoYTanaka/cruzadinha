@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { LINK } from '../test/duel-fixtures'
 import { jsonResponse, mockApi } from '../test/http'
 import { queryKeys } from '../shared/services/api/query-keys/query-keys'
@@ -26,7 +26,7 @@ function render(duels: unknown[]) {
   const queryClient = makeQueryClient()
   client = queryClient
   queryClient.setQueryData(queryKeys.session, { user: aUser })
-  mockApi({ 'POST /api/duels/mine': () => jsonResponse(200, { duels }) })
+  const api = mockApi({ 'POST /api/duels/mine': () => jsonResponse(200, { duels }) })
   renderRoutes(
     // Fora da landing: em `/` o cabeçalho não tem o x1 (feature 063).
     [
@@ -39,9 +39,11 @@ function render(duels: unknown[]) {
     ['/calendario'],
     queryClient,
   )
+  return api
 }
 
 afterEach(async () => {
+  vi.useRealTimers()
   // Nenhum pedido pode terminar depois do teste, quando o jsdom já foi desmontado.
   if (client) await waitFor(() => expect(client?.isFetching()).toBe(0))
   resetSessionHandlers()
@@ -54,6 +56,16 @@ describe('contador do x1 no menu (feature 058)', () => {
       'href',
       '/x1',
     )
+  })
+
+  // Fora de "Meus x1" o cabeçalho não repete a consulta: 15 s em toda página estourava o limite do
+  // visitante (60/h) e mantinha o servidor acordado. Atualiza no carregamento, no foco e nas ações.
+  it('o cabeçalho consulta uma vez e não repete com o tempo', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const { calls } = render([summary(true, 1)])
+    await screen.findByRole('link', { name: 'x1, 1 aguardando' })
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(calls.filter((call) => call.key === 'POST /api/duels/mine')).toHaveLength(1)
   })
 
   it('sem nada pendente o link é só "x1"', async () => {
