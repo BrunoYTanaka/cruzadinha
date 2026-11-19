@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.23.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.22.0...web-v0.23.0) (2026-11-19)
+
+
+### Features
+
+* **web:** show a new-version notice on the calendar ([ae72c52](https://github.com/BrunoYTanaka/cruzadinha/commit/ae72c52f49b4cd6706ca6e121c5ac553a457dd38))
+* **web:** show a new-version notice on the calendar ([c89e3c9](https://github.com/BrunoYTanaka/cruzadinha/commit/c89e3c96972172e1530fb6b6304192336cd4b0d7))
+
+
+### Bug Fixes
+
+* **web:** poll my duels only on the duels page ([4bf35e0](https://github.com/BrunoYTanaka/cruzadinha/commit/4bf35e02cf21576d5f0e8b2f02948ef33d2f1389))
+* **web:** poll my duels only on the duels page ([bd53fd6](https://github.com/BrunoYTanaka/cruzadinha/commit/bd53fd6ccf980dfb1cc65ce4fd20ab4517bccc66))
+
 ## [0.22.0](https://github.com/BrunoYTanaka/cruzadinha/compare/web-v0.21.1...web-v0.22.0) (2026-11-19)
 
 
