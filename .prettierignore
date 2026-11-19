@@ -17,3 +17,5 @@ apps/api/src/sources/cruzadasbrasil/fixtures/
 apps/api/src/sources/clube/fixtures/
 # Artefato do design system (feature 062): guardado como foi entregue
 docs/mockups/design-system.html
+# Lista de palavras gerada por words:build (feature 065)
+apps/api/src/sources/generated/words/word-list.data.ts

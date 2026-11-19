@@ -1,63 +1,71 @@
 import { puzzleSchema, validatePuzzleWithSolution } from '@cruzadinha/shared'
 import { describe, expect, it } from 'vitest'
-import { SAMPLE_WORDS } from './fixtures'
-import { layout, minWords, toPuzzle, type Placement } from './layout'
+import { fill, buildIndex } from './fill'
+import { SAMPLE_LIST, SAMPLE_TEMPLATE } from './fixtures'
+import { seededRandom, toPuzzle } from './layout'
+import { slotsOf } from './template'
 
 const options = { source: 'casa', date: '2026-11-17', difficulty: 'medium' } as const
 
-function build(size: number, seed = 42) {
-  const placed = layout(SAMPLE_WORDS, size, seed)
-  expect(placed).not.toBeNull()
-  const result = toPuzzle(placed!, { ...options, size })
-  expect(result).not.toBeNull()
-  return { placed: placed!, ...result! }
+const filled = () => {
+  const words = fill(SAMPLE_TEMPLATE, buildIndex(SAMPLE_LIST, 7), {
+    random: seededRandom(1),
+    nodeBudget: 1000,
+  })!
+  return { template: SAMPLE_TEMPLATE, slots: slotsOf(SAMPLE_TEMPLATE), words }
 }
 
-describe('layout (feature 064)', () => {
-  it.each([9, 11, 15])('monta uma grade %i x %i válida e ligada', (size) => {
-    const { placed, puzzle, solution } = build(size)
-    expect(placed.length).toBeGreaterThanOrEqual(minWords(size))
-    expect(puzzle.grid.width).toBe(size)
-    expect(puzzle.grid.height).toBe(size)
-    expect(puzzleSchema.safeParse(puzzle).success).toBe(true)
-    expect(validatePuzzleWithSolution(puzzle, solution).success).toBe(true)
+describe('toPuzzle (feature 065)', () => {
+  it('converte a grade preenchida em puzzle e solução válidos', () => {
+    const grid = filled()
+    const built = toPuzzle(
+      grid,
+      grid.words.map((_, i) => `Dica ${i + 1}`),
+      options,
+    )!
+    expect(puzzleSchema.safeParse(built.puzzle).success).toBe(true)
+    expect(validatePuzzleWithSolution(built.puzzle, built.solution).success).toBe(true)
+    expect(built.puzzle.grid.width).toBe(3)
   })
 
-  it('a mesma semente dá a mesma grade', () => {
-    expect(layout(SAMPLE_WORDS, 11, 7)).toEqual(layout(SAMPLE_WORDS, 11, 7))
+  it('numera em ordem de leitura e põe horizontais antes das verticais', () => {
+    const grid = filled()
+    const { puzzle } = toPuzzle(
+      grid,
+      grid.words.map((_, i) => `Dica ${i + 1}`),
+      options,
+    )!
+    expect(puzzle.words.map((w) => `${w.direction[0]}${w.number}`)).toEqual([
+      'a1',
+      'a4',
+      'a5',
+      'd1',
+      'd2',
+      'd3',
+    ])
   })
 
-  it('cada palavra está na solução, letra por letra, com acento', () => {
-    const { placed, solution } = build(11)
-    for (const p of placed) {
-      ;[...p.answer].forEach((letter, i) => {
-        const r = p.direction === 'across' ? p.row : p.row + i
-        const c = p.direction === 'across' ? p.col + i : p.col
-        expect(solution.cells[r]![c]).toBe(letter)
+  it('cada resposta está na solução, letra por letra, sem acento', () => {
+    const grid = filled()
+    const { solution } = toPuzzle(
+      grid,
+      grid.words.map(() => 'Dica'),
+      options,
+    )!
+    grid.slots.forEach((slot, i) => {
+      slot.cells.forEach(([r, c], pos) => {
+        expect(solution.cells[r]![c]).toBe(grid.words[i]!.plain[pos])
       })
-    }
-  })
-
-  it('não cruza letras com acento diferente', () => {
-    const words = [
-      { answer: 'AMOR', clue: 'a' },
-      { answer: 'ÁGUA', clue: 'b' },
-    ]
-    // ÁGUA não tem letra idêntica a AMOR (Á ≠ A); só AMOR cabe, abaixo do mínimo.
-    expect(layout(words, 9, 1)).toBeNull()
-  })
-
-  it('devolve null com palavras de menos', () => {
-    expect(layout(SAMPLE_WORDS.slice(0, 5), 11, 1)).toBeNull()
-  })
-
-  it('ignora palavras mais longas que a grade', () => {
-    const placed = layout(SAMPLE_WORDS, 9, 3)!
-    expect(placed.every((p: Placement) => [...p.answer].length <= 9)).toBe(true)
+    })
   })
 
   it('a atribuição traz só o nome da fonte e a dificuldade', () => {
-    const { puzzle } = build(11)
+    const grid = filled()
+    const { puzzle } = toPuzzle(
+      grid,
+      grid.words.map(() => 'Dica'),
+      options,
+    )!
     expect(puzzle.attribution).toEqual({
       sourceName: 'Casa',
       title: 'Dificuldade: Médio',

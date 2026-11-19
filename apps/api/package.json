@@ -18,7 +18,9 @@
     "source:check:cruzadaonline": "tsx src/sources/cruzadaonline/check.ts",
     "source:check:cruzadasbrasil": "tsx src/sources/cruzadasbrasil/check.ts",
     "source:check:clube": "tsx src/sources/clube/check.ts",
-    "source:check:generated": "tsx src/sources/generated/check.ts"
+    "source:check:generated": "tsx src/sources/generated/check.ts",
+    "words:build": "tsx src/sources/generated/words/build.ts",
+    "words:measure": "tsx src/sources/generated/words/measure.ts"
   },
   "dependencies": {
     "@cruzadinha/shared": "0.40.1",
@@ -40,6 +42,7 @@
     "@testcontainers/postgresql": "12.2",
     "@types/node": "^24.19.2",
     "drizzle-kit": "0.31",
+    "hunspell-asm": "4.0.2",
     "tsdown": "^0.23.1",
     "tsx": "4.23",
     "vitest": "5.0"

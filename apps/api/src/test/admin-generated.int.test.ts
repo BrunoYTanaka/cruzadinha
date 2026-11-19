@@ -5,8 +5,7 @@ import { generationCallKey } from '../modules/sources'
 import { insertPuzzleIfAbsent } from '../modules/puzzles/puzzles.repository'
 import { duels, progress, puzzles, rateLimitAttempts, users } from '../platform/db/schema'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../platform/lib/dates'
-import { SAMPLE_WORDS } from '../sources/generated/fixtures'
-import { layout, toPuzzle } from '../sources/generated/layout'
+import { buildCasaSample } from '../sources/generated/fixtures'
 import { buildTestApp, signUpForTest } from './app'
 import { openTestDatabase, testClock, truncateAll, type TestClock } from './database'
 
@@ -37,8 +36,7 @@ function call(method: 'GET' | 'PUT' | 'POST', url: string, sid?: string, payload
 }
 
 async function storeCasa(date = today()) {
-  const placed = layout(SAMPLE_WORDS, 9, 1)!
-  const built = toPuzzle(placed, { source: 'casa', date, size: 9, difficulty: 'easy' })!
+  const built = buildCasaSample({ source: 'casa', date, size: 9, difficulty: 'easy', seed: 'a' })
   return (await insertPuzzleIfAbsent(db, built)).puzzleId
 }
 
@@ -98,10 +96,19 @@ describe('revisão e descarte da cruzada de hoje (US5)', () => {
     const view = (await call('GET', '/api/admin/generated', admin)).json().sources[0]
     expect(view.callsLeft).toBe(2)
     expect(view.today).toMatchObject({ size: 9, discardable: true, blockedBy: null })
-    const answers = layout(SAMPLE_WORDS, 9, 1)!.map((p) => p.answer)
+    const answers = buildCasaSample({
+      source: 'casa',
+      date: today(),
+      size: 9,
+      difficulty: 'easy',
+      seed: 'a',
+    }).grid.words.map((w) => w.plain)
     expect(view.today.words.map((w: { answer: string }) => w.answer).sort()).toEqual(
       [...answers].sort(),
     )
+    // Grade densa: uma entrada por palavra, horizontais e verticais (US4).
+    expect(view.today.words.length).toBe(answers.length)
+    expect(view.today.words.length).toBeGreaterThan(20)
   })
 
   it('descarta sem uso: o dia fica vazio e as chamadas não voltam', async () => {

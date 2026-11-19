@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { chatCompletion } from './fixtures'
-import { chatCompletionSchema, cleanWords, modelOutputSchema } from './schema'
+import { chatCompletionSchema, cleanClues, clueOutputSchema } from './schema'
 
-const clean = (items: { answer: unknown; clue: unknown }[], avoid: string[] = []) =>
-  cleanWords(items, { size: 11, avoid: new Set(avoid) })
+const answers = [
+  { n: 1, plain: 'AGUA' },
+  { n: 2, plain: 'SOL' },
+]
+const good = [
+  { n: 2, clue: 'Estrela do nosso sistema' },
+  { n: 1, clue: '  Líquido   da vida ' },
+]
 
 describe('chatCompletionSchema', () => {
   it('lê conteúdo e motivo de fim e ignora o resto', () => {
@@ -12,50 +18,49 @@ describe('chatCompletionSchema', () => {
   })
 })
 
-describe('modelOutputSchema', () => {
-  it('exige de 20 a 100 itens', () => {
-    const item = { answer: 'SOL', clue: 'Estrela' }
-    expect(modelOutputSchema.safeParse({ words: Array(19).fill(item) }).success).toBe(false)
-    expect(modelOutputSchema.safeParse({ words: Array(20).fill(item) }).success).toBe(true)
-    expect(modelOutputSchema.safeParse({ words: Array(101).fill(item) }).success).toBe(false)
+describe('clueOutputSchema', () => {
+  it('ignora chaves extras e exige a lista', () => {
+    expect(clueOutputSchema.safeParse({ clues: good, extra: 1 }).success).toBe(true)
+    expect(clueOutputSchema.safeParse({ words: [] }).success).toBe(false)
   })
 })
 
-describe('cleanWords', () => {
-  it('aceita e normaliza um item válido, com acento', () => {
-    expect(clean([{ answer: ' água ', clue: '  Líquido   da vida ' }])).toEqual([
-      { answer: 'ÁGUA', clue: 'Líquido da vida' },
-    ])
+describe('cleanClues', () => {
+  it('devolve as dicas na ordem das respostas, normalizadas', () => {
+    expect(cleanClues(good, answers)).toEqual({
+      ok: true,
+      clues: ['Líquido da vida', 'Estrela do nosso sistema'],
+    })
   })
 
   it.each([
-    ['número', { answer: 'R2D2', clue: 'Robô' }],
-    ['espaço', { answer: 'SÃO PAULO', clue: 'Cidade' }],
-    ['hífen', { answer: 'GUARDA-CHUVA', clue: 'Protege da chuva' }],
-    ['menos de 3 letras', { answer: 'LÁ', clue: 'Advérbio de lugar' }],
-    ['mais letras que a grade', { answer: 'PARALELEPÍPEDO', clue: 'Pedra da rua' }],
-    ['dica vazia', { answer: 'SOL', clue: '  ' }],
-    ['dica longa demais', { answer: 'SOL', clue: 'a'.repeat(121) }],
-    ['dica com marcação', { answer: 'SOL', clue: '<b>Estrela</b>' }],
-    ['dica com link', { answer: 'SOL', clue: 'Veja https://exemplo.com' }],
-    ['dica com a resposta', { answer: 'SOL', clue: 'Raio de sol' }],
-    ['dica com a resposta sem acento', { answer: 'ÁGUA', clue: 'Agua fresca' }],
-    ['resposta bloqueada', { answer: 'PORRA', clue: 'Palavrão' }],
-    ['dica com termo bloqueado', { answer: 'NOITE', clue: 'Hora da merda' }],
-    ['tipos errados', { answer: 3, clue: null }],
-  ])('descarta item com %s', (_, item) => {
-    expect(clean([item])).toEqual([])
+    ['falta um n', [good[0]!]],
+    ['sobra um n', [...good, { n: 3, clue: 'Outra dica' }]],
+    ['n repetido', [good[0]!, good[0]!]],
+    ['n de outro tipo', [good[0]!, { n: '1', clue: 'Líquido da vida' }]],
+    ['dica de outro tipo', [good[0]!, { n: 1, clue: 3 }]],
+  ])('recusa quando %s', (_, items) => {
+    expect(cleanClues(items, answers)).toMatchObject({ ok: false, detail: 'dicas incompletas' })
   })
 
-  it('descarta resposta repetida, comparando sem acento', () => {
-    const items = [
-      { answer: 'AVO', clue: 'Pai do pai' },
-      { answer: 'AVÓ', clue: 'Mãe da mãe' },
-    ]
-    expect(clean(items)).toEqual([{ answer: 'AVO', clue: 'Pai do pai' }])
+  it.each([
+    ['curta demais', 'ab'],
+    ['longa demais', 'a'.repeat(121)],
+    ['com marcação', '<b>Líquido</b>'],
+    ['com link', 'Veja https://exemplo.com'],
+    ['com a resposta', 'Agua fresca'],
+    ['com termo bloqueado', 'Coisa de merda'],
+  ])('recusa dica %s', (_, clue) => {
+    expect(cleanClues([{ n: 1, clue }, good[0]!], answers)).toMatchObject({
+      ok: false,
+      detail: 'dica inválida',
+      retry: [1],
+    })
   })
 
-  it('descarta resposta usada nos últimos 30 dias, comparando sem acento', () => {
-    expect(clean([{ answer: 'CORAÇÃO', clue: 'Bate no peito' }], ['CORACAO'])).toEqual([])
+  it('devolve as dicas boas e só os números a repetir', () => {
+    const result = cleanClues([good[0]!], answers)
+    expect(result).toMatchObject({ ok: false, retry: [1] })
+    expect(!result.ok && result.valid.get(2)).toBe('Estrela do nosso sistema')
   })
 })

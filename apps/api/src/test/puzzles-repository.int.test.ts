@@ -10,8 +10,7 @@ import {
   insertPuzzleIfAbsent,
   recentAnswers,
 } from '../modules/puzzles/puzzles.repository'
-import { SAMPLE_WORDS } from '../sources/generated/fixtures'
-import { layout, toPuzzle } from '../sources/generated/layout'
+import { buildCasaSample } from '../sources/generated/fixtures'
 import { okResult } from './fake-source'
 import { openTestDatabase, truncateAll } from './database'
 
@@ -145,10 +144,8 @@ describe('repositório de puzzles', () => {
 })
 
 describe('respostas recentes de uma fonte gerada (feature 064)', () => {
-  const casa = (date: string) => {
-    const placed = layout(SAMPLE_WORDS, 9, 1)!
-    return toPuzzle(placed, { source: 'casa', date, size: 9, difficulty: 'easy' })!
-  }
+  const casa = (date: string) =>
+    buildCasaSample({ source: 'casa', date, size: 9, difficulty: 'easy', seed: 'a' })
 
   it('lê as respostas dos 30 dias antes de hoje, só da fonte pedida', async () => {
     await insertPuzzleIfAbsent(db, casa('2026-11-10'))
@@ -156,7 +153,7 @@ describe('respostas recentes de uma fonte gerada (feature 064)', () => {
     await insertPuzzleIfAbsent(db, casa('2026-11-17')) // hoje não conta
     await insertPuzzleIfAbsent(db, okResult('2026-11-10'))
     const answers = await recentAnswers(db, { source: 'casa', today: '2026-11-17', days: 30 })
-    const expected = layout(SAMPLE_WORDS, 9, 1)!.map((p) => p.answer)
+    const expected = casa('2026-11-10').grid.words.map((w) => w.plain)
     expect([...answers].sort()).toEqual([...expected].sort())
   })
 })

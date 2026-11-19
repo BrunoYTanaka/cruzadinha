@@ -1,5 +1,7 @@
 # Contract: pedido à DeepSeek (saída da API, só na coleta)
 
+> **Substituído pela 065**: o pedido agora só pede dicas; ver `specs/065-cruzada-densa/contracts/clue-request.md`.
+
 Fonte: doc oficial (Context7 `/websites/api-docs_deepseek`, consultada em 2026-11-17). Confirmar o nome do modelo ao implementar.
 
 ## Pedido

@@ -1,35 +1,55 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { requestWords } from './client'
-import { layout, minWords, seedFrom, toPuzzle } from './layout'
-import { cleanWords } from './schema'
+import { requestClues } from './client'
+import { chatCompletionSchema, cleanClues } from './schema'
 
-// Constituição IV (research R8b): resposta real do DeepSeek salva uma vez com
-// `source:check:generated --save` (sem `id`, `usage` e `system_fingerprint`). Se o formato do
-// provedor mudar, este teste é o primeiro a quebrar.
-const body = readFileSync(new URL('./fixtures/deepseek-response.json', import.meta.url), 'utf8')
+// Constituição IV (research R8b, R12): resposta real do DeepSeek ao pedido de dicas, salva com
+// `source:check:generated --save` e reduzida (sem `id`, `usage` e `system_fingerprint`). As
+// respostas pedidas estão em `deepseek-request-answers.json`. Se o formato do provedor mudar,
+// este teste é o primeiro a quebrar.
+const read = (name: string) => readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8')
+const body = read('deepseek-response.json')
+const answers = JSON.parse(read('deepseek-request-answers.json')) as {
+  n: number
+  form: string
+  plain: string
+}[]
 const provider = { baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat', apiKey: 'teste' }
 const fetch = (async () =>
   new Response(body, { status: 200 })) as unknown as typeof globalThis.fetch
 
-describe('contrato DeepSeek (resposta real)', () => {
-  it.each([9, 11])('a resposta real vira uma cruzada %i x %i válida', async (size) => {
-    const result = await requestWords({
+describe('contrato DeepSeek (resposta real de dicas)', () => {
+  it('o envelope real passa por chatCompletionSchema', () => {
+    const parsed = chatCompletionSchema.parse(JSON.parse(body))
+    expect(parsed.choices[0]?.finish_reason).toBe('stop')
+  })
+
+  it('requestClues lê uma dica por resposta pedida', async () => {
+    const result = await requestClues({
       provider,
       messages: [{ role: 'user', content: 'pedido' }],
       fetch,
     })
     if (!result.ok) throw new Error(`resposta recusada: ${result.kind}`)
-    const words = cleanWords(result.items, { size, avoid: new Set() })
-    expect(words.length).toBeGreaterThanOrEqual(minWords(size))
-    const placed = layout(words, size, seedFrom('2026-11-17'))
-    expect(placed?.length).toBeGreaterThanOrEqual(minWords(size))
-    const built = toPuzzle(placed!, {
-      source: 'casa',
-      date: '2026-11-17',
-      size,
-      difficulty: 'medium',
+    expect(result.items).toHaveLength(answers.length)
+  })
+
+  it('cleanClues aceita as dicas reais válidas e recusa a que traz a resposta', async () => {
+    const result = await requestClues({
+      provider,
+      messages: [{ role: 'user', content: 'pedido' }],
+      fetch,
     })
-    expect(built?.puzzle.grid).toMatchObject({ width: size, height: size })
+    if (!result.ok) throw new Error('resposta recusada')
+    // Na resposta real, a dica de "tragam" repete a palavra: a tentativa inteira cai (FR-010).
+    const first = cleanClues(result.items, answers)
+    expect(first).toMatchObject({ ok: false, detail: 'dica inválida' })
+    expect(!first.ok && first.retry).toEqual([answers.find((a) => a.form === 'tragam')!.n])
+    const rest = answers.filter((a) => a.form !== 'tragam')
+    const cleaned = cleanClues(
+      result.items.filter((i) => i.n !== answers.find((a) => a.form === 'tragam')!.n),
+      rest,
+    )
+    expect(cleaned.ok && cleaned.clues).toHaveLength(rest.length)
   })
 })

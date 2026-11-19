@@ -1,4 +1,4 @@
-import type { GeneratedSourceId } from '@cruzadinha/shared'
+import { puzzleSourceNames, type GeneratedSourceId } from '@cruzadinha/shared'
 import type { GenerationConfig } from './config'
 import { recentAnswers } from './modules/puzzles'
 import {
@@ -23,6 +23,8 @@ export function createGeneratedSources(options: {
   generation: GenerationConfig
   clock: Clock
   fetch?: typeof globalThis.fetch
+  /** Diagnóstico das tentativas, já com o nome da fonte (só a coleta passa). */
+  log?: (line: string) => void
 }): PuzzleSource[] {
   const { db, generation, clock } = options
   const rateLimiter = createRateLimiter(createRateLimitRepository(db))
@@ -49,6 +51,7 @@ export function createGeneratedSources(options: {
           )
         ).allowed,
       recentAnswers: (today) => recentAnswers(db, { source: id, today, days: RECENT_DAYS }),
+      log: options.log && ((line) => options.log!(`[${puzzleSourceNames[id]}] ${line}`)),
     }),
   )
 }
