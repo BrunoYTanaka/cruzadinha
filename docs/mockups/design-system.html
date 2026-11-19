@@ -470,6 +470,15 @@ input.ctl[disabled] { opacity: .55; cursor: not-allowed; }
 .waits .wcells { justify-content: flex-start; } .waits .wcells span { position: relative; width: 26px; height: 32px; font-size: 15px; animation: none; box-shadow: 1px 1px 0 var(--edge); border-radius: 4px; }
 
 /* administração */
+.admsec { display: grid; gap: 12px; }
+.admsec + .admsec { padding-top: 16px; border-top: 1px solid var(--line); }
+.admsec h3 { margin: 0; }
+.admwords { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.admwords table.t th, .admwords table.t td { text-align: left; }
+.admwords table.t td:first-child, .admwords table.t th:first-child { width: 3ch; text-align: right; font-family: var(--mono); }
+.admwords table.t td:nth-child(2) { font: 700 14px var(--mono); letter-spacing: .06em; }
+.panel.danger.admdanger { padding: 14px; gap: 10px; }
+.panel.danger.admdanger h3 { color: var(--bad); }
 .admlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .admrow { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 12px; padding: 8px 12px; border: 2px solid var(--edge); border-radius: var(--r-sm); background: var(--surface); }
 .admrow.hid { border-color: var(--line); }
@@ -995,12 +1004,43 @@ const waitHtml = (word, title, slow, secs, lvl) => '<section class="wait" aria-b
 const WAITS = [['Entrada', 'CRUZADA', 'Preparando as palavras…'], ['Jogo', 'GRADE', 'Montando a grade…'], ['Dia', 'BUSCANDO', 'Procurando a cruzada de hoje…'], ['Calendário', 'CALENDÁRIO', 'Folheando o calendário…'], ['Estatísticas', 'ACERTOS', 'Contando seus acertos…']];
 
 const grip = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
-const adm = (rows, dirty, notice, drag, drop) => '<div class="page-narrow" style="max-width:688px"><h1>Administração</h1><h2 style="margin:0">Fontes de cruzadas</h2>' +
-  '<p class="lede">A ordem vale para as abas do calendário e para os cartões de "Hoje"; a primeira fonte visível abre por padrão. Uma fonte escondida some das listas para todos, mas guarda tudo e pode voltar.</p>' +
-  '<ol class="admlist">' + rows.map((r, i) => (drop === i ? '<li class="admdrop" aria-hidden="true"></li>' : '') + '<li class="admrow' + (r[1] ? '' : ' hid') + (drag === i ? ' drag' : '') + '"><span class="pos" aria-hidden="true">' + (i + 1) + '</span><label><input class="ctl" type="checkbox"' + (r[1] ? ' checked' : '') + '><span class="nm">' + r[0] + '</span><span class="st">' + (r[1] ? 'Visível' : 'Escondida') + '</span></label>' +
+// Abas da Administração: "Fontes" e uma aba por fonte gerada. Coladas no painel, como as de fonte.
+const admTabs = sel => '<div class="row tabs-attached" role="tablist" aria-label="Seções da administração">' +
+  [['Fontes', 'ordem e visibilidade'], ['Casa', 'fonte gerada']].map((t, i) => '<button class="tab" type="button" role="tab" aria-selected="' + (i === sel) + '"' + (i === sel ? '' : ' tabindex="-1"') + '>' + t[0] + '<small>' + t[1] + '</small></button>').join('') + '</div>';
+const admPage = (sel, body) => '<div class="page-narrow" style="max-width:688px"><h1>Administração</h1><div>' + admTabs(sel) + '<div class="panel" role="tabpanel">' + body + '</div></div></div>';
+const adm = (rows, dirty, notice, drag, drop) => admPage(0, '<h2 style="margin:0">Fontes de cruzadas</h2>' +
+  '<p class="lede">A ordem vale para as abas do calendário; a primeira fonte visível abre por padrão. Uma fonte escondida some das listas para todos, mas guarda tudo e pode voltar.</p>' +
+  '<ol class="admlist">' + rows.map((r, i) => (drop === i ? '<li class="admdrop" aria-hidden="true"></li>' : '') + '<li class="admrow' + (r[1] ? '' : ' hid') + (drag === i ? ' drag' : '') + '"><span class="pos" aria-hidden="true">' + (i + 1) + '</span><label><input class="ctl" type="checkbox"' + (r[1] ? ' checked' : '') + '><span class="nm">' + r[0] + '</span>' + (r[1] ? '<span class="status ok">✓ Visível</span>' : '<span class="status none">Escondida</span>') + '</label>' +
   '<span class="mv"><button class="btn secondary icon handle" type="button" aria-label="Arrastar ' + r[0] + '" aria-describedby="admhint"' + (drag === i ? ' aria-pressed="true"' : '') + '>' + grip + '</button></span></li>').join('') + '</ol><p class="alt" id="admhint">Arraste pela alça. No teclado: Espaço pega, setas movem, Espaço solta, Esc cancela.</p>' +
-  '<div class="row"><button class="btn primary icon" type="button" aria-label="Salvar"' + (dirty ? '' : ' disabled') + '><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg></button>' + (dirty ? '<button class="btn secondary icon" type="button" aria-label="Descartar alterações"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>' : '') + '</div>' +
-  '<div style="min-height:64px">' + (notice || '') + '</div></div>';
+  '<div class="row"><button class="btn primary" type="button"' + (dirty ? '' : ' disabled') + '>Salvar</button>' + (dirty ? '<button class="btn secondary" type="button">Descartar alterações</button>' : '') + '</div>' +
+  '<div style="min-height:64px">' + (notice || '') + '</div>');
+
+// Aba de uma fonte gerada. o: { size, diff (0..2), dirty, today (palavras ou null), calls, blocked, notice, discardNotice }
+const GEN_WORDS = {
+  across: [[1, 'CASA', 'Moradia'], [4, 'SOL', 'Astro-rei'], [6, 'PRAIA', 'Faixa de areia junto ao mar'], [8, 'RIO', 'Curso de água'], [10, 'ARARA', 'Ave colorida que fala']],
+  down: [[1, 'CAPA', 'Proteção do livro'], [2, 'ASA', 'Parte da ave que voa'], [3, 'SORRISO', 'Expressão de alegria'], [5, 'LAR', 'Casa, família'], [7, 'IRA', 'Raiva']],
+};
+const genTable = (title, rows) => '<table class="t"><caption class="cap" style="text-align:left;caption-side:top;padding-bottom:6px">' + title + '</caption><thead><tr><th scope="col">Nº</th><th scope="col">Resposta</th><th scope="col">Dica</th></tr></thead><tbody>' +
+  rows.map(w => '<tr><td>' + w[0] + '</td><td>' + w[1] + '</td><td>' + w[2] + '</td></tr>').join('') + '</tbody></table>';
+const BLOCKED = { progress: 'Uma conta já começou esta cruzada.', duel: 'Um x1 usa esta cruzada.' };
+const gen = o => admPage(1, '<h2 style="margin:0">Casa</h2><p class="lede">Fonte gerada. O jogador vê só o nome da fonte e a dificuldade.</p>' +
+  '<section class="admsec"><h3>Configuração</h3>' +
+  '<div class="srow" style="justify-content:space-between;flex-wrap:wrap;gap:12px"><span><span class="t">Tamanho da grade</span><span class="h">9 a 15, quadrada (N × N)</span></span>' +
+  '<div class="stepper"><button class="btn secondary icon small" type="button" aria-label="Diminuir a grade"' + (o.size <= 9 ? ' disabled' : '') + '>−</button><output>' + o.size + ' × ' + o.size + '</output><button class="btn secondary icon small" type="button" aria-label="Aumentar a grade"' + (o.size >= 15 ? ' disabled' : '') + '>+</button></div></div>' +
+  '<fieldset style="margin:0;padding:0;border:0"><legend class="t" style="font:700 15px var(--font);margin-bottom:4px">Dificuldade</legend><div class="row">' +
+  ['Fácil', 'Média', 'Difícil'].map((d, i) => '<label class="pick"><input class="ctl" type="radio" name="gdiff' + o.size + o.diff + (o.dirty ? 'd' : '') + (o.blocked || '') + (o.today ? 't' : '') + (o.notice ? 'n' : '') + '"' + (i === o.diff ? ' checked' : '') + '>' + d + '</label>').join('') + '</div></fieldset>' +
+  '<div class="row"><button class="btn primary" type="button"' + (o.dirty ? '' : ' disabled') + '>Salvar configuração</button>' + (o.dirty ? '<button class="btn secondary" type="button">Descartar alterações</button>' : '') +
+  // O aviso entra ao lado do botão, na mesma linha: não reserva espaço vazio abaixo.
+  (o.notice ? '<div style="flex:1;min-width:220px">' + o.notice + '</div>' : '') + '</div></section>' +
+  '<section class="admsec"><h3>Cruzada de hoje</h3>' +
+  (o.today
+    ? '<dl class="stat4"><div class="stat"><dt>Grade</dt><dd>11 × 11</dd></div><div class="stat"><dt>Dificuldade</dt><dd>Média</dd></div><div class="stat"><dt>Palavras</dt><dd>10</dd></div><div class="stat"><dt>Chamadas restantes</dt><dd>' + o.calls + ' de 3</dd></div></dl>' +
+      '<div class="admwords">' + genTable('Horizontais', GEN_WORDS.across) + genTable('Verticais', GEN_WORDS.down) + '</div>' +
+      '<div class="panel danger admdanger"><h3>Descartar a cruzada de hoje</h3><p class="alt">Ela sai do site para todos. ' + (o.calls > 0 ? 'A próxima coleta gera outra.' : 'As chamadas de hoje acabaram: o dia ficará sem cruzada.') + '</p>' +
+      (o.blocked ? '<span class="status warn" style="justify-self:start">! ' + BLOCKED[o.blocked] + '</span>' : '') +
+      '<div class="row"><button class="btn secondary" type="button"' + (o.blocked ? ' disabled' : '') + '>Descartar</button></div></div>'
+    : '<dl class="stat4"><div class="stat"><dt>Chamadas restantes</dt><dd>' + o.calls + ' de 3</dd></div></dl><p class="alt">Sem cruzada hoje.</p>') +
+  (o.discardNotice ? '<div>' + o.discardNotice + '</div>' : '') + '</section>');
 
 const stat = (srv, db, notice) => '<div class="page-narrow" style="max-width:420px"><h1>Cruzadinha</h1><div class="panel"><div class="strow"><span>Servidor</span>' + srv + '</div>' + (db ? '<div class="strow"><span>Banco</span>' + db + '</div>' : '') + '</div>' + (notice || '') + '</div>';
 const chipOk = '<span class="status ok">✓ disponível</span>', chipBad = '<span class="status bad">× indisponível</span>', chipWait = '<span class="status none"><span class="spin"></span>verificando…</span>';
@@ -1131,6 +1171,21 @@ const SCREENS = [
 
  { id: 'admin-erro', name: 'Administração (erro)', route: '/admin', bar: 'user', html:
   adm([['Cruzada Online', false], ['O Globo', false], ['Cruzadas Clube', false], ['Cruzadas Brasil', false]], true, '<div class="notice bad" role="alert"><b>×</b><span>Pelo menos uma fonte precisa ficar visível. Nada foi alterado.</span></div>') },
+
+ { id: 'admin-casa', name: 'Administração: Casa', route: '/admin?aba=casa', bar: 'user', note: 'Aba de uma fonte gerada: configuração, cruzada de hoje e descarte na zona de perigo.', html:
+  gen({ size: 11, diff: 1, dirty: false, today: true, calls: 2 }) },
+
+ { id: 'admin-casa-editando', name: 'Administração: Casa (editando)', route: '/admin?aba=casa', bar: 'user', note: 'Grade e dificuldade trocadas: Salvar configuração liga. Trocar de aba não perde o rascunho.', html:
+  gen({ size: 13, diff: 2, dirty: true, today: true, calls: 2 }) },
+
+ { id: 'admin-casa-salvo', name: 'Administração: Casa (salvo)', route: '/admin?aba=casa', bar: 'user', html:
+  gen({ size: 13, diff: 2, dirty: false, today: true, calls: 2, notice: '<div class="notice ok" role="status"><b>✓</b><span>Salvo. Vale a partir da próxima cruzada gerada.</span></div>' }) },
+
+ { id: 'admin-casa-bloqueada', name: 'Administração: Casa (em uso)', route: '/admin?aba=casa', bar: 'user', note: 'Um x1 usa a cruzada: Descartar desativado, motivo no chip.', html:
+  gen({ size: 11, diff: 1, dirty: false, today: true, calls: 2, blocked: 'duel' }) },
+
+ { id: 'admin-casa-descartada', name: 'Administração: Casa (descartada)', route: '/admin?aba=casa', bar: 'user', note: 'O comando vai num campo só de leitura com Copiar.', html:
+  gen({ size: 11, diff: 1, dirty: false, today: false, calls: 2, discardNotice: '<div class="notice info" role="status"><b>i</b><span>Cruzada descartada. A próxima coleta gera outra. Para gerar agora:</span></div><div class="copyrow" style="margin-top:8px"><input class="field" readonly value="gh workflow run collect.yml" aria-label="Comando para gerar agora"><button class="btn secondary" type="button">Copiar</button></div>' }) },
 
  { id: 'conta-visitante', name: 'Sua conta (visitante)', route: '/conta', bar: 'guest', html:
   '<div class="page-narrow" style="max-width:488px"><h1>Sua conta</h1><p class="lede">Entre para gerenciar sua conta.</p><p class="alt">' + A('Entrar') + '</p></div>' },
@@ -1313,7 +1368,7 @@ const GROUPS = [
   { name: 'Diálogos', ids: ['dlg-conclusao', 'dlg-recorde', 'dlg-compartilhar', 'dlg-atalhos', 'dlg-dicas', 'dlg-importar', 'dlg-importar-erro', 'dlg-importar-descartar', 'dlg-importar-feito', 'dlg-relogin', 'dlg-sair', 'dlg-excluir', 'dlg-x1-regras', 'dlg-x1-desistir', 'dlg-x1-cancelar'] },
   { name: 'Avisos', ids: ['aviso-offline', 'aviso-descarte'] },
   { name: 'Cabeçalho no celular', ids: ['cab-celular', 'cab-celular-menu'] },
-  { name: 'Administração', ids: ['admin', 'admin-editando', 'admin-arrastando', 'admin-salvo', 'admin-erro'] },
+  { name: 'Administração', ids: ['admin', 'admin-editando', 'admin-arrastando', 'admin-salvo', 'admin-erro', 'admin-casa', 'admin-casa-editando', 'admin-casa-salvo', 'admin-casa-bloqueada', 'admin-casa-descartada'] },
   { name: 'Espera', ids: ['carregando', 'carregando-acordando'] },
   { name: 'Status', ids: ['status', 'status-verificando', 'status-falha', 'status-banco', 'status-offline'] },
   { name: 'Página não encontrada', ids: ['erro-404'] },
