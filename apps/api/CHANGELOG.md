@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.14.1...api-v0.15.0) (2026-11-19)
+
+
+### Features
+
+* **api:** fill the casa source as a dense crossword ([f7a0cd3](https://github.com/BrunoYTanaka/cruzadinha/commit/f7a0cd307b718bbd1479452da29bd570c64afb74))
+* **api:** fill the casa source as a dense crossword ([cae6d74](https://github.com/BrunoYTanaka/cruzadinha/commit/cae6d74eaf6c6c421fa5d51d66cb0dce6fe8547a))
+
 ## [0.14.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.14.0...api-v0.14.1) (2026-11-17)
 
 
