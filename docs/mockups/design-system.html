@@ -1028,13 +1028,13 @@ const gen = o => admPage(1, '<h2 style="margin:0">Casa</h2><p class="lede">Fonte
   '<div class="srow" style="justify-content:space-between;flex-wrap:wrap;gap:12px"><span><span class="t">Tamanho da grade</span><span class="h">9 a 15, quadrada (N × N)</span></span>' +
   '<div class="stepper"><button class="btn secondary icon small" type="button" aria-label="Diminuir a grade"' + (o.size <= 9 ? ' disabled' : '') + '>−</button><output>' + o.size + ' × ' + o.size + '</output><button class="btn secondary icon small" type="button" aria-label="Aumentar a grade"' + (o.size >= 15 ? ' disabled' : '') + '>+</button></div></div>' +
   '<fieldset style="margin:0;padding:0;border:0"><legend class="t" style="font:700 15px var(--font);margin-bottom:4px">Dificuldade</legend><div class="row">' +
-  ['Fácil', 'Média', 'Difícil'].map((d, i) => '<label class="pick"><input class="ctl" type="radio" name="gdiff' + o.size + o.diff + (o.dirty ? 'd' : '') + (o.blocked || '') + (o.today ? 't' : '') + (o.notice ? 'n' : '') + '"' + (i === o.diff ? ' checked' : '') + '>' + d + '</label>').join('') + '</div></fieldset>' +
+  ['Fácil', 'Médio', 'Difícil'].map((d, i) => '<label class="pick"><input class="ctl" type="radio" name="gdiff' + o.size + o.diff + (o.dirty ? 'd' : '') + (o.blocked || '') + (o.today ? 't' : '') + (o.notice ? 'n' : '') + '"' + (i === o.diff ? ' checked' : '') + '>' + d + '</label>').join('') + '</div></fieldset>' +
   '<div class="row"><button class="btn primary" type="button"' + (o.dirty ? '' : ' disabled') + '>Salvar configuração</button>' + (o.dirty ? '<button class="btn secondary" type="button">Descartar alterações</button>' : '') +
   // O aviso entra ao lado do botão, na mesma linha: não reserva espaço vazio abaixo.
   (o.notice ? '<div style="flex:1;min-width:220px">' + o.notice + '</div>' : '') + '</div></section>' +
   '<section class="admsec"><h3>Cruzada de hoje</h3>' +
   (o.today
-    ? '<dl class="stat4"><div class="stat"><dt>Grade</dt><dd>11 × 11</dd></div><div class="stat"><dt>Dificuldade</dt><dd>Média</dd></div><div class="stat"><dt>Palavras</dt><dd>10</dd></div><div class="stat"><dt>Chamadas restantes</dt><dd>' + o.calls + ' de 3</dd></div></dl>' +
+    ? '<dl class="stat4"><div class="stat"><dt>Grade</dt><dd>11 × 11</dd></div><div class="stat"><dt>Dificuldade</dt><dd>Médio</dd></div><div class="stat"><dt>Palavras</dt><dd>10</dd></div><div class="stat"><dt>Chamadas restantes</dt><dd>' + o.calls + ' de 3</dd></div></dl>' +
       '<div class="admwords">' + genTable('Horizontais', GEN_WORDS.across) + genTable('Verticais', GEN_WORDS.down) + '</div>' +
       '<div class="panel danger admdanger"><h3>Descartar a cruzada de hoje</h3><p class="alt">Ela sai do site para todos. ' + (o.calls > 0 ? 'A próxima coleta gera outra.' : 'As chamadas de hoje acabaram: o dia ficará sem cruzada.') + '</p>' +
       (o.blocked ? '<span class="status warn" style="justify-self:start">! ' + BLOCKED[o.blocked] + '</span>' : '') +
