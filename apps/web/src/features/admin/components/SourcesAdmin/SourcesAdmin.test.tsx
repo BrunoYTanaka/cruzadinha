@@ -40,6 +40,31 @@ describe('SourcesAdmin', () => {
     expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled()
   })
 
+  it('shows the title, the text, a chip per state and text buttons (feature 066)', async () => {
+    const user = userEvent.setup()
+    const { container } = setup()
+    expect(screen.getByRole('heading', { level: 2, name: 'Fontes de cruzadas' })).toBeVisible()
+    expect(
+      screen.getByText(
+        'A ordem vale para as abas do calendário; a primeira fonte visível abre por padrão. ' +
+          'Uma fonte escondida some das listas para todos, mas guarda tudo e pode voltar.',
+      ),
+    ).toBeInTheDocument()
+    const box = await screen.findByRole('checkbox', { name: /O Globo/ })
+    expect(box).toHaveAccessibleName('O Globo Visível')
+    expect(screen.getByRole('button', { name: 'Salvar' })).toHaveTextContent('Salvar')
+    expect(screen.queryByRole('button', { name: 'Descartar alterações' })).toBeNull()
+    await user.click(box)
+    expect(box).toHaveAccessibleName('O Globo Escondida')
+    const discard = screen.getByRole('button', { name: 'Descartar alterações' })
+    expect(discard).toHaveTextContent('Descartar alterações')
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled()
+    await user.click(discard)
+    expect(box).toBeChecked()
+    expect(screen.queryByRole('button', { name: 'Descartar alterações' })).toBeNull()
+    await expectNoA11yViolations(container)
+  })
+
   const handle = (name: string) => screen.getByRole('button', { name: `Arrastar ${name}` })
   const live = () => screen.getByRole('status', { name: '' })
 

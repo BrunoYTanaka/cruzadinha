@@ -2,15 +2,14 @@ import {
   difficultyLabels,
   GENERATED_GRID_SIZE_MAX,
   GENERATED_GRID_SIZE_MIN,
+  GENERATION_DAILY_CALLS,
   puzzleSourceNames,
   type Difficulty,
   type GeneratedSourceView,
 } from '@cruzadinha/shared'
-import { useId, useState } from 'react'
-import { Button } from '../../../../shared/components/Button/Button'
+import { useEffect, useId, useRef, useState } from 'react'
+import { Button, buttonClass } from '../../../../shared/components/Button/Button'
 import { Dialog } from '../../../../shared/components/Dialog/Dialog'
-import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
-import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
 import { Notice } from '../../../../shared/components/Notice/Notice'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { useGeneratedSources } from '../../hooks/useGeneratedSources/useGeneratedSources'
@@ -21,8 +20,10 @@ const BLOCKED_TEXT = {
   progress: 'Uma conta já começou esta cruzada.',
   duel: 'Um x1 usa esta cruzada.',
 } as const
+const COLLECT_COMMAND = 'gh workflow run collect.yml'
 
-type Result = { variant: 'ok' | 'info' | 'error'; text: string }
+type Result = { variant: 'ok' | 'info' | 'error'; text: string; command?: boolean }
+type Word = NonNullable<GeneratedSourceView['today']>['words'][number]
 
 function failureText(error: unknown): string {
   if (error instanceof ApiRequestError && error.code === 'in-use') {
@@ -34,163 +35,304 @@ function failureText(error: unknown): string {
   return 'Não foi possível concluir agora. Nada foi alterado; tente de novo.'
 }
 
-function SourceBlock({ view }: { view: GeneratedSourceView }) {
+async function copy(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function WordsTable({ title, words }: { title: string; words: readonly Word[] }) {
+  return (
+    <table className={styles.table}>
+      <caption className={styles.caption}>{title}</caption>
+      <thead>
+        <tr>
+          <th scope="col">Nº</th>
+          <th scope="col">Resposta</th>
+          <th scope="col">Dica</th>
+        </tr>
+      </thead>
+      <tbody>
+        {words.map((word) => (
+          <tr key={`${word.direction}-${word.number}`}>
+            <td>{word.number}</td>
+            <td>{word.answer}</td>
+            <td>{word.clue}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+// O comando para gerar agora, num campo só de leitura com Copiar (padrão "Código e link").
+function CommandCopy() {
+  const [copied, setCopied] = useState('')
+  return (
+    <>
+      <div className={styles.copyRow}>
+        <input
+          className={styles.command}
+          readOnly
+          value={COLLECT_COMMAND}
+          aria-label="Comando para gerar agora"
+          onFocus={(event) => event.currentTarget.select()}
+        />
+        <Button
+          variant="secondary"
+          onClick={() =>
+            void copy(COLLECT_COMMAND).then((ok) =>
+              setCopied(ok ? 'Comando copiado.' : 'Não foi possível copiar. Selecione o comando.'),
+            )
+          }
+        >
+          Copiar
+        </Button>
+      </div>
+      <p role="status" className={styles.hint}>
+        {copied}
+      </p>
+    </>
+  )
+}
+
+// Aba de uma fonte gerada (features 064 e 066): configuração, cruzada de hoje e descarte. Só a
+// página `/admin` monta, e só para admin. O jogador nunca vê nada daqui (064, FR-012).
+export function GeneratedSourcePanel({ view }: { view: GeneratedSourceView }) {
   const { save, discard } = useGeneratedSources()
-  const [size, setSize] = useState(String(view.gridSize))
+  const [size, setSize] = useState(view.gridSize)
   const [difficulty, setDifficulty] = useState<Difficulty>(view.difficulty)
-  const [result, setResult] = useState<Result | null>(null)
+  const [saveResult, setSaveResult] = useState<Result | null>(null)
+  const [discardResult, setDiscardResult] = useState<Result | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const discardRef = useRef<HTMLDivElement>(null)
   const baseId = useId()
   const name = puzzleSourceNames[view.source]
-  const sizeNumber = Number(size)
-  const validSize =
-    Number.isInteger(sizeNumber) &&
-    sizeNumber >= GENERATED_GRID_SIZE_MIN &&
-    sizeNumber <= GENERATED_GRID_SIZE_MAX
-  const dirty = sizeNumber !== view.gridSize || difficulty !== view.difficulty
+  const dirty = size !== view.gridSize || difficulty !== view.difficulty
+  const today = view.today
+
+  // O botão "Descartar" some com a cruzada: o foco vai para o resultado, não para o início da página.
+  useEffect(() => {
+    if (discardResult) discardRef.current?.focus()
+  }, [discardResult])
+
+  function changeSize(next: number) {
+    setSize(next)
+    setSaveResult(null)
+  }
 
   async function onSave() {
-    setResult(null)
+    setSaveResult(null)
     try {
-      await save.mutateAsync({ source: view.source, gridSize: sizeNumber, difficulty })
-      setResult({ variant: 'ok', text: 'Salvo. Vale a partir da próxima cruzada gerada.' })
+      await save.mutateAsync({ source: view.source, gridSize: size, difficulty })
+      setSaveResult({ variant: 'ok', text: 'Salvo. Vale a partir da próxima cruzada gerada.' })
     } catch (error) {
-      setResult({ variant: 'error', text: failureText(error) })
+      setSaveResult({ variant: 'error', text: failureText(error) })
     }
   }
 
   async function onDiscard() {
     setConfirming(false)
-    if (!view.today) return
-    setResult(null)
+    if (!today) return
+    setDiscardResult(null)
     try {
-      await discard.mutateAsync({ source: view.source, puzzleId: view.today.puzzleId })
-      setResult({
-        variant: 'info',
-        text:
-          view.callsLeft > 0
-            ? 'Cruzada descartada. A próxima coleta gera outra; para gerar agora, rode ' +
-              '`gh workflow run collect.yml`.'
-            : 'Cruzada descartada. As chamadas de hoje acabaram: o dia ficará sem cruzada.',
-      })
+      await discard.mutateAsync({ source: view.source, puzzleId: today.puzzleId })
+      setDiscardResult(
+        view.callsLeft > 0
+          ? {
+              variant: 'info',
+              text: 'Cruzada descartada. A próxima coleta gera outra. Para gerar agora:',
+              command: true,
+            }
+          : {
+              variant: 'info',
+              text: 'Cruzada descartada. As chamadas de hoje acabaram: o dia ficará sem cruzada.',
+            },
+      )
     } catch (error) {
-      setResult({ variant: 'error', text: failureText(error) })
+      setDiscardResult({ variant: 'error', text: failureText(error) })
     }
   }
 
-  const across = view.today?.words.filter((word) => word.direction === 'across') ?? []
-  const down = view.today?.words.filter((word) => word.direction === 'down') ?? []
+  const calls = (
+    <div className={styles.card}>
+      <dt>Chamadas restantes</dt>
+      <dd>
+        {view.callsLeft} de {GENERATION_DAILY_CALLS}
+      </dd>
+    </div>
+  )
 
   return (
-    <section className={styles.block} aria-labelledby={`${baseId}-name`}>
-      <h3 id={`${baseId}-name`} className={styles.name}>
-        {name}
-      </h3>
-      <form
-        className={styles.form}
-        onSubmit={(event) => {
-          event.preventDefault()
-          void onSave()
-        }}
-      >
-        <label className={styles.field} htmlFor={`${baseId}-size`}>
-          Tamanho da grade
-          <span className={styles.hint}>
-            {GENERATED_GRID_SIZE_MIN} a {GENERATED_GRID_SIZE_MAX}, quadrada (N x N)
-          </span>
-        </label>
-        <input
-          id={`${baseId}-size`}
-          className={styles.size}
-          type="number"
-          inputMode="numeric"
-          min={GENERATED_GRID_SIZE_MIN}
-          max={GENERATED_GRID_SIZE_MAX}
-          step={1}
-          value={size}
-          onChange={(event) => {
-            setSize(event.target.value)
-            setResult(null)
-          }}
-          aria-invalid={!validSize}
-        />
-        <fieldset className={styles.options}>
-          <legend className={styles.legend}>Dificuldade</legend>
-          {DIFFICULTIES.map((value) => (
-            <label key={value} className={styles.option}>
-              <input
-                type="radio"
-                name={`${baseId}-difficulty`}
-                checked={difficulty === value}
-                onChange={() => {
-                  setDifficulty(value)
-                  setResult(null)
-                }}
-              />
-              {difficultyLabels[value]}
-            </label>
-          ))}
-        </fieldset>
-        <div>
-          <Button
-            type="submit"
-            variant="primary"
-            // Nome próprio por fonte: o painel de fontes acima também tem um "Salvar" (WCAG 2.5.3).
-            aria-label={`Salvar ${name}`}
-            pending={save.isPending}
-            disabled={!dirty || !validSize}
-          >
-            Salvar
-          </Button>
-        </div>
-      </form>
+    <>
+      <h2 className={styles.title}>{name}</h2>
+      <p className={styles.lead}>Fonte gerada. O jogador vê só o nome da fonte e a dificuldade.</p>
 
-      <h4 className={styles.today}>Cruzada de hoje</h4>
-      <p className={styles.hint}>Chamadas restantes hoje: {view.callsLeft}</p>
-      {view.today ? (
-        <>
-          <div className={styles.words}>
-            {(
-              [
-                ['Horizontais', across],
-                ['Verticais', down],
-              ] as const
-            ).map(([title, words]) => (
-              <div key={title}>
-                <h5 className={styles.direction}>{title}</h5>
-                <ol className={styles.list}>
-                  {words.map((word) => (
-                    <li key={`${word.direction}-${word.number}`}>
-                      <strong>
-                        {word.number}. {word.answer}
-                      </strong>{' '}
-                      — {word.clue}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ))}
+      <section className={styles.section} aria-labelledby={`${baseId}-config`}>
+        <h3 id={`${baseId}-config`} className={styles.heading}>
+          Configuração
+        </h3>
+        <form
+          className={styles.form}
+          onSubmit={(event) => {
+            event.preventDefault()
+            void onSave()
+          }}
+        >
+          <div className={styles.sizeRow} role="group" aria-labelledby={`${baseId}-size`}>
+            <span>
+              <span id={`${baseId}-size`} className={styles.label}>
+                Tamanho da grade
+              </span>
+              <span className={styles.hint}>
+                {GENERATED_GRID_SIZE_MIN} a {GENERATED_GRID_SIZE_MAX}, quadrada (N × N)
+              </span>
+            </span>
+            <span className={styles.stepper}>
+              <button
+                type="button"
+                className={`${buttonClass()} ${styles.step}`}
+                aria-label="Diminuir a grade"
+                disabled={size <= GENERATED_GRID_SIZE_MIN}
+                onClick={() => changeSize(size - 1)}
+              >
+                −
+              </button>
+              <output className={styles.value} aria-live="polite">
+                {size} × {size}
+              </output>
+              <button
+                type="button"
+                className={`${buttonClass()} ${styles.step}`}
+                aria-label="Aumentar a grade"
+                disabled={size >= GENERATED_GRID_SIZE_MAX}
+                onClick={() => changeSize(size + 1)}
+              >
+                +
+              </button>
+            </span>
           </div>
-          <div className={styles.discard}>
-            <Button
-              variant="secondary"
-              disabled={!view.today.discardable}
-              pending={discard.isPending}
-              onClick={() => setConfirming(true)}
-            >
-              Descartar cruzada de hoje
+          <fieldset className={styles.options}>
+            <legend className={styles.label}>Dificuldade</legend>
+            {DIFFICULTIES.map((value) => (
+              <label key={value} className={styles.option}>
+                <input
+                  type="radio"
+                  name={`${baseId}-difficulty`}
+                  checked={difficulty === value}
+                  onChange={() => {
+                    setDifficulty(value)
+                    setSaveResult(null)
+                  }}
+                />
+                {difficultyLabels[value]}
+              </label>
+            ))}
+          </fieldset>
+          {/* O aviso entra ao lado dos botões, na mesma linha: não reserva espaço vazio. */}
+          <div className={styles.actions}>
+            <Button type="submit" variant="primary" pending={save.isPending} disabled={!dirty}>
+              Salvar configuração
             </Button>
-            {view.today.blockedBy ? (
-              <p className={styles.hint}>{BLOCKED_TEXT[view.today.blockedBy]}</p>
+            {dirty ? (
+              <Button
+                variant="secondary"
+                disabled={save.isPending}
+                onClick={() => {
+                  setSize(view.gridSize)
+                  setDifficulty(view.difficulty)
+                  setSaveResult(null)
+                }}
+              >
+                Descartar alterações
+              </Button>
+            ) : null}
+            {saveResult ? (
+              <div className={styles.result}>
+                <Notice variant={saveResult.variant}>{saveResult.text}</Notice>
+              </div>
             ) : null}
           </div>
-        </>
-      ) : (
-        <p className={styles.hint}>Sem cruzada hoje.</p>
-      )}
-      <div className={styles.status}>
-        {result ? <Notice variant={result.variant}>{result.text}</Notice> : null}
-      </div>
+        </form>
+      </section>
+
+      <section className={styles.section} aria-labelledby={`${baseId}-today`}>
+        <h3 id={`${baseId}-today`} className={styles.heading}>
+          Cruzada de hoje
+        </h3>
+        {today ? (
+          <>
+            <dl className={styles.cards}>
+              <div className={styles.card}>
+                <dt>Grade</dt>
+                <dd>
+                  {today.size} × {today.size}
+                </dd>
+              </div>
+              <div className={styles.card}>
+                <dt>Dificuldade</dt>
+                {/* Ausente numa API anterior à 066, ou nula quando o título não diz. */}
+                <dd>{today.difficulty ? difficultyLabels[today.difficulty] : '—'}</dd>
+              </div>
+              <div className={styles.card}>
+                <dt>Palavras</dt>
+                <dd>{today.words.length}</dd>
+              </div>
+              {calls}
+            </dl>
+            <div className={styles.words}>
+              <WordsTable
+                title="Horizontais"
+                words={today.words.filter((word) => word.direction === 'across')}
+              />
+              <WordsTable
+                title="Verticais"
+                words={today.words.filter((word) => word.direction === 'down')}
+              />
+            </div>
+            <div className={styles.danger}>
+              <h3 className={styles.dangerTitle}>Descartar a cruzada de hoje</h3>
+              <p className={styles.hint}>
+                Ela sai do site para todos.{' '}
+                {view.callsLeft > 0
+                  ? 'A próxima coleta gera outra.'
+                  : 'As chamadas de hoje acabaram: o dia ficará sem cruzada.'}
+              </p>
+              {today.blockedBy ? (
+                <span className={styles.chip}>
+                  <span aria-hidden="true">!</span>
+                  {BLOCKED_TEXT[today.blockedBy]}
+                </span>
+              ) : null}
+              <div>
+                <Button
+                  variant="secondary"
+                  disabled={!today.discardable}
+                  pending={discard.isPending}
+                  onClick={() => setConfirming(true)}
+                >
+                  Descartar
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <dl className={styles.cards}>{calls}</dl>
+            <p className={styles.hint}>Sem cruzada hoje.</p>
+          </>
+        )}
+        {discardResult ? (
+          <div ref={discardRef} tabIndex={-1} className={styles.discardResult}>
+            <Notice variant={discardResult.variant}>{discardResult.text}</Notice>
+            {discardResult.command ? <CommandCopy /> : null}
+          </div>
+        ) : null}
+      </section>
+
       <Dialog
         open={confirming}
         onClose={() => setConfirming(false)}
@@ -215,29 +357,6 @@ function SourceBlock({ view }: { view: GeneratedSourceView }) {
           </Button>
         </div>
       </Dialog>
-    </section>
-  )
-}
-
-// Fontes geradas (feature 064): tamanho e dificuldade, revisão e descarte da cruzada de hoje. Só a
-// página `/admin` monta, e só para admin. O jogador nunca vê nada daqui (FR-012).
-export function GeneratedSourcesAdmin() {
-  const { query } = useGeneratedSources()
-  if (query.isPending) return <LoadingState screen="library" level={2} />
-  if (query.isError) {
-    return (
-      <ErrorState
-        level={2}
-        message="Não foi possível carregar as fontes geradas agora."
-        onRetry={() => void query.refetch()}
-      />
-    )
-  }
-  return (
-    <div className={styles.admin}>
-      {query.data.map((view) => (
-        <SourceBlock key={view.source} view={view} />
-      ))}
-    </div>
+    </>
   )
 }

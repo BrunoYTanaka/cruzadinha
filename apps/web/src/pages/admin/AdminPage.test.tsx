@@ -24,7 +24,7 @@ const sources = [
 
 let client: QueryClient | undefined
 
-function visit(user: (typeof aUser & { isAdmin: boolean }) | null) {
+function visit(user: (typeof aUser & { isAdmin: boolean }) | null, path = '/admin') {
   const queryClient = makeQueryClient()
   client = queryClient
   queryClient.setQueryData(queryKeys.session, user ? { user } : null)
@@ -42,7 +42,7 @@ function visit(user: (typeof aUser & { isAdmin: boolean }) | null) {
           })
         : apiError(404, 'not-found'),
   })
-  return renderRoutes(routes, ['/admin'], queryClient)
+  return renderRoutes(routes, [path], queryClient)
 }
 
 afterEach(async () => {
@@ -53,20 +53,23 @@ afterEach(async () => {
 })
 
 describe('AdminPage', () => {
-  it('shows an admin the sources editor', async () => {
+  it('shows an admin one h1 and the tabs, "Fontes" open', async () => {
     const view = visit({ ...aUser, isAdmin: true })
     expect(await screen.findByRole('heading', { level: 1, name: 'Administração' })).toBeVisible()
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(
+      await screen.findByRole('tablist', { name: 'Seções da administração' }),
+    ).toBeInTheDocument()
     expect(await screen.findByRole('checkbox', { name: /O Globo/ })).toBeVisible()
-    expect(await screen.findByRole('heading', { level: 2, name: 'Fontes geradas' })).toBeVisible()
-    expect(await screen.findByRole('spinbutton', { name: /Tamanho da grade/ })).toHaveValue(11)
+    expect(screen.getByRole('tab', { name: /^Casa/ })).toHaveAttribute('aria-selected', 'false')
     await expectNoA11yViolations(view.container)
   })
 
   it.each([
     ['a guest', null],
     ['a plain account', { ...aUser, isAdmin: false }],
-  ])('shows %s the same page as a missing address', async (_name, user) => {
-    visit(user)
+  ])('shows %s the same page as a missing address, with any tab', async (_name, user) => {
+    visit(user, '/admin?aba=casa')
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Página não encontrada' }),
     ).toBeVisible()

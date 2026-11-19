@@ -47,7 +47,7 @@ const CONTROLS: [file: string, selector: string][] = [
   ['Button.module.css', '.button'],
   ['SettingsDialog.module.css', '.segmentButton'],
   ['SettingsDialog.module.css', '.switch'],
-  ['SourceTabs.module.css', '.tab'],
+  ['Tabs.module.css', '.tab'],
   ['ClueList.module.css', '.clue'],
   ['Keyboard.module.css', '.key'],
 ]
@@ -58,7 +58,7 @@ const CONTROLS: [file: string, selector: string][] = [
 const EXEMPT: Record<string, Check[]> = {
   'SettingsDialog.module.css .segmentButton': ['disabled'],
   'SettingsDialog.module.css .switch': ['disabled'],
-  'SourceTabs.module.css .tab': ['disabled'],
+  'Tabs.module.css .tab': ['disabled'],
   'ClueList.module.css .clue': ['disabled'],
   'Keyboard.module.css .key': ['disabled', 'hover'],
 }

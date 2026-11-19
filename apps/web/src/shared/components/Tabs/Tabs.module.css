@@ -48,7 +48,7 @@
   background-image: linear-gradient(var(--press-overlay), var(--press-overlay));
 }
 
-/* A aba escolhida se liga ao calendário: mesma superfície, sem a borda de baixo e com a marca da
+/* A aba escolhida se liga ao painel (calendário, administração): mesma superfície, sem a borda de baixo e com a marca da
    cor de ação no topo. */
 .selected {
   min-height: 48px;
@@ -63,7 +63,7 @@
   font-weight: 700;
 }
 
-.count {
+.caption {
   color: var(--mute);
   font-size: 13px;
 }

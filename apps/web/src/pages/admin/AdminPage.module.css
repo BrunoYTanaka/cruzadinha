@@ -3,7 +3,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   width: 100%;
-  max-width: 560px;
+  max-width: 688px;
   margin: 0 auto;
   padding: 28px var(--gutter);
 }
@@ -11,9 +11,4 @@
 .title {
   margin: 0;
   font: 800 28px/1.1 var(--font-title);
-}
-
-.subtitle {
-  margin: 0;
-  font: 800 19px/1.2 var(--font-title);
 }

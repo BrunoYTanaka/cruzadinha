@@ -111,6 +111,14 @@ describe('revisão e descarte da cruzada de hoje (US5)', () => {
     expect(view.today.words.length).toBeGreaterThan(20)
   })
 
+  it('informa a dificuldade da geração, não a configuração atual (feature 066)', async () => {
+    await storeCasa()
+    await settings({ gridSize: 11, difficulty: 'hard' })
+    const view = (await call('GET', '/api/admin/generated', admin)).json().sources[0]
+    expect(view.difficulty).toBe('hard')
+    expect(view.today.difficulty).toBe('easy')
+  })
+
   it('descarta sem uso: o dia fica vazio e as chamadas não voltam', async () => {
     const puzzleId = await storeCasa()
     await db.insert(rateLimitAttempts).values({ ...generationCallKey('casa', today()) })

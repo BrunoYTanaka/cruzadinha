@@ -7,7 +7,6 @@ import { Button } from '../../../../shared/components/Button/Button'
 import { ErrorState } from '../../../../shared/components/ErrorState/ErrorState'
 import { LoadingState } from '../../../../shared/components/LoadingState/LoadingState'
 import { Notice } from '../../../../shared/components/Notice/Notice'
-import { VisuallyHidden } from '../../../../shared/components/VisuallyHidden/VisuallyHidden'
 import { ApiRequestError } from '../../../../shared/services/api/client/client'
 import { useAdminSources } from '../../hooks/useAdminSources/useAdminSources'
 import {
@@ -55,8 +54,22 @@ function failureText(error: unknown): string {
   return 'Não foi possível salvar agora. Nada foi alterado; tente de novo.'
 }
 
-// Edição da visibilidade e da ordem das fontes (feature 060). Só a página `/admin` a monta, e só
-// para admin. Os avisos ficam num espaço de altura fixa: salvar não desloca o layout (FR-017).
+// Título e texto do painel: aparecem também enquanto carrega ou com erro (feature 066).
+function Header() {
+  return (
+    <>
+      <h2 className={styles.title}>Fontes de cruzadas</h2>
+      <p className={styles.lead}>
+        A ordem vale para as abas do calendário; a primeira fonte visível abre por padrão. Uma fonte
+        escondida some das listas para todos, mas guarda tudo e pode voltar.
+      </p>
+    </>
+  )
+}
+
+// Edição da visibilidade e da ordem das fontes (features 060 e 066). Só a aba "Fontes" de `/admin`
+// a monta, e só para admin. Os avisos ficam num espaço de altura fixa: salvar não desloca o layout
+// (060, FR-017).
 export function SourcesAdmin() {
   const { query, save } = useAdminSources()
   // `null`: sem edição em curso, vale o que o servidor tem.
@@ -68,14 +81,24 @@ export function SourcesAdmin() {
   const [origin, setOrigin] = useState<Row[] | null>(null)
   const hintId = useId()
 
-  if (query.isPending) return <LoadingState screen="library" level={2} />
+  if (query.isPending) {
+    return (
+      <>
+        <Header />
+        <LoadingState screen="library" level={2} />
+      </>
+    )
+  }
   if (query.isError) {
     return (
-      <ErrorState
-        level={2}
-        message="Não foi possível carregar a configuração agora."
-        onRetry={() => void query.refetch()}
-      />
+      <>
+        <Header />
+        <ErrorState
+          level={2}
+          message="Não foi possível carregar a configuração agora."
+          onRetry={() => void query.refetch()}
+        />
+      </>
     )
   }
 
@@ -162,11 +185,7 @@ export function SourcesAdmin() {
 
   return (
     <div className={styles.admin}>
-      <p className={styles.lead}>
-        A ordem vale para as abas do calendário; a primeira fonte visível abre por padrão. Uma fonte
-        escondida some das listas para todos, mas guarda tudo e pode voltar. Arraste pela alça para
-        reordenar.
-      </p>
+      <Header />
       <DragDropProvider
         sensors={SENSORS}
         plugins={(defaults) => defaults.filter((plugin) => plugin !== Accessibility)}
@@ -206,10 +225,15 @@ export function SourcesAdmin() {
                   checked={row.visible}
                   onChange={(event) => toggle(index, event.target.checked)}
                 />
-                <span className={styles.name}>{nameOf(row.id)}</span>
-                <VisuallyHidden>{row.visible ? ' (visível)' : ' (escondida)'}</VisuallyHidden>
-                <span aria-hidden="true" className={styles.state}>
-                  {row.visible ? 'Visível' : 'Escondida'}
+                <span className={styles.name}>{nameOf(row.id)}</span>{' '}
+                <span className={styles.chip} data-state={row.visible ? 'ok' : 'none'}>
+                  {row.visible ? (
+                    <>
+                      <span aria-hidden="true">✓</span>Visível
+                    </>
+                  ) : (
+                    'Escondida'
+                  )}
                 </span>
               </label>
             </SortableRow>
@@ -225,36 +249,12 @@ export function SourcesAdmin() {
           pending={save.isPending}
           disabled={!dirty}
           onClick={() => void onSave()}
-          aria-label="Salvar"
         >
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path
-              d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-          </svg>
+          Salvar
         </Button>
         {dirty ? (
-          <Button
-            variant="secondary"
-            disabled={save.isPending}
-            onClick={() => change(saved)}
-            aria-label="Descartar alterações"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              <path
-                d="M9 7L4 12l5 5M4 12h10a6 6 0 010 12"
-                transform="translate(0 -3)"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <Button variant="secondary" disabled={save.isPending} onClick={() => change(saved)}>
+            Descartar alterações
           </Button>
         ) : null}
       </div>

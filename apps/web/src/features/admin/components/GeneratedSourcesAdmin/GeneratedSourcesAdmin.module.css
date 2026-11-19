@@ -1,45 +1,79 @@
-.admin {
-  display: grid;
-  gap: 24px;
+.title {
+  margin: 0;
+  font: 800 19px/1.2 var(--font-title);
 }
 
-.block {
+.lead {
+  margin: 0;
+  color: var(--mute);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Seções do painel (mockup `.admsec`): uma linha separa a configuração da cruzada de hoje. */
+.section {
   display: grid;
   gap: 12px;
 }
 
-.name {
+.section + .section {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.heading {
   margin: 0;
-  font: 800 17px var(--font-title);
+  font: 800 16px/1.2 var(--font-title);
 }
 
 .form {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
-.field {
-  display: grid;
-  gap: 2px;
+.sizeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  display: block;
+  margin: 0 0 4px;
+  padding: 0;
   font-weight: 700;
 }
 
 .hint {
+  display: block;
   margin: 0;
   color: var(--mute);
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
-.size {
-  width: 88px;
-  min-height: 44px;
-  padding: 0 10px;
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  background-color: var(--surface);
-  color: var(--ink);
-  font: inherit;
+/* Contador (como em Configurações): secundários quadrados e o valor no meio. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step {
+  width: 36px;
+  min-height: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 18px;
+}
+
+.value {
+  min-width: 84px;
+  font: 700 15px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .options {
@@ -51,12 +85,6 @@
   border: 0;
 }
 
-.legend {
-  margin-bottom: 4px;
-  padding: 0;
-  font-weight: 700;
-}
-
 .option {
   display: flex;
   align-items: center;
@@ -65,41 +93,170 @@
   cursor: pointer;
 }
 
-.today {
-  margin: 8px 0 0;
-  font: 800 15px var(--font-title);
+/* O aviso divide a linha com os botões e quebra para baixo quando não cabe (spec 066). */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.result {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* Resumo numérico (como em Estatísticas). */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.card {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.card dt {
+  color: var(--mute);
+  font-size: 13px;
+}
+
+.card dd {
+  margin: 0;
+  font: 800 26px var(--font-title);
+  font-variant-numeric: tabular-nums;
 }
 
 .words {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
 }
 
-.direction {
-  margin: 0 0 4px;
-  font-size: 14px;
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
 }
 
-.list {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 14px;
+.caption {
+  padding-bottom: 6px;
+  caption-side: top;
+  color: var(--mute);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.table thead th {
+  color: var(--mute);
+  background: var(--control);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Número e resposta nunca quebram; só a dica divide linhas. */
+.table th:nth-child(-n + 2),
+.table td:nth-child(-n + 2) {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+.table td:nth-child(2) {
+  font: 700 14px var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.table td:nth-child(3) {
   overflow-wrap: anywhere;
 }
 
-.discard {
-  display: grid;
-  gap: 6px;
-  justify-items: start;
+.table tr:last-child > * {
+  border-bottom: 0;
 }
 
-/* Espaço fixo para o aviso: salvar ou descartar não desloca o layout. */
-.status {
+@media (max-width: 400px) {
+  .table th,
+  .table td {
+    padding: 10px 6px;
+  }
+}
+
+/* Zona de perigo (como em Conta). */
+.danger {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid var(--bad);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.dangerTitle {
+  margin: 0;
+  color: var(--bad);
+  font: 800 16px/1.2 var(--font-title);
+}
+
+/* Selo de alerta (como os de Status). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  padding: 3px 9px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: var(--warn-tint);
+  color: var(--warn);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Código e link: o comando num campo só de leitura com Copiar. */
+.copyRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.command {
+  flex: 1;
+  min-width: 0;
   min-height: 48px;
+  padding: 0 12px;
+  border: 2px solid var(--edge);
+  border-radius: var(--radius-sm);
+  background: var(--pill);
+  color: var(--ink);
+  font: 13px var(--font-mono);
+}
+
+.discardResult:focus {
+  outline: none;
 }
 
 .dialogActions {

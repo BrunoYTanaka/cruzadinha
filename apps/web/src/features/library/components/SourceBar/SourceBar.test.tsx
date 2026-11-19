@@ -55,7 +55,7 @@ describe('SourceBar (feature 061)', () => {
     expect(readCss('SourceBar.module.css')).toMatch(
       /margin-bottom:\s*calc\(-1 \* var\(--bar-attach/,
     )
-    expect(readCss('SourceTabs.module.css')).not.toMatch(/\.tabs\s*{[^}]*border-bottom/)
+    expect(readCss('Tabs.module.css')).not.toMatch(/\.tabs\s*{[^}]*border-bottom/)
   })
 
   it('não tem violações de acessibilidade, fechado nem aberto', async () => {

@@ -1,6 +1,7 @@
 import {
   generatedSourceIds,
   GENERATION_DAILY_CALLS,
+  parseDifficultyTitle,
   isGeneratedSource,
   puzzleSourceIdSchema,
   type DiscardGeneratedRequest,
@@ -76,6 +77,7 @@ export function createSourcesService(deps: { db: Database; clock?: Clock }) {
             size: stored.puzzle.grid.width,
             discardable: stored.blockedBy === null,
             blockedBy: stored.blockedBy,
+            difficulty: parseDifficultyTitle(stored.puzzle.attribution.title),
             words: stored.puzzle.words.map((word, i) => ({
               number: word.number,
               direction: word.direction,

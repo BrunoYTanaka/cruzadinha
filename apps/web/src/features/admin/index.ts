@@ -1,2 +1,1 @@
-export { SourcesAdmin } from './components/SourcesAdmin/SourcesAdmin'
-export { GeneratedSourcesAdmin } from './components/GeneratedSourcesAdmin/GeneratedSourcesAdmin'
+export { AdminTabs } from './components/AdminTabs/AdminTabs'
