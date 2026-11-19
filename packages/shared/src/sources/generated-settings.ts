@@ -23,6 +23,18 @@ export const difficultyLabels = {
   hard: 'Difícil',
 } as const satisfies Record<Difficulty, string>
 
+// Título da atribuição de uma cruzada gerada: é o único lugar em que a dificuldade da geração fica
+// guardada. As duas funções andam juntas para a ida e a volta não divergirem (feature 066).
+export function difficultyTitle(difficulty: Difficulty): string {
+  return `Dificuldade: ${difficultyLabels[difficulty]}`
+}
+
+export function parseDifficultyTitle(title: string | null): Difficulty | null {
+  return (
+    difficultySchema.options.find((difficulty) => difficultyTitle(difficulty) === title) ?? null
+  )
+}
+
 export const GENERATED_GRID_SIZE_MIN = 9
 export const GENERATED_GRID_SIZE_MAX = 15
 export const GENERATION_DAILY_CALLS = 3
@@ -71,6 +83,9 @@ export const generatedSourceViewSchema = z.object({
       size: z.number().int(),
       discardable: z.boolean(),
       blockedBy: z.enum(['progress', 'duel']).nullable(),
+      // Dificuldade com que a cruzada de hoje foi gerada; null se não der para saber; ausente numa
+      // API anterior (feature 066).
+      difficulty: difficultySchema.nullable().optional(),
       words: z.array(generatedWordSchema),
     })
     .nullable(),

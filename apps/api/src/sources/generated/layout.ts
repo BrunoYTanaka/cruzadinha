@@ -1,5 +1,5 @@
 import {
-  difficultyLabels,
+  difficultyTitle,
   puzzleSchema,
   puzzleSourceNames,
   validatePuzzleWithSolution,
@@ -83,7 +83,7 @@ export function toPuzzle(
     date: options.date,
     attribution: {
       sourceName: puzzleSourceNames[options.source],
-      title: `Dificuldade: ${difficultyLabels[options.difficulty]}`,
+      title: difficultyTitle(options.difficulty),
       author: null,
       copyright: null,
     },

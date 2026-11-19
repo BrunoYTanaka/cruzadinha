@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  difficultyTitle,
   discardGeneratedRequestSchema,
   GENERATED_SETTINGS_DEFAULT,
   generatedSettingsRequestSchema,
   generatedSourcesResponseSchema,
+  generatedSourceViewSchema,
   isGeneratedSource,
+  parseDifficultyTitle,
+  type Difficulty,
 } from './generated-settings'
 
 describe('generated sources', () => {
@@ -60,5 +64,36 @@ describe('generatedSourcesResponseSchema', () => {
       ],
     })
     expect(parsed.sources.map((item) => item.source)).toEqual(['casa'])
+  })
+})
+
+describe('difficulty title (feature 066)', () => {
+  it('reads back the difficulty it writes', () => {
+    for (const difficulty of ['easy', 'medium', 'hard'] as Difficulty[]) {
+      expect(parseDifficultyTitle(difficultyTitle(difficulty))).toBe(difficulty)
+    }
+    expect(difficultyTitle('medium')).toBe('Dificuldade: Médio')
+  })
+
+  it('answers null for a title it did not write', () => {
+    for (const title of [null, '', 'Dificuldade: Média', 'Outro']) {
+      expect(parseDifficultyTitle(title)).toBeNull()
+    }
+  })
+
+  it('accepts today without difficulty, with null and with a value', () => {
+    const today = { puzzleId: 'x', size: 11, discardable: true, blockedBy: null, words: [] }
+    const view = { source: 'casa', gridSize: 11, difficulty: 'medium', callsLeft: 3 }
+    expect(generatedSourceViewSchema.parse({ ...view, today }).today?.difficulty).toBeUndefined()
+    for (const difficulty of [null, 'hard']) {
+      expect(
+        generatedSourceViewSchema.parse({ ...view, today: { ...today, difficulty } }).today
+          ?.difficulty,
+      ).toBe(difficulty)
+    }
+    expect(
+      generatedSourceViewSchema.safeParse({ ...view, today: { ...today, difficulty: 'x' } })
+        .success,
+    ).toBe(false)
   })
 })

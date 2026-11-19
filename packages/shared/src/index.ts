@@ -128,6 +128,7 @@ export {
 } from './sources/schema'
 export {
   difficultyLabels,
+  difficultyTitle,
   difficultySchema,
   discardGeneratedRequestSchema,
   discardGeneratedResponseSchema,
@@ -141,6 +142,7 @@ export {
   generatedSourceViewSchema,
   GENERATION_DAILY_CALLS,
   isGeneratedSource,
+  parseDifficultyTitle,
   type DiscardGeneratedRequest,
   type Difficulty,
   type GeneratedSettings,
