@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { isBlocked } from './blocklist'
-import { plain } from './normalize'
+import { plainWords } from './normalize'
 
 // Features 064 e 065: a resposta do modelo é dado externo; entra como `unknown` e só sai daqui validada.
 
@@ -62,7 +62,9 @@ export function cleanClues(
       clue.length < MIN_CLUE ||
       clue.length > MAX_CLUE ||
       /[<>]|https?:|www\./i.test(clue) ||
-      plain(clue).includes(answer.plain) ||
+      // Só palavra que começa pela resposta (pega "cantar" para CANTA); no meio da palavra
+      // recusava quase toda dica de resposta curta ("SOL" em "consola", issue #187).
+      plainWords(clue).some((word) => word.startsWith(answer.plain)) ||
       isBlocked(clue)
     ) {
       invalid = true
