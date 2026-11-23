@@ -131,6 +131,18 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
     bySource.set(source.id, source)
   }
 
+  // Pedidos simultâneos do mesmo dia (link de um dia antigo espalhado) dividem uma ida à fonte.
+  const pendingFetches = new Map<string, Promise<FetchPuzzleResult>>()
+  function fetchShared(source: PuzzleSource, level: Level, date: string) {
+    const key = `${source.id}:${level}:${date}`
+    let pending = pendingFetches.get(key)
+    if (!pending) {
+      pending = source.fetchPuzzle(level, date).finally(() => pendingFetches.delete(key))
+      pendingFetches.set(key, pending)
+    }
+    return pending
+  }
+
   function adapterFor(id: PuzzleSourceId): PuzzleSource {
     const source = bySource.get(id)
     if (!source) throw new Error(`fonte sem adaptador: ${id}`)
@@ -310,7 +322,7 @@ export function createPuzzlesService(deps: PuzzlesDeps): PuzzlesService {
         }
       }
 
-      const fetched = await source.fetchPuzzle(level, date)
+      const fetched = await fetchShared(source, level, date)
       if (!fetched.ok) {
         return fetched.reason === 'unavailable'
           ? { ok: false, reason: 'unavailable' }

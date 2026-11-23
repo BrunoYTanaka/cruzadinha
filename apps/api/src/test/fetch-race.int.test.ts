@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { addDaysToIsoDate, todayInSaoPaulo } from '../platform/lib/dates'
 import { createPuzzlesService } from '../modules/puzzles/puzzles.service'
 import {
@@ -60,5 +60,44 @@ describe('source fetch limit under simultaneous requests', () => {
     )
 
     expect(source.calls).toEqual([first])
+  })
+
+  it('shares one source fetch between simultaneous requests for the same day', async () => {
+    const date = addDaysToIsoDate(todayInSaoPaulo(clock.now), -3)
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    const source = fakeSource(new Map([[date, okResult(date)]]))
+    const fetchPuzzle = source.fetchPuzzle.bind(source)
+    source.fetchPuzzle = async (level, day) => {
+      await gate
+      return fetchPuzzle(level, day)
+    }
+    const limiter = createRateLimiter(createRateLimitRepository(db))
+    let reserved = 0
+    const service = createPuzzlesService({
+      db,
+      clock: clock.now,
+      sources: [source],
+      rateLimiter: {
+        ...limiter,
+        reserve: async (...args) => {
+          const reservation = await limiter.reserve(...args)
+          reserved += 1
+          return reservation
+        },
+      },
+      limits: defaultRateLimits,
+    })
+
+    const pending = ['203.0.113.7', '198.51.100.9'].map((address) =>
+      service.getByDate('oglobo', 'daily', date, address),
+    )
+    await vi.waitFor(() => expect(reserved).toBe(2))
+    release()
+    const results = await Promise.all(pending)
+
+    expect(source.calls).toEqual([date])
+    expect(results.map((r) => r.ok)).toEqual([true, true])
+    expect(results[0]).toEqual(results[1])
   })
 })

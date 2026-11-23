@@ -194,6 +194,14 @@ Falhas de envio que não são cota aparecem só no log da API (`e-mail não envi
 
 **Limpeza.** O passo `auth cleanup` do workflow `collect.yml` (duas vezes por dia, com o segredo `DATABASE_URL`) apaga pendências e tokens vencidos há mais de 7 dias e as contagens de tentativas dos limites (login, cadastro, buscas, envios) com mais de 2 dias. Manualmente: `node apps/api/dist/cli.mjs auth cleanup`.
 
+**Crescimento de `rate_limit_attempts`.** A gravação dos limites (`reserve`) não apaga nada: só o `auth cleanup` acima limpa a tabela, que cresce sem teto (até 1800 linhas por hora por jogador ativo) se o `collect.yml` parar de rodar (segredo `DATABASE_URL` ausente, workflow desligado, ou o GitHub pausando agendamentos de repositório sem atividade há 60 dias). Confira de vez em quando, e sempre que a coleta ficar dias sem rodar:
+
+```sql
+SELECT count(*), min(created_at) FROM rate_limit_attempts;
+```
+
+Passou de cerca de 1 milhão de linhas, ou `min(created_at)` tem mais de 3 dias: reative o `collect.yml` (Actions → Coleta de puzzles → Enable workflow, ou `gh workflow enable collect.yml`) e rode `auth cleanup` à mão.
+
 **x1 (feature 058).** O mesmo `auth cleanup` apaga os duelos expirados (abertos ou em andamento sem ninguém ter terminado, com o prazo vencido há mais de 7 dias) e os cancelados há mais de 30 dias; nunca os finalizados. Limites novos por endereço, em `defaultRateLimits`: criar duelo 10 por hora (e por conta), consultar código ou link 30 por hora, "Meus x1" 60 por hora. Teto de 5 duelos abertos por conta. Nenhuma variável de ambiente nova.
 
 ### Captcha (Turnstile)

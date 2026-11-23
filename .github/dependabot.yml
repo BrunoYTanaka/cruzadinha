@@ -1,0 +1,10 @@
+# Só as Actions: os SHAs fixados nos workflows (deploy.yml, release.yml) sobem por PR, com a versão
+# no comentário. Dependências npm seguem manuais.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
