@@ -49,12 +49,21 @@ describe('cleanClues', () => {
     ['com marcação', '<b>Líquido</b>'],
     ['com link', 'Veja https://exemplo.com'],
     ['com a resposta', 'Agua fresca'],
+    ['com palavra que começa pela resposta', 'Águas do rio'],
     ['com termo bloqueado', 'Coisa de merda'],
   ])('recusa dica %s', (_, clue) => {
     expect(cleanClues([{ n: 1, clue }, good[0]!], answers)).toMatchObject({
       ok: false,
       detail: 'dica inválida',
       retry: [1],
+    })
+  })
+
+  // Issue #187: respostas curtas aparecem dentro de qualquer palavra ("SOL" em "consola").
+  it('aceita a resposta no meio de outra palavra', () => {
+    expect(cleanClues([{ n: 2, clue: 'Astro que nos consola' }, good[1]!], answers)).toEqual({
+      ok: true,
+      clues: ['Líquido da vida', 'Astro que nos consola'],
     })
   })
 
