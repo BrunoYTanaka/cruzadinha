@@ -2,14 +2,15 @@
 // com os mesmos types do Conventional Commits. Sem argumento, usa a branch atual; o CI passa o
 // nome da branch de origem do pull request.
 //
-// Ficam de fora: `main` e as branches do release-please (`release-please--*`), criadas pelo bot.
+// Ficam de fora: `main` e as branches criadas por bots: release-please (`release-please--*`) e
+// Dependabot (`dependabot/*`).
 // Em HEAD destacado (rebase, checkout de tag) não há nome para validar e o script passa.
 import { execFileSync } from 'node:child_process'
 import { argv, exit, stderr, stdout } from 'node:process'
 
 const TYPES = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore']
 const PATTERN = new RegExp(`^(${TYPES.join('|')})/[a-z0-9]+(-[a-z0-9]+)*$`)
-const EXEMPT = [/^main$/, /^release-please--/]
+const EXEMPT = [/^main$/, /^release-please--/, /^dependabot\//]
 
 const branch =
   argv[2] ?? execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' }).trim()
