@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.1](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.16.0...api-v0.16.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* **api:** accept clues that hold a short answer inside another word ([e844186](https://github.com/BrunoYTanaka/cruzadinha/commit/e8441861216f6dd5d8119556ccec4c764ba19742))
+* **api:** accept clues that hold a short answer inside another word ([f20fe8d](https://github.com/BrunoYTanaka/cruzadinha/commit/f20fe8dc4a967cdebe74adcfcbe8ae4adb02f879)), closes [#187](https://github.com/BrunoYTanaka/cruzadinha/issues/187)
+
+
+### Performance Improvements
+
+* **api:** share one source fetch between concurrent requests for the same day ([ad41c5b](https://github.com/BrunoYTanaka/cruzadinha/commit/ad41c5bd47a64ca0c5fc90ed948747d210e0750f))
+
 ## [0.16.0](https://github.com/BrunoYTanaka/cruzadinha/compare/api-v0.15.0...api-v0.16.0) (2026-11-19)
 
 
